@@ -5,34 +5,29 @@ from discodos import db
 import discogs_client
 import csv
 import time
-#import sqlite3
-#from sqlite3 import Error
 import datetime
 
 
 # DB setup 
 conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 sql_create_releases_table = """ CREATE TABLE IF NOT EXISTS releases (
-                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                        discogs_id LONG,
+                                        discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
                                         discogs_title TEXT NOT NULL,
-                                        update_timestamp TEXT
+                                        import_timestamp TEXT
                                     ); """
 db.create_table(conn, sql_create_releases_table)
 
 # discogs api connection
 userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-d = discogs_client.Client("CollectionGenreClassifier/0.1 +http://github.com/JOJ0",
+d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
                           user_token=userToken)
 
-print("Gathering collection and putting into discobase.db")
+print("Gathering collection and putting necessary fields into DISCOBASE")
 me = d.identity()
 #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
 
-for r in me.collection_folders[4].releases:
+for r in me.collection_folders[0].releases:
     print("INSERT ID:", r.release.id, "Title:", r.release.title) 
-    #release_tuple = (r.release.id,  r.release.title)
-    #db.create_release(conn, release_tuple)
     last_row_id = db.create_release(conn, r)
     print("DEBUG: last_row_id:", last_row_id)
     
