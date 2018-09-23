@@ -1,75 +1,44 @@
 #!/usr/local/bin/python3
 # pip install discogs_client
 
+from discodos import db
 import discogs_client
 import csv
 import time
-import sqlite3
-from sqlite3 import Error
+#import sqlite3
+#from sqlite3 import Error
 import datetime
 
-def db_create_conn(db_file):
-    try:
-        conn = sqlite3.connect(db_file)
-        print(sqlite3.version)
-        return conn
-    except Error as e:
-        print(e)
-    return None
-
-def db_create_table(conn, create_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
-    except Error as e:
-        print(e)
-
-def db_create_release(conn, release):
-    #sql  = "INSERT INTO releases(discogs_id, discogs_title)"
-    #sql += "    VALUES("+str(r.release.id)+", '"+str(r.release.title)+"')"
-    sql  = '''INSERT INTO releases(discogs_id, discogs_title, update_date)
-                    VALUES('?', '?')'''
-    cur = conn.cursor()
-    cur.execute('''INSERT INTO releases(discogs_id, discogs_title) VALUES(?, ?)''', (release.release.id, release.release.title))
-    print("INFO: "+str(cur.rowcount))
-    return cur.lastrowid
-
-def db_all_releases(conn):
-    cur = conn.cursor()
-    cur.execute('''SELECT * FROM releases''')
-    rows = cur.fetchall()
-    for row in rows:
-        print(row)
 
 # DB setup 
-conn = db_create_conn("/Users/jojo/git/discobar/discobar.db")
+conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 sql_create_releases_table = """ CREATE TABLE IF NOT EXISTS releases (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         discogs_id LONG,
                                         discogs_title TEXT NOT NULL,
                                         update_timestamp TEXT
                                     ); """
-db_create_table(conn, sql_create_releases_table)
+db.create_table(conn, sql_create_releases_table)
 
 # discogs api connection
 userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
 d = discogs_client.Client("CollectionGenreClassifier/0.1 +http://github.com/JOJ0",
                           user_token=userToken)
 
-print("Gathering collection and putting into discobar.db")
+print("Gathering collection and putting into discobase.db")
 me = d.identity()
 #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
 
 for r in me.collection_folders[4].releases:
     print("INSERT ID:", r.release.id, "Title:", r.release.title) 
     #release_tuple = (r.release.id,  r.release.title)
-    #db_create_release(conn, release_tuple)
-    last_row_id = db_create_release(conn, r)
+    #db.create_release(conn, release_tuple)
+    last_row_id = db.create_release(conn, r)
     print("DEBUG: last_row_id:", last_row_id)
     
     #time.sleep(0.001)
 
-db_all_releases(conn)
+db.all_releases(conn)
 
 #rows = []
 
@@ -118,5 +87,6 @@ db_all_releases(conn)
 #    for row in rows:
 #        writer.writerow(row)
 
+conn.commit()
 conn.close()
 print("Done!")
