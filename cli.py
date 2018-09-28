@@ -47,34 +47,40 @@ def is_number(s):
         return False
 
 def main():
-	# setup / init
+	# SETUP / INIT
     global log
     log=log.logger_init()
     args = argparser(sys.argv)
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
+
+    # DEBUG stuff
     print(vars(args))
     #log.debug("pprint: ", vars(args))
 
-    # discogs api connection
+    # DISCOGS API CONNECTION
     userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
     try: 
         d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
                               user_token=userToken)
         me = d.identity()
+        online=True
     except Exception:
         log.error("Error connecting to Discogs API, let's stay offline!")
-        offline_mode=True
+        online=True
 
     if hasattr(args, 'release_cmd'):
         if "all" in args.release_cmd:
             log.info("Showing all releases, this is gonna take some time")
             db.all_releases(conn)
         else:
-            log.info("Pull release info from discogs and show info")
+            log.info("Trying to pull release info from discogs for each given arg")
             for list_element in args.release_cmd:
-                log.info("Pulling release from discogs: %s", list_element)
-                release_id = d.release(list_element)
-                log.info("Release title: %s", release_id)
+                log.info("%s:", list_element)
+                try:
+                    release_id = d.release(list_element)
+                    log.info("Release title: %s", release_id)
+                except Exception as Err:
+                    log.error("Error accessing discogs: %s", Err)
     elif hasattr(args, 'track_cmd'):
         log.debug("we are in track_cmd branch")
 

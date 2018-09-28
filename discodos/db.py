@@ -11,7 +11,7 @@ def create_conn(file):
         print(sqlite3.version)
         return conn
     except Error as e:
-        print(e)
+        log.error("%s", e)
     return None
 
 def create_table(conn, create_table_sql):
@@ -19,7 +19,7 @@ def create_table(conn, create_table_sql):
         c = conn.cursor()
         c.execute(create_table_sql)
     except Error as e:
-        print(e)
+        log.error("%s", e)
 
 def create_release(conn, release):
     #sql  = "INSERT INTO releases(discogs_id, discogs_title)"
@@ -28,7 +28,7 @@ def create_release(conn, release):
                     VALUES('?', '?')'''
     cur = conn.cursor()
     cur.execute('''INSERT INTO releases(discogs_id, discogs_title) VALUES(?, ?)''', (release.release.id, release.release.title))
-    print("INFO: cur.rowcount: "+str(cur.rowcount))
+    log.info("cur.rowcount: %s", e)
     return cur.lastrowid
 
 def all_releases(conn):
@@ -36,4 +36,4 @@ def all_releases(conn):
     cur.execute('''SELECT * FROM releases''')
     rows = cur.fetchall()
     for row in rows:
-        print(row)
+        log.info("%s", row)
