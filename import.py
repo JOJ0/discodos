@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3
 # pip install discogs_client
 
-from discodos import db
+from discodos import db, log
 import discogs_client
 import csv
 import time
