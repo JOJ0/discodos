@@ -8,6 +8,7 @@ import datetime
 import argparse
 import sys
 import pprint
+import discogs_client.exceptions as errors
 
 # argparser init
 def argparser(argv):
@@ -36,7 +37,7 @@ def argparser(argv):
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     # Sets log level to WARN going more verbose for each new -v.
-    #log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
+    log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
     return arguments 
 
 def is_number(s):
@@ -48,14 +49,12 @@ def is_number(s):
 
 def main():
 	# SETUP / INIT
-    global log
-    log=log.logger_init()
     args = argparser(sys.argv)
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 
     # DEBUG stuff
-    print(vars(args))
-    #log.debug("pprint: ", vars(args))
+    #print(vars(args))
+    log.debug("args_dict: %s", vars(args))
 
     # DISCOGS API CONNECTION
     userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
@@ -73,26 +72,29 @@ def main():
             log.info("Showing all releases, this is gonna take some time")
             db.all_releases(conn)
         else:
-            log.info("Trying to pull release info from discogs for each given arg")
+            log.info("Trying to pull release info from discogs for each given argument")
             for list_element in args.release_cmd:
-                log.info("%s:", list_element)
+                log.info('Searching Discogs for "%s"', list_element)
                 try:
                     release_id = d.release(list_element)
-                    log.info("Release title: %s", release_id)
-                except Exception as Err:
-                    log.error("Error accessing discogs: %s", Err)
+                    #if release_id:
+                    log.info("Release title: %s", str(release_id))
+                except errors.HTTPError as HtErr:
+                    log.error("%s", HtErr)
+                except Exception as Exc:
+                    log.error("Exception: %s", Exc)
+                    #raise Err
     elif hasattr(args, 'track_cmd'):
         log.debug("we are in track_cmd branch")
 
 
 
-    
     #for r in me.collection_folders[4].releases:
     
     if conn:
         conn.commit()
         conn.close()
-        print("DB closed.")
+        log.debug("DB closed.")
 
 if __name__ == "__main__":
     main()

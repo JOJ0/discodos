@@ -8,10 +8,9 @@ import datetime
 def create_conn(file):
     try:
         conn = sqlite3.connect(file)
-        print(sqlite3.version)
         return conn
     except Error as e:
-        log.error("%s", e)
+        log.error("DB connection error: %s", e)
     return None
 
 def create_table(conn, create_table_sql):
