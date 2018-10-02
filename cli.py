@@ -9,6 +9,8 @@ import argparse
 import sys
 import pprint
 import discogs_client.exceptions as errors
+import requests.exceptions as reqerrors
+import urllib3.exceptions as urlerrors
 
 # argparser init
 def argparser(argv):
@@ -47,6 +49,9 @@ def is_number(s):
     except ValueError:
         return False
 
+def print_help(message):
+    print('\n'+message+'\n') 
+
 def main():
 	# SETUP / INIT
     args = argparser(sys.argv)
@@ -64,26 +69,33 @@ def main():
         me = d.identity()
         online=True
     except Exception:
-        log.error("Error connecting to Discogs API, let's stay offline!")
-        online=True
+        log.error("Error connecting to Discogs API, let's stay offline!\n")
+        online=False
 
     if hasattr(args, 'release_cmd'):
         if "all" in args.release_cmd:
-            log.info("Showing all releases, this is gonna take some time")
+            print_help("Showing all releases, this is gonna take some time")
             db.all_releases(conn)
         else:
-            log.info("Trying to pull release info from discogs for each given argument")
+            print_help("Trying to pull release info from discogs for each given argument")
             for list_element in args.release_cmd:
-                log.info('Searching Discogs for "%s"', list_element)
-                try:
+                #try:
+                release_id = ""
+                if online:
+                    print_help('Searching Discogs for ' + list_element)
                     release_id = d.release(list_element)
-                    #if release_id:
-                    log.info("Release title: %s", str(release_id))
-                except errors.HTTPError as HtErr:
-                    log.error("%s", HtErr)
-                except Exception as Exc:
-                    log.error("Exception: %s", Exc)
-                    #raise Err
+                    print_help('Release title: ' + release_id)
+                else:
+                    print_help('Searching offline DB for ' + list_element)
+                #except errors.HTTPError as HtErr:
+                #    log.error("%s", HtErr)
+                #except urlerrors.NewConnectionError as ConnErr:
+                #    log.error("%s", ConnErr)
+                #except urlerrors.MaxRetryError as RetryErr:
+                #    log.error("%s", RetryErr)
+                #except Exception as Exc:
+                #    log.error("Exception: %s", Exc)
+                #    #raise Err
     elif hasattr(args, 'track_cmd'):
         log.debug("we are in track_cmd branch")
 
