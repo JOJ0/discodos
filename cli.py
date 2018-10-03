@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from discodos import db, log
+from discodos import log, db
 import discogs_client
 import csv
 import time
@@ -50,7 +50,21 @@ def is_number(s):
         return False
 
 def print_help(message):
-    print('\n'+message+'\n') 
+    print('\n'+str(message)+'\n') 
+
+def search_release_online(id_or_title):
+    if is_number(id_or_title):
+        try:
+            release = d.release(id_or_title)
+            return '|'+str(release.id)+'|'+ str(release.title)+'|'
+        except errors.HTTPError as HtErr:
+            log.error("%s", HtErr)
+        except urlerrors.NewConnectionError as ConnErr:
+            log.error("%s", ConnErr)
+        except urlerrors.MaxRetryError as RetryErr:
+            log.error("%s", RetryErr)
+        except Exception as Exc:
+            log.error("Exception: %s", Exc)
 
 def main():
 	# SETUP / INIT
@@ -77,25 +91,12 @@ def main():
             print_help("Showing all releases, this is gonna take some time")
             db.all_releases(conn)
         else:
-            print_help("Trying to pull release info from discogs for each given argument")
             for list_element in args.release_cmd:
-                #try:
-                release_id = ""
                 if online:
-                    print_help('Searching Discogs for ' + list_element)
-                    release_id = d.release(list_element)
-                    print_help('Release title: ' + release_id)
+                    print_help('Searching Discogs for Release ID or Title \"'+list_element+'\"')
+                    print_help(search_release_online(list_element))
                 else:
                     print_help('Searching offline DB for ' + list_element)
-                #except errors.HTTPError as HtErr:
-                #    log.error("%s", HtErr)
-                #except urlerrors.NewConnectionError as ConnErr:
-                #    log.error("%s", ConnErr)
-                #except urlerrors.MaxRetryError as RetryErr:
-                #    log.error("%s", RetryErr)
-                #except Exception as Exc:
-                #    log.error("Exception: %s", Exc)
-                #    #raise Err
     elif hasattr(args, 'track_cmd'):
         log.debug("we are in track_cmd branch")
 

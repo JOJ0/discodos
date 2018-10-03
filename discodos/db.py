@@ -1,9 +1,8 @@
-#import discogs_client
-#import csv
 import time
 import sqlite3
 from sqlite3 import Error
 import datetime
+from discodos import log, db
 
 def create_conn(file):
     try:
@@ -35,4 +34,4 @@ def all_releases(conn):
     cur.execute('''SELECT * FROM releases''')
     rows = cur.fetchall()
     for row in rows:
-        log.info("%s", row)
+        print(str(row[0])+'\t\t'+row[1], row[2])
