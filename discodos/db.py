@@ -35,3 +35,10 @@ def all_releases(conn):
     rows = cur.fetchall()
     for row in rows:
         print(str(row[0])+'\t\t'+row[1], row[2])
+
+def search_release_id(conn, discogs_id):
+    log.debug('DB search for Discogs ID: %s\n', discogs_id)
+    cur = conn.cursor()
+    cur.execute('''SELECT * FROM releases WHERE discogs_id LIKE ?;''', [str(discogs_id)])
+    rows = cur.fetchall()
+    return rows
