@@ -1,12 +1,31 @@
 #!/usr/local/bin/python3
 # pip install discogs_client
 
-from discodos import db, log
+from discodos import log, db
 import discogs_client
 import csv
 import time
 import datetime
+import argparse
+import sys
 
+def argparser(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+		"-v", "--verbose", dest="verbose_count",
+        action="count", default=0,
+        help="increases log verbosity for each occurence.")
+    parser.add_argument(
+		"-i", "--import", dest="release_import",
+        action="store_true",
+        help="should collection be imported from discogs")
+    arguments = parser.parse_args(argv[1:])
+    # Sets log level to WARN going more verbose for each new -v.
+    log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
+    return arguments 
+
+args=argparser(sys.argv)
+print("This script sets up db tables and eventually imports from Discogs into DISCOBASE")
 
 # DB setup 
 conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
@@ -17,24 +36,33 @@ sql_create_releases_table = """ CREATE TABLE IF NOT EXISTS releases (
                                     ); """
 db.create_table(conn, sql_create_releases_table)
 
-# discogs api connection
-userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                          user_token=userToken)
-
-print("Gathering collection and putting necessary fields into DISCOBASE")
-me = d.identity()
-#itemsInCollection = [r.release for r in me.collection_folders[0].releases]
-
-for r in me.collection_folders[0].releases:
-    print("INSERT ID:", r.release.id, "Title:", r.release.title) 
-    last_row_id = db.create_release(conn, r)
-    print("DEBUG: last_row_id:", last_row_id)
+# only import if really want to, FIXME it takes quite some time
+if args.release_import:
+    # discogs api connection
+    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+    d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+                              user_token=userToken)
     
-    #time.sleep(0.001)
+    print("Gathering collection and putting necessary fields into DISCOBASE")
+    me = d.identity()
+    #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
+    
+    for r in me.collection_folders[0].releases:
+        print("INSERT ID:", r.release.id, "Title:", r.release.title) 
+        last_row_id = db.create_release(conn, r)
+        print("DEBUG: last_row_id:", last_row_id)
+        
+        #time.sleep(0.001)
+    
+    db.all_releases(conn)
+    
+    conn.commit()
+    conn.close()
+    print("Done!")
 
-db.all_releases(conn)
 
+
+################# old stuff ####################
 #rows = []
 
 #print("Crunching data...")
@@ -82,6 +110,3 @@ db.all_releases(conn)
 #    for row in rows:
 #        writer.writerow(row)
 
-conn.commit()
-conn.close()
-print("Done!")
