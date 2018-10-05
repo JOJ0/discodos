@@ -53,10 +53,13 @@ def print_help(message):
     print(''+str(message)+'\n') 
 
 def search_release_online(discogs, id_or_title):
-    if is_number(id_or_title):
         try:
-            release = discogs.release(id_or_title)
-            return '|'+str(release.id)+'|'+ str(release.title)+'|'
+            if is_number(id_or_title):
+                release = discogs.release(id_or_title)
+                return '|'+str(release.id)+'|'+ str(release.title)+'|'
+            else:
+                releases = discogs.search(id_or_title)
+                return releases.type
         except errors.HTTPError as HtErr:
             log.error("%s", HtErr)
         except urlerrors.NewConnectionError as ConnErr:
@@ -70,6 +73,16 @@ def search_release_offline(dbconn, id_or_title):
     if is_number(id_or_title):
         try:
             release = db.search_release_id(dbconn, id_or_title)
+            if release:
+                return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
+            else:
+                return 'Not found'
+        except Exception as Exc:
+            log.error("Not found or Database Exception: %s\n", Exc)
+            raise Exc
+    else:
+        try:
+            release = db.search_release_title(dbconn, id_or_title)
             if release:
                 return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
             else:
@@ -108,7 +121,7 @@ def main():
                     print_help('Searching Discogs for Release ID or Title \"'+list_element+'\"')
                     print_help(search_release_online(d, list_element))
                 else:
-                    print_help('Searching offline DB for ' + list_element)
+                    print_help('Searching offline DB for \"' + list_element +'\"')
                     print_help(search_release_offline(conn, list_element))
     elif hasattr(args, 'track_cmd'):
         log.debug("we are in track_cmd branch")
