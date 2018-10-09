@@ -16,6 +16,7 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
+        log.debug("Executed sql: %s", create_table_sql)
     except Error as e:
         log.error("%s", e)
 
@@ -33,8 +34,9 @@ def all_releases(conn):
     cur = conn.cursor()
     cur.execute('''SELECT * FROM releases''')
     rows = cur.fetchall()
-    for row in rows:
-        print(str(row[0])+'\t\t'+row[1], row[2])
+    return rows
+    #for row in rows:
+    #    print(str(row[0])+'\t\t'+row[1], row[2])
 
 def search_release_id(conn, discogs_id):
     log.debug('DB search for Discogs Release ID: %s\n', discogs_id)

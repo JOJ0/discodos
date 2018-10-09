@@ -34,9 +34,18 @@ sql_create_releases_table = """ CREATE TABLE IF NOT EXISTS releases (
                                         discogs_title TEXT NOT NULL,
                                         import_timestamp TEXT
                                     ); """
+sql_create_mixes_table = """ CREATE TABLE IF NOT EXISTS mixes (
+                                        d_release_id LONG PRIMARY KEY,
+                                        d_track_no TEXT NOT NULL,
+                                        created TEXT,
+                                        updated TEXT,
+                                        played TEXT,
+                                        venue TEXT
+                                    ); """
 db.create_table(conn, sql_create_releases_table)
+db.create_table(conn, sql_create_mixes_table)
 
-# only import if really want to, FIXME it takes quite some time
+# only import if we really want to, FIXME import takes quite some time
 if args.release_import:
     # discogs api connection
     userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
