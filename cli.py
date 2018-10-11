@@ -90,9 +90,10 @@ def search_release_offline(dbconn, id_or_title):
             raise Exc
     else:
         try:
-            release = db.search_release_title(dbconn, id_or_title)
-            if release:
-                return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
+            releases = db.search_release_title(dbconn, id_or_title)
+            if releases:
+                # for now just return first found
+                return releases[0]
             else:
                 return 'Not found'
         except Exception as Exc:
@@ -157,7 +158,11 @@ def main():
                         break
             else:
                 print_help('Searching offline DB for \"' + searchterm +'\"')
-                print_help(search_release_offline(conn, searchterm))
+                found_offline = search_release_offline(conn, searchterm)
+                print_help('| '+str(found_offline[0])+' | '+found_offline[1]+' | ')
+                if args.add_to_mix and args.track_to_add:
+                    print_help('adding '+found_offline[1]+' - Track '+args.track_to_add+
+                               ' to mix '+args.add_to_mix)
     elif hasattr(args, 'track_cmd'):
         log.debug("We are in track_cmd branch")
 
