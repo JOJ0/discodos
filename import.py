@@ -29,21 +29,30 @@ print("This script sets up db tables and eventually imports from Discogs into DI
 
 # DB setup 
 conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
-sql_create_releases_table = """ CREATE TABLE IF NOT EXISTS releases (
+sql_create_release_table = """ CREATE TABLE IF NOT EXISTS releases (
                                         discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
                                         discogs_title TEXT NOT NULL,
                                         import_timestamp TEXT
                                     ); """
-sql_create_mixes_table = """ CREATE TABLE IF NOT EXISTS mixes (
-                                        d_release_id LONG PRIMARY KEY,
-                                        d_track_no TEXT NOT NULL,
+sql_create_mix_table = """ CREATE TABLE IF NOT EXISTS mix (
+                                        mix_id INTEGER PRIMARY KEY,
                                         created TEXT,
                                         updated TEXT,
                                         played TEXT,
                                         venue TEXT
                                     ); """
-db.create_table(conn, sql_create_releases_table)
-db.create_table(conn, sql_create_mixes_table)
+sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
+                                        mix_track_id INTEGER PRIMARY KEY,
+                                        mix_id INTEGER,
+                                        d_release_id INTEGER NOT NULL,
+                                        track_no TEXT NOT NULL,
+                                        track_pos INTEGER NOT NULL,
+                                        track_key TEXT,
+                                        track_key_notes TEXT
+                                    ); """
+db.create_table(conn, sql_create_release_table)
+db.create_table(conn, sql_create_mix_table)
+db.create_table(conn, sql_create_mix_track_table)
 
 # only import if we really want to, FIXME import takes quite some time
 if args.release_import:
