@@ -161,8 +161,10 @@ def main():
                 found_offline = search_release_offline(conn, searchterm)
                 print_help('| '+str(found_offline[0])+' | '+found_offline[1]+' | ')
                 if args.add_to_mix and args.track_to_add:
-                    print_help('adding '+found_offline[1]+' - Track '+args.track_to_add+
-                               ' to mix '+args.add_to_mix)
+                    print_help('Adding \"'+found_offline[1]+'\" - Track '+args.track_to_add+
+                               ' to Mix '+args.add_to_mix)
+                db.add_track_to_mix(conn, args.add_to_mix, found_offline[0], args.track_to_add,
+                                   track_pos=1)
     elif hasattr(args, 'track_cmd'):
         log.debug("We are in track_cmd branch")
 

@@ -27,7 +27,18 @@ def create_release(conn, release):
     #                VALUES('?', '?')'''
     cur = conn.cursor()
     cur.execute('''INSERT INTO releases(discogs_id, discogs_title) VALUES(?, ?)''', (release.release.id, release.release.title))
-    log.info("cur.rowcount: %s", e)
+    log.info("cur.rowcount: %s", cur.rowcount)
+    return cur.lastrowid
+
+def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
+                     track_key='', track_key_notes=''):
+    cur = conn.cursor()
+    cur.execute('''INSERT INTO mix_track (mix_id, d_release_id,
+                       track_no, track_pos, track_key, track_key_notes)
+                       VALUES(?, ?, ?, ?, ?, ?)''',
+                       (mix_id, release_id, track_no, track_pos,
+                        track_key, track_key_notes))
+    log.info("cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
 
 def all_releases(conn):
@@ -35,8 +46,6 @@ def all_releases(conn):
     cur.execute('''SELECT * FROM releases''')
     rows = cur.fetchall()
     return rows
-    #for row in rows:
-    #    print(str(row[0])+'\t\t'+row[1], row[2])
 
 def search_release_id(conn, discogs_id):
     log.debug('DB search for Discogs Release ID: %s\n', discogs_id)
