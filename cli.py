@@ -25,18 +25,25 @@ def argparser(argv):
     # RELEASE subparser
     release_subparser = subparsers.add_parser(
         name='release',
-        help='show different data of one or more discogs releases')
-    release_subparser.add_argument(dest='release_cmd',
-        help='release_cmd help',
-        nargs='*',
-        default="show")
+        help='search for a discogs release and add it to a mix')
+    release_subparser.add_argument(dest='release_search',
+        help='search for this release name or ID')
+    release_subparser.add_argument(
+        "-m", "--mix", type=str, dest='add_to_mix',
+        help='add found release to given mix ID', default=0)
+    release_subparser.add_argument(
+        "-t", "--track", type=str, dest='track_to_add',
+        help='add track number to mix (eg. A1, AA, B2, ...)', default=0)
+    release_subparser.add_argument(
+        "-p", "--pos", type=str, dest='add_at_pos',
+        help='insert track at specific position in mix (eg. 01, 14, ...), defaults to next', default=0)
     # TRACK subparser
     track_subparser = subparsers.add_parser(
         name='track',
-        help='search for tracks, add to mix')
+        help='search for tracks, add to mix, FIXME not implemented')
     track_subparser.add_argument(
-        dest='track_cmd',
-        help='track_cmd help')
+        dest='track_search',
+        help='track_search help')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     # Sets log level to WARN going more verbose for each new -v.
@@ -116,40 +123,41 @@ def main():
         log.error("connecting to Discogs API, let's stay offline!\n")
         online=False
 
-    if hasattr(args, 'release_cmd'):
-        if "all" in args.release_cmd:
+    if hasattr(args, 'release_search'):
+        if "all" in args.release_search:
             print_help("Showing all releases, this is gonna take some time")
-            db.all_releases(conn)
+            print(db.all_releases(conn))
         else:
             db_releases = db.all_releases(conn)
-            for list_element in args.release_cmd:
-                if online:
-                    print_help('Searching Discogs for Release ID or Title \"'+list_element+'\"')
-                    search_results = search_release_online(d, list_element)
-                    print_help("Found "+str(search_results.pages )+" page(s) of results!")
-                    for result_item in search_results:
-                        #if result_item.id in me.collection_folders[0].releases:
-                        print_help("Checking " + str(result_item.id))
-                        for dbr in db_releases:
-                            #print_help(dbr[0])
-                            if result_item.id == dbr[0]:
-                                 print_help("Good, first matching record in your collection is:")
-                                 result ='| '+result_item.artists[0].name+' | '+result_item.title
-                                 result+=' | '+str(result_item.labels[0])+' |\n| '
-                                 result+=result_item.country+' | '+str(result_item.year)+' | '
-                                 result+=str(result_item.formats[0]['descriptions'][0])
-                                 result+=', '+str(result_item.formats[0]['descriptions'][1])
-                                 # string build done, now print
-                                 print_help(result)
-                                 tracklist = result_item.tracklist
-                                 for track in tracklist:
-                                    print(track)
-                                 break
+            #for list_element in args.release_search:
+            searchterm = args.release_search
+            if online:
+                print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
+                search_results = search_release_online(d, searchterm)
+                print_help("Found "+str(search_results.pages )+" page(s) of results!")
+                for result_item in search_results:
+                    #if result_item.id in me.collection_folders[0].releases:
+                    print_help("Checking " + str(result_item.id))
+                    for dbr in db_releases:
+                        #print_help(dbr[0])
                         if result_item.id == dbr[0]:
-                            break
-                else:
-                    print_help('Searching offline DB for \"' + list_element +'\"')
-                    print_help(search_release_offline(conn, list_element))
+                             print_help("Good, first matching record in your collection is:")
+                             result ='| '+result_item.artists[0].name+' | '+result_item.title
+                             result+=' | '+str(result_item.labels[0])+' |\n| '
+                             result+=result_item.country+' | '+str(result_item.year)+' | '
+                             result+=str(result_item.formats[0]['descriptions'][0])
+                             result+=', '+str(result_item.formats[0]['descriptions'][1])
+                             # string build done, now print
+                             print_help(result)
+                             tracklist = result_item.tracklist
+                             for track in tracklist:
+                                print(track)
+                             break
+                    if result_item.id == dbr[0]:
+                        break
+            else:
+                print_help('Searching offline DB for \"' + searchterm +'\"')
+                print_help(search_release_offline(conn, searchterm))
     elif hasattr(args, 'track_cmd'):
         log.debug("We are in track_cmd branch")
 
