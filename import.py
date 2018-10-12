@@ -29,6 +29,7 @@ print("This script sets up db tables and eventually imports from Discogs into DI
 
 # DB setup 
 conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
+sql_settings = "PRAGMA foreign_keys = ON;"
 sql_create_release_table = """ CREATE TABLE IF NOT EXISTS releases (
                                         discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
                                         discogs_title TEXT NOT NULL,
@@ -48,8 +49,10 @@ sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
                                         track_no TEXT NOT NULL,
                                         track_pos INTEGER NOT NULL,
                                         track_key TEXT,
-                                        track_key_notes TEXT
+                                        track_key_notes TEXT,
+                                        FOREIGN KEY (mix_id) REFERENCES mix(mix_id)
                                     ); """
+db.create_table(conn, sql_settings)
 db.create_table(conn, sql_create_release_table)
 db.create_table(conn, sql_create_mix_table)
 db.create_table(conn, sql_create_mix_track_table)
