@@ -37,6 +37,7 @@ sql_create_release_table = """ CREATE TABLE IF NOT EXISTS releases (
                                     ); """
 sql_create_mix_table = """ CREATE TABLE IF NOT EXISTS mix (
                                         mix_id INTEGER PRIMARY KEY,
+                                        name TEXT,
                                         created TEXT,
                                         updated TEXT,
                                         played TEXT,

@@ -12,14 +12,20 @@ import discogs_client.exceptions as errors
 import requests.exceptions as reqerrors
 import urllib3.exceptions as urlerrors
 import pprint as pp
+from tabulate import tabulate as tab
 
 # argparser init
 def argparser(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+                 formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
         help="increases log verbosity for each occurence.")
+    parser.add_argument(
+		"-o", "--offline", dest="offline_mode",
+        action="store_true",
+        help="stays in offline mode, doesn't even try to connect to Discogs")
     # basic subparser element:
     subparsers = parser.add_subparsers()
     # RELEASE subparser
@@ -44,6 +50,16 @@ def argparser(argv):
     track_subparser.add_argument(
         dest='track_search',
         help='track_search help')
+    # MIX subparser
+    mix_subparser = subparsers.add_parser(
+        name='mix',
+        help='do stuff with mixes')
+    mix_subparser.add_argument(dest='mix_name',
+        help='which mix name or ID should be displayed?',
+        default='0')
+    mix_subparser.add_argument(
+        "-c", "--create-mix", action='store_true',
+        help='create a new mix with given name')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     # Sets log level to WARN going more verbose for each new -v.
@@ -55,6 +71,8 @@ def is_number(s):
         float(s)
         return True
     except ValueError:
+        return False
+    except TypeError:
         return False
 
 def print_help(message):
@@ -100,29 +118,34 @@ def search_release_offline(dbconn, id_or_title):
             log.error("Not found or Database Exception: %s\n", Exc)
             raise Exc
 
+def mix_table(mix_data):
+    return tab(mix_data, tablefmt="simple",
+        headers=["#", "Release", "Track", "Key", "Key Notes"])
+
 def main():
 	# SETUP / INIT
     args = argparser(sys.argv)
     #if hasattr(args, ''):
     #if len(args)==1:
     #    print_help('No args')
-
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
+    online = False
 
     # DEBUG stuff
     #print(vars(args))
     log.debug("args_dict: %s", vars(args))
 
     # DISCOGS API CONNECTION
-    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-    try: 
-        d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                              user_token=userToken)
-        me = d.identity()
-        online=True
-    except Exception:
-        log.error("connecting to Discogs API, let's stay offline!\n")
-        online=False
+    if not args.offline_mode == True:
+        userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+        try: 
+            d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+                                  user_token=userToken)
+            me = d.identity()
+            online = True
+        except Exception:
+            log.error("connecting to Discogs API, let's stay offline!\n")
+            online = False
 
     if hasattr(args, 'release_search'):
         if "all" in args.release_search:
@@ -142,31 +165,84 @@ def main():
                     for dbr in db_releases:
                         #print_help(dbr[0])
                         if result_item.id == dbr[0]:
-                             print_help("Good, first matching record in your collection is:")
-                             result ='| '+result_item.artists[0].name+' | '+result_item.title
-                             result+=' | '+str(result_item.labels[0])+' |\n| '
-                             result+=result_item.country+' | '+str(result_item.year)+' | '
-                             result+=str(result_item.formats[0]['descriptions'][0])
-                             result+=', '+str(result_item.formats[0]['descriptions'][1])
-                             # string build done, now print
-                             print_help(result)
+                             #print_help("Good, first matching record in your collection is:")
+                             #result ='| '+result_item.artists[0].name+' | '+result_item.title
+                             #result+=' | '+str(result_item.labels[0])+' |\n| '
+                             #result+=result_item.country+' | '+str(result_item.year)+' | '
+                             #result+=str(result_item.formats[0]['descriptions'][0])
+                             #result+=', '+str(result_item.formats[0]['descriptions'][1])
+                             ## string build done, now print
+                             #print_help(result)
+                             #tracklist = result_item.tracklist
+                             #for track in tracklist:
+                             #   print(track)
+                             #print("Now with tabulate:\n")
+                             #pprint.pprint(result_item.artists[0].name)
+                             result_list=[]
+                             result_list.append([])
+                             result_list[0].append(str(result_item.artists[0].name))
+                             result_list[0].append(result_item.title)
+                             result_list[0].append(str(result_item.labels[0]))
+                             result_list[0].append(result_item.country)
+                             result_list[0].append(str(result_item.year))
+                             result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                                        ", "+str(result_item.formats[0]['descriptions'][1]))
+
+                             #pprint.pprint(result_list)
+                             print_help(tab(result_list, tablefmt="simple",
+                                       headers=["Artist", "Release", "Label", "Ctry", "Year", "Format"]))
                              tracklist = result_item.tracklist
                              for track in tracklist:
                                 print(track)
                              break
+
                     if result_item.id == dbr[0]:
                         break
             else:
                 print_help('Searching offline DB for \"' + searchterm +'\"')
                 found_offline = search_release_offline(conn, searchterm)
-                print_help('| '+str(found_offline[0])+' | '+found_offline[1]+' | ')
+                #print_help('| '+str(found_offline[0])+' | '+found_offline[1]+' | ')
+                #pprint.pprint(found_offline)
+                print_help(tab([found_offline], tablefmt="simple",
+                               headers=["Release ID", "Release", "Date imported"]))
                 if args.add_to_mix and args.track_to_add:
-                    print_help('Adding \"'+found_offline[1]+'\" - Track '+args.track_to_add+
-                               ' to Mix '+args.add_to_mix)
-                db.add_track_to_mix(conn, args.add_to_mix, found_offline[0], args.track_to_add,
-                                   track_pos=1)
+                    mix = args.add_to_mix
+                    if db.get_mix_id(conn, mix): 
+                        track = args.track_to_add
+                        last_track = db.get_last_track_in_mix(conn, mix)
+                        log.debug("Currently last track in mix is: %s", last_track[0])
+                        if is_number(last_track[0]):
+                            current_id = db.add_track_to_mix(conn, mix, found_offline[0],
+                                             track, track_pos = last_track[0] + 1)
+                        else:
+                            current_id = db.add_track_to_mix(conn, mix, found_offline[0],
+                                             track, track_pos = 1)
+                        #print_help('Added \"'+found_offline[1]+'\" - Track \"'+args.track_to_add+
+                        #       '\" to Mix '+args.add_to_mix+' as ID #'+str(current_id))
+                        print_help(mix_table(db.get_full_mix(conn, mix)))
+                    else:
+                        print_help("Mix with ID "+mix+" is not existing yet.")
+
     elif hasattr(args, 'track_cmd'):
         log.debug("We are in track_cmd branch")
+    elif hasattr(args, 'mix_name'):
+        mix_name = args.mix_name
+        log.debug("A mix_name or ID was given")
+        if args.create_mix == True:
+            log.debug("Creating new mix")
+            created = db.add_new_mix(conn, mix_name)
+        else:
+            full_mix = db.get_full_mix(conn, args.mix_name)
+            if full_mix:
+                for row in full_mix:
+                   log.debug(str(row))
+                log.debug("")
+                #print("pprint full_mix")
+                #pprint.pprint(full_mix)
+                print_help(mix_table(full_mix))
+            else:
+                print_help("Mix not found or empty.")
+
 
 
 
