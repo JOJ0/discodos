@@ -64,14 +64,14 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
 def add_new_mix(conn, name, played='', venue=''):
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix (name, created, updated, played, venue)
-                       VALUES (?, datetime('now', 'localtime'), '', ?, ?)''',
+                       VALUES (?, datetime('now', 'localtime'), '', date(?), ?)''',
                        (name, played, venue))
     log.info("cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
 
-def get_mix_id(conn, mix_id):
+def get_mix_info(conn, mix_id):
     cur = conn.cursor()
-    cur.execute('''SELECT mix_id FROM mix WHERE mix_id == ?''', (mix_id, ))
+    cur.execute('''SELECT * FROM mix WHERE mix_id == ?''', (mix_id, ))
     rows = cur.fetchone()
     return rows
 
@@ -79,7 +79,7 @@ def get_last_track_in_mix(conn, mix_id):
     cur = conn.cursor()
     cur.execute('''SELECT MAX(track_pos) FROM mix_track WHERE mix_id == ?''', (mix_id, ))
     row = cur.fetchone()
-    #log.debug('DB get_last_track_in_mix: %s\n', row)
+    log.info('DB get_last_track_in_mix: %s\n', row)
     return row
 
 def get_full_mix(conn, mix_id):
@@ -93,8 +93,35 @@ def get_full_mix(conn, mix_id):
                        WHERE mix_track.mix_id == ?''', (mix_id, ))
     rows = cur.fetchall()
     if len(rows) == 0:
-        log.debug('DB nothing found')
+        log.info('DB nothing found')
         return False
     else:
         return rows
 
+def get_all_mixes(conn):
+    cur = conn.cursor()
+    log.info('DB getting mixes table')
+    cur.execute('''SELECT * FROM mix''')
+    rows = cur.fetchall()
+    return rows
+
+def get_mix_id(conn, mixname):
+    cur = conn.cursor()
+    log.info('DB getting mix_id via mix name, only returns first match')
+    cur.execute('''SELECT mix_id FROM mix WHERE name LIKE ?''', ("%"+mixname+"%", ))
+    rows = cur.fetchone()
+    if rows:
+        log.error("DB can't fetch mix ID by name")
+        return False
+    else:
+        return rows
+
+def mix_id_existing(conn, mix_id):
+    cur = conn.cursor()
+    log.info('DB checking if mix_id is existing')
+    cur.execute('''SELECT mix_id FROM mix WHERE mix_id == ?''', (mix_id, ))
+    rows = cur.fetchone()
+    if rows:
+        return True
+    else:
+        return False
