@@ -1,3 +1,3 @@
-# The most geeky way for writing down your Vinyl mixes on the planet
+# The geekiest Vinyl DJ playlist tool on the planet
 
 It's based on data pulled from your [Discogs](https://www.discogs.com) records collection. Stay tuned...
