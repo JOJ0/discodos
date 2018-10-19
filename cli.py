@@ -31,7 +31,8 @@ def argparser(argv):
     # RELEASE subparser
     release_subparser = subparsers.add_parser(
         name='release',
-        help='search for a discogs release and add it to a mix')
+        help='search for a discogs release and add it to a mix',
+        aliases=('rel', 'r'))
     release_subparser.add_argument(
         dest='release_search',
         help='search for this release name or ID')
@@ -47,14 +48,16 @@ def argparser(argv):
     # TRACK subparser
     track_subparser = subparsers.add_parser(
         name='track',
-        help='search for tracks, add to mix, FIXME not implemented')
+        help='search for tracks, add to mix, FIXME not implemented',
+        aliases=('tr', 't'))
     track_subparser.add_argument(
         dest='track_search',
         help='track_search help')
     # MIX subparser
     mix_subparser = subparsers.add_parser(
         name='mix',
-        help='do stuff with mixes')
+        help='do stuff with mixes',
+        aliases=('m', ))
     mix_subparser.add_argument(
         dest='mix_name',
         help='which mix name or ID should be displayed?',
