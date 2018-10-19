@@ -141,20 +141,23 @@ def wants_to_add_to_mix(cli_args):
 
 def add_track_to_mix(conn, _args, rel_list):
     if _args.add_to_mix and _args.track_to_add:
-        mix = _args.add_to_mix
         track = _args.track_to_add
-        if db.mix_id_existing(conn, mix):
-            last_track = db.get_last_track_in_mix(conn, mix)
+        if is_number(_args.add_to_mix):
+            mix_id = _args.add_to_mix
+        else:
+            mix_id = db.get_mix_id(conn, _args.add_to_mix) 
+        if db.mix_id_existing(conn, mix_id):
+            last_track = db.get_last_track_in_mix(conn, mix_id)
             log.debug("Currently last track in mix is: %s", last_track[0])
             if is_number(last_track[0]):
-                current_id = db.add_track_to_mix(conn, mix, rel_list[0],
+                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
                                  track, track_pos = last_track[0] + 1)
             else:
-                current_id = db.add_track_to_mix(conn, mix, rel_list[0],
+                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
                                  track, track_pos = 1)
-            print_help(mix_table(db.get_full_mix(conn, mix)))
+            print_help(mix_table(db.get_full_mix(conn, mix_id)))
         else:
-            print_help("Mix with ID "+mix+" is not existing yet.")
+            print_help("Mix ID "+str(mix_id)+" is not existing yet.")
 
 def main():
 	# SETUP / INIT
@@ -219,6 +222,10 @@ def main():
 
                     if result_item.id == dbr[0]:
                         break
+                #####  User wants to add a Track to a Mix #####
+                # FIXME todo
+                #if wants_to_add_to_mix(args):
+                #    add_track_to_mix(conn, args, found_offline)
             else:
                 print_help('Searching offline DB for \"' + searchterm +'\"')
                 found_offline = search_release_offline(conn, searchterm)

@@ -9,14 +9,14 @@ def create_conn(file):
         conn = sqlite3.connect(file)
         return conn
     except Error as e:
-        log.error("DB connection error: %s", e)
+        log.error("DB: Connection error: %s", e)
     return None
 
 def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-        log.debug("Executed sql: %s", create_table_sql)
+        log.debug("DB: Executed sql: %s", create_table_sql)
     except Error as e:
         log.error("%s", e)
 
@@ -37,14 +37,14 @@ def all_releases(conn):
     return rows
 
 def search_release_id(conn, discogs_id):
-    log.debug('DB search for Discogs Release ID: %s\n', discogs_id)
+    log.debug('DB: Search for Discogs Release ID: %s\n', discogs_id)
     cur = conn.cursor()
     cur.execute('''SELECT * FROM releases WHERE discogs_id == ?;''', [str(discogs_id)])
     rows = cur.fetchall()
     return rows
 
 def search_release_title(conn, discogs_title):
-    log.debug('DB search for Discogs Release Title: %s\n', discogs_title)
+    log.debug('DB: Search for Discogs Release Title: %s\n', discogs_title)
     cur = conn.cursor()
     cur.execute("SELECT * FROM releases WHERE discogs_title LIKE ?", ("%"+discogs_title+"%", ), )
     rows = cur.fetchall()
@@ -58,7 +58,7 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                        VALUES(?, ?, ?, ?, ?, ?)''',
                        (mix_id, release_id, track_no, track_pos,
                         track_key, track_key_notes))
-    log.info("cur.rowcount: %s", cur.rowcount)
+    log.info("DB: cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
 
 def add_new_mix(conn, name, played='', venue=''):
@@ -79,7 +79,7 @@ def get_last_track_in_mix(conn, mix_id):
     cur = conn.cursor()
     cur.execute('''SELECT MAX(track_pos) FROM mix_track WHERE mix_id == ?''', (mix_id, ))
     row = cur.fetchone()
-    log.info('DB get_last_track_in_mix: %s\n', row)
+    log.info('DB: get_last_track_in_mix: %s\n', row)
     return row
 
 def get_full_mix(conn, mix_id):
@@ -100,25 +100,25 @@ def get_full_mix(conn, mix_id):
 
 def get_all_mixes(conn):
     cur = conn.cursor()
-    log.info('DB getting mixes table')
+    log.info('DB: Getting mixes table')
     cur.execute('''SELECT * FROM mix''')
     rows = cur.fetchall()
     return rows
 
 def get_mix_id(conn, mixname):
     cur = conn.cursor()
-    log.info('DB getting mix_id via mix name, only returns first match')
+    log.info('DB: Getting mix_id via mix name. Only returns first match')
     cur.execute('''SELECT mix_id FROM mix WHERE name LIKE ?''', ("%"+mixname+"%", ))
     rows = cur.fetchone()
     if rows:
-        log.error("DB can't fetch mix ID by name")
+        log.error("DB: Can't fetch mix ID by name")
         return False
     else:
         return rows
 
 def mix_id_existing(conn, mix_id):
     cur = conn.cursor()
-    log.info('DB checking if mix_id is existing')
+    log.info('DB: Checking if mix_id is existing')
     cur.execute('''SELECT mix_id FROM mix WHERE mix_id == ?''', (mix_id, ))
     rows = cur.fetchone()
     if rows:
