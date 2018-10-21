@@ -33,7 +33,7 @@ sql_settings = "PRAGMA foreign_keys = ON;"
 sql_create_release_table = """ CREATE TABLE IF NOT EXISTS releases (
                                         discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
                                         discogs_title TEXT NOT NULL,
-                                        import_timestamp TEXT
+                                        update_timestamp TEXT
                                     ); """
 sql_create_mix_table = """ CREATE TABLE IF NOT EXISTS mix (
                                         mix_id INTEGER PRIMARY KEY,
@@ -69,10 +69,18 @@ if args.release_import:
     me = d.identity()
     #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
     
+    insert_count = 0
     for r in me.collection_folders[0].releases:
-        print("INSERT ID:", r.release.id, "Title:", r.release.title) 
+        print("Release ID:", r.release.id, ", Title:", r.release.title) 
         last_row_id = db.create_release(conn, r)
-        print("DEBUG: last_row_id:", last_row_id)
+        # FIXME I don't know if cur.lastrowid is False if unsuccessful
+        if last_row_id:
+            log.info("last_row_id: %s", last_row_id)
+            insert_count = insert_count + 1
+            print("Created so far:", insert_count)
+        else:
+            print_help("Something wrong while importing \""+r.release.title+"\"")
+            
         
         #time.sleep(0.001)
     

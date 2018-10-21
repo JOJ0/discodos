@@ -16,37 +16,33 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-        log.debug("DB: Executed sql: %s", create_table_sql)
+        log.info("DB: Executed sql: %s", create_table_sql)
     except Error as e:
         log.error("%s", e)
 
 def create_release(conn, release):
-    #sql  = "INSERT INTO releases(discogs_id, discogs_title)"
-    #sql += "    VALUES("+str(r.release.id)+", '"+str(r.release.title)+"')"
-    #sql  = '''INSERT INTO releases(discogs_id, discogs_title, update_date)
-    #                VALUES('?', '?')'''
     cur = conn.cursor()
-    cur.execute('''INSERT INTO releases(discogs_id, discogs_title) VALUES(?, ?)''', (release.release.id, release.release.title))
+    cur.execute('''INSERT INTO release(discogs_id, discogs_title, update_timestamp) VALUES(?, ?, datetime('now', 'localtime'))''', (release.release.id, release.release.title))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
 def all_releases(conn):
     cur = conn.cursor()
-    cur.execute('''SELECT * FROM releases''')
+    cur.execute('''SELECT * FROM release''')
     rows = cur.fetchall()
     return rows
 
 def search_release_id(conn, discogs_id):
     log.debug('DB: Search for Discogs Release ID: %s\n', discogs_id)
     cur = conn.cursor()
-    cur.execute('''SELECT * FROM releases WHERE discogs_id == ?;''', [str(discogs_id)])
+    cur.execute('''SELECT * FROM release WHERE discogs_id == ?;''', [str(discogs_id)])
     rows = cur.fetchall()
     return rows
 
 def search_release_title(conn, discogs_title):
     log.debug('DB: Search for Discogs Release Title: %s\n', discogs_title)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM releases WHERE discogs_title LIKE ?", ("%"+discogs_title+"%", ), )
+    cur.execute("SELECT * FROM release WHERE discogs_title LIKE ?", ("%"+discogs_title+"%", ), )
     rows = cur.fetchall()
     return rows
 
@@ -88,8 +84,8 @@ def get_full_mix(conn, mix_id):
     cur.execute('''SELECT track_pos, discogs_title, track_no, track_key,
                           track_key_notes
                        FROM mix_track INNER JOIN mix
-                           ON mix.mix_id = mix_track.mix_id INNER JOIN releases
-                           ON mix_track.d_release_id = releases.discogs_id
+                           ON mix.mix_id = mix_track.mix_id INNER JOIN release
+                           ON mix_track.d_release_id = release.discogs_id
                        WHERE mix_track.mix_id == ?''', (mix_id, ))
     rows = cur.fetchall()
     if len(rows) == 0:
