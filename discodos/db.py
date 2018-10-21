@@ -107,14 +107,15 @@ def get_all_mixes(conn):
 
 def get_mix_id(conn, mixname):
     cur = conn.cursor()
-    log.info('DB: Getting mix_id via mix name. Only returns first match')
+    log.info('DB: Getting mix_id via mix name "%s". Only returns first match',
+                 mixname)
     cur.execute('''SELECT mix_id FROM mix WHERE name LIKE ?''', ("%"+mixname+"%", ))
     rows = cur.fetchone()
     if rows:
+        return rows
+    else:
         log.error("DB: Can't fetch mix ID by name")
         return False
-    else:
-        return rows
 
 def mix_id_existing(conn, mix_id):
     cur = conn.cursor()
@@ -122,6 +123,6 @@ def mix_id_existing(conn, mix_id):
     cur.execute('''SELECT mix_id FROM mix WHERE mix_id == ?''', (mix_id, ))
     rows = cur.fetchone()
     if rows:
-        return True
+        return rows
     else:
-        return False
+        return rows

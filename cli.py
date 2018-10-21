@@ -88,7 +88,8 @@ def search_release_online(discogs, id_or_title):
         try:
             if is_number(id_or_title):
                 release = discogs.release(id_or_title)
-                return '|'+str(release.id)+'|'+ str(release.title)+'|'
+                #return '|'+str(release.id)+'|'+ str(release.title)+'|'
+                return [release]
             else:
                 releases = discogs.search(id_or_title, type='release')
                 return releases
@@ -195,7 +196,11 @@ def main():
             if online:
                 print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
                 search_results = search_release_online(d, searchterm)
-                print_help("Found "+str(search_results.pages )+" page(s) of results!")
+                # only show pages count if it's a Release Titl Search
+                if not is_number(searchterm):
+                    print_help("Found "+str(search_results.pages )+" page(s) of results!")
+                else:
+                    print_help("ID: "+search_results[0].id+", Title: "+search_results[0].title+"")
                 for result_item in search_results:
                     #if result_item.id in me.collection_folders[0].releases:
                     print_help("Checking " + str(result_item.id))
