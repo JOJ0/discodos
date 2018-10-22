@@ -30,7 +30,7 @@ print("This script sets up db tables and eventually imports from Discogs into DI
 # DB setup 
 conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 sql_settings = "PRAGMA foreign_keys = ON;"
-sql_create_release_table = """ CREATE TABLE IF NOT EXISTS releases (
+sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                         discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
                                         discogs_title TEXT NOT NULL,
                                         update_timestamp TEXT
@@ -53,10 +53,21 @@ sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
                                         track_key_notes TEXT,
                                         FOREIGN KEY (mix_id) REFERENCES mix(mix_id)
                                     ); """
+sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
+                                        track_id INTEGER PRIMARY KEY,
+                                        release_id LONG NOT NULL,
+                                        track_no TEXT NOT NULL,
+                                        key TEXT,
+                                        key_notes TEXT,
+                                        notes TEXT,
+                                        FOREIGN KEY (release_id)
+                                            REFERENCES release(discogs_id)
+                                    ); """
 db.create_table(conn, sql_settings)
 db.create_table(conn, sql_create_release_table)
 db.create_table(conn, sql_create_mix_table)
 db.create_table(conn, sql_create_mix_track_table)
+db.create_table(conn, sql_create_track_table)
 
 # only import if we really want to, FIXME import takes quite some time
 if args.release_import:
@@ -72,6 +83,10 @@ if args.release_import:
     insert_count = 0
     for r in me.collection_folders[0].releases:
         print("Release ID:", r.release.id, ", Title:", r.release.title) 
+        vars(r.release)
+        for track in r.release.tracklist:
+            print("Track:", track) 
+            time.sleep(0.2)
         last_row_id = db.create_release(conn, r)
         # FIXME I don't know if cur.lastrowid is False if unsuccessful
         if last_row_id:
@@ -80,11 +95,8 @@ if args.release_import:
             print("Created so far:", insert_count)
         else:
             print_help("Something wrong while importing \""+r.release.title+"\"")
-            
-        
-        #time.sleep(0.001)
     
-    db.all_releases(conn)
+    #db.all_releases(conn)
     
     conn.commit()
     conn.close()

@@ -125,13 +125,21 @@ def search_release_offline(dbconn, id_or_title):
             log.error("Not found or Database Exception: %s\n", Exc)
             raise Exc
 
+def all_releases_table(release_data):
+    return tab(release_data, tablefmt="plain",
+        headers=["ID", "Release name", "Last import"])
+
 def mix_table(mix_data):
-    return tab(mix_data, tablefmt="simple",
-        headers=["#", "Release", "Track", "Key", "Key Notes"])
+    return tab(mix_data, tablefmt="pipe",
+        headers=["#", "Release", "Track", "Key", "Key notes"])
 
 def all_mixes_table(mixes_data):
     return tab(mixes_data, tablefmt="simple",
         headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
+
+def mix_info_header(mix_info):
+    return tab([mix_info], tablefmt="plain",
+        headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
 
 def ask_user(text=""):
     return input(text)
@@ -188,7 +196,7 @@ def main():
     if hasattr(args, 'release_search'):
         if "all" in args.release_search:
             print_help("Showing all releases, this is gonna take some time")
-            print(db.all_releases(conn))
+            print_help(all_releases_table(db.all_releases(conn)))
         else:
             db_releases = db.all_releases(conn)
             #for list_element in args.release_search:
@@ -254,9 +262,13 @@ def main():
                 mix_name = None
             else:
                 mix_name = args.mix_name
-                mix_id_tuple = db.get_mix_id(conn, mix_name)
-                log.info('%s', mix_id_tuple)
-                mix_id = mix_id_tuple[0]
+                try:
+                    mix_id_tuple = db.get_mix_id(conn, mix_name)
+                    log.info('%s', mix_id_tuple)
+                    mix_id = mix_id_tuple[0]
+                except:
+                    print_help("No mix-name matching.")
+                    raise SystemExit(1)
 
             if args.create_mix == True:
                 played = ask_user(text="When did you (last) play it? ")
@@ -266,8 +278,9 @@ def main():
                 print_help(all_mixes_table(db.get_all_mixes(conn)))
             else:
                 mix_info = db.get_mix_info(conn, mix_id)
-                print_help(tab([mix_info], tablefmt="plain",
-                               headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
+
+                print_help(mix_info_header(mix_info))
+
                 full_mix = db.get_full_mix(conn, mix_id)
                 if full_mix:
                     for row in full_mix:

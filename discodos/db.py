@@ -26,6 +26,14 @@ def create_release(conn, release):
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
+def create_track(conn, track_id, release_id, track_no):
+    cur = conn.cursor()
+    cur.execute('''INSERT INTO track(track_id, release_id, track_no)
+                       VALUES(?, ?, ?)''',
+                       (track_id, release_id, track_no))
+    log.info("cur.rowcount: %s\n", cur.rowcount)
+    return cur.lastrowid
+
 def all_releases(conn):
     cur = conn.cursor()
     cur.execute('''SELECT * FROM release''')
@@ -110,7 +118,7 @@ def get_mix_id(conn, mixname):
     if rows:
         return rows
     else:
-        log.error("DB: Can't fetch mix ID by name")
+        log.info("DB: Can't fetch mix ID by name")
         return False
 
 def mix_id_existing(conn, mix_id):
