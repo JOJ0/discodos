@@ -107,9 +107,12 @@ def search_release_offline(dbconn, id_or_title):
         try:
             release = db.search_release_id(dbconn, id_or_title)
             if release:
-                return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
+                #return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
+                return [release]
             else:
-                return 'Not found'
+                release_not_found = ['Not found']
+                #return 'Not found'
+                return release_not_found
         except Exception as Exc:
             log.error("Not found or Database Exception: %s\n", Exc)
             raise Exc
@@ -140,6 +143,10 @@ def all_mixes_table(mixes_data):
 def mix_info_header(mix_info):
     return tab([mix_info], tablefmt="plain",
         headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
+
+def offline_release_table(release_list):
+    return tab(release_list[0], tablefmt="simple",
+        headers=["Release ID", "Release", "Date imported"])
 
 def ask_user(text=""):
     return input(text)
@@ -242,8 +249,7 @@ def main():
             else:
                 print_help('Searching offline DB for \"' + searchterm +'\"')
                 found_offline = search_release_offline(conn, searchterm)
-                print_help(tab([found_offline], tablefmt="simple",
-                               headers=["Release ID", "Release", "Date imported"]))
+                print_help(offline_release_table(found_offline))
                 #####  User wants to add a Track to a Mix #####
                 if wants_to_add_to_mix(args):
                     add_track_to_mix(conn, args, found_offline)
