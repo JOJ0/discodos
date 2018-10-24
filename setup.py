@@ -33,7 +33,7 @@ sql_settings = "PRAGMA foreign_keys = ON;"
 sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                         discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
                                         discogs_title TEXT NOT NULL,
-                                        update_timestamp TEXT
+                                        import_timestamp TEXT
                                     ); """
 sql_create_mix_table = """ CREATE TABLE IF NOT EXISTS mix (
                                         mix_id INTEGER PRIMARY KEY,
@@ -55,19 +55,28 @@ sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
                                     ); """
 sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
                                         track_id INTEGER PRIMARY KEY,
-                                        release_id LONG NOT NULL,
-                                        track_no TEXT NOT NULL,
+                                        d_release_id LONG NOT NULL,
+                                        d_track_no TEXT NOT NULL,
+                                        import_timestamp TEXT,
+                                        d_track_name TEXT,
+                                        FOREIGN KEY (d_release_id)
+                                            REFERENCES release(d_discogs_id)
+                                    ); """
+# extend discogs track info with these fields
+sql_create_track_ext_table = """ CREATE TABLE IF NOT EXISTS track_ext (
+                                        track_id INTEGER PRIMARY KEY,
                                         key TEXT,
                                         key_notes TEXT,
                                         notes TEXT,
-                                        FOREIGN KEY (release_id)
-                                            REFERENCES release(discogs_id)
+                                        FOREIGN KEY (track_id)
+                                            REFERENCES track(track_id)
                                     ); """
 db.create_table(conn, sql_settings)
 db.create_table(conn, sql_create_release_table)
 db.create_table(conn, sql_create_mix_table)
 db.create_table(conn, sql_create_mix_track_table)
 db.create_table(conn, sql_create_track_table)
+db.create_table(conn, sql_create_track_ext_table)
 
 # only import if we really want to, FIXME import takes quite some time
 if args.release_import:
@@ -82,17 +91,25 @@ if args.release_import:
     
     insert_count = 0
     for r in me.collection_folders[0].releases:
-        print("Release ID:", r.release.id, ", Title:", r.release.title) 
-        vars(r.release)
-        for track in r.release.tracklist:
-            print("Track:", track) 
-            time.sleep(0.2)
+
+        if int(d._fetcher.rate_limit_remaining) < 5:
+            log.info("Discogs request rate limit is about to exceed,\
+                      let's wait a bit: %s\n",
+                         d._fetcher.rate_limit_remaining)
+            time.sleep(2)
+
+        print("Release ID:", r.release.id, ", Title:", r.release.title)
+        #vars(r.release)
+        #for track in r.release.tracklist:
+        #    log.debug("Track:", track)
+            #time.sleep(0.2)
         last_row_id = db.create_release(conn, r)
         # FIXME I don't know if cur.lastrowid is False if unsuccessful
         if last_row_id:
-            log.info("last_row_id: %s", last_row_id)
+            #log.info("last_row_id: %s", last_row_id)
             insert_count = insert_count + 1
-            print("Created so far:", insert_count)
+            print("Created so far:", insert_count, "")
+            log.info("discogs-rate-limit-remaining: %s\n", d._fetcher.rate_limit_remaining)
         else:
             print_help("Something wrong while importing \""+r.release.title+"\"")
     

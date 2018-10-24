@@ -50,9 +50,13 @@ def argparser(argv):
         name='track',
         help='search for tracks, add to mix, FIXME not implemented',
         aliases=('tr', 't'))
+    #track_subparser.add_argument(
+    #    dest='track_search',
+    #    help='track_search help')
     track_subparser.add_argument(
-        dest='track_search',
-        help='track_search help')
+        "-p", "--pull",
+        action="store_true",
+        help='all tracks used in mixes are updated with info pulled from Discogs')
     # MIX subparser
     mix_subparser = subparsers.add_parser(
         name='mix',
@@ -254,8 +258,37 @@ def main():
                 if wants_to_add_to_mix(args):
                     add_track_to_mix(conn, args, found_offline)
 
-    elif hasattr(args, 'track_cmd'):
-        log.debug("We are in track_cmd branch")
+    #elif hasattr(args, 'track_cmd'):
+    elif args.pull == True:
+        print_help("Let's update mixes with track info pulled from Discogs...")
+        if online:
+
+            #for r in me.collection_folders[0].releases:
+            all_mixed_tracks = db.get_tracks_in_mixes(conn)
+            for track in all_mixed_tracks:
+
+                if int(d._fetcher.rate_limit_remaining) < 5:
+                    log.info("Discogs request rate limit is about to exceed,\
+                              let's wait a bit: %s\n",
+                                 d._fetcher.rate_limit_remaining)
+                    time.sleep(2)
+                print(track)
+
+                #for track in r.release.tracklist:
+                #    log.debug("Track:", track)
+                #    last_row_id = db.create_release(conn, r)
+                # FIXME I don't know if cur.lastrowid is False if unsuccessful
+                #if last_row_id:
+                #    #log.info("last_row_id: %s", last_row_id)
+                #    insert_count = insert_count + 1
+                #    print("Created so far:", insert_count, "")
+                #    log.info("discogs-rate-limit-remaining: %s\n", d._fetcher.rate_limit_remaining)
+                #else:
+                #    print_help("Something wrong while importing \""+r.release.title+"\"")
+
+    elif args.pull == False:
+        log.error("What should I do?")
+
     elif hasattr(args, 'mix_name'):
         # show mix overview
         if args.mix_name == "all":

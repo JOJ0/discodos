@@ -22,15 +22,16 @@ def create_table(conn, create_table_sql):
 
 def create_release(conn, release):
     cur = conn.cursor()
-    cur.execute('''INSERT INTO release(discogs_id, discogs_title, update_timestamp) VALUES(?, ?, datetime('now', 'localtime'))''', (release.release.id, release.release.title))
+    cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp) VALUES(?, ?, datetime('now', 'localtime'))''', (release.release.id, release.release.title))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
-def create_track(conn, track_id, release_id, track_no):
+def create_track(conn, track_id, release_id, track_no, track_name):
     cur = conn.cursor()
-    cur.execute('''INSERT INTO track(track_id, release_id, track_no)
-                       VALUES(?, ?, ?)''',
-                       (track_id, release_id, track_no))
+    cur.execute('''INSERT INTO track(track_id, d_release_id, d_track_no,
+                                     import_timestamp, d_track_name)
+                       VALUES(?, ?, ?, datetime('now', 'localtime')), ?''',
+                       (track_id, release_id, track_no, track_name))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
@@ -130,3 +131,11 @@ def mix_id_existing(conn, mix_id):
         return rows
     else:
         return rows
+
+
+def get_tracks_in_mixes(conn):
+    cur = conn.cursor()
+    log.info('DB: Getting all tracks from mix_track table')
+    cur.execute('''SELECT * FROM mix_track''')
+    rows = cur.fetchall()
+    return rows
