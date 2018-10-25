@@ -29,8 +29,8 @@ def create_release(conn, release):
 def create_track(conn, track_id, release_id, track_no, track_name):
     cur = conn.cursor()
     cur.execute('''INSERT INTO track(track_id, d_release_id, d_track_no,
-                                     import_timestamp, d_track_name)
-                       VALUES(?, ?, ?, datetime('now', 'localtime')), ?''',
+                                     d_track_name, import_timestamp)
+                       VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
                        (track_id, release_id, track_no, track_name))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
@@ -58,11 +58,11 @@ def search_release_title(conn, discogs_title):
 def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                      track_key='', track_key_notes=''):
     cur = conn.cursor()
-    cur.execute('''INSERT INTO mix_track (mix_id, d_release_id,
-                       track_no, track_pos, track_key, track_key_notes)
+    cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, track_no, track_pos,
+                       trans_rating, trans_notes)
                        VALUES(?, ?, ?, ?, ?, ?)''',
                        (mix_id, release_id, track_no, track_pos,
-                        track_key, track_key_notes))
+                        trans_rating, trans_notes))
     log.info("DB: cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
 

@@ -49,16 +49,16 @@ sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
                                         d_release_id INTEGER NOT NULL,
                                         track_no TEXT NOT NULL,
                                         track_pos INTEGER NOT NULL,
-                                        track_key TEXT,
-                                        track_key_notes TEXT,
+                                        trans_rating TEXT,
+                                        trans_notes TEXT,
                                         FOREIGN KEY (mix_id) REFERENCES mix(mix_id)
                                     ); """
 sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
                                         track_id INTEGER PRIMARY KEY,
                                         d_release_id LONG NOT NULL,
                                         d_track_no TEXT NOT NULL,
-                                        import_timestamp TEXT,
                                         d_track_name TEXT,
+                                        import_timestamp TEXT,
                                         FOREIGN KEY (d_release_id)
                                             REFERENCES release(d_discogs_id)
                                     ); """
@@ -67,6 +67,7 @@ sql_create_track_ext_table = """ CREATE TABLE IF NOT EXISTS track_ext (
                                         track_id INTEGER PRIMARY KEY,
                                         key TEXT,
                                         key_notes TEXT,
+                                        bpm INT,
                                         notes TEXT,
                                         FOREIGN KEY (track_id)
                                             REFERENCES track(track_id)
