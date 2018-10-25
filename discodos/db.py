@@ -52,11 +52,12 @@ def search_release_title(conn, discogs_title):
     log.debug('DB: Search for Discogs Release Title: %s\n', discogs_title)
     cur = conn.cursor()
     cur.execute("SELECT * FROM release WHERE discogs_title LIKE ?", ("%"+discogs_title+"%", ), )
-    rows = cur.fetchall()
+    rows = cur.fetchone()
+    log.debug('DB: search_release_title returns: %s', rows)
     return rows
 
 def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
-                     track_key='', track_key_notes=''):
+                     trans_rating='', trans_notes=''):
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, track_no, track_pos,
                        trans_rating, trans_notes)
@@ -90,11 +91,17 @@ def get_last_track_in_mix(conn, mix_id):
 def get_full_mix(conn, mix_id):
     cur = conn.cursor()
     log.debug('DB getting mix table by ID: %s\n', mix_id)
-    cur.execute('''SELECT track_pos, discogs_title, track_no, track_key,
-                          track_key_notes
-                       FROM mix_track INNER JOIN mix
-                           ON mix.mix_id = mix_track.mix_id INNER JOIN release
-                           ON mix_track.d_release_id = release.discogs_id
+    cur.execute('''SELECT track_pos, discogs_title, d_track_name,
+                           track_no, trans_rating, trans_notes
+                       FROM
+                         mix_track
+                             INNER JOIN mix
+                             ON mix.mix_id = mix_track.mix_id
+                               INNER JOIN release
+                               ON mix_track.d_release_id = release.discogs_id
+                                 LEFT OUTER JOIN track
+                                 ON mix_track.d_release_id = track.d_release_id
+                                 AND mix_track.track_no = track.d_track_no
                        WHERE mix_track.mix_id == ?''', (mix_id, ))
     rows = cur.fetchall()
     if len(rows) == 0:
