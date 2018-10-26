@@ -26,12 +26,12 @@ def create_release(conn, release):
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
-def create_track(conn, track_id, release_id, track_no, track_name):
+def create_track(conn, release_id, track_no, track_title):
     cur = conn.cursor()
-    cur.execute('''INSERT INTO track(track_id, d_release_id, d_track_no,
+    cur.execute('''INSERT INTO track(d_release_id, d_track_no,
                                      d_track_name, import_timestamp)
-                       VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
-                       (track_id, release_id, track_no, track_name))
+                       VALUES(?, ?, ?, datetime('now', 'localtime'))''',
+                       (release_id, track_no, track_title))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 

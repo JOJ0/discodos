@@ -13,6 +13,7 @@ import requests.exceptions as reqerrors
 import urllib3.exceptions as urlerrors
 import pprint as pp
 from tabulate import tabulate as tab
+from sqlite3 import Error as sqlerr
 
 # argparser init
 def argparser(argv):
@@ -77,6 +78,7 @@ def argparser(argv):
     log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
     return arguments 
 
+# util: checks for numbers
 def is_number(s):
     try:
         float(s)
@@ -86,9 +88,15 @@ def is_number(s):
     except TypeError:
         return False
 
+# util: print a UI message
 def print_help(message):
     print(''+str(message)+'\n') 
 
+# util: ask user for some string
+def ask_user(text=""):
+    return input(text)
+
+# search release online try/except wrapper
 def search_release_online(discogs, id_or_title):
         try:
             if is_number(id_or_title):
@@ -107,6 +115,7 @@ def search_release_online(discogs, id_or_title):
         except Exception as Exc:
             log.error("Exception: %s", Exc)
 
+# search release offline try/except wrapper
 def search_release_offline(dbconn, id_or_title):
     if is_number(id_or_title):
         try:
@@ -134,33 +143,37 @@ def search_release_offline(dbconn, id_or_title):
             log.error("Not found or Database Exception: %s\n", Exc)
             raise Exc
 
+# tabulate ALL releases 
 def all_releases_table(release_data):
     return tab(release_data, tablefmt="plain",
         headers=["ID", "Release name", "Last import"])
 
+# tabulate a mix
 def mix_table(mix_data):
     return tab(mix_data, tablefmt="pipe",
         headers=["#", "Release", "Tr.Name", "Tr.Pos", "Key", "Key notes"])
 
+# tabulate ALl mixes
 def all_mixes_table(mixes_data):
     return tab(mixes_data, tablefmt="simple",
         headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
 
+# tabulate general info about a mix
 def mix_info_header(mix_info):
     return tab([mix_info], tablefmt="plain",
         headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
 
+# tabulate offline_release
 def offline_release_table(release_list):
     return tab(release_list, tablefmt="simple",
         headers=["Release ID", "Release", "Date imported"])
 
-def ask_user(text=""):
-    return input(text)
-
+# args checker: want to add track to mix?
 def wants_to_add_to_mix(cli_args):
     if cli_args.add_to_mix and cli_args.track_to_add:
         return True
 
+# DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _args, rel_list):
     if _args.add_to_mix and _args.track_to_add:
         track = _args.track_to_add
@@ -181,6 +194,21 @@ def add_track_to_mix(conn, _args, rel_list):
         else:
             print_help("Mix ID "+str(mix_id)+" is not existing yet.")
 
+# gets track name from discogs tracklist object via track_number, eg. A1
+def tracklist_parse(d_tracklist, track_number):
+    for tr in d_tracklist:
+        if tr.position == track_number:
+            return tr.title
+
+# Discogs: stay in 60/min rate limit
+def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
+    if int(d_obj._fetcher.rate_limit_remaining) < remaining:
+        log.info("Discogs request rate limit is about to exceed,\
+                  let's wait a bit: %s\n",
+                     d_obj._fetcher.rate_limit_remaining)
+        time.sleep(sleep)
+
+# MAIN
 def main():
 	# SETUP / INIT
     args = argparser(sys.argv)
@@ -250,9 +278,9 @@ def main():
                     if result_item.id == dbr[0]:
                         break
                 #####  User wants to add a Track to a Mix #####
-                # FIXME todo
-                #if wants_to_add_to_mix(args):
-                #    add_track_to_mix(conn, args, found_offline)
+                # FIXME untested, works in offline mode
+                if wants_to_add_to_mix(args):
+                    add_track_to_mix(conn, args, result_list)
             else:
                 print_help('Searching offline DB for \"' + searchterm +'\"')
                 found_offline = search_release_offline(conn, searchterm)
@@ -264,37 +292,26 @@ def main():
 
     elif hasattr(args, 'track_search'):
         if args.pull:
-            print_help("Let's update mixes with track info pulled from Discogs...")
             if online:
-
-                #for r in me.collection_folders[0].releases:
+                print_help("Let's update tracks used in mixes with info from Discogs...")
                 all_mixed_tracks = db.get_tracks_in_mixes(conn)
-                for track in all_mixed_tracks:
+                for mix_track in all_mixed_tracks:
 
-                    if int(d._fetcher.rate_limit_remaining) < 5:
-                        log.info("Discogs request rate limit is about to exceed,\
-                                  let's wait a bit: %s\n",
-                                     d._fetcher.rate_limit_remaining)
-                        time.sleep(2)
-                    print(track)
-                    print(track[2])
-                    #print(dir(d.release(track[2]).tracklist))
-                    print(d.release(track[2]).tracklist)
-
-                    #for track in r.release.tracklist:
-                    #    log.debug("Track:", track)
-                    #    last_row_id = db.create_release(conn, r)
-                    # FIXME I don't know if cur.lastrowid is False if unsuccessful
-                    #if last_row_id:
-                    #    #log.info("last_row_id: %s", last_row_id)
-                    #    insert_count = insert_count + 1
-                    #    print("Created so far:", insert_count, "")
-                    #    log.info("discogs-rate-limit-remaining: %s\n", d._fetcher.rate_limit_remaining)
-                    #else:
-                    #    print_help("Something wrong while importing \""+r.release.title+"\"")
-
+                    rate_limit_slow_downer(d, remaining=5, sleep=2)
+                    name = tracklist_parse(d.release(mix_track[2]).tracklist, mix_track[3])
+                    if name:
+                        print_help("Adding trackname:\n"+ str(mix_track[2])+" "+
+                                mix_track[3] + " " + name)
+                        try:
+                            db.create_track(conn, mix_track[2], mix_track[3], name)
+                        except sqlerr as err:
+                            print_help("Not added, probably already there.")
+                            log.info("DB returned: %s", err)
             else:
-                log.error("What should I do?")
+                print_help("Not online can't pull from Discogs...")
+
+        else:
+            log.error("In track mode but what should I do?")
 
     elif hasattr(args, 'mix_name'):
         # show mix overview
@@ -324,9 +341,7 @@ def main():
                 print_help(all_mixes_table(db.get_all_mixes(conn)))
             else:
                 mix_info = db.get_mix_info(conn, mix_id)
-
                 print_help(mix_info_header(mix_info))
-
                 full_mix = db.get_full_mix(conn, mix_id)
                 if full_mix:
                     for row in full_mix:
@@ -337,15 +352,10 @@ def main():
                     print_help("No tracks in mix yet.")
 
 
-
-
-    #for r in me.collection_folders[4].releases:
-    
-    if conn:
-        conn.commit()
         conn.close()
         log.debug("DB closed.")
 
+# __MAIN try/except wrap
 if __name__ == "__main__":
     try:
         main()

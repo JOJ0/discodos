@@ -54,23 +54,27 @@ sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
                                         FOREIGN KEY (mix_id) REFERENCES mix(mix_id)
                                     ); """
 sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
-                                        track_id INTEGER PRIMARY KEY,
                                         d_release_id LONG NOT NULL,
                                         d_track_no TEXT NOT NULL,
                                         d_track_name TEXT,
                                         import_timestamp TEXT,
+                                        PRIMARY KEY (d_release_id, d_track_no)
                                         FOREIGN KEY (d_release_id)
                                             REFERENCES release(d_discogs_id)
                                     ); """
 # extend discogs track info with these fields
 sql_create_track_ext_table = """ CREATE TABLE IF NOT EXISTS track_ext (
-                                        track_id INTEGER PRIMARY KEY,
+                                        d_release_id LONG NOT NULL,
+                                        d_track_no TEXT NOT NULL,
                                         key TEXT,
                                         key_notes TEXT,
                                         bpm INT,
                                         notes TEXT,
-                                        FOREIGN KEY (track_id)
-                                            REFERENCES track(track_id)
+                                        PRIMARY KEY (d_release_id, d_track_no)
+                                        FOREIGN KEY (d_release_id)
+                                            REFERENCES track(d_discogs_id)
+                                        FOREIGN KEY (d_track_no)
+                                            REFERENCES track(d_track_no)
                                     ); """
 db.create_table(conn, sql_settings)
 db.create_table(conn, sql_create_release_table)
