@@ -67,6 +67,17 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
     log.info("DB: cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
 
+def update_track_in_mix(conn, mix_id, release_id, track_no, track_pos=0,
+                     trans_rating='', trans_notes=''):
+    cur = conn.cursor()
+    cur.execute('''UPDATE mix_track SET mix_id, d_release_id, track_no, track_pos,
+                       trans_rating, trans_notes)
+                       ''',
+                       (mix_id, release_id, track_no, track_pos,
+                        trans_rating, trans_notes))
+    log.info("DB: cur.rowcount: %s", cur.rowcount)
+    return cur.lastrowid
+
 def add_new_mix(conn, name, played='', venue=''):
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix (name, created, updated, played, venue)

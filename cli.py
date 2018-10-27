@@ -62,7 +62,12 @@ def argparser(argv):
         help='create a new mix with given name')
     mix_subparser.add_argument(
         "-v", "--verbose", action='store_true',
+        dest='verbose_tracklist',
         help='mix tracklist shows more details')
+    mix_subparser.add_argument(
+        "-e", "--edit", type=str,
+        dest='edit_mix_track',
+        help='add/edit rating, notes, key and other info in mix-tracks')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
         name='track',
@@ -345,12 +350,33 @@ def main():
             print_help(all_mixes_table(db.get_all_mixes(conn)))
         # show mix details
         else:
-            log.info("A mix_name or ID was given")
+            log.info("A mix_name or ID was given\n")
+
+            if args.create_mix == True:
+                if is_number(args.mix_name):
+                    log.error("Mix name can't be a number!")
+                else:
+                    played = ask_user(text="When did you (last) play it? ")
+                    venue = ask_user(text="And where? ")
+                    created_id = db.add_new_mix(conn, args.mix_name, played, venue)
+                    conn.commit()
+                    print_help("New mix created with ID " + str(created_id))
+                    print_help(all_mixes_table(db.get_all_mixes(conn)))
+                # mix is created (or not), nothing else to do
+                raise SystemExit(0)
+
             if is_number(args.mix_name):
                 mix_id = args.mix_name
-                mix_name = None
+                try:
+                    mix_info = db.get_mix_info(conn, mix_id)
+                    mix_name = mix_info[1]
+                except:
+                    print_help("This Mix ID is not existing yet!")
+                    #raise Exception
+                    raise SystemExit(1)
             else:
                 mix_name = args.mix_name
+
                 try:
                     mix_id_tuple = db.get_mix_id(conn, mix_name)
                     log.info('%s', mix_id_tuple)
@@ -359,16 +385,14 @@ def main():
                     print_help("No mix-name matching.")
                     raise SystemExit(1)
 
-            if args.create_mix == True:
-                played = ask_user(text="When did you (last) play it? ")
-                venue = ask_user(text="And where? ")
-                created_id = db.add_new_mix(conn, mix_id, played, venue)
-                print_help("New mix created with ID " + str(created_id))
-                print_help(all_mixes_table(db.get_all_mixes(conn)))
+            if args.edit_mix_track:
+                #edit_track = args.edit_mix_track
+                print_help("Editing track "+args.edit_mix_track+" in \""+
+                            mix_name+"\":")
             else:
                 mix_info = db.get_mix_info(conn, mix_id)
                 print_help(mix_info_header(mix_info))
-                if args.verbose:
+                if args.verbose_tracklist:
                     full_mix = db.get_full_mix(conn, mix_id, detail="fine")
                 else:
                     full_mix = db.get_full_mix(conn, mix_id, detail="coarse")
@@ -379,7 +403,7 @@ def main():
                        log.debug(str(row))
                     log.debug("")
                     # now really
-                    if args.verbose:
+                    if args.verbose_tracklist:
                         print_help(mix_table_fine(full_mix))
                     else:
                         print_help(mix_table_coarse(full_mix))
