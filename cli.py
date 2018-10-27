@@ -148,10 +148,15 @@ def all_releases_table(release_data):
     return tab(release_data, tablefmt="plain",
         headers=["ID", "Release name", "Last import"])
 
-# tabulate a mix
-def mix_table(mix_data):
+# tabulate a mix COARSLY
+def mix_table_coarse(mix_data):
     return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Tr.Name", "Tr.Pos", "Key", "Key notes"])
+        headers=["#", "Release", "Tr.Pos", "Rating", "Key"])
+
+# tabulate a mix in DETAIL
+def mix_table_fine(mix_data):
+    return tab(mix_data, tablefmt="pipe",
+        headers=["#", "Release", "Tr.Name", "Tr.Pos", "Rating", "Notes", "Key", "Key notes"])
 
 # tabulate ALl mixes
 def all_mixes_table(mixes_data):
@@ -163,10 +168,15 @@ def mix_info_header(mix_info):
     return tab([mix_info], tablefmt="plain",
         headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
 
-# tabulate offline_release
+# tabulate OFFLINE release search results
 def offline_release_table(release_list):
     return tab(release_list, tablefmt="simple",
         headers=["Release ID", "Release", "Date imported"])
+
+# tabulate ONLINE release search results
+def online_release_table(_result_list): 
+    return (tab(_result_list, tablefmt="simple",
+        headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
 
 # args checker: want to add track to mix?
 def wants_to_add_to_mix(cli_args):
@@ -190,11 +200,11 @@ def add_track_to_mix(conn, _args, rel_list):
             else:
                 current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
                                  track, track_pos = 1)
-            print_help(mix_table(db.get_full_mix(conn, mix_id)))
+            print_help(mix_table_coarse(db.get_full_mix(conn, mix_id)))
         else:
             print_help("Mix ID "+str(mix_id)+" is not existing yet.")
 
-# gets track name from discogs tracklist object via track_number, eg. A1
+# Discogs: gets track name from discogs tracklist object via track_number, eg. A1
 def tracklist_parse(d_tracklist, track_number):
     for tr in d_tracklist:
         if tr.position == track_number:
@@ -207,6 +217,39 @@ def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
                   let's wait a bit: %s\n",
                      d_obj._fetcher.rate_limit_remaining)
         time.sleep(sleep)
+
+# Discogs: formatted output of release search results
+def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
+    # only show pages count if it's a Release Title Search
+    if not is_number(_searchterm):
+        print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
+    else:
+        print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+    for result_item in discogs_results:
+        print_help("Checking " + str(result_item.id))
+        for dbr in _db_releases:
+            if result_item.id == dbr[0]:
+                 print_help("Good, first matching record in your collection is:")
+                 result_list=[]
+                 result_list.append([])
+                 result_list[0].append(str(result_item.artists[0].name))
+                 result_list[0].append(result_item.title)
+                 result_list[0].append(str(result_item.labels[0].name))
+                 result_list[0].append(result_item.country)
+                 result_list[0].append(str(result_item.year))
+                 result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                            ", "+str(result_item.formats[0]['descriptions'][1]))
+
+                 print_help(tab(result_list, tablefmt="simple",
+                           headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
+                 tracklist = result_item.tracklist
+                 for track in tracklist:
+                    print(track.position + "\t" + track.title + "\n")
+                 break
+
+        if result_item.id == dbr[0]:
+            break
+
 
 # MAIN
 def main():
@@ -241,42 +284,12 @@ def main():
             print_help(all_releases_table(db.all_releases(conn)))
         else:
             db_releases = db.all_releases(conn)
-            #for list_element in args.release_search:
             searchterm = args.release_search
             if online:
                 print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
                 search_results = search_release_online(d, searchterm)
-                # only show pages count if it's a Release Titl Search
-                if not is_number(searchterm):
-                    print_help("Found "+str(search_results.pages )+" page(s) of results!")
-                else:
-                    print_help("ID: "+search_results[0].id+", Title: "+search_results[0].title+"")
-                for result_item in search_results:
-                    #if result_item.id in me.collection_folders[0].releases:
-                    print_help("Checking " + str(result_item.id))
-                    for dbr in db_releases:
-                        if result_item.id == dbr[0]:
-                             print_help("Good, first matching record in your collection is:")
-                             result_list=[]
-                             result_list.append([])
-                             result_list[0].append(str(result_item.artists[0].name))
-                             result_list[0].append(result_item.title)
-                             result_list[0].append(str(result_item.labels[0]))
-                             result_list[0].append(result_item.country)
-                             result_list[0].append(str(result_item.year))
-                             result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                                        ", "+str(result_item.formats[0]['descriptions'][1]))
-
-                             #pprint.pprint(result_list)
-                             print_help(tab(result_list, tablefmt="simple",
-                                       headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
-                             tracklist = result_item.tracklist
-                             for track in tracklist:
-                                print(track)
-                             break
-
-                    if result_item.id == dbr[0]:
-                        break
+                # SEARCH RESULTS OUTPUT HAPPENS HERE
+                pretty_print_found_release(search_results, searchterm, db_releases)
                 #####  User wants to add a Track to a Mix #####
                 # FIXME untested, works in offline mode
                 if wants_to_add_to_mix(args):
@@ -347,7 +360,7 @@ def main():
                     for row in full_mix:
                        log.debug(str(row))
                     log.debug("")
-                    print_help(mix_table(full_mix))
+                    print_help(mix_table_coarse(full_mix))
                 else:
                     print_help("No tracks in mix yet.")
 

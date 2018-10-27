@@ -71,11 +71,11 @@ sql_create_track_ext_table = """ CREATE TABLE IF NOT EXISTS track_ext (
                                         bpm INT,
                                         notes TEXT,
                                         PRIMARY KEY (d_release_id, d_track_no)
-                                        FOREIGN KEY (d_release_id)
-                                            REFERENCES track(d_discogs_id)
-                                        FOREIGN KEY (d_track_no)
-                                            REFERENCES track(d_track_no)
                                     ); """
+									#FOREIGN KEY (d_release_id)
+                                    #    REFERENCES track(d_release_id)
+                                    #FOREIGN KEY (d_track_no)
+                                    #    REFERENCES track(d_track_no)
 db.create_table(conn, sql_settings)
 db.create_table(conn, sql_create_release_table)
 db.create_table(conn, sql_create_mix_table)

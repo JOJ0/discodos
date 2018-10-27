@@ -88,22 +88,40 @@ def get_last_track_in_mix(conn, mix_id):
     log.info('DB: get_last_track_in_mix: %s\n', row)
     return row
 
-def get_full_mix(conn, mix_id):
+def get_full_mix(conn, mix_id, granularity="coarse"):
     cur = conn.cursor()
     log.debug('DB getting mix table by ID: %s\n', mix_id)
-    cur.execute('''SELECT track_pos, discogs_title, d_track_name,
-                           track_no, trans_rating, trans_notes
-                       FROM
-                         mix_track
-                             INNER JOIN mix
-                             ON mix.mix_id = mix_track.mix_id
-                               INNER JOIN release
-                               ON mix_track.d_release_id = release.discogs_id
-                                 LEFT OUTER JOIN track
-                                 ON mix_track.d_release_id = track.d_release_id
-                                 AND mix_track.track_no = track.d_track_no
-                       WHERE mix_track.mix_id == ?''', (mix_id, ))
+    if granularity == "coarse":
+        cur.execute('''SELECT track_pos, discogs_title, track_no,
+                               trans_rating, key, bpm
+                           FROM
+                             mix_track
+                                 INNER JOIN mix
+                                 ON mix.mix_id = mix_track.mix_id
+                                   INNER JOIN release
+                                   ON mix_track.d_release_id = release.discogs_id
+                                     LEFT OUTER JOIN track
+                                     ON mix_track.d_release_id = track.d_release_id
+                                     AND mix_track.track_no = track.d_track_no
+                                       LEFT OUTER JOIN track_ext
+                                       ON track.d_release_id = track_ext.d_release_id
+                                       AND track.d_track_no = track_ext.d_track_no
+                           WHERE mix_track.mix_id == ?''', (mix_id, ))
+    else:
+        cur.execute('''SELECT track_pos, discogs_title, d_track_name,
+                               track_no, trans_rating, trans_notes
+                           FROM
+                             mix_track
+                                 INNER JOIN mix
+                                 ON mix.mix_id = mix_track.mix_id
+                                   INNER JOIN release
+                                   ON mix_track.d_release_id = release.discogs_id
+                                     LEFT OUTER JOIN track
+                                     ON mix_track.d_release_id = track.d_release_id
+                                     AND mix_track.track_no = track.d_track_no
+                           WHERE mix_track.mix_id == ?''', (mix_id, ))
     rows = cur.fetchall()
+    log.debug("DB: get_full_mix()", rows)
     if len(rows) == 0:
         log.info('DB nothing found')
         return False
