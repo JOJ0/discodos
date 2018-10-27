@@ -60,6 +60,9 @@ def argparser(argv):
     mix_subparser.add_argument(
         "-c", "--create-mix", action='store_true',
         help='create a new mix with given name')
+    mix_subparser.add_argument(
+        "-v", "--verbose", action='store_true',
+        help='mix tracklist shows more details')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
         name='track',
@@ -151,22 +154,23 @@ def all_releases_table(release_data):
     return tab(release_data, tablefmt="plain",
         headers=["ID", "Release name", "Last import"])
 
-# tabulate a mix COARSLY
+# tabulate tracklist COARSLY
 def mix_table_coarse(mix_data):
     return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Tr.Pos", "Rating", "Key"])
+        headers=["#", "Release", "Tr.Pos", "Rating", "Key", "BPM"])
 
-# tabulate a mix in DETAIL
+# tabulate tracklist in DETAIL
 def mix_table_fine(mix_data):
     return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Tr.Name", "Tr.Pos", "Rating", "Notes", "Key", "Key notes"])
+        headers=["#", "Release", "Tr.Name", "Tr.Pos", "Rating", "Rating notes", 
+                 "Key", "Key notes", "BPM"])
 
 # tabulate ALl mixes
 def all_mixes_table(mixes_data):
     return tab(mixes_data, tablefmt="simple",
         headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
 
-# tabulate general info about a mix
+# tabulate header of mix-tracklist
 def mix_info_header(mix_info):
     return tab([mix_info], tablefmt="plain",
         headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
@@ -364,12 +368,21 @@ def main():
             else:
                 mix_info = db.get_mix_info(conn, mix_id)
                 print_help(mix_info_header(mix_info))
-                full_mix = db.get_full_mix(conn, mix_id)
+                if args.verbose:
+                    full_mix = db.get_full_mix(conn, mix_id, detail="fine")
+                else:
+                    full_mix = db.get_full_mix(conn, mix_id, detail="coarse")
+
                 if full_mix:
+                    # debug only
                     for row in full_mix:
                        log.debug(str(row))
                     log.debug("")
-                    print_help(mix_table_coarse(full_mix))
+                    # now really
+                    if args.verbose:
+                        print_help(mix_table_fine(full_mix))
+                    else:
+                        print_help(mix_table_coarse(full_mix))
                 else:
                     print_help("No tracks in mix yet.")
 
