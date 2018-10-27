@@ -29,7 +29,7 @@ def argparser(argv):
         help="stays in offline mode, doesn't even try to connect to Discogs")
     # basic subparser element:
     subparsers = parser.add_subparsers()
-    # RELEASE subparser
+    ### RELEASE subparser #######################################################
     release_subparser = subparsers.add_parser(
         name='release',
         help='search for a discogs release and add it to a mix',
@@ -45,21 +45,9 @@ def argparser(argv):
         help='add track number to mix (eg. A1, AA, B2, ...)', default=0)
     release_subparser.add_argument(
         "-p", "--pos", type=str, dest='add_at_pos',
-        help='insert track at specific position in mix (eg. 01, 14, ...), defaults to next', default=0)
-    # TRACK subparser
-    track_subparser = subparsers.add_parser(
-        name='track',
-        help='search for tracks, add to mix, FIXME not implemented',
-        aliases=('tr', 't'))
-    track_subparser.add_argument(
-        dest='track_search',
-        help='track_search help')
-    track_subparser.add_argument(
-        "-p", "--pull",
-        action="store_true",
-        default=False,
-        help='all tracks used in mixes are updated with info pulled from Discogs')
-    # MIX subparser
+        help='insert track at specific position in mix (eg. 01, 14, ...), defaults to next',
+        default=0)
+    ### MIX subparser #############################################################
     mix_subparser = subparsers.add_parser(
         name='mix',
         help='do stuff with mixes',
@@ -72,6 +60,21 @@ def argparser(argv):
     mix_subparser.add_argument(
         "-c", "--create-mix", action='store_true',
         help='create a new mix with given name')
+    ### TRACK subparser ##########################################################
+    track_subparser = subparsers.add_parser(
+        name='track',
+        help='search for tracks, add to mix, FIXME not implemented',
+        aliases=('tr', 't'))
+    track_subparser.add_argument(
+        dest='track_search',
+        help='track_search help',
+        nargs='?',
+        default='')
+    track_subparser.add_argument(
+        "-p", "--pull",
+        action="store_true",
+        default=False,
+        help='all tracks used in mixes are updated with info pulled from Discogs')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     # Sets log level to WARN going more verbose for each new -v.
@@ -313,18 +316,24 @@ def main():
                     rate_limit_slow_downer(d, remaining=5, sleep=2)
                     name = tracklist_parse(d.release(mix_track[2]).tracklist, mix_track[3])
                     if name:
-                        print_help("Adding trackname:\n"+ str(mix_track[2])+" "+
+                        print("Adding track info: "+ str(mix_track[2])+" "+
                                 mix_track[3] + " " + name)
                         try:
                             db.create_track(conn, mix_track[2], mix_track[3], name)
                         except sqlerr as err:
-                            print_help("Not added, probably already there.")
+                            log.warning("Not added, probably already there.\n")
                             log.info("DB returned: %s", err)
+                    else:
+                        print("Adding track info: "+ str(mix_track[2])+" "+
+                                mix_track[3])
+                        log.error("No trackname found for Tr.Pos %s",
+                                mix_track[3])
+                        log.error("Probably you misspelled? (eg A vs. A1)\n")
             else:
                 print_help("Not online can't pull from Discogs...")
 
         else:
-            log.error("In track mode but what should I do?")
+            log.error("We are in track mode but what should I do?")
 
     elif hasattr(args, 'mix_name'):
         # show mix overview
