@@ -99,6 +99,11 @@ def is_number(s):
     except TypeError:
         return False
 
+# util: args checker: want to add track to mix?
+def wants_to_add_to_mix(cli_args):
+    if cli_args.add_to_mix and cli_args.track_to_add:
+        return True
+
 # util: print a UI message
 def print_help(message):
     print(''+str(message)+'\n') 
@@ -106,6 +111,43 @@ def print_help(message):
 # util: ask user for some string
 def ask_user(text=""):
     return input(text)
+
+# UI: what info should be edited in mix-track
+def ask_details_to_edit(track_details):
+    _answers={}
+    _answers['track_no'] = [ask_user(
+                           "Fix track number on record (eg B2) ? ({}) ".format(
+                           track_details[3])), track_details[3]]
+    _answers['track_pos'] = ["x", False]
+    while not is_number(_answers['track_pos'][0]):
+        _answers['track_pos'] = [ask_user(
+                                "Move track to new position? ({}) ".format(
+                                track_details[0])), track_details[0]]
+        if _answers['track_pos'][0] == "":
+            break
+    _answers['trans_rating'] = [ask_user("Rate transition? ({}) ".format(
+                               track_details[4])), track_details[4]]
+    _answers['trans_notes'] = [ask_user(
+                              "Other notes on this transition? ({}) ".format(
+                              track_details[5])), track_details[5]]
+    _answers['key'] = [ask_user("The tracks musical key? ({}) ".format(
+                      track_details[6])), track_details[6]]
+    _answers['key_notes'] = [ask_user(
+                            "More music notes (eg Bassline tones)? ({}) ".format(
+                            track_details[7])), track_details[7]]
+    _answers['bpm'] = [ask_user("The tracks BPM? ({}) ".format(
+                             track_details[8])), track_details[8]]
+    final_answers = {}
+    for key,answ in _answers.items():
+        #log.info("iterating through answers")
+        #log.info("%s: %s", key, answ)
+        if answ[0] == "":
+            log.info("Answer was empty, keeping previous value %s:", answ[1])
+            final_answers[key] = answ[1] # previous DB value
+        else:
+            final_answers[key] = answ[0] # actual user answer
+    #pprint.pprint(final_answers)
+    return final_answers
 
 # search release online try/except wrapper
 def search_release_online(discogs, id_or_title):
@@ -190,11 +232,6 @@ def online_release_table(_result_list):
     return (tab(_result_list, tablefmt="simple",
         headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
 
-# args checker: want to add track to mix?
-def wants_to_add_to_mix(cli_args):
-    if cli_args.add_to_mix and cli_args.track_to_add:
-        return True
-
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _args, rel_list):
     if _args.add_to_mix and _args.track_to_add:
@@ -262,14 +299,36 @@ def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
         if result_item.id == dbr[0]:
             break
 
+# show pretty mix-tracklist
+def pretty_print_mix_tracklist(_mix_id, _mix_info):
+    print_help(mix_info_header(_mix_info))
+    if args.verbose_tracklist:
+        full_mix = db.get_full_mix(conn, _mix_id, detail="fine")
+    else:
+        full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
+
+    if full_mix:
+        # debug only
+        for row in full_mix:
+           log.debug(str(row))
+        log.debug("")
+        # now really
+        if args.verbose_tracklist:
+            print_help(mix_table_fine(full_mix))
+        else:
+            print_help(mix_table_coarse(full_mix))
+    else:
+        print_help("No tracks in mix yet.")
 
 # MAIN
 def main():
 	# SETUP / INIT
+    global args
     args = argparser(sys.argv)
     #if hasattr(args, ''):
     #if len(args)==1:
     #    print_help('No args')
+    global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
     online = False
 
@@ -315,6 +374,69 @@ def main():
                 if wants_to_add_to_mix(args):
                     add_track_to_mix(conn, args, found_offline[0])
 
+
+    elif hasattr(args, 'mix_name'):
+        # show mix overview
+        if args.mix_name == "all":
+            print_help(all_mixes_table(db.get_all_mixes(conn)))
+        # show mix details
+        else:
+            log.info("A mix_name or ID was given\n")
+            ### CREATE A NEW MIX ###############################################
+            if args.create_mix == True:
+                if is_number(args.mix_name):
+                    log.error("Mix name can't be a number!")
+                else:
+                    played = ask_user(text="When did you (last) play it? ")
+                    venue = ask_user(text="And where? ")
+                    created_id = db.add_new_mix(conn, args.mix_name, played, venue)
+                    conn.commit()
+                    print_help("New mix created with ID " + str(created_id))
+                    print_help(all_mixes_table(db.get_all_mixes(conn)))
+                # mix is created (or not), nothing else to do
+                raise SystemExit(0)
+            ### DO STUFF WITH EXISTING MIXES ###################################
+            # if it's a mix ID, load basic mix-info from DB
+            if is_number(args.mix_name):
+                mix_id = args.mix_name
+                try:
+                    mix_info = db.get_mix_info(conn, mix_id)
+                    mix_name = mix_info[1]
+                except:
+                    print_help("This Mix ID is not existing yet!")
+                    #raise Exception
+                    raise SystemExit(1)
+            else:
+                mix_name = args.mix_name
+                # if it's a mix-name, get the id
+                try:
+                    mix_id_tuple = db.get_mix_id(conn, mix_name)
+                    log.info('%s', mix_id_tuple)
+                    mix_id = mix_id_tuple[0]
+                except:
+                    print_help("No mix-name matching.")
+                    raise SystemExit(1)
+                # load basic mix-info from DB, FIXME error handling necessary??
+                mix_info = db.get_mix_info(conn, mix_id)
+            ### EDIT A MIX-TRACK ###############################################
+            if args.edit_mix_track:
+                edit_track = args.edit_mix_track
+                print_help("Editing track "+edit_track+" in \""+
+                            mix_name+"\":")
+                track_details = db.get_one_mix_track(conn, mix_id, edit_track)
+                log.info("current: %s", track_details)
+                edit_answers = ask_details_to_edit(track_details)
+                log.info("answers: %s", edit_answers)
+                db.update_track_in_mix(conn, track_details[9],
+                    edit_answers['track_no'],
+                    edit_answers['track_pos'],
+                    edit_answers['trans_rating'], edit_answers['trans_notes'])
+                # FIXME other 2 tables
+                pretty_print_mix_tracklist(mix_id, mix_info)
+            else:
+                ### SHOW MIX-TRACKLIST
+                pretty_print_mix_tracklist(mix_id, mix_info)
+
     elif hasattr(args, 'track_search'):
         if args.pull:
             if online:
@@ -344,81 +466,19 @@ def main():
         else:
             log.error("We are in track mode but what should I do?")
 
-    elif hasattr(args, 'mix_name'):
-        # show mix overview
-        if args.mix_name == "all":
-            print_help(all_mixes_table(db.get_all_mixes(conn)))
-        # show mix details
-        else:
-            log.info("A mix_name or ID was given\n")
-
-            if args.create_mix == True:
-                if is_number(args.mix_name):
-                    log.error("Mix name can't be a number!")
-                else:
-                    played = ask_user(text="When did you (last) play it? ")
-                    venue = ask_user(text="And where? ")
-                    created_id = db.add_new_mix(conn, args.mix_name, played, venue)
-                    conn.commit()
-                    print_help("New mix created with ID " + str(created_id))
-                    print_help(all_mixes_table(db.get_all_mixes(conn)))
-                # mix is created (or not), nothing else to do
-                raise SystemExit(0)
-
-            if is_number(args.mix_name):
-                mix_id = args.mix_name
-                try:
-                    mix_info = db.get_mix_info(conn, mix_id)
-                    mix_name = mix_info[1]
-                except:
-                    print_help("This Mix ID is not existing yet!")
-                    #raise Exception
-                    raise SystemExit(1)
-            else:
-                mix_name = args.mix_name
-
-                try:
-                    mix_id_tuple = db.get_mix_id(conn, mix_name)
-                    log.info('%s', mix_id_tuple)
-                    mix_id = mix_id_tuple[0]
-                except:
-                    print_help("No mix-name matching.")
-                    raise SystemExit(1)
-
-            if args.edit_mix_track:
-                #edit_track = args.edit_mix_track
-                print_help("Editing track "+args.edit_mix_track+" in \""+
-                            mix_name+"\":")
-            else:
-                mix_info = db.get_mix_info(conn, mix_id)
-                print_help(mix_info_header(mix_info))
-                if args.verbose_tracklist:
-                    full_mix = db.get_full_mix(conn, mix_id, detail="fine")
-                else:
-                    full_mix = db.get_full_mix(conn, mix_id, detail="coarse")
-
-                if full_mix:
-                    # debug only
-                    for row in full_mix:
-                       log.debug(str(row))
-                    log.debug("")
-                    # now really
-                    if args.verbose_tracklist:
-                        print_help(mix_table_fine(full_mix))
-                    else:
-                        print_help(mix_table_coarse(full_mix))
-                else:
-                    print_help("No tracks in mix yet.")
-
-
-        conn.close()
-        log.debug("DB closed.")
+    # most importantly commit stuff to DB
+    conn.commit()
+    conn.close()
+    log.debug("DB closed.")
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
+        # most importantly commit stuff to DB
+        #conn.commit()
+        #conn.close()
         log.error('Program interrupted!')
     #finally:
         #log.shutdown()
