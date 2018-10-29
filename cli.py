@@ -58,13 +58,15 @@ def argparser(argv):
         nargs='?',
         default='all')
     mix_subparser.add_argument(
-        "-c", "--create-mix", action='store_true',
-        help='create a new mix with given name')
-    mix_subparser.add_argument(
         "-v", "--verbose", action='store_true',
         dest='verbose_tracklist',
         help='mix tracklist shows more details')
-    mix_subparser.add_argument(
+    # only --create-mix OR --edit is possible
+    mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
+    mix_subp_excl_group.add_argument(
+        "-c", "--create-mix", action='store_true',
+        help='create a new mix with given name')
+    mix_subp_excl_group.add_argument(
         "-e", "--edit", type=str,
         dest='edit_mix_track',
         help='add/edit rating, notes, key and other info in mix-tracks')
