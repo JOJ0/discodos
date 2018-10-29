@@ -91,6 +91,20 @@ def argparser(argv):
     log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
     return arguments 
 
+# util: args checker
+def check_args(cli_args):
+    # exit if mix name is "all" (default) and --create-mix
+    if hasattr(cli_args, 'create_mix') and hasattr(cli_args, 'mix_name'):
+        if args.mix_name == "all":
+            log.error("Please provide a mix name to be created!")
+            log.error("(Mix name \"all\" is not valid.)")
+            raise SystemExit(1)
+
+# util: args checker: want to add track to mix?
+def wants_to_add_to_mix(cli_args):
+    if cli_args.add_to_mix and cli_args.track_to_add:
+        return True
+
 # util: checks for numbers
 def is_number(s):
     try:
@@ -100,11 +114,6 @@ def is_number(s):
         return False
     except TypeError:
         return False
-
-# util: args checker: want to add track to mix?
-def wants_to_add_to_mix(cli_args):
-    if cli_args.add_to_mix and cli_args.track_to_add:
-        return True
 
 # util: print a UI message
 def print_help(message):
@@ -327,17 +336,15 @@ def main():
 	# SETUP / INIT
     global args
     args = argparser(sys.argv)
-    #if hasattr(args, ''):
-    #if len(args)==1:
-    #    print_help('No args')
-    global conn
-    conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
-    online = False
-
     # DEBUG stuff
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
     #log.info("dir(args): %s", dir(args))
+    check_args(args)
+    global conn
+    conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
+    online = False
+
 
     # DISCOGS API CONNECTION
     if not args.offline_mode == True:
