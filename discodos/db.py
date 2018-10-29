@@ -151,7 +151,7 @@ def get_full_mix(conn, mix_id, detail="coarse"):
                            WHERE mix_track.mix_id == ?
                            ORDER BY mix_track.track_pos''', (mix_id, ))
     rows = cur.fetchall()
-    log.debug("DB: get_full_mix()", rows)
+    log.debug("DB: get_full_mix(): %s", str(rows))
     if len(rows) == 0:
         log.info('DB nothing found')
         return False

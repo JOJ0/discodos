@@ -245,6 +245,7 @@ def online_release_table(_result_list):
 
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _args, rel_list):
+    print(rel_list)
     if _args.add_to_mix and _args.track_to_add:
         track = _args.track_to_add
         if is_number(_args.add_to_mix):
@@ -289,26 +290,29 @@ def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
         print_help("Checking " + str(result_item.id))
         for dbr in _db_releases:
             if result_item.id == dbr[0]:
-                 print_help("Good, first matching record in your collection is:")
-                 result_list=[]
-                 result_list.append([])
-                 result_list[0].append(str(result_item.artists[0].name))
-                 result_list[0].append(result_item.title)
-                 result_list[0].append(str(result_item.labels[0].name))
-                 result_list[0].append(result_item.country)
-                 result_list[0].append(str(result_item.year))
-                 result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                            ", "+str(result_item.formats[0]['descriptions'][1]))
+                print_help("Good, first matching record in your collection is:")
+                result_list=[]
+                result_list.append([])
+                result_list[0].append(result_item.id)
+                result_list[0].append(str(result_item.artists[0].name))
+                result_list[0].append(result_item.title)
+                result_list[0].append(str(result_item.labels[0].name))
+                result_list[0].append(result_item.country)
+                result_list[0].append(str(result_item.year))
+                result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                           ", "+str(result_item.formats[0]['descriptions'][1]))
 
-                 print_help(tab(result_list, tablefmt="simple",
-                           headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
-                 tracklist = result_item.tracklist
-                 for track in tracklist:
-                    print(track.position + "\t" + track.title + "\n")
-                 break
+                print_help(tab(result_list, tablefmt="simple",
+                          headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
+                tracklist = result_item.tracklist
+                for track in tracklist:
+                   print(track.position + "\t" + track.title)
+                print()
+                break
 
         if result_item.id == dbr[0]:
-            break
+            return result_list[0]
+            #break
 
 # show pretty mix-tracklist
 def pretty_print_mix_tracklist(_mix_id, _mix_info):
@@ -369,11 +373,12 @@ def main():
                 print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
                 search_results = search_release_online(d, searchterm)
                 # SEARCH RESULTS OUTPUT HAPPENS HERE
-                pretty_print_found_release(search_results, searchterm, db_releases)
+                compiled_results_list = pretty_print_found_release(
+                               search_results, searchterm, db_releases)
                 #####  User wants to add a Track to a Mix #####
                 # FIXME untested, works in offline mode
                 if wants_to_add_to_mix(args):
-                    add_track_to_mix(conn, args, result_list)
+                    add_track_to_mix(conn, args, compiled_results_list)
             else:
                 print_help('Searching offline DB for \"' + searchterm +'\"')
                 found_offline = search_release_offline(conn, searchterm)
