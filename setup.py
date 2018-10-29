@@ -67,7 +67,7 @@ def main():
 
 
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
-                                       discogs_id LONG PRIMARY KEY ON CONFLICT REPLACE,
+                                       discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                                        discogs_title TEXT NOT NULL,
                                        import_timestamp TEXT
                                         ); """
@@ -94,7 +94,7 @@ def main():
 
                                         ); """
     sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
-                                     d_release_id LONG NOT NULL,
+                                     d_release_id INTEGER NOT NULL,
                                      d_track_no TEXT NOT NULL,
                                      d_track_name TEXT,
                                      import_timestamp TEXT,
@@ -106,7 +106,7 @@ def main():
                                            #     REFERENCES release(d_discogs_id)
     # extend discogs track info with these fields
     sql_create_track_ext_table = """ CREATE TABLE IF NOT EXISTS track_ext (
-                                         d_release_id LONG NOT NULL,
+                                         d_release_id INTEGER NOT NULL,
                                          d_track_no TEXT NOT NULL,
                                          key TEXT,
                                          key_notes TEXT,
