@@ -19,7 +19,7 @@ def create_table(conn, create_table_sql):
         c.execute(create_table_sql)
         log.info("DB: Executed sql: %s", create_table_sql)
     except Error as e:
-        log.error("%s", e)
+        log.error("DB: %s", e)
 
 
 # RELEASE / TRACK INFO FROM DISCOGS
