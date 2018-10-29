@@ -95,7 +95,7 @@ def argparser(argv):
 def check_args(cli_args):
     # exit if mix name is "all" (default) and --create-mix
     if hasattr(cli_args, 'create_mix') and hasattr(cli_args, 'mix_name'):
-        if args.mix_name == "all":
+        if args.mix_name == "all" and args.create_mix == True:
             log.error("Please provide a mix name to be created!")
             log.error("(Mix name \"all\" is not valid.)")
             raise SystemExit(1)
