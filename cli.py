@@ -155,7 +155,7 @@ def ask_details_to_edit(_track_det):
         #log.info("iterating through answers")
         #log.info("%s: %s", key, answ)
         if answ[0] == "":
-            log.info("Answer was empty, keeping previous value %s:", answ[1])
+            log.info("Answer was empty, keeping previous value: %s", answ[1])
             final_answers[key] = answ[1] # previous DB value
         else:
             final_answers[key] = answ[0] # actual user answer
@@ -445,21 +445,25 @@ def main():
                 log.info("current d_release_id: %s", track_details['d_release_id'])
                 edit_answers = ask_details_to_edit(track_details)
                 log.info("answers: %s", edit_answers)
-                db.update_track_in_mix(conn,
-                    track_details['mix_track_id'],
-                    edit_answers['track_no'],
-                    edit_answers['track_pos'],
-                    edit_answers['trans_rating'],
-                    edit_answers['trans_notes'])
-                db.update_or_insert_track_ext(conn,
-                    track_details['d_release_id'],
-                    edit_answers['track_no'],
-                    edit_answers['key'],
-                    edit_answers['key_notes'],
-                    edit_answers['bpm'],
-                    edit_answers['notes'],
-                    )
-                # FIXME other 2 tables
+                try:
+                    db.update_track_in_mix(conn,
+                        track_details['mix_track_id'],
+                        edit_answers['track_no'],
+                        edit_answers['track_pos'],
+                        edit_answers['trans_rating'],
+                        edit_answers['trans_notes'])
+                    db.update_or_insert_track_ext(conn,
+                        track_details['d_release_id'],
+                        edit_answers['track_no'],
+                        edit_answers['key'],
+                        edit_answers['key_notes'],
+                        edit_answers['bpm'],
+                        edit_answers['notes'],
+                        )
+                except Exception as edit_err:
+                    log.error("Something went wrong on mix_track edit!")
+                    raise edit_err
+                    raise SystemExit(1)
                 pretty_print_mix_tracklist(mix_id, mix_info)
             else:
                 ### SHOW MIX-TRACKLIST
@@ -495,7 +499,10 @@ def main():
             log.error("We are in track mode but what should I do?")
 
     # most importantly commit stuff to DB
+    #time.sleep(10)
+    log.debug("DB commiting...")
     conn.commit()
+    log.debug("DB closing...")
     conn.close()
     log.debug("DB closed.")
 

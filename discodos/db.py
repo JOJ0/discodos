@@ -218,22 +218,23 @@ def update_track_in_mix(conn, mix_track_id, track_no,
 # second part of track in mix update
 def update_or_insert_track_ext(conn, release_id, track_no,
                         key, key_notes, bpm, notes):
-    cur = conn.cursor()
-    cur.execute('''UPDATE track_ext SET key = ?, key_notes = ?,
-                       bpm = ?, notes = ?
-                       WHERE d_release_id == ?
-                       AND d_track_no == ?
-                       ''',
-                       (key, key_notes,
-                        bpm, notes, release_id, track_no))
-    log.info("DB: update track_ext rowcount: %s", cur.rowcount)
-    # if 0 rows -> was not found (actually same as select), do insert
-    log.debug("release_id: %s", release_id)
-    if cur.rowcount == 0 and release_id:
-        cur.execute('''INSERT INTO track_ext (key, key_notes, bpm, notes,
-                                              d_release_id, d_track_no)
-                       VALUES (?, ?, ?, ?, ?, ?)''',
-                       (key, key_notes, bpm, notes,
-                        release_id, track_no))
-    log.info("DB: insert track_ext rowcount: %s", cur.rowcount)
-    return cur.lastrowid
+    with conn:
+        cur = conn.cursor()
+        cur.execute('''UPDATE track_ext SET key = ?, key_notes = ?,
+                           bpm = ?, notes = ?
+                           WHERE d_release_id == ?
+                           AND d_track_no == ?
+                           ''',
+                           (key, key_notes,
+                            bpm, notes, release_id, track_no))
+        log.info("DB: update track_ext rowcount: %s", cur.rowcount)
+        # if 0 rows -> was not found (actually same as select), do insert
+        log.info("release_id: %s", release_id)
+        if cur.rowcount == 0:
+            cur.execute('''INSERT INTO track_ext (key, key_notes, bpm, notes,
+                                                  d_release_id, d_track_no)
+                           VALUES (?, ?, ?, ?, ?, ?)''',
+                           (key, key_notes, bpm, notes,
+                            release_id, track_no))
+            log.info("DB: insert track_ext rowcount: %s", cur.rowcount)
+        #return cur.lastrowid
