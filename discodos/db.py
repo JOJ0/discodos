@@ -115,7 +115,7 @@ def get_last_track_in_mix(conn, mix_id):
 
 def get_full_mix(conn, mix_id, detail="coarse"):
     cur = conn.cursor()
-    log.debug('DB getting mix table by ID: %s\n', mix_id)
+    log.info('DB getting mix table by ID: %s\n', mix_id)
     if detail == "coarse":
         cur.execute('''SELECT track_pos, discogs_title, track_no,
                                trans_rating, key, bpm
@@ -134,8 +134,8 @@ def get_full_mix(conn, mix_id, detail="coarse"):
                            WHERE mix_track.mix_id == ?
                            ORDER BY mix_track.track_pos''', (mix_id, ))
     else:
-        cur.execute('''SELECT track_pos, discogs_title, d_track_name,
-                               track_no, trans_rating, trans_notes, key, key_notes, bpm
+        cur.execute('''SELECT track_pos, discogs_title, d_track_name, track_no,
+                               trans_rating, trans_notes, key, key_notes, bpm, notes
                            FROM
                              mix_track
                                  INNER JOIN mix
@@ -177,11 +177,13 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
     return cur.lastrowid
 
 def get_one_mix_track(conn, mix_id, position):
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    log.debug('DB getting details of a mix-track by ID %s and Position %s\n',
+    log.debug('DB getting details of a mix-track by ID %s and position %s\n',
                mix_id, position)
     cur.execute('''SELECT track_pos, discogs_title, d_track_name, track_no,
-                          trans_rating, trans_notes, key, key_notes, bpm, mix_track_id
+                          trans_rating, trans_notes, key, key_notes, bpm, notes,
+                          mix_track_id, track.d_release_id
                        FROM
                          mix_track
                              INNER JOIN mix
@@ -199,14 +201,38 @@ def get_one_mix_track(conn, mix_id, position):
     rows = cur.fetchone()
     return rows
 
+# first part of track in mix update
 def update_track_in_mix(conn, mix_track_id, track_no,
                         track_pos_new, trans_rating, trans_notes,):
     cur = conn.cursor()
-    cur.execute('''UPDATE mix_track SET track_no = ?,
-                       track_pos = ?, trans_rating = ?, trans_notes = ?
+    cur.execute('''UPDATE mix_track SET track_no = ?, track_pos = ?,
+                       trans_rating = ?, trans_notes = ?
                        WHERE mix_track_id == ?
                        ''',
                        (track_no, track_pos_new,
                         trans_rating, trans_notes, mix_track_id))
-    log.info("DB: cur.rowcount: %s", cur.rowcount)
+    log.info("DB: update_track_in_mix rowcount: %s", cur.rowcount)
+    return cur.lastrowid
+
+# second part of track in mix update
+def update_or_insert_track_ext(conn, release_id, track_no,
+                        key, key_notes, bpm, notes):
+    cur = conn.cursor()
+    cur.execute('''UPDATE track_ext SET key = ?, key_notes = ?,
+                       bpm = ?, notes = ?
+                       WHERE d_release_id == ?
+                       AND d_track_no == ?
+                       ''',
+                       (key, key_notes,
+                        bpm, notes, release_id, track_no))
+    log.info("DB: update track_ext rowcount: %s", cur.rowcount)
+    # if 0 rows -> was not found (actually same as select), do insert
+    log.debug("release_id: %s", release_id)
+    if cur.rowcount == 0 and release_id:
+        cur.execute('''INSERT INTO track_ext (key, key_notes, bpm, notes,
+                                              d_release_id, d_track_no)
+                       VALUES (?, ?, ?, ?, ?, ?)''',
+                       (key, key_notes, bpm, notes,
+                        release_id, track_no))
+    log.info("DB: insert track_ext rowcount: %s", cur.rowcount)
     return cur.lastrowid

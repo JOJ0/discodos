@@ -124,30 +124,32 @@ def ask_user(text=""):
     return input(text)
 
 # UI: what info should be edited in mix-track
-def ask_details_to_edit(track_details):
+def ask_details_to_edit(_track_det):
     _answers={}
     _answers['track_no'] = [ask_user(
                            "Fix track number on record (eg B2) ? ({}) ".format(
-                           track_details[3])), track_details[3]]
+                           _track_det[3])), _track_det[3]]
     _answers['track_pos'] = ["x", False]
     while not is_number(_answers['track_pos'][0]):
         _answers['track_pos'] = [ask_user(
                                 "Move track to new position? ({}) ".format(
-                                track_details[0])), track_details[0]]
+                                _track_det[0])), _track_det[0]]
         if _answers['track_pos'][0] == "":
             break
     _answers['trans_rating'] = [ask_user("Rate transition? ({}) ".format(
-                               track_details[4])), track_details[4]]
+                               _track_det[4])), _track_det[4]]
     _answers['trans_notes'] = [ask_user(
                               "Other notes on this transition? ({}) ".format(
-                              track_details[5])), track_details[5]]
+                              _track_det[5])), _track_det[5]]
     _answers['key'] = [ask_user("The tracks musical key? ({}) ".format(
-                      track_details[6])), track_details[6]]
+                      _track_det[6])), _track_det[6]]
     _answers['key_notes'] = [ask_user(
                             "More music notes (eg Bassline tones)? ({}) ".format(
-                            track_details[7])), track_details[7]]
+                            _track_det[7])), _track_det[7]]
     _answers['bpm'] = [ask_user("The tracks BPM? ({}) ".format(
-                             track_details[8])), track_details[8]]
+                             _track_det[8])), _track_det[8]]
+    _answers['notes'] = [ask_user("General notes on track? ({}) ".format(
+                             _track_det['notes'])), _track_det['notes']]
     final_answers = {}
     for key,answ in _answers.items():
         #log.info("iterating through answers")
@@ -215,13 +217,13 @@ def all_releases_table(release_data):
 # tabulate tracklist COARSLY
 def mix_table_coarse(mix_data):
     return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Tr.Pos", "Rating", "Key", "BPM"])
+        headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"])
 
 # tabulate tracklist in DETAIL
 def mix_table_fine(mix_data):
     return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Tr.Name", "Tr.Pos", "Rating", "Rating notes", 
-                 "Key", "Key notes", "BPM"])
+        headers=["#", "Release", "Track\nName", "Track\nPos", "Trans.\nRating",
+        "Trans.\nR. Notes", "Key", "Key\nNotes", "BPM", "Track\nNotes"])
 
 # tabulate ALl mixes
 def all_mixes_table(mixes_data):
@@ -354,8 +356,9 @@ def main():
     if not args.offline_mode == True:
         userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
         try: 
-            d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                                  user_token=userToken)
+            d = discogs_client.Client(
+                    "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+                    user_token=userToken)
             me = d.identity()
             online = True
         except Exception:
@@ -401,7 +404,8 @@ def main():
                 if is_number(args.mix_name):
                     log.error("Mix name can't be a number!")
                 else:
-                    played = ask_user(text="When did you (last) play it? ")
+                    played = ask_user(
+                               text="When did you (last) play it? eg 2018-01-01 ")
                     venue = ask_user(text="And where? ")
                     created_id = db.add_new_mix(conn, args.mix_name, played, venue)
                     conn.commit()
@@ -441,10 +445,20 @@ def main():
                 log.info("current: %s", track_details)
                 edit_answers = ask_details_to_edit(track_details)
                 log.info("answers: %s", edit_answers)
-                db.update_track_in_mix(conn, track_details[9],
+                db.update_track_in_mix(conn,
+                    track_details['mix_track_id'],
                     edit_answers['track_no'],
                     edit_answers['track_pos'],
-                    edit_answers['trans_rating'], edit_answers['trans_notes'])
+                    edit_answers['trans_rating'],
+                    edit_answers['trans_notes'])
+                db.update_or_insert_track_ext(conn,
+                    track_details['d_release_id'],
+                    edit_answers['track_no'],
+                    edit_answers['key'],
+                    edit_answers['key_notes'],
+                    edit_answers['bpm'],
+                    edit_answers['notes'],
+                    )
                 # FIXME other 2 tables
                 pretty_print_mix_tracklist(mix_id, mix_info)
             else:
