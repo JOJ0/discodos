@@ -83,7 +83,7 @@ def main():
                                          mix_track_id INTEGER PRIMARY KEY,
                                          mix_id INTEGER,
                                          d_release_id INTEGER NOT NULL,
-                                         track_no TEXT NOT NULL,
+                                         d_track_no TEXT NOT NULL,
                                          track_pos INTEGER NOT NULL,
                                          trans_rating TEXT,
                                          trans_notes TEXT,

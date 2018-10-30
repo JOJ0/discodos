@@ -117,7 +117,7 @@ def get_full_mix(conn, mix_id, detail="coarse"):
     cur = conn.cursor()
     log.info('DB getting mix table by ID: %s\n', mix_id)
     if detail == "coarse":
-        cur.execute('''SELECT track_pos, discogs_title, track_no,
+        cur.execute('''SELECT track_pos, discogs_title, mix_track.d_track_no,
                                trans_rating, key, bpm
                            FROM
                              mix_track
@@ -127,14 +127,15 @@ def get_full_mix(conn, mix_id, detail="coarse"):
                                    ON mix_track.d_release_id = release.discogs_id
                                      LEFT OUTER JOIN track
                                      ON mix_track.d_release_id = track.d_release_id
-                                     AND mix_track.track_no = track.d_track_no
+                                     AND mix_track.d_track_no = track.d_track_no
                                        LEFT OUTER JOIN track_ext
-                                       ON track.d_release_id = track_ext.d_release_id
-                                       AND track.d_track_no = track_ext.d_track_no
+                                       ON mix_track.d_release_id = track_ext.d_release_id
+                                       AND mix_track.d_track_no = track_ext.d_track_no
                            WHERE mix_track.mix_id == ?
                            ORDER BY mix_track.track_pos''', (mix_id, ))
     else:
-        cur.execute('''SELECT track_pos, discogs_title, d_track_name, track_no,
+        cur.execute('''SELECT track_pos, discogs_title, d_track_name,
+                               mix_track.d_track_no,
                                trans_rating, trans_notes, key, key_notes, bpm, notes
                            FROM
                              mix_track
@@ -144,10 +145,10 @@ def get_full_mix(conn, mix_id, detail="coarse"):
                                    ON mix_track.d_release_id = release.discogs_id
                                      LEFT OUTER JOIN track
                                      ON mix_track.d_release_id = track.d_release_id
-                                     AND mix_track.track_no = track.d_track_no
+                                     AND mix_track.d_track_no = track.d_track_no
                                        LEFT OUTER JOIN track_ext
-                                       ON track.d_release_id = track_ext.d_release_id
-                                       AND track.d_track_no = track_ext.d_track_no
+                                       ON mix_track.d_release_id = track_ext.d_release_id
+                                       AND mix_track.d_track_no = track_ext.d_track_no
                            WHERE mix_track.mix_id == ?
                            ORDER BY mix_track.track_pos''', (mix_id, ))
     rows = cur.fetchall()
@@ -168,7 +169,7 @@ def get_tracks_in_mixes(conn):
 def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                      trans_rating='', trans_notes=''):
     cur = conn.cursor()
-    cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, track_no, track_pos,
+    cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, d_track_no, track_pos,
                        trans_rating, trans_notes)
                        VALUES(?, ?, ?, ?, ?, ?)''',
                        (mix_id, release_id, track_no, track_pos,
@@ -181,9 +182,9 @@ def get_one_mix_track(conn, mix_id, position):
     cur = conn.cursor()
     log.debug('DB getting details of a mix-track by ID %s and position %s\n',
                mix_id, position)
-    cur.execute('''SELECT track_pos, discogs_title, d_track_name, track_no,
+    cur.execute('''SELECT track_pos, discogs_title, d_track_name, mix_track.d_track_no,
                           trans_rating, trans_notes, key, key_notes, bpm, notes,
-                          mix_track_id, track.d_release_id
+                          mix_track_id, mix_track.d_release_id
                        FROM
                          mix_track
                              INNER JOIN mix
@@ -192,10 +193,10 @@ def get_one_mix_track(conn, mix_id, position):
                                ON mix_track.d_release_id = release.discogs_id
                                  LEFT OUTER JOIN track
                                  ON mix_track.d_release_id = track.d_release_id
-                                 AND mix_track.track_no = track.d_track_no
+                                 AND mix_track.d_track_no = track.d_track_no
                                    LEFT OUTER JOIN track_ext
-                                   ON track.d_release_id = track_ext.d_release_id
-                                   AND track.d_track_no = track_ext.d_track_no
+                                   ON mix_track.d_release_id = track_ext.d_release_id
+                                   AND mix_track.d_track_no = track_ext.d_track_no
                        WHERE mix_track.mix_id == ?
                          AND mix_track.track_pos == ?''', (mix_id, position))
     rows = cur.fetchone()
@@ -205,7 +206,7 @@ def get_one_mix_track(conn, mix_id, position):
 def update_track_in_mix(conn, mix_track_id, track_no,
                         track_pos_new, trans_rating, trans_notes,):
     cur = conn.cursor()
-    cur.execute('''UPDATE mix_track SET track_no = ?, track_pos = ?,
+    cur.execute('''UPDATE mix_track SET d_track_no = ?, track_pos = ?,
                        trans_rating = ?, trans_notes = ?
                        WHERE mix_track_id == ?
                        ''',
