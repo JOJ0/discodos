@@ -125,42 +125,38 @@ def ask_user(text=""):
 
 # UI: what info should be edited in mix-track
 def ask_details_to_edit(_track_det):
-    _answers={}
-    _answers['track_no'] = [ask_user(
-                           "Fix track number on record (eg B2) ? ({}) ".format(
-                           _track_det[3])), _track_det[3]]
-    _answers['track_pos'] = ["x", False]
-    while not is_number(_answers['track_pos'][0]):
-        _answers['track_pos'] = [ask_user(
-                                "Move track to new position? ({}) ".format(
-                                _track_det[0])), _track_det[0]]
-        if _answers['track_pos'][0] == "":
-            break
-    _answers['trans_rating'] = [ask_user("Rate transition? ({}) ".format(
-                               _track_det[4])), _track_det[4]]
-    _answers['trans_notes'] = [ask_user(
-                              "Other notes on this transition? ({}) ".format(
-                              _track_det[5])), _track_det[5]]
-    _answers['key'] = [ask_user("The tracks musical key? ({}) ".format(
-                      _track_det[6])), _track_det[6]]
-    _answers['key_notes'] = [ask_user(
-                            "More music notes (eg Bassline tones)? ({}) ".format(
-                            _track_det[7])), _track_det[7]]
-    _answers['bpm'] = [ask_user("The tracks BPM? ({}) ".format(
-                             _track_det[8])), _track_det[8]]
-    _answers['notes'] = [ask_user("General notes on track? ({}) ".format(
-                             _track_det['notes'])), _track_det['notes']]
-    final_answers = {}
-    for key,answ in _answers.items():
-        #log.info("iterating through answers")
-        #log.info("%s: %s", key, answ)
-        if answ[0] == "":
-            log.info("Answer was empty, keeping previous value: %s", answ[1])
-            final_answers[key] = answ[1] # previous DB value
+    # dbfield, question
+    questions_table = [
+        ["d_track_no", "Fix track number on record? eg B2 ? ({}) "],
+        ["track_pos", "Move track to new position in mix? eg 3 ({}) "],
+        ["trans_rating", "Rate transition? eg ++ ({}) "],
+        ["trans_notes", "Other notes on this transition? ({}) "],
+        ["key", "The tracks musical key? eg Am ({}) "],
+        ["key_notes", "More music notes (eg Bassline tones)? ({}) "],
+        ["bpm", "The tracks BPM? ({}) "],
+        ["notes", "General notes on track? ({}) "]
+    ]
+    #print(_track_det['d_track_no'])
+    # collect answers from user input
+    answers = {}
+    answers['track_pos'] = "x"
+    for db_field, question in questions_table:
+        if db_field == 'track_pos':
+            while not is_number(answers['track_pos']):
+                answers[db_field] = ask_user(
+                                         question.format(_track_det[db_field]))
+                if answers[db_field] == "":
+                    answers[db_field] = _track_det[db_field]
+                    break
         else:
-            final_answers[key] = answ[0] # actual user answer
-    #pprint.pprint(final_answers)
-    return final_answers
+            answers[db_field] = ask_user(
+                                     question.format(_track_det[db_field]))
+            if answers[db_field] == "":
+                log.info("Answer was empty, keeping previous value: %s",
+                         _track_det[db_field])
+                answers[db_field] = _track_det[db_field]
+    #pprint.pprint(answers)
+    return answers
 
 # search release online try/except wrapper
 def search_release_online(discogs, id_or_title):
@@ -448,13 +444,13 @@ def main():
                 try:
                     db.update_track_in_mix(conn,
                         track_details['mix_track_id'],
-                        edit_answers['track_no'],
+                        edit_answers['d_track_no'],
                         edit_answers['track_pos'],
                         edit_answers['trans_rating'],
                         edit_answers['trans_notes'])
                     db.update_or_insert_track_ext(conn,
                         track_details['d_release_id'],
-                        edit_answers['track_no'],
+                        edit_answers['d_track_no'],
                         edit_answers['key'],
                         edit_answers['key_notes'],
                         edit_answers['bpm'],
