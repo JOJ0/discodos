@@ -110,7 +110,7 @@ def main():
                                          d_track_no TEXT NOT NULL,
                                          key TEXT,
                                          key_notes TEXT,
-                                         bpm INT,
+                                         bpm INTEGER,
                                          notes TEXT,
                                          PRIMARY KEY (d_release_id, d_track_no)
                                         ); """

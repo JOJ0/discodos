@@ -51,12 +51,13 @@ def search_release_title(conn, discogs_title):
     return rows
 
 def create_track(conn, release_id, track_no, track_title):
-    cur = conn.cursor()
-    cur.execute('''INSERT INTO track(d_release_id, d_track_no,
-                                     d_track_name, import_timestamp)
-                       VALUES(?, ?, ?, datetime('now', 'localtime'))''',
-                       (release_id, track_no, track_title))
-    log.info("cur.rowcount: %s\n", cur.rowcount)
+    with conn:
+        cur = conn.cursor()
+        cur.execute('''INSERT INTO track(d_release_id, d_track_no,
+                                         d_track_name, import_timestamp)
+                           VALUES(?, ?, ?, datetime('now', 'localtime'))''',
+                           (release_id, track_no, track_title))
+        log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
 
