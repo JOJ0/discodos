@@ -61,7 +61,7 @@ def argparser(argv):
         "-v", "--verbose", action='store_true',
         dest='verbose_tracklist',
         help='mix tracklist shows more details')
-    # only --create-mix OR --edit is possible
+    # only one of --create-mix OR --edit OR --add possible
     mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
     mix_subp_excl_group.add_argument(
         "-c", "--create-mix", action='store_true',
@@ -69,6 +69,10 @@ def argparser(argv):
     mix_subp_excl_group.add_argument(
         "-e", "--edit", type=str,
         dest='edit_mix_track',
+        help='add/edit rating, notes, key and other info in mix-tracks')
+    mix_subp_excl_group.add_argument(
+        "-a", "--add-to-mix", type=str,
+        dest='add_release_to_mix',
         help='add/edit rating, notes, key and other info in mix-tracks')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
@@ -91,14 +95,67 @@ def argparser(argv):
     log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
     return arguments 
 
-# util: args checker
-def check_args(cli_args):
-    # exit if mix name is "all" (default) and --create-mix
-    if hasattr(cli_args, 'create_mix') and hasattr(cli_args, 'mix_name'):
-        if args.mix_name == "all" and args.create_mix == True:
-            log.error("Please provide a mix name to be created!")
-            log.error("(Mix name \"all\" is not valid.)")
+# util: args checker, sets global constants
+def check_args(_args):
+    # defaults for all constants
+    global ONLINE
+    ONLINE = True
+    global WANTS_TO_LIST_ALL_RELEASES
+    WANTS_TO_LIST_ALL_RELEASES = False
+    global WANTS_TO_SEARCH_FOR_RELEASE
+    WANTS_TO_SEARCH_FOR_RELEASE = False
+    global WANTS_TO_ADD_TO_MIX
+    WANTS_TO_ADD_TO_MIX = False
+    global WANTS_TO_SHOW_MIX_OVERVIEW
+    WANTS_TO_SHOW_MIX_OVERVIEW = False
+    global WANTS_TO_SHOW_MIX_TRACKLIST
+    WANTS_TO_SHOW_MIX_TRACKLIST = False
+    global WANTS_TO_CREATE_MIX
+    WANTS_TO_CREATE_MIX = False
+    global WANTS_TO_EDIT_MIX_TRACK
+    WANTS_TO_EDIT_MIX_TRACK = False
+    global WANTS_TO_PULL_TRACK_INFO
+    WANTS_TO_PULL_TRACK_INFO = False
+
+    if _args.offline_mode == True:
+        ONLINE = False
+        
+    # RELEASE MODE:
+    if hasattr(_args, 'release_search'):
+        if "all" in _args.release_search:
+            WANTS_TO_LIST_ALL_RELEASES = True
+            ONLINE = False
+        else:
+            WANTS_TO_SEARCH_FOR_RELEASE = True
+            if _args.add_to_mix and _args.track_to_add:
+                WANTS_TO_ADD_TO_MIX = True
+
+    # MIX MODE
+    if hasattr(_args, 'mix_name'):
+        if _args.mix_name == "all":
+            WANTS_TO_SHOW_MIX_OVERVIEW = True
+            ONLINE = False
+            if _args.create_mix == True:
+                log.error("Please provide a mix name to be created!")
+                log.error("(Mix name \"all\" is not valid.)")
+                raise SystemExit(1)
+        else:
+            WANTS_TO_SHOW_MIX_TRACKLIST = True
+            ONLINE = False
+            #if hasattr(_args, 'create_mix')
+            if _args.create_mix:
+                WANTS_TO_CREATE_MIX = True
+            if _args.edit_mix_track:
+                WANTS_TO_EDIT_MIX_TRACK = True
+                
+    # TRACK MODE
+    if hasattr(args, 'track_search'):
+        if args.pull:
+            WANTS_TO_PULL_TRACK_INFO = True
+        else:
+            log.error("Online track search not implemented yet.")
             raise SystemExit(1)
+
 
 # util: args checker: want to add track to mix?
 def wants_to_add_to_mix(cli_args):
@@ -243,7 +300,7 @@ def online_release_table(_result_list):
 
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _args, rel_list):
-    print(rel_list)
+    #print(rel_list)
     if _args.add_to_mix and _args.track_to_add:
         track = _args.track_to_add
         if is_number(_args.add_to_mix):
@@ -336,163 +393,155 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
 # MAIN
 def main():
 	# SETUP / INIT
-    global args
+    global args, ONLINE
     args = argparser(sys.argv)
     # DEBUG stuff
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
     #log.info("dir(args): %s", dir(args))
     check_args(args)
+    log.info("ONLINE: %s", ONLINE)
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
-    online = False
-
 
     # DISCOGS API CONNECTION
-    if not args.offline_mode == True:
+    if ONLINE:
         userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
         try: 
             d = discogs_client.Client(
                     "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
                     user_token=userToken)
             me = d.identity()
-            online = True
+            ONLINE = True
         except Exception:
             log.error("connecting to Discogs API, let's stay offline!\n")
-            online = False
+            ONLINE = False
 
-    if hasattr(args, 'release_search'):
-        if "all" in args.release_search:
-            print_help("Showing all releases, this is gonna take some time")
-            print_help(all_releases_table(db.all_releases(conn)))
+    if WANTS_TO_LIST_ALL_RELEASES:
+        print_help("Showing all releases, this is gonna take some time")
+        print_help(all_releases_table(db.all_releases(conn)))
+    elif WANTS_TO_SEARCH_FOR_RELEASE:
+        db_releases = db.all_releases(conn)
+        searchterm = args.release_search
+        if ONLINE:
+            print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
+            search_results = search_release_online(d, searchterm)
+            # SEARCH RESULTS OUTPUT HAPPENS HERE
+            compiled_results_list = pretty_print_found_release(
+                           search_results, searchterm, db_releases)
+            #####  User wants to add a Track to a Mix #####
+            # FIXME untested, works in offline mode
+            if WANTS_TO_ADD_TO_MIX:
+                add_track_to_mix(conn, args, compiled_results_list)
         else:
-            db_releases = db.all_releases(conn)
-            searchterm = args.release_search
-            if online:
-                print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
-                search_results = search_release_online(d, searchterm)
-                # SEARCH RESULTS OUTPUT HAPPENS HERE
-                compiled_results_list = pretty_print_found_release(
-                               search_results, searchterm, db_releases)
-                #####  User wants to add a Track to a Mix #####
-                # FIXME untested, works in offline mode
-                if wants_to_add_to_mix(args):
-                    add_track_to_mix(conn, args, compiled_results_list)
-            else:
-                print_help('Searching offline DB for \"' + searchterm +'\"')
-                found_offline = search_release_offline(conn, searchterm)
-                # for now only work with first result
-                print_help(offline_release_table(found_offline))
-                #####  User wants to add a Track to a Mix #####
-                if wants_to_add_to_mix(args):
-                    add_track_to_mix(conn, args, found_offline[0])
+            print_help('Searching offline DB for \"' + searchterm +'\"')
+            found_offline = search_release_offline(conn, searchterm)
+            # for now only work with first result
+            print_help(offline_release_table(found_offline))
+            #####  User wants to add a Track to a Mix #####
+            if WANTS_TO_ADD_TO_MIX:
+                add_track_to_mix(conn, args, found_offline[0])
 
 
-    elif hasattr(args, 'mix_name'):
-        # show mix overview
-        if args.mix_name == "all":
-            print_help(all_mixes_table(db.get_all_mixes(conn)))
+    if WANTS_TO_SHOW_MIX_OVERVIEW:
+        print_help(all_mixes_table(db.get_all_mixes(conn)))
         # show mix details
-        else:
-            log.info("A mix_name or ID was given\n")
-            ### CREATE A NEW MIX ###############################################
-            if args.create_mix == True:
-                if is_number(args.mix_name):
-                    log.error("Mix name can't be a number!")
-                else:
-                    played = ask_user(
-                               text="When did you (last) play it? eg 2018-01-01 ")
-                    venue = ask_user(text="And where? ")
-                    created_id = db.add_new_mix(conn, args.mix_name, played, venue)
-                    conn.commit()
-                    print_help("New mix created with ID " + str(created_id))
-                    print_help(all_mixes_table(db.get_all_mixes(conn)))
-                # mix is created (or not), nothing else to do
-                raise SystemExit(0)
-            ### DO STUFF WITH EXISTING MIXES ###################################
-            # if it's a mix ID, load basic mix-info from DB
+    elif WANTS_TO_SHOW_MIX_TRACKLIST:
+        log.info("A mix_name or ID was given\n")
+        ### CREATE A NEW MIX ###############################################
+        if WANTS_TO_CREATE_MIX:
             if is_number(args.mix_name):
-                mix_id = args.mix_name
-                try:
-                    mix_info = db.get_mix_info(conn, mix_id)
-                    mix_name = mix_info[1]
-                except:
-                    print_help("This Mix ID is not existing yet!")
-                    #raise Exception
-                    raise SystemExit(1)
+                log.error("Mix name can't be a number!")
             else:
-                mix_name = args.mix_name
-                # if it's a mix-name, get the id
-                try:
-                    mix_id_tuple = db.get_mix_id(conn, mix_name)
-                    log.info('%s', mix_id_tuple)
-                    mix_id = mix_id_tuple[0]
-                except:
-                    print_help("No mix-name matching.")
-                    raise SystemExit(1)
-                # load basic mix-info from DB, FIXME error handling necessary??
+                played = ask_user(
+                           text="When did you (last) play it? eg 2018-01-01 ")
+                venue = ask_user(text="And where? ")
+                created_id = db.add_new_mix(conn, args.mix_name, played, venue)
+                conn.commit()
+                print_help("New mix created with ID " + str(created_id))
+                print_help(all_mixes_table(db.get_all_mixes(conn)))
+            # mix is created (or not), nothing else to do
+            raise SystemExit(0)
+        ### DO STUFF WITH EXISTING MIXES ###################################
+        # if it's a mix ID, load basic mix-info from DB
+        if is_number(args.mix_name):
+            mix_id = args.mix_name
+            try:
                 mix_info = db.get_mix_info(conn, mix_id)
-            ### EDIT A MIX-TRACK ###############################################
-            if args.edit_mix_track:
-                edit_track = args.edit_mix_track
-                print_help("Editing track "+edit_track+" in \""+
-                            mix_name+"\":")
-                track_details = db.get_one_mix_track(conn, mix_id, edit_track)
-                log.info("current d_release_id: %s", track_details['d_release_id'])
-                edit_answers = ask_details_to_edit(track_details)
-                log.info("answers: %s", edit_answers)
-                try:
-                    db.update_track_in_mix(conn,
-                        track_details['mix_track_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['track_pos'],
-                        edit_answers['trans_rating'],
-                        edit_answers['trans_notes'])
-                    db.update_or_insert_track_ext(conn,
-                        track_details['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['key'],
-                        edit_answers['key_notes'],
-                        edit_answers['bpm'],
-                        edit_answers['notes'],
-                        )
-                except Exception as edit_err:
-                    log.error("Something went wrong on mix_track edit!")
-                    raise edit_err
-                    raise SystemExit(1)
-                pretty_print_mix_tracklist(mix_id, mix_info)
-            else:
-                ### SHOW MIX-TRACKLIST
-                pretty_print_mix_tracklist(mix_id, mix_info)
-
-    elif hasattr(args, 'track_search'):
-        if args.pull:
-            if online:
-                print_help("Let's update tracks used in mixes with info from Discogs...")
-                all_mixed_tracks = db.get_tracks_in_mixes(conn)
-                for mix_track in all_mixed_tracks:
-
-                    rate_limit_slow_downer(d, remaining=5, sleep=2)
-                    name = tracklist_parse(d.release(mix_track[2]).tracklist, mix_track[3])
-                    if name:
-                        print("Adding track info: "+ str(mix_track[2])+" "+
-                                mix_track[3] + " " + name)
-                        try:
-                            db.create_track(conn, mix_track[2], mix_track[3], name)
-                        except sqlerr as err:
-                            log.warning("Not added, probably already there.\n")
-                            log.info("DB returned: %s", err)
-                    else:
-                        print("Adding track info: "+ str(mix_track[2])+" "+
-                                mix_track[3])
-                        log.error("No trackname found for Tr.Pos %s",
-                                mix_track[3])
-                        log.error("Probably you misspelled? (eg A vs. A1)\n")
-            else:
-                print_help("Not online can't pull from Discogs...")
-
+                mix_name = mix_info[1]
+            except:
+                print_help("This Mix ID is not existing yet!")
+                #raise Exception
+                raise SystemExit(1)
         else:
-            log.error("We are in track mode but what should I do?")
+            mix_name = args.mix_name
+            # if it's a mix-name, get the id
+            try:
+                mix_id_tuple = db.get_mix_id(conn, mix_name)
+                log.info('%s', mix_id_tuple)
+                mix_id = mix_id_tuple[0]
+            except:
+                print_help("No mix-name matching.")
+                raise SystemExit(1)
+            # load basic mix-info from DB, FIXME error handling necessary??
+            mix_info = db.get_mix_info(conn, mix_id)
+        ### EDIT A MIX-TRACK ###############################################
+        if WANTS_TO_EDIT_MIX_TRACK:
+            edit_track = args.edit_mix_track
+            print_help("Editing track "+edit_track+" in \""+
+                        mix_name+"\":")
+            track_details = db.get_one_mix_track(conn, mix_id, edit_track)
+            log.info("current d_release_id: %s", track_details['d_release_id'])
+            edit_answers = ask_details_to_edit(track_details)
+            log.info("answers: %s", edit_answers)
+            try:
+                db.update_track_in_mix(conn,
+                    track_details['mix_track_id'],
+                    edit_answers['d_track_no'],
+                    edit_answers['track_pos'],
+                    edit_answers['trans_rating'],
+                    edit_answers['trans_notes'])
+                db.update_or_insert_track_ext(conn,
+                    track_details['d_release_id'],
+                    edit_answers['d_track_no'],
+                    edit_answers['key'],
+                    edit_answers['key_notes'],
+                    edit_answers['bpm'],
+                    edit_answers['notes'],
+                    )
+            except Exception as edit_err:
+                log.error("Something went wrong on mix_track edit!")
+                raise edit_err
+                raise SystemExit(1)
+            pretty_print_mix_tracklist(mix_id, mix_info)
+        else:
+            ### SHOW MIX-TRACKLIST
+            pretty_print_mix_tracklist(mix_id, mix_info)
+
+    if WANTS_TO_PULL_TRACK_INFO:
+        if ONLINE:
+            print_help("Let's update tracks used in mixes with info from Discogs...")
+            all_mixed_tracks = db.get_tracks_in_mixes(conn)
+            for mix_track in all_mixed_tracks:
+
+                rate_limit_slow_downer(d, remaining=5, sleep=2)
+                name = tracklist_parse(d.release(mix_track[2]).tracklist, mix_track[3])
+                if name:
+                    print("Adding track info: "+ str(mix_track[2])+" "+
+                            mix_track[3] + " " + name)
+                    try:
+                        db.create_track(conn, mix_track[2], mix_track[3], name)
+                    except sqlerr as err:
+                        log.info("Not added, probably already there.\n")
+                        log.info("DB returned: %s", err)
+                else:
+                    print("Adding track info: "+ str(mix_track[2])+" "+
+                            mix_track[3])
+                    log.error("No trackname found for Tr.Pos %s",
+                            mix_track[3])
+                    log.error("Probably you misspelled? (eg A vs. A1)\n")
+        else:
+            print_help("Not online can't pull from Discogs...")
 
     # most importantly commit stuff to DB
     #time.sleep(10)
