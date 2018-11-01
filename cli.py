@@ -156,12 +156,6 @@ def check_args(_args):
             log.error("Online track search not implemented yet.")
             raise SystemExit(1)
 
-
-# util: args checker: want to add track to mix?
-def wants_to_add_to_mix(cli_args):
-    if cli_args.add_to_mix and cli_args.track_to_add:
-        return True
-
 # util: checks for numbers
 def is_number(s):
     try:
