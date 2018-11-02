@@ -116,10 +116,9 @@ def check_args(_args):
     WANTS_TO_EDIT_MIX_TRACK = False
     global WANTS_TO_PULL_TRACK_INFO
     WANTS_TO_PULL_TRACK_INFO = False
+    global WANTS_VERBOSE_MIX_TRACKLIST
+    WANTS_VERBOSE_MIX_TRACKLIST = False
 
-    if _args.offline_mode == True:
-        ONLINE = False
-        
     # RELEASE MODE:
     if hasattr(_args, 'release_search'):
         if "all" in _args.release_search:
@@ -147,6 +146,8 @@ def check_args(_args):
                 WANTS_TO_CREATE_MIX = True
             if _args.edit_mix_track:
                 WANTS_TO_EDIT_MIX_TRACK = True
+            if _args.verbose_tracklist:
+                WANTS_VERBOSE_MIX_TRACKLIST = True
                 
     # TRACK MODE
     if hasattr(args, 'track_search'):
@@ -155,6 +156,9 @@ def check_args(_args):
         else:
             log.error("Online track search not implemented yet.")
             raise SystemExit(1)
+
+    if _args.offline_mode == True:
+        ONLINE = False
 
 # util: checks for numbers
 def is_number(s):
@@ -294,25 +298,41 @@ def online_release_table(_result_list):
 
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _args, rel_list):
-    #print(rel_list)
-    if _args.add_to_mix and _args.track_to_add:
-        track = _args.track_to_add
-        if is_number(_args.add_to_mix):
-            mix_id = _args.add_to_mix
+    def _user_is_sure(pos):
+        if ONLINE:
+            quest=(
+            'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
+                .format(track, rel_list[1], rel_list[2], int(mix_id), pos))
         else:
-            mix_id = db.get_mix_id(conn, _args.add_to_mix) 
-        if db.mix_id_existing(conn, mix_id):
-            last_track = db.get_last_track_in_mix(conn, mix_id)
-            log.debug("Currently last track in mix is: %s", last_track[0])
-            if is_number(last_track[0]):
+            quest=(
+            'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
+                .format(track, rel_list[1], int(mix_id), pos))
+        _answ = ask_user(quest)
+        if _answ.lower() == "y" or _answ.lower() == "":
+            return True
+    log.info("Adding release_list to mix: %s", rel_list)
+    track = _args.track_to_add
+    if is_number(_args.add_to_mix):
+        mix_id = _args.add_to_mix
+    else:
+        mix_id = db.get_mix_id(conn, _args.add_to_mix)
+    if db.mix_id_existing(conn, mix_id):
+        last_track = db.get_last_track_in_mix(conn, mix_id)
+        log.debug("Currently last track in mix is: %s", last_track[0])
+        if is_number(last_track[0]):
+            if _user_is_sure(last_track[0]):
                 current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
-                                 track, track_pos = last_track[0] + 1)
-            else:
-                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
-                                 track, track_pos = 1)
-            print_help(mix_table_coarse(db.get_full_mix(conn, mix_id)))
+                             track, track_pos = last_track[0] + 1)
         else:
-            print_help("Mix ID "+str(mix_id)+" is not existing yet.")
+            if _user_is_sure(1):
+                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
+                             track, track_pos = 1)
+        if WANTS_VERBOSE_MIX_TRACKLIST:
+            print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
+        else:
+            print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
+    else:
+        print_help("Mix ID "+str(mix_id)+" is not existing yet.")
 
 # Discogs: gets track name from discogs tracklist object via track_number, eg. A1
 def tracklist_parse(d_tracklist, track_number):
@@ -366,7 +386,7 @@ def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
 # show pretty mix-tracklist
 def pretty_print_mix_tracklist(_mix_id, _mix_info):
     print_help(mix_info_header(_mix_info))
-    if args.verbose_tracklist:
+    if WANTS_VERBOSE_MIX_TRACKLIST:
         full_mix = db.get_full_mix(conn, _mix_id, detail="fine")
     else:
         full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
@@ -377,7 +397,7 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
            log.debug(str(row))
         log.debug("")
         # now really
-        if args.verbose_tracklist:
+        if WANTS_VERBOSE_MIX_TRACKLIST:
             print_help(mix_table_fine(full_mix))
         else:
             print_help(mix_table_coarse(full_mix))
