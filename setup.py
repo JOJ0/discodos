@@ -2,6 +2,7 @@
 # pip install discogs_client
 
 from discodos import log, db
+from discodos.utils import *
 import discogs_client
 import csv
 import time
@@ -18,9 +19,9 @@ def argparser(argv):
         help="increases log verbosity for each occurence.")
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
-		"-i", "--import", dest="release_import",
-        action="store_true",
-        help="should collection be imported from discogs")
+		"-i", "--import", dest="release_id",
+        type=int, default=0, nargs="*",
+        help="import release ID from Discogs, default is _all_ releases")
     parser_group1.add_argument(
 		"-u", "--update-db", dest="update_db",
         action="store_true",
@@ -33,7 +34,10 @@ def argparser(argv):
 # main program
 def main():
     args=argparser(sys.argv)
-    print("This script sets up db tables and eventually imports from Discogs into DISCOBASE")
+    print_help(
+      "This script sets up the DISCOBASE, and imports data from Discogs")
+    log.info(vars(args))
+    #print(vars(args))
 
     # DB setup
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
@@ -41,18 +45,8 @@ def main():
 
     if args.update_db:
         print("Updating DB schema - EXPERIMENTAL")
-
         sql_settings = "PRAGMA foreign_keys = OFF;"
         db.create_table(conn, sql_settings)
-        #sql_alter_some_table = """ ALTER TABLE track (
-        #                                    d_release_id LONG NOT NULL,
-        #                                    d_track_no TEXT NOT NULL,
-        #                                    d_track_name TEXT,
-        #                                    import_timestamp TEXT,
-        #                                    PRIMARY KEY (d_release_id, d_track_no)
-        #                                    FOREIGN KEY (d_release_id)
-        #                                        REFERENCES release(d_discogs_id)
-        #                                ); """
         #sql_alter_something = """ALTER TABLE mix_track
         #                                 FOREIGN KEY (mix_id)
         #                                    REFERENCES mix(mix_id)
@@ -61,10 +55,8 @@ def main():
         #                                ; """
         #db.create_table(conn, sql_alter_something)
         sql_settings = "PRAGMA foreign_keys = ON;"
-        db.create_table(conn, sql_settings)
         print("DB schema update DONE - EXPERIMENTAL")
         raise SystemExit(0)
-
 
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                        discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
@@ -124,41 +116,68 @@ def main():
     db.create_table(conn, sql_create_mix_track_table)
     db.create_table(conn, sql_create_track_table)
     db.create_table(conn, sql_create_track_ext_table)
-    
-    # only import if we really want to, FIXME import takes quite some time
-    if args.release_import:
-        # discogs api connection
-        userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-        d = discogs_client.Client("J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                                  user_token=userToken)
+    # in INFO level show args object again after longish create_table msgs
+    log.info(vars(args))
 
-        print("Gathering collection and putting necessary fields into DISCOBASE")
-        me = d.identity()
-        #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
+    # IMPORT MODE, if we said so
+    if hasattr(args, "release_id"):
+        # PREPARE DISCOGS API
+        try:
+            userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+            d = discogs_client.Client(
+                    "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+                    user_token=userToken)
+            me = d.identity()
+        except HTTPError:
+            print("Can't connect do Discogs! HTTPError. Quitting.")
+            raise SystemExit(1)
+        except Exception:
+            print("Can't connect do Discogs! Quitting")
+            raise SystemExit(1)
 
-        insert_count = 0
-        for r in me.collection_folders[0].releases:
-    
-            if int(d._fetcher.rate_limit_remaining) < 5:
-                log.info("Discogs request rate limit is about to exceed,\
-                          let's wait a bit: %s\n",
+        # IMPORT OF WHOLE COLLECTION is the default
+        if 0 in args.release_id or len(args.release_id) == 0:
+            print(
+            "Gathering collection and putting necessary fields into DISCOBASE")
+            insert_count = 0
+            for r in me.collection_folders[0].releases:
+                rate_limit_slow_downer(d, remaining=5, sleep=2)
+                print("Release :", r.release.id, "-", r.release.title)
+                #vars(r.release)
+                #for track in r.release.tracklist:
+                #    log.debug("Track:", track)
+                    #time.sleep(0.2)
+                last_row_id = db.create_release(conn, r)
+                # FIXME I don't know if cur.lastrowid is False if unsuccessful
+                if last_row_id:
+                    #log.info("last_row_id: %s", last_row_id)
+                    insert_count = insert_count + 1
+                    print("Created so far:", insert_count, "")
+                    log.info("discogs-rate-limit-remaining: %s\n",
                              d._fetcher.rate_limit_remaining)
-                time.sleep(2)
+                else:
+                    print_help("Something wrong while importing \""+
+                               r.release.title+"\"")
+        else:
+            # IMPORT SPECIFIC RELEASE ID
+            #print(dir(me.collection_folders[0].releases))
+            #print(dir(me))
+            #print(me.collection_item)
+            print_help("Asking Discogs for release ID {:d}".format(
+                   args.release_id[0]))
+            result = d.release(args.release_id[0])
+            print_help("Release ID is valid: "+result.title+"\n"+
+                       "Let's see if it's in your collection...)")
 
-            print("Release ID:", r.release.id, ", Title:", r.release.title)
-            #vars(r.release)
-            #for track in r.release.tracklist:
-            #    log.debug("Track:", track)
-                #time.sleep(0.2)
-            last_row_id = db.create_release(conn, r)
-            # FIXME I don't know if cur.lastrowid is False if unsuccessful
-            if last_row_id:
-                #log.info("last_row_id: %s", last_row_id)
-                insert_count = insert_count + 1
-                print("Created so far:", insert_count, "")
-                log.info("discogs-rate-limit-remaining: %s\n", d._fetcher.rate_limit_remaining)
-            else:
-                print_help("Something wrong while importing \""+r.release.title+"\"")
+            for r in me.collection_folders[0].releases:
+                #rate_limit_slow_downer(d, remaining=5, sleep=2)
+                if r.release.id == args.release_id[0]:
+                    print("Found it:", r.release.id, "-", r.release.title)
+                    print("Importing to DISCOBASE.\n")
+                    last_row_id = db.create_release(conn, r)
+                    break
+            if not last_row_id:
+                print_help("This is not the release you are looking for!")
 
     conn.commit()
     conn.close()
@@ -176,6 +195,7 @@ if __name__ == "__main__":
 ################# old stuff leave for reference ####################
 def old_fold_away():
     print("crap")
+    #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
     #rows = []
 
     #print("Crunching data...")

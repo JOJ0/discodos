@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from discodos import log, db
+from discodos.utils import *
 import discogs_client
 import csv
 import time
@@ -159,24 +160,6 @@ def check_args(_args):
 
     if _args.offline_mode == True:
         ONLINE = False
-
-# util: checks for numbers
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-    except TypeError:
-        return False
-
-# util: print a UI message
-def print_help(message):
-    print(''+str(message)+'\n') 
-
-# util: ask user for some string
-def ask_user(text=""):
-    return input(text)
 
 # UI: what info should be edited in mix-track
 def ask_details_to_edit(_track_det):
@@ -339,14 +322,6 @@ def tracklist_parse(d_tracklist, track_number):
     for tr in d_tracklist:
         if tr.position == track_number:
             return tr.title
-
-# Discogs: stay in 60/min rate limit
-def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
-    if int(d_obj._fetcher.rate_limit_remaining) < remaining:
-        log.info("Discogs request rate limit is about to exceed,\
-                  let's wait a bit: %s\n",
-                     d_obj._fetcher.rate_limit_remaining)
-        time.sleep(sleep)
 
 # Discogs: formatted output of release search results
 def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
