@@ -239,3 +239,23 @@ def update_or_insert_track_ext(conn, release_id, track_no,
                             release_id, track_no))
             log.info("DB: insert track_ext rowcount: %s", cur.rowcount)
         #return cur.lastrowid
+
+def get_tracks_from_position(conn, _mix_id, _pos):
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute('''SELECT mix_track_id, track_pos FROM mix_track WHERE mix_id == ?
+                       AND track_pos >= ?''', (_mix_id, _pos))
+    row = cur.fetchall()
+    log.info('DB: get_tracks_from_position: %s\n', row)
+    return row
+
+
+def update_pos_in_mix(conn, mix_track_id, track_pos_new):
+    cur = conn.cursor()
+    cur.execute('''UPDATE mix_track SET track_pos = ?
+                       WHERE mix_track_id == ?
+                       ''',
+                       (track_pos_new,
+                        mix_track_id))
+    log.info("DB: update_pos_in_mix rowcount: %s", cur.rowcount)
+    return cur.lastrowid

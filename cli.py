@@ -74,7 +74,10 @@ def argparser(argv):
     mix_subp_excl_group.add_argument(
         "-a", "--add-to-mix", type=str,
         dest='add_release_to_mix',
-        help='add/edit rating, notes, key and other info in mix-tracks')
+        help='search for discogs release and add it to current mix')
+    mix_subp_excl_group.add_argument(
+        "-r", "--reorder-tracks", action='store_true',
+        help='reorder tracks in current mix')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
         name='track',
@@ -119,6 +122,10 @@ def check_args(_args):
     WANTS_TO_PULL_TRACK_INFO = False
     global WANTS_VERBOSE_MIX_TRACKLIST
     WANTS_VERBOSE_MIX_TRACKLIST = False
+    global WANTS_TO_REORDER_MIX_TRACKLIST
+    WANTS_TO_REORDER_MIX_TRACKLIST = False
+    global WANTS_TO_ADD_AT_POSITION
+    WANTS_TO_ADD_AT_POSITION = False
 
     # RELEASE MODE:
     if hasattr(_args, 'release_search'):
@@ -127,7 +134,10 @@ def check_args(_args):
             ONLINE = False
         else:
             WANTS_TO_SEARCH_FOR_RELEASE = True
-            if _args.add_to_mix and _args.track_to_add:
+            if _args.add_to_mix and _args.track_to_add and _args.add_at_pos:
+                WANTS_TO_ADD_AT_POSITION = True
+                #WANTS_TO_SHOW_MIX_TRACKLIST = True
+            elif _args.add_to_mix and _args.track_to_add:
                 WANTS_TO_ADD_TO_MIX = True
 
     # MIX MODE
@@ -149,6 +159,8 @@ def check_args(_args):
                 WANTS_TO_EDIT_MIX_TRACK = True
             if _args.verbose_tracklist:
                 WANTS_VERBOSE_MIX_TRACKLIST = True
+            if _args.reorder_tracks:
+                WANTS_TO_REORDER_MIX_TRACKLIST = True
                 
     # TRACK MODE
     if hasattr(args, 'track_search'):
@@ -280,7 +292,7 @@ def online_release_table(_result_list):
         headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
 
 # DB wrapper: add a track to a mix
-def add_track_to_mix(conn, _args, rel_list):
+def add_track_to_mix(conn, _args, rel_list, _pos=None):
     def _user_is_sure(pos):
         if ONLINE:
             quest=(
@@ -293,7 +305,7 @@ def add_track_to_mix(conn, _args, rel_list):
         _answ = ask_user(quest)
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
-    log.info("Adding release_list to mix: %s", rel_list)
+    log.info("Adding first item of release_list to mix: %s", rel_list)
     track = _args.track_to_add
     if is_number(_args.add_to_mix):
         mix_id = _args.add_to_mix
@@ -302,8 +314,12 @@ def add_track_to_mix(conn, _args, rel_list):
     if db.mix_id_existing(conn, mix_id):
         last_track = db.get_last_track_in_mix(conn, mix_id)
         log.debug("Currently last track in mix is: %s", last_track[0])
-        if is_number(last_track[0]):
-            if _user_is_sure(last_track[0]):
+        if _pos:
+            if _user_is_sure(int(_pos)):
+                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
+                             track, track_pos = _pos)
+        elif is_number(last_track[0]):
+            if _user_is_sure(last_track[0]+1):
                 current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
                              track, track_pos = last_track[0] + 1)
         else:
@@ -430,6 +446,19 @@ def main():
             #####  User wants to add a Track to a Mix #####
             if WANTS_TO_ADD_TO_MIX:
                 add_track_to_mix(conn, args, found_offline[0])
+            #####  User wants to add Track at given position #####
+            if WANTS_TO_ADD_AT_POSITION:
+                mix_id = args.add_to_mix
+                pos = args.add_at_pos
+                tracks_to_shift = db.get_tracks_from_position(
+                                      conn, mix_id, pos)
+                for t in tracks_to_shift:
+                    print_help(t[0])
+                    print_help(t[1])
+                    db.update_pos_in_mix(conn, t['mix_track_id'], t['track_pos']+1)
+                mix_info = db.get_mix_info(conn, mix_id)
+                add_track_to_mix(conn, args, found_offline[0], _pos=pos)
+
 
 
     if WANTS_TO_SHOW_MIX_OVERVIEW:
@@ -503,10 +532,14 @@ def main():
                 raise edit_err
                 raise SystemExit(1)
             pretty_print_mix_tracklist(mix_id, mix_info)
-        else:
-            ### SHOW MIX-TRACKLIST
+        ### REORDER TRACKLIST
+        elif WANTS_TO_REORDER_MIX_TRACKLIST:
+            print_help("Tracklist reordering not implemented yet!")
+        #### JUST SHOW MIX-TRACKLIST:
+        elif WANTS_TO_SHOW_MIX_TRACKLIST:
             pretty_print_mix_tracklist(mix_id, mix_info)
 
+    ### TRACK MODE
     if WANTS_TO_PULL_TRACK_INFO:
         if ONLINE:
             print_help("Let's update tracks used in mixes with info from Discogs...")
