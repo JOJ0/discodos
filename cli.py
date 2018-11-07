@@ -509,29 +509,33 @@ def main():
             print_help("Editing track "+edit_track+" in \""+
                         mix_name+"\":")
             track_details = db.get_one_mix_track(conn, mix_id, edit_track)
-            log.info("current d_release_id: %s", track_details['d_release_id'])
-            edit_answers = ask_details_to_edit(track_details)
-            log.info("answers: %s", edit_answers)
-            try:
-                db.update_track_in_mix(conn,
-                    track_details['mix_track_id'],
-                    edit_answers['d_track_no'],
-                    edit_answers['track_pos'],
-                    edit_answers['trans_rating'],
-                    edit_answers['trans_notes'])
-                db.update_or_insert_track_ext(conn,
-                    track_details['d_release_id'],
-                    edit_answers['d_track_no'],
-                    edit_answers['key'],
-                    edit_answers['key_notes'],
-                    edit_answers['bpm'],
-                    edit_answers['notes'],
-                    )
-            except Exception as edit_err:
-                log.error("Something went wrong on mix_track edit!")
-                raise edit_err
-                raise SystemExit(1)
-            pretty_print_mix_tracklist(mix_id, mix_info)
+            if track_details:
+                log.info("current d_release_id: %s", track_details['d_release_id'])
+                edit_answers = ask_details_to_edit(track_details)
+                log.info("answers: %s", edit_answers)
+                try:
+                    db.update_track_in_mix(conn,
+                        track_details['mix_track_id'],
+                        edit_answers['d_track_no'],
+                        edit_answers['track_pos'],
+                        edit_answers['trans_rating'],
+                        edit_answers['trans_notes'])
+                    db.update_or_insert_track_ext(conn,
+                        track_details['d_release_id'],
+                        edit_answers['d_track_no'],
+                        edit_answers['key'],
+                        edit_answers['key_notes'],
+                        edit_answers['bpm'],
+                        edit_answers['notes'],
+                        )
+                except Exception as edit_err:
+                    log.error("Something went wrong on mix_track edit!")
+                    raise edit_err
+                    raise SystemExit(1)
+                pretty_print_mix_tracklist(mix_id, mix_info)
+            else:
+                print_help("No track "+edit_track+" in \""+
+                            mix_name+"\".")
         ### REORDER TRACKLIST
         elif WANTS_TO_REORDER_MIX_TRACKLIST:
             print_help("Tracklist reordering not implemented yet!")
