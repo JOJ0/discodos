@@ -236,8 +236,7 @@ def search_release_offline(dbconn, id_or_title):
                 #return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
                 return [release]
             else:
-                release_not_found = ['Not found']
-                #return 'Not found'
+                release_not_found = None
                 return release_not_found
         except Exception as Exc:
             log.error("Not found or Database Exception: %s\n", Exc)
@@ -250,7 +249,7 @@ def search_release_offline(dbconn, id_or_title):
                 # but only first one is used later on... 
                 return [releases]
             else:
-                return ['Not found']
+                return None
         except Exception as Exc:
             log.error("Not found or Database Exception: %s\n", Exc)
             raise Exc
@@ -430,34 +429,40 @@ def main():
         searchterm = args.release_search
         if ONLINE:
             print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
-            search_results = search_release_online(d, searchterm)
-            # SEARCH RESULTS OUTPUT HAPPENS HERE
-            compiled_results_list = pretty_print_found_release(
-                           search_results, searchterm, db_releases)
-            #####  User wants to add a Track to a Mix #####
-            # FIXME untested, works in offline mode
-            if WANTS_TO_ADD_TO_MIX:
-                add_track_to_mix(conn, args, compiled_results_list)
+            try:
+                search_results = search_release_online(d, searchterm)
+                # SEARCH RESULTS OUTPUT HAPPENS HERE
+                compiled_results_list = pretty_print_found_release(
+                    search_results, searchterm, db_releases)
+                #####  User wants to add a Track to a Mix #####
+                # FIXME untested, works in offline mode
+                if WANTS_TO_ADD_TO_MIX:
+                    add_track_to_mix(conn, args, compiled_results_list)
+            except TypeError:
+                print_help('No results')
         else:
             print_help('Searching offline DB for \"' + searchterm +'\"')
-            found_offline = search_release_offline(conn, searchterm)
-            # for now only work with first result
-            print_help(offline_release_table(found_offline))
-            #####  User wants to add a Track to a Mix #####
-            if WANTS_TO_ADD_TO_MIX:
-                add_track_to_mix(conn, args, found_offline[0])
-            #####  User wants to add Track at given position #####
-            if WANTS_TO_ADD_AT_POSITION:
-                mix_id = args.add_to_mix
-                pos = args.add_at_pos
-                tracks_to_shift = db.get_tracks_from_position(
-                                      conn, mix_id, pos)
-                for t in tracks_to_shift:
-                    print_help(t[0])
-                    print_help(t[1])
-                    db.update_pos_in_mix(conn, t['mix_track_id'], t['track_pos']+1)
-                mix_info = db.get_mix_info(conn, mix_id)
-                add_track_to_mix(conn, args, found_offline[0], _pos=pos)
+            try:
+                found_offline = search_release_offline(conn, searchterm)
+                # for now only work with first result
+                print_help(offline_release_table(found_offline))
+                #####  User wants to add a Track to a Mix #####
+                if WANTS_TO_ADD_TO_MIX:
+                    add_track_to_mix(conn, args, found_offline[0])
+                #####  User wants to add Track at given position #####
+                if WANTS_TO_ADD_AT_POSITION:
+                    mix_id = args.add_to_mix
+                    pos = args.add_at_pos
+                    tracks_to_shift = db.get_tracks_from_position(
+                                          conn, mix_id, pos)
+                    for t in tracks_to_shift:
+                        print_help(t[0])
+                        print_help(t[1])
+                        db.update_pos_in_mix(conn, t['mix_track_id'], t['track_pos']+1)
+                    mix_info = db.get_mix_info(conn, mix_id)
+                    add_track_to_mix(conn, args, found_offline[0], _pos=pos)
+            except TypeError:
+                print_help('No results')
 
 
 
