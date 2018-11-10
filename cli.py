@@ -74,7 +74,7 @@ def argparser(argv):
     mix_subp_excl_group.add_argument(
         "-a", "--add-to-mix", type=str,
         dest='add_release_to_mix',
-        help='search for discogs release and add it to current mix')
+        help='search for release and add it to current mix')
     mix_subp_excl_group.add_argument(
         "-r", "--reorder-tracks", type=int,
         dest='reorder_from_pos',
@@ -133,6 +133,8 @@ def check_args(_args):
     WANTS_TO_ADD_AT_POSITION = False
     global WANTS_TO_DELETE_MIX_TRACK
     WANTS_TO_DELETE_MIX_TRACK = False
+    global WANTS_TO_ADD_RELEASE_IN_MIX_MODE
+    WANTS_TO_ADD_RELEASE_IN_MIX_MODE = False
 
     # RELEASE MODE:
     if hasattr(_args, 'release_search'):
@@ -170,6 +172,8 @@ def check_args(_args):
                 WANTS_TO_REORDER_MIX_TRACKLIST = True
             if _args.delete_track_pos:
                 WANTS_TO_DELETE_MIX_TRACK = True
+            if _args.add_release_to_mix:
+                WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
 
     # TRACK MODE
     if hasattr(args, 'track_search'):
@@ -301,40 +305,40 @@ def online_release_table(_result_list):
         headers=["Artist", "Release", "Label", "C", "Year", "Format"]))
 
 # DB wrapper: add a track to a mix
-def add_track_to_mix(conn, _args, rel_list, _pos=None):
+def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
     def _user_is_sure(pos):
         if ONLINE:
             quest=(
             'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
-                .format(track, rel_list[1], rel_list[2], int(mix_id), pos))
+                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), pos))
         else:
             quest=(
             'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
-                .format(track, rel_list[1], int(mix_id), pos))
+                .format(track, _rel_list[0][1], int(mix_id), pos))
         _answ = ask_user(quest)
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
-    log.info("Adding first item of release_list to mix: %s", rel_list)
-    track = _args.track_to_add
-    if is_number(_args.add_to_mix):
-        mix_id = _args.add_to_mix
+    log.info("Adding first item of release_list to mix: %s", _rel_list)
+    track = _track
+    if is_number(_mix_id):
+        mix_id = _mix_id
     else:
-        mix_id = db.get_mix_id(conn, _args.add_to_mix)
+        mix_id = db.get_mix_id(conn, _mix_id)
     if db.mix_id_existing(conn, mix_id):
         last_track = db.get_last_track_in_mix(conn, mix_id)
         log.debug("Currently last track in mix is: %s", last_track[0])
         current_id = False
         if _pos:
             if _user_is_sure(int(_pos)):
-                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
+                current_id = db.add_track_to_mix(conn, mix_id, _rel_list[0][0],
                              track, track_pos = _pos)
         elif is_number(last_track[0]):
             if _user_is_sure(last_track[0]+1):
-                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
+                current_id = db.add_track_to_mix(conn, mix_id, _rel_list[0][0],
                              track, track_pos = last_track[0] + 1)
         else:
             if _user_is_sure(1):
-                current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
+                current_id = db.add_track_to_mix(conn, mix_id, _rel_list[0][0],
                              track, track_pos = 1)
         # FIXME untested if this is actually a proper sanity check
         if current_id:
@@ -350,14 +354,15 @@ def add_track_to_mix(conn, _args, rel_list, _pos=None):
         return False
 
 # DB wrapper: add track to spec pos in mix
-def add_track_at_pos(conn, _args, _results_list_item):
-    mix_id = _args.add_to_mix
-    pos = _args.add_at_pos
+def add_track_at_pos(conn, _mix_id, _track, _pos, _results_list_item):
+    mix_id = _mix_id
+    pos = _pos
     tracks_to_shift = db.get_tracks_from_position(
                           conn, mix_id, pos)
     # first add new track (user can cancel at this point)
     #mix_info = db.get_mix_info(conn, mix_id)
-    add_successful = add_track_to_mix(conn, _args, _results_list_item, _pos=pos)
+    add_successful = add_track_to_mix(conn, _mix_id, _track, _results_list_item,
+                                      _pos=pos)
     # then reorder existing
     if add_successful:
         for t in tracks_to_shift:
@@ -443,6 +448,26 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
     else:
         print_help("No tracks in mix yet.")
 
+def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
+                                  _pos = False):
+    print_help('Searching offline DB for \"' + _searchterm +'\"')
+    try:
+        found_offline = search_release_offline(_conn, _searchterm)
+        # for now only work with first result
+        print_help(offline_release_table(found_offline))
+        track_to_add = _track
+        if not _track:
+            track_to_add = ask_user("Which Track? ")
+        #####  User wants to add a Track to a Mix #####
+        if WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+            add_track_to_mix(_conn, _mix_id, track_to_add, found_offline[0])
+        #####  User wants to add Track at given position #####
+        elif WANTS_TO_ADD_AT_POSITION:
+            add_track_at_pos(_conn, _mix_id, track_to_add, _pos, found_offline[0])
+    except TypeError as TErr:
+        print_help('No results')
+        raise TErr
+
 # MAIN
 def main():
 	# SETUP / INIT
@@ -485,29 +510,18 @@ def main():
                     search_results, searchterm, db_releases)
                 #####  User wants to add a Track to a Mix #####
                 if WANTS_TO_ADD_TO_MIX:
-                    add_track_to_mix(conn, args, compiled_results_list)
+                    add_track_to_mix(conn, args.add_to_mix, args.track_to_add,
+                                     compiled_results_list)
                 #####  User wants to add Track at given position #####
                 if WANTS_TO_ADD_AT_POSITION:
-                    add_track_at_pos(conn, args, compiled_results_list)
+                    add_track_at_pos(conn, args.add_to_mix, args.track_to_add,
+                                     args.add_at_pos, compiled_results_list)
             except TypeError as TErr:
                 print_help('No results')
                 raise TErr
         else:
-            print_help('Searching offline DB for \"' + searchterm +'\"')
-            try:
-                found_offline = search_release_offline(conn, searchterm)
-                # for now only work with first result
-                print_help(offline_release_table(found_offline))
-                #####  User wants to add a Track to a Mix #####
-                if WANTS_TO_ADD_TO_MIX:
-                    add_track_to_mix(conn, args, found_offline[0])
-                #####  User wants to add Track at given position #####
-                if WANTS_TO_ADD_AT_POSITION:
-                    add_track_at_pos(conn, args, found_offline[0])
-            except TypeError as TErr:
-                print_help('No results')
-                raise TErr
-
+            search_offline_and_add_to_mix(searchterm, conn, args.add_to_mix,
+                                          args.track_to_add, args.add_at_pos)
 
 
     if WANTS_TO_SHOW_MIX_OVERVIEW:
@@ -609,6 +623,11 @@ def main():
                                        db.get_full_mix(conn, mix_id)))
                 else:
                     print_help("Delete failed, maybe nonexistent track position?")
+        ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
+        elif WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+            search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
+                                          False, False)
+
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:
             pretty_print_mix_tracklist(mix_id, mix_info)

@@ -169,6 +169,7 @@ def get_tracks_in_mixes(conn):
 
 def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                      trans_rating='', trans_notes=''):
+    #print(mix_id, release_id, track_no, track_pos,trans_rating, trans_notes)
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, d_track_no, track_pos,
                        trans_rating, trans_notes)
