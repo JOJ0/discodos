@@ -371,8 +371,10 @@ def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
                 result_list[0].append(str(result_item.labels[0].name))
                 result_list[0].append(result_item.country)
                 result_list[0].append(str(result_item.year))
+                #result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                #           ", "+str(result_item.formats[0]['descriptions'][1]))
                 result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                           ", "+str(result_item.formats[0]['descriptions'][1]))
+                           ", "+str(result_item.formats[0]['descriptions'][0]))
 
                 print_help(tab(result_list, tablefmt="simple",
                           headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
@@ -529,6 +531,7 @@ def main():
                 try:
                     db.update_track_in_mix(conn,
                         track_details['mix_track_id'],
+                        edit_answers['d_release_id'],
                         edit_answers['d_track_no'],
                         edit_answers['track_pos'],
                         edit_answers['trans_rating'],

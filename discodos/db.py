@@ -47,7 +47,7 @@ def search_release_title(conn, discogs_title):
     log.debug('DB: Search for Discogs Release Title: %s\n', discogs_title)
     cur = conn.cursor()
     cur.execute("SELECT * FROM release WHERE discogs_title LIKE ?", ("%"+discogs_title+"%", ), )
-    rows = cur.fetchone()
+    rows = cur.fetchall()
     log.debug('DB: search_release_title returns: %s', rows)
     return rows
 
@@ -204,30 +204,31 @@ def get_one_mix_track(conn, mix_id, position):
     return rows
 
 # first part of track in mix update
-def update_track_in_mix(conn, mix_track_id, track_no,
+def update_track_in_mix(conn, release_id, mix_track_id, track_no,
                         track_pos_new, trans_rating, trans_notes,):
     cur = conn.cursor()
-    cur.execute('''UPDATE mix_track SET d_track_no = ?, track_pos = ?,
+    log.info("DB: update_track_in_mix release_id: %i", release_id)
+    cur.execute('''UPDATE mix_track SET d_release_id = ?, d_track_no = ?, track_pos = ?,
                        trans_rating = ?, trans_notes = ?
                        WHERE mix_track_id == ?
                        ''',
-                       (track_no, track_pos_new,
+                       (release_id, track_no, track_pos_new,
                         trans_rating, trans_notes, mix_track_id))
     log.info("DB: update_track_in_mix rowcount: %s", cur.rowcount)
     return cur.lastrowid
 
 # second part of track in mix update
-def update_or_insert_track_ext(conn, release_id, track_no,
+def update_or_insert_track_ext(conn, release_id_orig, release_id_new, track_no,
                         key, key_notes, bpm, notes):
     with conn:
         cur = conn.cursor()
-        cur.execute('''UPDATE track_ext SET key = ?, key_notes = ?,
+        cur.execute('''UPDATE track_ext SET d_release_id= ?, key = ?, key_notes = ?,
                            bpm = ?, notes = ?
                            WHERE d_release_id == ?
                            AND d_track_no == ?
                            ''',
-                           (key, key_notes,
-                            bpm, notes, release_id, track_no))
+                           (release_id_new, key, key_notes,
+                            bpm, notes, release_id_orig, track_no))
         log.info("DB: update track_ext rowcount: %s", cur.rowcount)
         # if 0 rows -> was not found (actually same as select), do insert
         log.info("release_id: %s", release_id)
@@ -236,7 +237,7 @@ def update_or_insert_track_ext(conn, release_id, track_no,
                                                   d_release_id, d_track_no)
                            VALUES (?, ?, ?, ?, ?, ?)''',
                            (key, key_notes, bpm, notes,
-                            release_id, track_no))
+                            release_id_new, track_no))
             log.info("DB: insert track_ext rowcount: %s", cur.rowcount)
         #return cur.lastrowid
 
