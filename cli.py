@@ -76,7 +76,8 @@ def argparser(argv):
         dest='add_release_to_mix',
         help='search for discogs release and add it to current mix')
     mix_subp_excl_group.add_argument(
-        "-r", "--reorder-tracks", action='store_true',
+        "-r", "--reorder-tracks", type=str,
+        dest='reorder_from_pos',
         help='reorder tracks in current mix')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
@@ -159,7 +160,7 @@ def check_args(_args):
                 WANTS_TO_EDIT_MIX_TRACK = True
             if _args.verbose_tracklist:
                 WANTS_VERBOSE_MIX_TRACKLIST = True
-            if _args.reorder_tracks:
+            if _args.reorder_from_pos:
                 WANTS_TO_REORDER_MIX_TRACKLIST = True
                 
     # TRACK MODE
@@ -334,17 +335,27 @@ def add_track_to_mix(conn, _args, rel_list, _pos=None):
         print_help("Mix ID "+str(mix_id)+" is not existing yet.")
 
 # DB wrapper: add track to spec pos in mix
-def add_track_at_pos(conn, args, _results_list_item):
-    mix_id = args.add_to_mix
-    pos = args.add_at_pos
+def add_track_at_pos(conn, _args, _results_list_item):
+    mix_id = _args.add_to_mix
+    pos = _args.add_at_pos
     tracks_to_shift = db.get_tracks_from_position(
                           conn, mix_id, pos)
     for t in tracks_to_shift:
-        print_help(t[0])
-        print_help(t[1])
+        log.debug(t[0])
+        log.debug(t[1])
         db.update_pos_in_mix(conn, t['mix_track_id'], t['track_pos']+1)
     mix_info = db.get_mix_info(conn, mix_id)
-    add_track_to_mix(conn, args, _results_list_item, _pos=pos)
+    add_track_to_mix(conn, _args, _results_list_item, _pos=pos)
+
+# DB wrapper: reorder tracks starting at given position
+def reorder_tracks_in_mix(conn, _args, _mix_id):
+    reorder_pos = int(_args.reorder_from_pos)
+    tracks_to_shift = db.get_tracks_from_position(
+                          conn, _mix_id, reorder_pos)
+    for t in tracks_to_shift:
+        log.info("Shifting track %i from pos %i to %i", t[0], t[1], reorder_pos)
+        db.update_pos_in_mix(conn, t['mix_track_id'], reorder_pos)
+        reorder_pos = reorder_pos + 1
 
 # Discogs: gets track name from discogs tracklist object via track_number, eg. A1
 def tracklist_parse(d_tracklist, track_number):
@@ -557,7 +568,9 @@ def main():
                             mix_name+"\".")
         ### REORDER TRACKLIST
         elif WANTS_TO_REORDER_MIX_TRACKLIST:
-            print_help("Tracklist reordering not implemented yet!")
+            print_help("Tracklist reordering starting at position "+
+                       args.reorder_from_pos)
+            reorder_tracks_in_mix(conn, args, mix_id)
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:
             pretty_print_mix_tracklist(mix_id, mix_info)

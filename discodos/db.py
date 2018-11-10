@@ -251,7 +251,7 @@ def get_tracks_from_position(conn, _mix_id, _pos):
     cur.execute('''SELECT mix_track_id, track_pos FROM mix_track WHERE mix_id == ?
                        AND track_pos >= ?''', (_mix_id, _pos))
     row = cur.fetchall()
-    log.info('DB: get_tracks_from_position: %s\n', row)
+    #log.info('DB: get_tracks_from_position: %s\n', row)
     return row
 
 
