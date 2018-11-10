@@ -315,6 +315,7 @@ def add_track_to_mix(conn, _args, rel_list, _pos=None):
     if db.mix_id_existing(conn, mix_id):
         last_track = db.get_last_track_in_mix(conn, mix_id)
         log.debug("Currently last track in mix is: %s", last_track[0])
+        current_id = False
         if _pos:
             if _user_is_sure(int(_pos)):
                 current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
@@ -327,12 +328,18 @@ def add_track_to_mix(conn, _args, rel_list, _pos=None):
             if _user_is_sure(1):
                 current_id = db.add_track_to_mix(conn, mix_id, rel_list[0],
                              track, track_pos = 1)
-        if WANTS_VERBOSE_MIX_TRACKLIST:
-            print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
+        # FIXME untested if this is actually a proper sanity check
+        if current_id:
+            if WANTS_VERBOSE_MIX_TRACKLIST and WANTS_TO_ADD_AT_POSITION == False:
+                print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
+            elif WANTS_TO_ADD_AT_POSITION == False:
+                print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
+            return True
         else:
-            print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
+            return False
     else:
         print_help("Mix ID "+str(mix_id)+" is not existing yet.")
+        return False
 
 # DB wrapper: add track to spec pos in mix
 def add_track_at_pos(conn, _args, _results_list_item):
@@ -340,12 +347,19 @@ def add_track_at_pos(conn, _args, _results_list_item):
     pos = _args.add_at_pos
     tracks_to_shift = db.get_tracks_from_position(
                           conn, mix_id, pos)
-    for t in tracks_to_shift:
-        log.debug(t[0])
-        log.debug(t[1])
-        db.update_pos_in_mix(conn, t['mix_track_id'], t['track_pos']+1)
-    mix_info = db.get_mix_info(conn, mix_id)
-    add_track_to_mix(conn, _args, _results_list_item, _pos=pos)
+    # first add new track (user can cancel at this point)
+    #mix_info = db.get_mix_info(conn, mix_id)
+    add_successful = add_track_to_mix(conn, _args, _results_list_item, _pos=pos)
+    # then reorder existing
+    if add_successful:
+        for t in tracks_to_shift:
+            new_pos = t['track_pos']+1
+            log.info("Shifting track %i from pos %i to %i", t[0], t[1], new_pos)
+            db.update_pos_in_mix(conn, t['mix_track_id'], new_pos)
+        if WANTS_VERBOSE_MIX_TRACKLIST:
+            print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
+        else:
+            print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
 
 # DB wrapper: reorder tracks starting at given position
 def reorder_tracks_in_mix(conn, _args, _mix_id):
