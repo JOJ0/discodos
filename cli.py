@@ -178,6 +178,7 @@ def ask_details_to_edit(_track_det):
     # dbfield, question
     questions_table = [
         ["d_track_no", "Fix track number on record? eg B2 ? ({}) "],
+        ["d_release_id", "Change Release ID? eg 123456 ? ({}) "],
         ["track_pos", "Move track to new position in mix? eg 3 ({}) "],
         ["trans_rating", "Rate transition? eg ++ ({}) "],
         ["trans_notes", "Other notes on this transition? ({}) "],
@@ -527,7 +528,8 @@ def main():
             if track_details:
                 log.info("current d_release_id: %s", track_details['d_release_id'])
                 edit_answers = ask_details_to_edit(track_details)
-                log.info("answers: %s", edit_answers)
+                for a in edit_answers.items():
+                    log.info("answers: %s", str(a))
                 try:
                     db.update_track_in_mix(conn,
                         track_details['mix_track_id'],
@@ -538,6 +540,7 @@ def main():
                         edit_answers['trans_notes'])
                     db.update_or_insert_track_ext(conn,
                         track_details['d_release_id'],
+                        edit_answers['d_release_id'],
                         edit_answers['d_track_no'],
                         edit_answers['key'],
                         edit_answers['key_notes'],

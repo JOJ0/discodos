@@ -1,5 +1,5 @@
 from discodos import log
-import datetime
+import time
 
 # util: checks for numbers
 def is_number(s):

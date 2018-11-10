@@ -204,18 +204,21 @@ def get_one_mix_track(conn, mix_id, position):
     return rows
 
 # first part of track in mix update
-def update_track_in_mix(conn, release_id, mix_track_id, track_no,
+def update_track_in_mix(conn, mix_track_id, _release_id, track_no,
                         track_pos_new, trans_rating, trans_notes,):
-    cur = conn.cursor()
-    log.info("DB: update_track_in_mix release_id: %i", release_id)
-    cur.execute('''UPDATE mix_track SET d_release_id = ?, d_track_no = ?, track_pos = ?,
-                       trans_rating = ?, trans_notes = ?
-                       WHERE mix_track_id == ?
-                       ''',
-                       (release_id, track_no, track_pos_new,
-                        trans_rating, trans_notes, mix_track_id))
-    log.info("DB: update_track_in_mix rowcount: %s", cur.rowcount)
-    return cur.lastrowid
+    with conn:
+        cur = conn.cursor()
+        log.info("DB: update_track_in_mix mix_track_id: %s", str(mix_track_id))
+        log.info("DB: update_track_in_mix release_id: %s", str(_release_id))
+        log.info("DB: update_track_in_mix track_no: %s", track_no)
+        cur.execute('''UPDATE mix_track SET d_release_id = ?, d_track_no = ?, track_pos = ?,
+                           trans_rating = ?, trans_notes = ?
+                           WHERE mix_track_id == ?
+                           ''',
+                           (_release_id, track_no, track_pos_new,
+                            trans_rating, trans_notes, mix_track_id))
+        log.info("DB: update_track_in_mix rowcount: %s", cur.rowcount)
+        return cur.lastrowid
 
 # second part of track in mix update
 def update_or_insert_track_ext(conn, release_id_orig, release_id_new, track_no,
@@ -228,10 +231,11 @@ def update_or_insert_track_ext(conn, release_id_orig, release_id_new, track_no,
                            AND d_track_no == ?
                            ''',
                            (release_id_new, key, key_notes,
-                            bpm, notes, release_id_orig, track_no))
+                            bpm, notes, release_id_new, track_no))
         log.info("DB: update track_ext rowcount: %s", cur.rowcount)
         # if 0 rows -> was not found (actually same as select), do insert
-        log.info("release_id: %s", release_id)
+        log.info("release_id_orig: %s", release_id_orig)
+        log.info("release_id_new: %s", release_id_new)
         if cur.rowcount == 0:
             cur.execute('''INSERT INTO track_ext (key, key_notes, bpm, notes,
                                                   d_release_id, d_track_no)
