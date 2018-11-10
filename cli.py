@@ -76,9 +76,13 @@ def argparser(argv):
         dest='add_release_to_mix',
         help='search for discogs release and add it to current mix')
     mix_subp_excl_group.add_argument(
-        "-r", "--reorder-tracks", type=str,
+        "-r", "--reorder-tracks", type=int,
         dest='reorder_from_pos',
         help='reorder tracks in current mix')
+    mix_subp_excl_group.add_argument(
+        "-d", "--delete_track", type=int,
+        dest='delete_track_pos',
+        help='delete a track in current mix')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
         name='track',
@@ -127,6 +131,8 @@ def check_args(_args):
     WANTS_TO_REORDER_MIX_TRACKLIST = False
     global WANTS_TO_ADD_AT_POSITION
     WANTS_TO_ADD_AT_POSITION = False
+    global WANTS_TO_DELETE_MIX_TRACK
+    WANTS_TO_DELETE_MIX_TRACK = False
 
     # RELEASE MODE:
     if hasattr(_args, 'release_search'):
@@ -162,7 +168,9 @@ def check_args(_args):
                 WANTS_VERBOSE_MIX_TRACKLIST = True
             if _args.reorder_from_pos:
                 WANTS_TO_REORDER_MIX_TRACKLIST = True
-                
+            if _args.delete_track_pos:
+                WANTS_TO_DELETE_MIX_TRACK = True
+
     # TRACK MODE
     if hasattr(args, 'track_search'):
         if args.pull:
@@ -582,9 +590,25 @@ def main():
                             mix_name+"\".")
         ### REORDER TRACKLIST
         elif WANTS_TO_REORDER_MIX_TRACKLIST:
-            print_help("Tracklist reordering starting at position "+
-                       args.reorder_from_pos)
+            print_help("Tracklist reordering starting at position {}".format(
+                       args.reorder_from_pos))
             reorder_tracks_in_mix(conn, args, mix_id)
+        ### DELETE A TRACK FROM MIX
+        elif WANTS_TO_DELETE_MIX_TRACK:
+            really_del = ask_user(text="Delete Track {} from mix {}? ".format(
+                                         args.delete_track_pos, mix_id))
+            if really_del.lower() == "y":
+                successful = db.delete_track_from_mix(conn, mix_id,
+                                             args.delete_track_pos)
+                if successful:
+                    if WANTS_VERBOSE_MIX_TRACKLIST:
+                        print_help("\n"+mix_table_fine(
+                                            db.get_full_mix(conn, mix_id)))
+                    else:
+                        print_help("\n"+mix_table_coarse(
+                                       db.get_full_mix(conn, mix_id)))
+                else:
+                    print_help("Delete failed, maybe nonexistent track position?")
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:
             pretty_print_mix_tracklist(mix_id, mix_info)

@@ -254,7 +254,6 @@ def get_tracks_from_position(conn, _mix_id, _pos):
     #log.info('DB: get_tracks_from_position: %s\n', row)
     return row
 
-
 def update_pos_in_mix(conn, mix_track_id, track_pos_new):
     cur = conn.cursor()
     cur.execute('''UPDATE mix_track SET track_pos = ?
@@ -264,3 +263,14 @@ def update_pos_in_mix(conn, mix_track_id, track_pos_new):
                         mix_track_id))
     log.info("DB: update_pos_in_mix rowcount: %s", cur.rowcount)
     return cur.lastrowid
+
+def delete_track_from_mix(conn, _mix_id, _pos):
+    cur = conn.cursor()
+    log.info('DB: Deleting track %i from mix %i', _pos, int(_mix_id))
+    del_successful = cur.execute('''DELETE FROM mix_track WHERE mix_id == ?
+                                        AND track_pos ==?''', (_mix_id, _pos))
+    log.info('DB: DELETE successful? %i', del_successful.rowcount)
+    if del_successful.rowcount:
+        return True
+    else:
+        return False
