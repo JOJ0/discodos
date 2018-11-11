@@ -80,9 +80,13 @@ def argparser(argv):
         dest='reorder_from_pos',
         help='reorder tracks in current mix')
     mix_subp_excl_group.add_argument(
-        "-d", "--delete_track", type=int,
+        "-d", "--delete-track", type=int,
         dest='delete_track_pos',
         help='delete a track in current mix')
+    mix_subparser.add_argument(
+        "-p", "--pos", type=int,
+        dest='mix_mode_add_at_pos',
+        help='add found release track at specific position in mix')
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
         name='track',
@@ -135,6 +139,8 @@ def check_args(_args):
     WANTS_TO_DELETE_MIX_TRACK = False
     global WANTS_TO_ADD_RELEASE_IN_MIX_MODE
     WANTS_TO_ADD_RELEASE_IN_MIX_MODE = False
+    global WANTS_TO_ADD_AT_POS_IN_MIX_MODE
+    WANTS_TO_ADD_AT_POS_IN_MIX_MODE = False
 
     # RELEASE MODE:
     if hasattr(_args, 'release_search'):
@@ -174,6 +180,8 @@ def check_args(_args):
                 WANTS_TO_DELETE_MIX_TRACK = True
             if _args.add_release_to_mix:
                 WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
+                if _args.mix_mode_add_at_pos:
+                    WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
 
     # TRACK MODE
     if hasattr(args, 'track_search'):
@@ -306,15 +314,16 @@ def online_release_table(_result_list):
 
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
-    def _user_is_sure(pos):
+    print_help("_pos given to add_track_to_mix(): "+str(_pos))
+    def _user_is_sure(_pos):
         if ONLINE:
             quest=(
             'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
-                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), pos))
+                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), _pos))
         else:
             quest=(
             'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
-                .format(track, _rel_list[0][1], int(mix_id), pos))
+                .format(track, _rel_list[0][1], int(mix_id), _pos))
         _answ = ask_user(quest)
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
@@ -454,16 +463,22 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
     try:
         found_offline = search_release_offline(_conn, _searchterm)
         # for now only work with first result
-        print_help(offline_release_table(found_offline))
-        track_to_add = _track
-        if not _track:
-            track_to_add = ask_user("Which Track? ")
-        #####  User wants to add a Track to a Mix #####
-        if WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            add_track_to_mix(_conn, _mix_id, track_to_add, found_offline[0])
-        #####  User wants to add Track at given position #####
-        elif WANTS_TO_ADD_AT_POSITION:
-            add_track_at_pos(_conn, _mix_id, track_to_add, _pos, found_offline[0])
+        if found_offline:
+            print_help(offline_release_table(found_offline[0]))
+            track_to_add = _track
+            #####  User wants to add Track at given position #####
+            if WANTS_TO_ADD_AT_POSITION or WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
+                print_help("We are in ADD_AT_POS")
+                if not _track:
+                    track_to_add = ask_user("Which Track? ")
+                add_track_at_pos(_conn, _mix_id, track_to_add, _pos, found_offline[0])
+            #####  User wants to add a Track to a Mix #####
+            elif WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+                if not _track:
+                    track_to_add = ask_user("Which Track? ")
+                add_track_to_mix(_conn, _mix_id, track_to_add, found_offline[0])
+        else:
+            print_help('No results')
     except TypeError as TErr:
         print_help('No results')
         raise TErr
@@ -607,6 +622,12 @@ def main():
             print_help("Tracklist reordering starting at position {}".format(
                        args.reorder_from_pos))
             reorder_tracks_in_mix(conn, args, mix_id)
+            if WANTS_VERBOSE_MIX_TRACKLIST:
+                print_help("\n"+mix_table_fine(
+                                    db.get_full_mix(conn, mix_id)))
+            else:
+                print_help("\n"+mix_table_coarse(
+                                   db.get_full_mix(conn, mix_id)))
         ### DELETE A TRACK FROM MIX
         elif WANTS_TO_DELETE_MIX_TRACK:
             really_del = ask_user(text="Delete Track {} from mix {}? ".format(
@@ -626,7 +647,7 @@ def main():
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
             search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
-                                          False, False)
+                                          False, args.mix_mode_add_at_pos)
 
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:
