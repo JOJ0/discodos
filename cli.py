@@ -314,7 +314,7 @@ def online_release_table(_result_list):
 
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
-    print_help("_pos given to add_track_to_mix(): "+str(_pos))
+    print_help("WANTS_VERBOSE_MIX_TRACKLIST: "+str(_pos))
     def _user_is_sure(_pos):
         if ONLINE:
             quest=(
@@ -351,10 +351,10 @@ def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
                              track, track_pos = 1)
         # FIXME untested if this is actually a proper sanity check
         if current_id:
-            if WANTS_VERBOSE_MIX_TRACKLIST and WANTS_TO_ADD_AT_POSITION == False:
-                print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
-            elif WANTS_TO_ADD_AT_POSITION == False:
-                print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
+        #    if WANTS_VERBOSE_MIX_TRACKLIST and WANTS_TO_ADD_AT_POSITION == False:
+        #        print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
+        #    elif WANTS_TO_ADD_AT_POSITION == False:
+        #        print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
             return True
         else:
             return False
@@ -362,7 +362,7 @@ def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
         print_help("Mix ID "+str(mix_id)+" is not existing yet.")
         return False
 
-# DB wrapper: add track to spec pos in mix
+# DB wrapper: add track to specfic pos in mix
 def add_track_at_pos(conn, _mix_id, _track, _pos, _results_list_item):
     mix_id = _mix_id
     pos = _pos
@@ -374,14 +374,16 @@ def add_track_at_pos(conn, _mix_id, _track, _pos, _results_list_item):
                                       _pos=pos)
     # then reorder existing
     if add_successful:
+        print_help("verbose add successful")
         for t in tracks_to_shift:
             new_pos = t['track_pos']+1
             log.info("Shifting track %i from pos %i to %i", t[0], t[1], new_pos)
             db.update_pos_in_mix(conn, t['mix_track_id'], new_pos)
-        if WANTS_VERBOSE_MIX_TRACKLIST:
-            print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
-        else:
-            print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
+        return True
+        #if WANTS_VERBOSE_MIX_TRACKLIST:
+        #    print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
+        #else:
+        #    print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
 
 # DB wrapper: reorder tracks starting at given position
 def reorder_tracks_in_mix(conn, _args, _mix_id):
@@ -466,17 +468,37 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
         if found_offline:
             print_help(offline_release_table(found_offline[0]))
             track_to_add = _track
-            #####  User wants to add Track at given position #####
+            #####  User wants to add Track at given POSITION #####
             if WANTS_TO_ADD_AT_POSITION or WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
-                print_help("We are in ADD_AT_POS")
                 if not _track:
                     track_to_add = ask_user("Which Track? ")
-                add_track_at_pos(_conn, _mix_id, track_to_add, _pos, found_offline[0])
-            #####  User wants to add a Track to a Mix #####
+                cur_id_add_pos = add_track_at_pos(_conn, _mix_id, track_to_add,
+                                                  _pos, found_offline[0])
+                if cur_id_add_pos == None or cur_id_add_pos == False:
+                    log.error("Error in add_track_at_pos()")
+                else:
+                    if WANTS_VERBOSE_MIX_TRACKLIST:
+                        print_help("\n"+mix_table_fine(db.get_full_mix(conn,
+                                                      _mix_id, detail="fine")))
+                    else:
+                        print_help("\n"+mix_table_coarse(db.get_full_mix(conn,
+                                                        _mix_id, detail="coarse")))
+
+            #####  User wants to add a Track to END OF Mix #####
             elif WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
                 if not _track:
                     track_to_add = ask_user("Which Track? ")
-                add_track_to_mix(_conn, _mix_id, track_to_add, found_offline[0])
+                cur_id_add = add_track_to_mix(_conn, _mix_id, track_to_add,
+                                               found_offline[0])
+                if cur_id_add == None or cur_id_add == False:
+                    log.error("Error in add_track_to_mix()")
+                else:
+                    if WANTS_VERBOSE_MIX_TRACKLIST:
+                        print_help("\n"+mix_table_fine(db.get_full_mix(conn,
+                                           _mix_id, detail="fine")))
+                    else:
+                        print_help("\n"+mix_table_coarse(db.get_full_mix(conn,
+                                           _mix_id, detail="coarse")))
         else:
             print_help('No results')
     except TypeError as TErr:
