@@ -138,7 +138,7 @@ def get_full_mix(conn, mix_id, detail="coarse"):
     else:
         cur.execute('''SELECT track_pos, discogs_title, d_track_name,
                                mix_track.d_track_no,
-                               trans_rating, trans_notes, key, key_notes, bpm, notes
+                               key, bpm, key_notes, trans_rating, trans_notes, notes
                            FROM
                              mix_track
                                  INNER JOIN mix

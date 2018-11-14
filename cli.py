@@ -199,14 +199,14 @@ def ask_details_to_edit(_track_det):
     # dbfield, question
     questions_table = [
         ["key", "Key ({}): "],
-        ["key_notes", "Key notes/bassline/etc. ({}): "],
         ["bpm", "BPM ({}): "],
         ["d_track_no", "Track # on record ({}): "],
         ["track_pos", "Move track's position ({}): "],
+        ["key_notes", "Key notes/bassline/etc. ({}): "],
         ["trans_rating", "Transition rating ({}): "],
         ["trans_notes", "Transition notes ({}): "],
-        ["notes", "Other track notes: ({}): "],
-        ["d_release_id", "Release ID ({}): "]
+        ["d_release_id", "Release ID ({}): "],
+        ["notes", "Other track notes: ({}): "]
     ]
     #print(_track_det['d_track_no'])
     # collect answers from user input
@@ -289,8 +289,8 @@ def mix_table_coarse(mix_data):
 # tabulate tracklist in DETAIL
 def mix_table_fine(mix_data):
     return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Track\nName", "Track\nPos", "Trans.\nRating",
-        "Trans.\nR. Notes", "Key", "Key\nNotes", "BPM", "Track\nNotes"])
+        headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM", 
+                 "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"])
 
 # tabulate ALl mixes
 def all_mixes_table(mixes_data):
