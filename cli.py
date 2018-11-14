@@ -198,15 +198,15 @@ def check_args(_args):
 def ask_details_to_edit(_track_det):
     # dbfield, question
     questions_table = [
-        ["d_track_no", "Fix track number on record? eg B2 ? ({}) "],
-        ["d_release_id", "Change Release ID? eg 123456 ? ({}) "],
-        ["track_pos", "Move track to new position in mix? eg 3 ({}) "],
-        ["trans_rating", "Rate transition? eg ++ ({}) "],
-        ["trans_notes", "Other notes on this transition? ({}) "],
-        ["key", "The tracks musical key? eg Am ({}) "],
-        ["key_notes", "More music notes (eg Bassline tones)? ({}) "],
-        ["bpm", "The tracks BPM? ({}) "],
-        ["notes", "General notes on track? ({}) "]
+        ["key", "Key ({}): "],
+        ["key_notes", "Key notes/bassline/etc. ({}): "],
+        ["bpm", "BPM ({}): "],
+        ["d_track_no", "Track # on record ({}): "],
+        ["track_pos", "Move track's position ({}): "],
+        ["trans_rating", "Transition rating ({}): "],
+        ["trans_notes", "Transition notes ({}): "],
+        ["notes", "Other track notes: ({}): "],
+        ["d_release_id", "Release ID ({}): "]
     ]
     #print(_track_det['d_track_no'])
     # collect answers from user input
