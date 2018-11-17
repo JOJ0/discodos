@@ -609,9 +609,10 @@ def main():
             print_help("Editing track "+edit_track+" in \""+
                         mix_name+"\":")
             track_details = db.get_one_mix_track(conn, mix_id, edit_track)
-            print_help(track_details['discogs_title']+" - "+
-                       track_details['d_track_no']+" - "+
-                       track_details['d_track_name'])
+            print_help("{} - {} - {}".format(
+                       track_details['discogs_title'],
+                       track_details['d_track_no'],
+                       track_details['d_track_name']))
             if track_details:
                 log.info("current d_release_id: %s", track_details['d_release_id'])
                 edit_answers = ask_details_to_edit(track_details)
