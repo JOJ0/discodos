@@ -170,16 +170,22 @@ def check_args(_args):
             #if hasattr(_args, 'create_mix')
             if _args.create_mix:
                 WANTS_TO_CREATE_MIX = True
+                ONLINE = False
             if _args.edit_mix_track:
                 WANTS_TO_EDIT_MIX_TRACK = True
+                ONLINE = False
             if _args.verbose_tracklist:
                 WANTS_VERBOSE_MIX_TRACKLIST = True
+                ONLINE = False
             if _args.reorder_from_pos:
                 WANTS_TO_REORDER_MIX_TRACKLIST = True
+                ONLINE = False
             if _args.delete_track_pos:
                 WANTS_TO_DELETE_MIX_TRACK = True
+                ONLINE = False
             if _args.add_release_to_mix:
                 WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
+                ONLINE = True
                 if _args.mix_mode_add_at_pos:
                     WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
 
@@ -435,7 +441,8 @@ def pretty_print_found_release(discogs_results, _searchterm, _db_releases):
                 break
 
         if result_item.id == dbr[0]:
-            return result_list[0]
+            #return result_list[0]
+            return result_list
             #break
 
 # show pretty mix-tracklist
@@ -505,6 +512,34 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
         print_help('No results')
         raise TErr
 
+def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _pos = False):
+    print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
+    try:
+        db_releases = db.all_releases(_conn)
+        search_results = search_release_online(d, _searchterm)
+        # SEARCH RESULTS OUTPUT HAPPENS HERE
+        compiled_results_list = pretty_print_found_release(
+            search_results, _searchterm, db_releases)
+        #####  User wants to add a Track to a Mix #####
+        if WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+            if not _track:
+                track_to_add = ask_user("Which Track? ")
+            else:
+                track_to_add = _track
+            add_track_to_mix(_conn, _mix_id, track_to_add,
+                             compiled_results_list)
+        #####  User wants to add Track at given position #####
+        if WANTS_TO_ADD_AT_POSITION or WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
+            if not _track:
+                track_to_add = ask_user("Which Track? ")
+            else:
+                track_to_add = _track
+            add_track_at_pos(_conn, _mix_id, track_to_add,
+                             _pos, compiled_results_list)
+    except TypeError as TErr:
+        print_help('No results')
+        raise TErr
+
 # MAIN
 def main():
 	# SETUP / INIT
@@ -523,9 +558,11 @@ def main():
     if ONLINE:
         userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
         try: 
+            global d
             d = discogs_client.Client(
                     "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
                     user_token=userToken)
+            global me
             me = d.identity()
             ONLINE = True
         except Exception:
@@ -536,26 +573,10 @@ def main():
         print_help("Showing all releases, this is gonna take some time")
         print_help(all_releases_table(db.all_releases(conn)))
     elif WANTS_TO_SEARCH_FOR_RELEASE:
-        db_releases = db.all_releases(conn)
         searchterm = args.release_search
         if ONLINE:
-            print_help('Searching Discogs for Release ID or Title \"'+searchterm+'\"')
-            try:
-                search_results = search_release_online(d, searchterm)
-                # SEARCH RESULTS OUTPUT HAPPENS HERE
-                compiled_results_list = pretty_print_found_release(
-                    search_results, searchterm, db_releases)
-                #####  User wants to add a Track to a Mix #####
-                if WANTS_TO_ADD_TO_MIX:
-                    add_track_to_mix(conn, args.add_to_mix, args.track_to_add,
-                                     compiled_results_list)
-                #####  User wants to add Track at given position #####
-                if WANTS_TO_ADD_AT_POSITION:
-                    add_track_at_pos(conn, args.add_to_mix, args.track_to_add,
-                                     args.add_at_pos, compiled_results_list)
-            except TypeError as TErr:
-                print_help('No results')
-                raise TErr
+            search_online_and_add_to_mix(searchterm, conn, args.add_to_mix,
+                                          args.track_to_add, args.add_at_pos)
         else:
             search_offline_and_add_to_mix(searchterm, conn, args.add_to_mix,
                                           args.track_to_add, args.add_at_pos)
@@ -672,8 +693,12 @@ def main():
                     print_help("Delete failed, maybe nonexistent track position?")
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
-                                          False, args.mix_mode_add_at_pos)
+            if ONLINE:
+                search_online_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
+                                              False, args.mix_mode_add_at_pos)
+            else:
+                search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
+                                              False, args.mix_mode_add_at_pos)
 
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:
