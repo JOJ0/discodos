@@ -27,6 +27,10 @@ def argparser(argv):
 		"-u", "--update-db", dest="update_db",
         action="store_true",
         help="update database schema FIXME randomly coded in when neeeded")
+    parser_group1.add_argument(
+		"-a", "--add_to_collection", dest="add_release_id",
+        type=int,
+        help="add release ID to collection")
     arguments = parser.parse_args(argv[1:])
     # Sets log level to WARN going more verbose for each new -v.
     log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
@@ -120,8 +124,8 @@ def main():
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
-    # IMPORT MODE, if we said so
-    if hasattr(args, "release_id"):
+    # ADD RELEASE TO COLLECTION
+    if args.add_release_id:
         # PREPARE DISCOGS API
         try:
             userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
@@ -129,9 +133,28 @@ def main():
                     "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
                     user_token=userToken)
             me = d.identity()
-        except HTTPError:
-            print("Can't connect do Discogs! HTTPError. Quitting.")
+        except Exception:
+            print("Can't connect do Discogs! Quitting")
             raise SystemExit(1)
+
+        print("Adding {} to collection".format(args.add_release_id))
+        #print(me.collection_folders[13].id)
+        for folder in me.collection_folders:
+            if folder.id == 1:
+                folder.add_release(args.add_release_id)
+
+    # IMPORT MODE, if we said so
+    if args.release_id:
+        # PREPARE DISCOGS API
+        try:
+            userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+            d = discogs_client.Client(
+                    "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+                    user_token=userToken)
+            me = d.identity()
+        #except HTTPError:
+        #    print("Can't connect do Discogs! HTTPError. Quitting.")
+        #    raise SystemExit(1)
         except Exception:
             print("Can't connect do Discogs! Quitting")
             raise SystemExit(1)
