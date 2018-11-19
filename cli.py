@@ -520,22 +520,42 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
         # SEARCH RESULTS OUTPUT HAPPENS HERE
         compiled_results_list = pretty_print_found_release(
             search_results, _searchterm, db_releases)
-        #####  User wants to add a Track to a Mix #####
-        if WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            if not _track:
-                track_to_add = ask_user("Which Track? ")
-            else:
-                track_to_add = _track
-            add_track_to_mix(_conn, _mix_id, track_to_add,
-                             compiled_results_list)
         #####  User wants to add Track at given position #####
         if WANTS_TO_ADD_AT_POSITION or WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
             if not _track:
                 track_to_add = ask_user("Which Track? ")
             else:
                 track_to_add = _track
-            add_track_at_pos(_conn, _mix_id, track_to_add,
-                             _pos, compiled_results_list)
+            cur_id_add_pos = add_track_at_pos(_conn, _mix_id, track_to_add,
+                                          _pos, compiled_results_list)
+            if cur_id_add_pos == None or cur_id_add_pos == False:
+                log.error("Error in add_track_to_mix()")
+            else:
+                if WANTS_VERBOSE_MIX_TRACKLIST:
+                    print_help("\n"+mix_table_fine(db.get_full_mix(conn,
+                                       _mix_id, detail="fine")))
+                else:
+                    print_help("\n"+mix_table_coarse(db.get_full_mix(conn,
+                                       _mix_id, detail="coarse")))
+        # FIXME no elif her (like above), should have been handled
+        # in check_args() already
+        #####  User wants to add a Track to a Mix #####
+        if WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+            if not _track:
+                track_to_add = ask_user("Which Track? ")
+            else:
+                track_to_add = _track
+            cur_id_add = add_track_to_mix(_conn, _mix_id, track_to_add,
+                             compiled_results_list)
+            if cur_id_add == None or cur_id_add == False:
+                log.error("Error in add_track_to_mix()")
+            else:
+                if WANTS_VERBOSE_MIX_TRACKLIST:
+                    print_help("\n"+mix_table_fine(db.get_full_mix(conn,
+                                       _mix_id, detail="fine")))
+                else:
+                    print_help("\n"+mix_table_coarse(db.get_full_mix(conn,
+                                       _mix_id, detail="coarse")))
     except TypeError as TErr:
         print_help('No results')
         raise TErr
