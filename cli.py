@@ -320,7 +320,6 @@ def online_release_table(_result_list):
 
 # DB wrapper: add a track to a mix
 def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
-    print_help("WANTS_VERBOSE_MIX_TRACKLIST: "+str(_pos))
     def _user_is_sure(_pos):
         if ONLINE:
             quest=(
@@ -357,10 +356,6 @@ def add_track_to_mix(conn, _mix_id, _track, _rel_list, _pos=None):
                              track, track_pos = 1)
         # FIXME untested if this is actually a proper sanity check
         if current_id:
-        #    if WANTS_VERBOSE_MIX_TRACKLIST and WANTS_TO_ADD_AT_POSITION == False:
-        #        print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
-        #    elif WANTS_TO_ADD_AT_POSITION == False:
-        #        print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
             return True
         else:
             return False
@@ -386,10 +381,6 @@ def add_track_at_pos(conn, _mix_id, _track, _pos, _results_list_item):
             log.info("Shifting track %i from pos %i to %i", t[0], t[1], new_pos)
             db.update_pos_in_mix(conn, t['mix_track_id'], new_pos)
         return True
-        #if WANTS_VERBOSE_MIX_TRACKLIST:
-        #    print_help("\n"+mix_table_fine(db.get_full_mix(conn, mix_id)))
-        #else:
-        #    print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
 
 # DB wrapper: reorder tracks starting at given position
 def reorder_tracks_in_mix(conn, _reorder_pos, _mix_id):
@@ -690,12 +681,7 @@ def main():
             print_help("Tracklist reordering starting at position {}".format(
                        args.reorder_from_pos))
             reorder_tracks_in_mix(conn, args.reorder_from_pos, mix_id)
-            if WANTS_VERBOSE_MIX_TRACKLIST:
-                print_help("\n"+mix_table_fine(
-                                    db.get_full_mix(conn, mix_id)))
-            else:
-                print_help("\n"+mix_table_coarse(
-                                   db.get_full_mix(conn, mix_id)))
+            pretty_print_mix_tracklist(mix_id, mix_info)
         ### DELETE A TRACK FROM MIX
         elif WANTS_TO_DELETE_MIX_TRACK:
             really_del = ask_user(text="Delete Track {} from mix {}? ".format(
@@ -706,13 +692,7 @@ def main():
                 # reorder existing and print tracklist
                 if successful:
                     reorder_tracks_in_mix(conn, args.delete_track_pos - 1, mix_id)
-
-                    if WANTS_VERBOSE_MIX_TRACKLIST:
-                        print_help("\n"+mix_table_fine(
-                                            db.get_full_mix(conn, mix_id)))
-                    else:
-                        print_help("\n"+mix_table_coarse(
-                                       db.get_full_mix(conn, mix_id)))
+                    pretty_print_mix_tracklist(mix_id, mix_info)
                 else:
                     print_help("Delete failed, maybe nonexistent track position?")
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
