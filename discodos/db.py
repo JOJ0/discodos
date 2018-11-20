@@ -251,9 +251,9 @@ def get_tracks_from_position(conn, _mix_id, _pos):
     cur = conn.cursor()
     cur.execute('''SELECT mix_track_id, track_pos FROM mix_track WHERE mix_id == ?
                        AND track_pos >= ?''', (_mix_id, _pos))
-    row = cur.fetchall()
+    rows = cur.fetchall()
     #log.info('DB: get_tracks_from_position: %s\n', row)
-    return row
+    return rows
 
 def update_pos_in_mix(conn, mix_track_id, track_pos_new):
     cur = conn.cursor()

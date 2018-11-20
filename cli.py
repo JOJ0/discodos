@@ -392,12 +392,13 @@ def add_track_at_pos(conn, _mix_id, _track, _pos, _results_list_item):
         #    print_help("\n"+mix_table_coarse(db.get_full_mix(conn, mix_id)))
 
 # DB wrapper: reorder tracks starting at given position
-def reorder_tracks_in_mix(conn, _args, _mix_id):
-    reorder_pos = int(_args.reorder_from_pos)
+def reorder_tracks_in_mix(conn, _reorder_pos, _mix_id):
+    reorder_pos = int(_reorder_pos)
     tracks_to_shift = db.get_tracks_from_position(
                           conn, _mix_id, reorder_pos)
     for t in tracks_to_shift:
-        log.info("Shifting track %i from pos %i to %i", t[0], t[1], reorder_pos)
+        log.info("Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
+                 t['track_pos'], reorder_pos)
         db.update_pos_in_mix(conn, t['mix_track_id'], reorder_pos)
         reorder_pos = reorder_pos + 1
 
@@ -688,7 +689,7 @@ def main():
         elif WANTS_TO_REORDER_MIX_TRACKLIST:
             print_help("Tracklist reordering starting at position {}".format(
                        args.reorder_from_pos))
-            reorder_tracks_in_mix(conn, args, mix_id)
+            reorder_tracks_in_mix(conn, args.reorder_from_pos, mix_id)
             if WANTS_VERBOSE_MIX_TRACKLIST:
                 print_help("\n"+mix_table_fine(
                                     db.get_full_mix(conn, mix_id)))
@@ -702,7 +703,10 @@ def main():
             if really_del.lower() == "y":
                 successful = db.delete_track_from_mix(conn, mix_id,
                                              args.delete_track_pos)
+                # reorder existing and print tracklist
                 if successful:
+                    reorder_tracks_in_mix(conn, args.delete_track_pos - 1, mix_id)
+
                     if WANTS_VERBOSE_MIX_TRACKLIST:
                         print_help("\n"+mix_table_fine(
                                             db.get_full_mix(conn, mix_id)))
