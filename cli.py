@@ -83,6 +83,11 @@ def argparser(argv):
         "-d", "--delete-track", type=int,
         dest='delete_track_pos',
         help='delete a track in current mix')
+    mix_subp_excl_group.add_argument(
+        "--copy", action='store_true',
+        dest='copy_mix',
+        help='creates new mix based on existing one (expects mix ID)')
+    # mutually exclusive group ends here
     mix_subparser.add_argument(
         "-p", "--pos", type=int,
         dest='mix_mode_add_at_pos',
@@ -141,6 +146,8 @@ def check_args(_args):
     WANTS_TO_ADD_RELEASE_IN_MIX_MODE = False
     global WANTS_TO_ADD_AT_POS_IN_MIX_MODE
     WANTS_TO_ADD_AT_POS_IN_MIX_MODE = False
+    global WANTS_TO_COPY_MIX
+    WANTS_TO_COPY_MIX = False
 
     # RELEASE MODE:
     if hasattr(_args, 'release_search'):
@@ -188,6 +195,9 @@ def check_args(_args):
                 ONLINE = True
                 if _args.mix_mode_add_at_pos:
                     WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
+            if _args.copy_mix:
+                WANTS_TO_COPY_MIX = True
+                ONLINE = False
 
     # TRACK MODE
     if hasattr(args, 'track_search'):
@@ -703,6 +713,11 @@ def main():
             else:
                 search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
                                               False, args.mix_mode_add_at_pos)
+        #### COPY A MIX
+        elif WANTS_TO_COPY_MIX:
+            print_help("Copying mix {} - {}.".format(mix_id, mix_name))
+            mix_tracks_to_copy = db.get_mix_tracks_to_copy(conn, mix_id)
+
 
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:
