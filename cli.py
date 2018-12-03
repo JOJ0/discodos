@@ -403,6 +403,16 @@ def reorder_tracks_in_mix(conn, _reorder_pos, _mix_id):
         db.update_pos_in_mix(conn, t['mix_track_id'], reorder_pos)
         reorder_pos = reorder_pos + 1
 
+# DB wrapper: create a new mix, ask user some details before adding
+def create_mix(conn, _new_mix_name):
+    played = ask_user(
+               text="When did you (last) play it? eg 2018-01-01 ")
+    venue = ask_user(text="And where? ")
+    created_id = db.add_new_mix(conn, _new_mix_name, played, venue)
+    conn.commit()
+    print_help("New mix created with ID {}.".format(created_id))
+    return created_id
+
 # Discogs: gets track name from discogs tracklist object via track_number, eg. A1
 def tracklist_parse(d_tracklist, track_number):
     for tr in d_tracklist:
@@ -562,6 +572,7 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
         print_help('No results')
         raise TErr
 
+
 # MAIN
 def main():
 	# SETUP / INIT
@@ -614,12 +625,7 @@ def main():
             if is_number(args.mix_name):
                 log.error("Mix name can't be a number!")
             else:
-                played = ask_user(
-                           text="When did you (last) play it? eg 2018-01-01 ")
-                venue = ask_user(text="And where? ")
-                created_id = db.add_new_mix(conn, args.mix_name, played, venue)
-                conn.commit()
-                print_help("New mix created with ID " + str(created_id))
+                create_mix(args.mix_name)
                 print_help(all_mixes_table(db.get_all_mixes(conn)))
             # mix is created (or not), nothing else to do
             raise SystemExit(0)
@@ -716,8 +722,14 @@ def main():
         #### COPY A MIX
         elif WANTS_TO_COPY_MIX:
             print_help("Copying mix {} - {}.".format(mix_id, mix_name))
-            mix_tracks_to_copy = db.get_mix_tracks_to_copy(conn, mix_id)
-
+            copy_tr = db.get_mix_tracks_to_copy(conn, mix_id)
+            new_mix_name = ask_user("How should the copy be named? ")
+            new_mix_id = create_mix(conn, new_mix_name)
+            for tr in copy_tr:
+                db.add_track_to_mix(conn, new_mix_id, tr[0], tr[1], tr[2], tr[3], tr[4])
+            conn.commit()
+            pretty_print_mix_tracklist(new_mix_id, db.get_mix_info(conn, new_mix_id))
+                                       
 
         #### JUST SHOW MIX-TRACKLIST:
         elif WANTS_TO_SHOW_MIX_TRACKLIST:

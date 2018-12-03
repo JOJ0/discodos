@@ -280,6 +280,7 @@ def get_mix_tracks_to_copy(conn, _mix_id):
     cur = conn.cursor()
     log.info('DB: Getting tracks for mix ID %s', _mix_id)
     cur.execute('''SELECT d_release_id, d_track_no, track_pos, trans_rating, trans_notes
-                       FROM mix_track WHERE mix_id == ?''',(_mix_id))
+                       FROM mix_track WHERE mix_id == ?''',(_mix_id, ))
     rows = cur.fetchall()
     return rows
+
