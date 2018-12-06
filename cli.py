@@ -465,16 +465,33 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
     else:
         full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
 
-    if full_mix:
+    # newline chars after 24 chars magic, our new row_list:
+    cut_pos = 22
+    full_mix_nl = []
+    # first convert list of tuples to list of lists:
+    for tuple_row in full_mix:
+        full_mix_nl.append(list(tuple_row))
+    # now put newlines if longer that cut_pos chars
+    for i, row in enumerate(full_mix_nl):
+        for j, field in enumerate(row):
+            if not is_number(field) and field is not None:
+                if len(field) > cut_pos:
+                    log.info("longer than cut_pos, putting newline:")
+                    log.info(field[0:cut_pos])
+                    log.info(field[cut_pos:])
+                    edited_field = field[0:cut_pos] + "\n" + field[cut_pos:]
+                    full_mix_nl[i][j] = edited_field
+
+    if full_mix_nl:
         # debug only
-        for row in full_mix:
+        for row in full_mix_nl:
            log.debug(str(row))
         log.debug("")
         # now really
         if WANTS_VERBOSE_MIX_TRACKLIST:
-            print_help(mix_table_fine(full_mix))
+            print_help(mix_table_fine(full_mix_nl))
         else:
-            print_help(mix_table_coarse(full_mix))
+            print_help(mix_table_coarse(full_mix_nl))
     else:
         print_help("No tracks in mix yet.")
 
