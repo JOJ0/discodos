@@ -466,7 +466,7 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
         full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
 
     # newline chars after 24 chars magic, our new row_list:
-    cut_pos = 22
+    cut_pos = 16
     full_mix_nl = []
     # first convert list of tuples to list of lists:
     for tuple_row in full_mix:
@@ -476,10 +476,17 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
         for j, field in enumerate(row):
             if not is_number(field) and field is not None:
                 if len(field) > cut_pos:
-                    log.info("longer than cut_pos, putting newline:")
-                    log.info(field[0:cut_pos])
-                    log.info(field[cut_pos:])
-                    edited_field = field[0:cut_pos] + "\n" + field[cut_pos:]
+                    cut_pos_space = field.find(" ", cut_pos)
+                    log.info("cut_pos_space index: %s", cut_pos_space)
+                    # don't edit if no space following (almost at end)
+                    if cut_pos_space == -1:
+                        edited_field = field
+                        log.info(edited_field)
+                    else:
+                        edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
+                        log.info(edited_field)
+                    #log.info(field[0:cut_pos_space])
+                    #log.info(field[cut_pos_space:])
                     full_mix_nl[i][j] = edited_field
 
     if full_mix_nl:
