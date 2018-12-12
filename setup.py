@@ -52,14 +52,12 @@ def main():
         print("Updating DB schema - EXPERIMENTAL")
         sql_settings = "PRAGMA foreign_keys = OFF;"
         db.create_table(conn, sql_settings)
-        #sql_alter_something = """ALTER TABLE mix_track
-        #                                 FOREIGN KEY (mix_id)
-        #                                    REFERENCES mix(mix_id)
-        #                                 ON DELETE CASCADE
-        #                                 ON UPDATE CASCADE
-        #                                ; """
-        #db.create_table(conn, sql_alter_something)
+        sql_alter_something = """ALTER TABLE track ADD
+                                        d_artist; """
+        db.create_table(conn, sql_alter_something)
         sql_settings = "PRAGMA foreign_keys = ON;"
+        conn.commit()
+        conn.close()
         print("DB schema update DONE - EXPERIMENTAL")
         raise SystemExit(0)
 
@@ -95,6 +93,7 @@ def main():
                                      d_track_no TEXT NOT NULL,
                                      d_track_name TEXT,
                                      import_timestamp TEXT,
+                                     d_artist TEXT,
                                      PRIMARY KEY (d_release_id, d_track_no)
                                      ); """
 

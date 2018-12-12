@@ -160,10 +160,17 @@ def get_full_mix(conn, mix_id, detail="coarse"):
     else:
         return rows
 
-def get_tracks_in_mixes(conn):
+def get_all_tracks_in_mixes(conn):
     cur = conn.cursor()
     log.info('DB: Getting all tracks from mix_track table')
     cur.execute('''SELECT * FROM mix_track''')
+    rows = cur.fetchall()
+    return rows
+
+def get_tracks_of_one_mix(conn, _mix_id):
+    cur = conn.cursor()
+    log.info('DB: Getting tracks of mix %s\n', _mix_id)
+    cur.execute('''SELECT * FROM mix_track WHERE mix_id == ?''', (_mix_id, ))
     rows = cur.fetchall()
     return rows
 
