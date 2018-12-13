@@ -417,11 +417,11 @@ def reorder_tracks_in_mix(conn, _reorder_pos, _mix_id):
         reorder_pos = reorder_pos + 1
 
 # DB wrapper: create a new mix, ask user some details before adding
-def create_mix(conn, _new_mix_name):
+def create_mix(_conn, _new_mix_name):
     played = ask_user(
                text="When did you (last) play it? eg 2018-01-01 ")
     venue = ask_user(text="And where? ")
-    created_id = db.add_new_mix(conn, _new_mix_name, played, venue)
+    created_id = db.add_new_mix(_conn, _new_mix_name, played, venue)
     conn.commit()
     print_help("New mix created with ID {}.".format(created_id))
     return created_id
@@ -510,31 +510,33 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
     else:
         full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
 
-    # newline chars after 24 chars magic, our new row_list:
-    cut_pos = 16
-    full_mix_nl = []
-    # first convert list of tuples to list of lists:
-    for tuple_row in full_mix:
-        full_mix_nl.append(list(tuple_row))
-    # now put newlines if longer that cut_pos chars
-    for i, row in enumerate(full_mix_nl):
-        for j, field in enumerate(row):
-            if not is_number(field) and field is not None:
-                if len(field) > cut_pos:
-                    cut_pos_space = field.find(" ", cut_pos)
-                    log.info("cut_pos_space index: %s", cut_pos_space)
-                    # don't edit if no space following (almost at end)
-                    if cut_pos_space == -1:
-                        edited_field = field
-                        log.info(edited_field)
-                    else:
-                        edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                        log.info(edited_field)
-                    #log.info(field[0:cut_pos_space])
-                    #log.info(field[cut_pos_space:])
-                    full_mix_nl[i][j] = edited_field
+    if not full_mix:
+        print_help("No tracks in mix yet.")
+    else:
+        # newline chars after 24 chars magic, our new row_list:
+        cut_pos = 16
+        full_mix_nl = []
+        # first convert list of tuples to list of lists:
+        for tuple_row in full_mix:
+            full_mix_nl.append(list(tuple_row))
+        # now put newlines if longer that cut_pos chars
+        for i, row in enumerate(full_mix_nl):
+            for j, field in enumerate(row):
+                if not is_number(field) and field is not None:
+                    if len(field) > cut_pos:
+                        cut_pos_space = field.find(" ", cut_pos)
+                        log.info("cut_pos_space index: %s", cut_pos_space)
+                        # don't edit if no space following (almost at end)
+                        if cut_pos_space == -1:
+                            edited_field = field
+                            log.info(edited_field)
+                        else:
+                            edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
+                            log.info(edited_field)
+                        #log.info(field[0:cut_pos_space])
+                        #log.info(field[cut_pos_space:])
+                        full_mix_nl[i][j] = edited_field
 
-    if full_mix_nl:
         # debug only
         for row in full_mix_nl:
            log.debug(str(row))
@@ -544,8 +546,6 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
             print_help(mix_table_fine(full_mix_nl))
         else:
             print_help(mix_table_coarse(full_mix_nl))
-    else:
-        print_help("No tracks in mix yet.")
 
 def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
                                   _pos = False):
@@ -702,7 +702,7 @@ def main():
             if is_number(args.mix_name):
                 log.error("Mix name can't be a number!")
             else:
-                create_mix(args.mix_name)
+                create_mix(conn, args.mix_name)
                 print_help(all_mixes_table(db.get_all_mixes(conn)))
             # mix is created (or not), nothing else to do
             raise SystemExit(0)
