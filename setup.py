@@ -190,7 +190,7 @@ def main():
                    args.release_id[0]))
             result = d.release(args.release_id[0])
             print_help("Release ID is valid: "+result.title+"\n"+
-                       "Let's see if it's in your collection...)")
+                       "Let's see if it's in your collection, this might take some time...")
 
             for r in me.collection_folders[0].releases:
                 #rate_limit_slow_downer(d, remaining=5, sleep=2)
