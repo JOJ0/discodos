@@ -24,9 +24,16 @@ def create_table(conn, create_table_sql):
 
 
 # RELEASE / TRACK INFO FROM DISCOGS
-def create_release(conn, release):
+def create_release(conn, release, collection_item = True):
     cur = conn.cursor()
-    cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp) VALUES(?, ?, datetime('now', 'localtime'))''', (release.release.id, release.release.title))
+    if collection_item == True:
+        cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp)
+                           VALUES(?, ?, datetime('now', 'localtime'))''',
+                           (release.release.id, release.release.title))
+    else:
+        cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp)
+                           VALUES(?, ?, datetime('now', 'localtime'))''',
+                           (release.id, release.title))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
@@ -37,7 +44,7 @@ def all_releases(conn):
     return rows
 
 def search_release_id(conn, discogs_id):
-    log.debug('DB: Search for Discogs Release ID: %s\n', discogs_id)
+    log.info('DB: Search for Discogs Release ID: %s\n', discogs_id)
     cur = conn.cursor()
     cur.execute('''SELECT * FROM release WHERE discogs_id == ?;''', [str(discogs_id)])
     rows = cur.fetchall()
