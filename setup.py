@@ -175,7 +175,7 @@ def main():
                    args.add_release_id))
             result = d.release(args.add_release_id)
             if result:
-                #print(result)
+                #print(dir(result))
                 print_help("Adding \"{}\" to collection".format(result.title))
                 for folder in me.collection_folders:
                     if folder.id == 1:

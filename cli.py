@@ -55,7 +55,8 @@ def argparser(argv):
         aliases=('m', ))
     mix_subparser.add_argument(
         dest='mix_name',
-        help='which mix name or ID should be displayed?',
+        help='''current mix (mix name or mix ID that should be displayed, edited, created, ...), 
+                omit this argument to show an overview of available mixes.''',
         nargs='?',
         default='all')
     mix_subparser.add_argument(
@@ -66,27 +67,32 @@ def argparser(argv):
     mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
     mix_subp_excl_group.add_argument(
         "-c", "--create-mix", action='store_true',
-        help='create a new mix with given name')
+        help='create a new mix')
     mix_subp_excl_group.add_argument(
         "-e", "--edit", type=str,
         dest='edit_mix_track',
-        help='add/edit rating, notes, key and other info in mix-tracks')
+        metavar='POSITION',
+        help='add/edit rating, notes, key and other info in mix-track')
     mix_subp_excl_group.add_argument(
         "-a", "--add-to-mix", type=str,
         dest='add_release_to_mix',
-        help='search for release and add it to current mix')
+        metavar='SEARCH_TERM',
+        help='''search for release in collection and add it to current mix,
+                SEARCH_TERM can also be a Discogs release ID''')
     mix_subp_excl_group.add_argument(
         "-r", "--reorder-tracks", type=int,
         dest='reorder_from_pos',
-        help='reorder tracks in current mix')
+        metavar='POSITION',
+        help='reorder tracks in current mix, starting at POSITION')
     mix_subp_excl_group.add_argument(
         "-d", "--delete-track", type=int,
         dest='delete_track_pos',
+        metavar='POSITION',
         help='delete a track in current mix')
     mix_subp_excl_group.add_argument(
         "--copy", action='store_true',
         dest='copy_mix',
-        help='creates new mix based on existing one (expects mix ID)')
+        help='creates new mix based on current mix_name (or ID)')
     mix_subp_excl_group.add_argument(
         "-u", "--discogs-update", action='store_true',
         dest='discogs_update',
@@ -268,6 +274,7 @@ def search_release_online(discogs, id_or_title):
                 return [release]
             else:
                 releases = discogs.search(id_or_title, type='release')
+                print(releases[0])
                 return releases
         except errors.HTTPError as HtErr:
             log.error("%s", HtErr)

@@ -109,6 +109,7 @@ def mix_id_existing(conn, mix_id):
 
 def get_mix_info(conn, mix_id):
     cur = conn.cursor()
+    log.info('DB: Getting general info about mix %s', mix_id)
     cur.execute('''SELECT * FROM mix WHERE mix_id == ?''', (mix_id, ))
     rows = cur.fetchone()
     return rows
