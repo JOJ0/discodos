@@ -26,5 +26,3 @@ def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
                   let's wait a bit: %s\n",
                      d_obj._fetcher.rate_limit_remaining)
         time.sleep(sleep)
-
-

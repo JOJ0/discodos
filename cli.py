@@ -512,7 +512,7 @@ def pull_track_info_from_discogs(_conn, _mix_id = False):
 # show pretty mix-tracklist
 def pretty_print_mix_tracklist(_mix_id, _mix_info):
     print_help(mix_info_header(_mix_info))
-    if WANTS_VERBOSE_MIX_TRACKLIST:
+    if user.WANTS_VERBOSE_MIX_TRACKLIST:
         full_mix = db.get_full_mix(conn, _mix_id, detail="fine")
     else:
         full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
@@ -549,7 +549,7 @@ def pretty_print_mix_tracklist(_mix_id, _mix_info):
            log.debug(str(row))
         log.debug("")
         # now really
-        if WANTS_VERBOSE_MIX_TRACKLIST:
+        if user.WANTS_VERBOSE_MIX_TRACKLIST:
             print_help(mix_table_fine(full_mix_nl))
         else:
             print_help(mix_table_coarse(full_mix_nl))
@@ -564,7 +564,7 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
             print_help(offline_release_table(found_offline[0]))
             track_to_add = _track
             #####  User wants to add Track at given POSITION #####
-            if WANTS_TO_ADD_AT_POSITION or WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
+            if user.WANTS_TO_ADD_AT_POSITION or user.WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
                 if not _track:
                     track_to_add = ask_user("Which Track? ")
                 cur_id_add_pos = add_track_at_pos(_conn, _mix_id, track_to_add,
@@ -572,7 +572,7 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
                 if cur_id_add_pos == None or cur_id_add_pos == False:
                     log.error("Error in add_track_at_pos()")
                 else:
-                    if WANTS_VERBOSE_MIX_TRACKLIST:
+                    if user.WANTS_VERBOSE_MIX_TRACKLIST:
                         print_help("\n"+mix_table_fine(db.get_full_mix(conn,
                                                       _mix_id, detail="fine")))
                     else:
@@ -580,7 +580,7 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
                                                         _mix_id, detail="coarse")))
 
             #####  User wants to add a Track to END OF Mix #####
-            elif WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+            elif user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
                 if not _track:
                     track_to_add = ask_user("Which Track? ")
                 cur_id_add = add_track_to_mix(_conn, _mix_id, track_to_add,
@@ -588,7 +588,7 @@ def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
                 if cur_id_add == None or cur_id_add == False:
                     log.error("Error in add_track_to_mix()")
                 else:
-                    if WANTS_VERBOSE_MIX_TRACKLIST:
+                    if user.WANTS_VERBOSE_MIX_TRACKLIST:
                         print_help("\n"+mix_table_fine(db.get_full_mix(conn,
                                            _mix_id, detail="fine")))
                     else:
@@ -609,7 +609,7 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
         compiled_results_list = pretty_print_found_release(
             search_results, _searchterm, db_releases)
         #####  User wants to add Track at given position #####
-        if WANTS_TO_ADD_AT_POSITION or WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
+        if user.WANTS_TO_ADD_AT_POSITION or user.WANTS_TO_ADD_AT_POS_IN_MIX_MODE:
             if not _track:
                 track_to_add = ask_user("Which Track? ")
             else:
@@ -619,7 +619,7 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
             if cur_id_add_pos == None or cur_id_add_pos == False:
                 log.error("Error in add_track_to_mix()")
             else:
-                if WANTS_VERBOSE_MIX_TRACKLIST:
+                if user.WANTS_VERBOSE_MIX_TRACKLIST:
                     print_help("\n"+mix_table_fine(db.get_full_mix(conn,
                                        _mix_id, detail="fine")))
                 else:
@@ -628,7 +628,7 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
         # FIXME no elif her (like above), should have been handled
         # in check_args() already
         #####  User wants to add a Track to a Mix #####
-        if WANTS_TO_ADD_TO_MIX or WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+        if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
             if not _track:
                 track_to_add = ask_user("Which Track? ")
             else:
@@ -638,7 +638,7 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
             if cur_id_add == None or cur_id_add == False:
                 log.error("Error in add_track_to_mix()")
             else:
-                if WANTS_VERBOSE_MIX_TRACKLIST:
+                if user.WANTS_VERBOSE_MIX_TRACKLIST:
                     print_help("\n"+mix_table_fine(db.get_full_mix(conn,
                                        _mix_id, detail="fine")))
                 else:
@@ -648,17 +648,115 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
         print_help('No results')
         raise TErr
 
+# user interaction class - holds info about what user wants to do
+class User_int(object):
+
+    def __init__(self, _args):
+        global ONLINE
+        ONLINE = True
+        self.args = _args
+        self.WANTS_TO_LIST_ALL_RELEASES = False
+        self.WANTS_TO_SEARCH_FOR_RELEASE = False
+        self.WANTS_TO_ADD_TO_MIX = False
+        self.WANTS_TO_SHOW_MIX_OVERVIEW = False
+        self.WANTS_TO_SHOW_MIX_TRACKLIST = False
+        self.WANTS_TO_CREATE_MIX = False
+        self.WANTS_TO_EDIT_MIX_TRACK = False
+        self.WANTS_TO_PULL_TRACK_INFO = False
+        self.WANTS_VERBOSE_MIX_TRACKLIST = False
+        self.WANTS_TO_REORDER_MIX_TRACKLIST = False
+        self.WANTS_TO_ADD_AT_POSITION = False
+        self.WANTS_TO_DELETE_MIX_TRACK = False
+        self.WANTS_TO_ADD_RELEASE_IN_MIX_MODE = False
+        self.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = False
+        self.WANTS_TO_COPY_MIX = False
+        self.WANTS_TO_TRACK_SEARCH = False
+
+        # RELEASE MODE:
+        if hasattr(self.args, 'release_search'):
+            if "all" in self.args.release_search:
+                self.WANTS_TO_LIST_ALL_RELEASES = True
+                ONLINE = False
+            else:
+                self.WANTS_TO_SEARCH_FOR_RELEASE = True
+                if self.args.add_to_mix and self.args.track_to_add and self.args.add_at_pos:
+                    self.WANTS_TO_ADD_AT_POSITION = True
+                    #self.WANTS_TO_SHOW_MIX_TRACKLIST = True
+                elif self.args.add_to_mix and self.args.track_to_add:
+                    self.WANTS_TO_ADD_TO_MIX = True
+
+        # MIX MODE
+        if hasattr(self.args, 'mix_name'):
+            if self.args.mix_name == "all":
+                self.WANTS_TO_SHOW_MIX_OVERVIEW = True
+                ONLINE = False
+                if self.args.create_mix == True:
+                    log.error("Please provide a mix name to be created!")
+                    log.error("(Mix name \"all\" is not valid.)")
+                    raise SystemExit(1)
+                if self.args.discogs_update:
+                    self.WANTS_TO_PULL_TRACK_INFO = True
+                    ONLINE = True
+            else:
+                self.WANTS_TO_SHOW_MIX_TRACKLIST = True
+                ONLINE = False
+                #if hasattr(self.args, 'create_mix')
+                if self.args.create_mix:
+                    self.WANTS_TO_CREATE_MIX = True
+                    ONLINE = False
+                if self.args.edit_mix_track:
+                    self.WANTS_TO_EDIT_MIX_TRACK = True
+                    ONLINE = False
+                if self.args.verbose_tracklist:
+                    self.WANTS_VERBOSE_MIX_TRACKLIST = True
+                    ONLINE = False
+                if self.args.reorder_from_pos:
+                    self.WANTS_TO_REORDER_MIX_TRACKLIST = True
+                    ONLINE = False
+                if self.args.delete_track_pos:
+                    self.WANTS_TO_DELETE_MIX_TRACK = True
+                    ONLINE = False
+                if self.args.add_release_to_mix:
+                    self.WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
+                    ONLINE = True
+                    if self.args.mix_mode_add_at_pos:
+                        self.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
+                if self.args.copy_mix:
+                    self.WANTS_TO_COPY_MIX = True
+                    ONLINE = False
+                if self.args.discogs_update:
+                    self.WANTS_TO_PULL_TRACK_INFO = True
+                    ONLINE = True
+
+        # TRACK MODE
+        if hasattr(self.args, 'track_search'):
+            self.WANTS_TO_TRACK_SEARCH = True
+            if args.track_pull:
+                self.WANTS_TO_PULL_TRACK_INFO = True
+            else:
+                log.error("Online track search not implemented yet.")
+                raise SystemExit(1)
+
+        if self.args.offline_mode == True:
+            ONLINE = False
+
+
 
 # MAIN
 def main():
 	# SETUP / INIT
-    global args, ONLINE
+    global args, ONLINE, user
     args = argparser(sys.argv)
     # DEBUG stuff
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
     #log.info("dir(args): %s", dir(args))
-    check_args(args)
+
+    # check cli args old style
+    #check_args(args)
+    # check cli args with user_int class
+    user = User_int(args)
+
     log.info("ONLINE: %s", ONLINE)
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
@@ -679,10 +777,10 @@ def main():
             ONLINE = False
 
     #### RELEASE MODE
-    if WANTS_TO_LIST_ALL_RELEASES:
+    if user.WANTS_TO_LIST_ALL_RELEASES:
         print_help("Showing all releases, this is gonna take some time")
         print_help(all_releases_table(db.all_releases(conn)))
-    elif WANTS_TO_SEARCH_FOR_RELEASE:
+    elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         if ONLINE:
             search_online_and_add_to_mix(searchterm, conn, args.add_to_mix,
@@ -694,18 +792,18 @@ def main():
 
     ##### MIX MODE ########################################################
     ### NO MIX ID GIVEN ###################################################
-    if WANTS_TO_SHOW_MIX_OVERVIEW:
-        if WANTS_TO_PULL_TRACK_INFO:
+    if user.WANTS_TO_SHOW_MIX_OVERVIEW:
+        if user.WANTS_TO_PULL_TRACK_INFO:
             pull_track_info_from_discogs(conn)
         else:
             print_help(all_mixes_table(db.get_all_mixes(conn)))
 
     ### SPECIFIC MIX ID GIVEN #############################################
     ### SHOW MIX DETAILS ##################################################
-    elif WANTS_TO_SHOW_MIX_TRACKLIST:
+    elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given\n")
         ### CREATE A NEW MIX ##############################################
-        if WANTS_TO_CREATE_MIX:
+        if user.WANTS_TO_CREATE_MIX:
             if is_number(args.mix_name):
                 log.error("Mix name can't be a number!")
             else:
@@ -737,7 +835,7 @@ def main():
             # load basic mix-info from DB, FIXME error handling necessary??
             mix_info = db.get_mix_info(conn, mix_id)
         ### EDIT A MIX-TRACK ###############################################
-        if WANTS_TO_EDIT_MIX_TRACK:
+        if user.WANTS_TO_EDIT_MIX_TRACK:
             edit_track = args.edit_mix_track
             print_help("Editing track "+edit_track+" in \""+
                         mix_name+"\":")
@@ -777,13 +875,13 @@ def main():
                 print_help("No track "+edit_track+" in \""+
                             mix_name+"\".")
         ### REORDER TRACKLIST
-        elif WANTS_TO_REORDER_MIX_TRACKLIST:
+        elif user.WANTS_TO_REORDER_MIX_TRACKLIST:
             print_help("Tracklist reordering starting at position {}".format(
                        args.reorder_from_pos))
             reorder_tracks_in_mix(conn, args.reorder_from_pos, mix_id)
             pretty_print_mix_tracklist(mix_id, mix_info)
         ### DELETE A TRACK FROM MIX
-        elif WANTS_TO_DELETE_MIX_TRACK:
+        elif user.WANTS_TO_DELETE_MIX_TRACK:
             really_del = ask_user(text="Delete Track {} from mix {}? ".format(
                                          args.delete_track_pos, mix_id))
             if really_del.lower() == "y":
@@ -796,7 +894,7 @@ def main():
                 else:
                     print_help("Delete failed, maybe nonexistent track position?")
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
-        elif WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+        elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
             if ONLINE:
                 search_online_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
                                               False, args.mix_mode_add_at_pos)
@@ -804,7 +902,7 @@ def main():
                 search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
                                               False, args.mix_mode_add_at_pos)
         #### COPY A MIX
-        elif WANTS_TO_COPY_MIX:
+        elif user.WANTS_TO_COPY_MIX:
             print_help("Copying mix {} - {}.".format(mix_id, mix_name))
             copy_tr = db.get_mix_tracks_to_copy(conn, mix_id)
             new_mix_name = ask_user("How should the copy be named? ")
@@ -815,16 +913,16 @@ def main():
             pretty_print_mix_tracklist(new_mix_id, db.get_mix_info(conn, new_mix_id))
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
-        elif WANTS_TO_PULL_TRACK_INFO:
+        elif user.WANTS_TO_PULL_TRACK_INFO:
             pull_track_info_from_discogs(conn, mix_id)
 
         #### JUST SHOW MIX-TRACKLIST:
-        elif WANTS_TO_SHOW_MIX_TRACKLIST:
+        elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
             pretty_print_mix_tracklist(mix_id, mix_info)
 
     ### TRACK MODE
-    if WANTS_TO_TRACK_SEARCH:
-        if WANTS_TO_PULL_TRACK_INFO:
+    if user.WANTS_TO_TRACK_SEARCH:
+        if user.WANTS_TO_PULL_TRACK_INFO:
             pull_track_info_from_discogs(conn)
 
     # most importantly commit stuff to DB
