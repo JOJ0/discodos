@@ -652,9 +652,8 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
 class User_int(object):
 
     def __init__(self, _args):
-        global ONLINE
-        ONLINE = True
         self.args = _args
+        self.WANTS_ONLINE = True
         self.WANTS_TO_LIST_ALL_RELEASES = False
         self.WANTS_TO_SEARCH_FOR_RELEASE = False
         self.WANTS_TO_ADD_TO_MIX = False
@@ -676,7 +675,7 @@ class User_int(object):
         if hasattr(self.args, 'release_search'):
             if "all" in self.args.release_search:
                 self.WANTS_TO_LIST_ALL_RELEASES = True
-                ONLINE = False
+                self.WANTS_ONLINE = False
             else:
                 self.WANTS_TO_SEARCH_FOR_RELEASE = True
                 if self.args.add_to_mix and self.args.track_to_add and self.args.add_at_pos:
@@ -689,44 +688,44 @@ class User_int(object):
         if hasattr(self.args, 'mix_name'):
             if self.args.mix_name == "all":
                 self.WANTS_TO_SHOW_MIX_OVERVIEW = True
-                ONLINE = False
+                self.WANTS_ONLINE = False
                 if self.args.create_mix == True:
                     log.error("Please provide a mix name to be created!")
                     log.error("(Mix name \"all\" is not valid.)")
                     raise SystemExit(1)
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO = True
-                    ONLINE = True
+                    self.WANTS_ONLINE = True
             else:
                 self.WANTS_TO_SHOW_MIX_TRACKLIST = True
-                ONLINE = False
+                self.WANTS_ONLINE = False
                 #if hasattr(self.args, 'create_mix')
                 if self.args.create_mix:
                     self.WANTS_TO_CREATE_MIX = True
-                    ONLINE = False
+                    self.WANTS_ONLINE = False
                 if self.args.edit_mix_track:
                     self.WANTS_TO_EDIT_MIX_TRACK = True
-                    ONLINE = False
+                    self.WANTS_ONLINE = False
                 if self.args.verbose_tracklist:
                     self.WANTS_VERBOSE_MIX_TRACKLIST = True
-                    ONLINE = False
+                    self.WANTS_ONLINE = False
                 if self.args.reorder_from_pos:
                     self.WANTS_TO_REORDER_MIX_TRACKLIST = True
-                    ONLINE = False
+                    self.WANTS_ONLINE = False
                 if self.args.delete_track_pos:
                     self.WANTS_TO_DELETE_MIX_TRACK = True
-                    ONLINE = False
+                    self.WANTS_ONLINE = False
                 if self.args.add_release_to_mix:
                     self.WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
-                    ONLINE = True
+                    self.WANTS_ONLINE = True
                     if self.args.mix_mode_add_at_pos:
                         self.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
                 if self.args.copy_mix:
                     self.WANTS_TO_COPY_MIX = True
-                    ONLINE = False
+                    self.WANTS_ONLINE = False
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO = True
-                    ONLINE = True
+                    self.WANTS_ONLINE = True
 
         # TRACK MODE
         if hasattr(self.args, 'track_search'):
@@ -738,7 +737,7 @@ class User_int(object):
                 raise SystemExit(1)
 
         if self.args.offline_mode == True:
-            ONLINE = False
+            self.WANTS_ONLINE = False
 
 
 
@@ -746,6 +745,7 @@ class User_int(object):
 def main():
 	# SETUP / INIT
     global args, ONLINE, user
+    #global args, user
     args = argparser(sys.argv)
     # DEBUG stuff
     #print(vars(args))
@@ -757,12 +757,12 @@ def main():
     # check cli args with user_int class
     user = User_int(args)
 
-    log.info("ONLINE: %s", ONLINE)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 
     # DISCOGS API CONNECTION
-    if ONLINE:
+    if user.WANTS_ONLINE:
         userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
         try: 
             global d
@@ -775,6 +775,10 @@ def main():
         except Exception:
             log.error("connecting to Discogs API, let's stay offline!\n")
             ONLINE = False
+    else:
+        ONLINE = False
+
+    log.info("ONLINE: %s", ONLINE)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
