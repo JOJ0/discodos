@@ -3,6 +3,7 @@ import sqlite3
 from sqlite3 import Error
 import datetime
 from discodos import log, db, utils
+#import log, db, utils
 from discodos.utils import *
 
 # BASIC DB HANDLING

@@ -128,6 +128,8 @@ def check_args(_args):
     # defaults for all constants
     global ONLINE
     ONLINE = True
+    connection.state = "ONLINE"
+
     global WANTS_TO_LIST_ALL_RELEASES
     WANTS_TO_LIST_ALL_RELEASES = False
     global WANTS_TO_SEARCH_FOR_RELEASE
@@ -166,6 +168,7 @@ def check_args(_args):
         if "all" in _args.release_search:
             WANTS_TO_LIST_ALL_RELEASES = True
             ONLINE = False
+            connection.state = "OFFLINE"
         else:
             WANTS_TO_SEARCH_FOR_RELEASE = True
             if _args.add_to_mix and _args.track_to_add and _args.add_at_pos:
@@ -179,6 +182,7 @@ def check_args(_args):
         if _args.mix_name == "all":
             WANTS_TO_SHOW_MIX_OVERVIEW = True
             ONLINE = False
+            connection.state = "OFFLINE"
             if _args.create_mix == True:
                 log.error("Please provide a mix name to be created!")
                 log.error("(Mix name \"all\" is not valid.)")
@@ -186,36 +190,46 @@ def check_args(_args):
             if _args.discogs_update:
                 WANTS_TO_PULL_TRACK_INFO = True
                 ONLINE = True
+                connection.discogs_connect()
         else:
             WANTS_TO_SHOW_MIX_TRACKLIST = True
             ONLINE = False
+            connection.state = "OFFLINE"
             #if hasattr(_args, 'create_mix')
             if _args.create_mix:
                 WANTS_TO_CREATE_MIX = True
                 ONLINE = False
+                connection.state = "OFFLINE"
             if _args.edit_mix_track:
                 WANTS_TO_EDIT_MIX_TRACK = True
                 ONLINE = False
+                connection.state = "OFFLINE"
             if _args.verbose_tracklist:
                 WANTS_VERBOSE_MIX_TRACKLIST = True
                 ONLINE = False
+                connection.state = "OFFLINE"
             if _args.reorder_from_pos:
                 WANTS_TO_REORDER_MIX_TRACKLIST = True
                 ONLINE = False
+                connection.state = "OFFLINE"
             if _args.delete_track_pos:
                 WANTS_TO_DELETE_MIX_TRACK = True
                 ONLINE = False
+                connection.state = "OFFLINE"
             if _args.add_release_to_mix:
                 WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
                 ONLINE = True
+                connection.discogs_connect()
                 if _args.mix_mode_add_at_pos:
                     WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
             if _args.copy_mix:
                 WANTS_TO_COPY_MIX = True
                 ONLINE = False
+                connection.state = "OFFLINE"
             if _args.discogs_update:
                 WANTS_TO_PULL_TRACK_INFO = True
                 ONLINE = True
+                connection.discogs_connect()
 
     # TRACK MODE
     if hasattr(_args, 'track_search'):
@@ -228,6 +242,7 @@ def check_args(_args):
 
     if _args.offline_mode == True:
         ONLINE = False
+        connection.state = "OFFLINE"
 
 # UI: what info should be edited in mix-track
 def ask_details_to_edit(_track_det):
@@ -658,25 +673,33 @@ def main():
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
     #log.info("dir(args): %s", dir(args))
+
+    # instantiate conn_state
+    global connection
+    connection = conn_state()
+    # check cli args, connection state will be set here
+    #check_args(args)
     check_args(args)
+
     log.info("ONLINE: %s", ONLINE)
+    log.info("connection.state: %s", connection.state)
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 
     # DISCOGS API CONNECTION
-    if ONLINE:
-        userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-        try: 
-            global d
-            d = discogs_client.Client(
-                    "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                    user_token=userToken)
-            global me
-            me = d.identity()
-            ONLINE = True
-        except Exception:
-            log.error("connecting to Discogs API, let's stay offline!\n")
-            ONLINE = False
+    #if ONLINE:
+    #    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+    #    try:
+    #        global d
+    #        d = discogs_client.Client(
+    #                "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+    #                user_token=userToken)
+    #        global me
+    #        me = d.identity()
+    #        ONLINE = True
+    #    except Exception:
+    #        log.error("connecting to Discogs API, let's stay offline!\n")
+    #        ONLINE = False
 
     #### RELEASE MODE
     if WANTS_TO_LIST_ALL_RELEASES:

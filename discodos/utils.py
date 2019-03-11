@@ -1,5 +1,7 @@
 from discodos import log
 import time
+import discogs_client
+import discogs_client.exceptions as errors
 
 # util: checks for numbers
 def is_number(s):
@@ -27,4 +29,27 @@ def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
                      d_obj._fetcher.rate_limit_remaining)
         time.sleep(sleep)
 
+# connection state class
+class conn_state(object):
+
+    def __init__(self):
+        self.state = "OFFLINE"
+        self.user_wants = "ONLINE"
+
+    def discogs_connect(self):
+        userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+        try:
+            global d
+            d = discogs_client.Client(
+                    "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
+                    user_token=userToken)
+            global me
+            me = d.identity()
+            ONLINE = True
+            self.state = "ONLINE"
+        except Exception:
+            log.error("connecting to Discogs API, let's stay offline!\n")
+            ONLINE = False
+            self.state = "OFFLINE"
+            #raise Exception
 
