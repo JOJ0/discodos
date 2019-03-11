@@ -633,42 +633,46 @@ class User_int(object):
         if self.args.offline_mode == True:
             self.WANTS_ONLINE = False
 
+# discogs connect try,except wrapper, sets globals d and me
+def discogs_connect(_userToken, _appIdentifier):
+    try:
+        global d
+        d = discogs_client.Client(
+                _appIdentifier,
+                user_token = _userToken)
+        global me
+        me = d.identity()
+        _ONLINE = True
+    except Exception as Exc:
+        log.error("connecting to Discogs API, let's stay offline!\n")
+        _ONLINE = False
+        raise Exc
+    return _ONLINE
+
 
 
 # MAIN
 def main():
+    # DISCOGS API CONFIG
+    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+    appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
 	# SETUP / INIT
     global args, ONLINE, user
-    #global args, user
     args = argparser(sys.argv)
     # DEBUG stuff
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
     #log.info("dir(args): %s", dir(args))
-
-    # check cli args old style
-    #check_args(args)
-    # check cli args with user_int class
+    # check cli args and set attributes
     user = User_int(args)
-
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    # db connection global
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 
     # DISCOGS API CONNECTION
     if user.WANTS_ONLINE:
-        userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-        try: 
-            global d
-            d = discogs_client.Client(
-                    "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                    user_token=userToken)
-            global me
-            me = d.identity()
-            ONLINE = True
-        except Exception:
-            log.error("connecting to Discogs API, let's stay offline!\n")
-            ONLINE = False
+        ONLINE = discogs_connect(userToken, appIdentifier)
     else:
         ONLINE = False
 
