@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from discodos import log, db
+from discodos import log, db, mix
 from discodos.utils import *
+from discodos.mix import *
 import discogs_client
 import csv
 import time
@@ -222,11 +223,6 @@ def mix_table_fine(mix_data):
         headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM", 
                  "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"])
 
-# tabulate ALl mixes
-def all_mixes_table(mixes_data):
-    return tab(mixes_data, tablefmt="simple",
-        headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
-
 # tabulate header of mix-tracklist
 def mix_info_header(mix_info):
     return tab([mix_info], tablefmt="plain",
@@ -316,16 +312,6 @@ def reorder_tracks_in_mix(conn, _reorder_pos, _mix_id):
                  t['track_pos'], reorder_pos)
         db.update_pos_in_mix(conn, t['mix_track_id'], reorder_pos)
         reorder_pos = reorder_pos + 1
-
-# DB wrapper: create a new mix, ask user some details before adding
-def create_mix(_conn, _new_mix_name):
-    played = ask_user(
-               text="When did you (last) play it? eg 2018-01-01 ")
-    venue = ask_user(text="And where? ")
-    created_id = db.add_new_mix(_conn, _new_mix_name, played, venue)
-    conn.commit()
-    print_help("New mix created with ID {}.".format(created_id))
-    return created_id
 
 # Discogs: gets Track name from discogs tracklist object via track_number, eg. A1
 def tracklist_parse(d_tracklist, track_number):
@@ -666,7 +652,7 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    # db connection global
+    # db connection global (classes get it passed)
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 
@@ -706,11 +692,8 @@ def main():
         log.info("A mix_name or ID was given\n")
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
-            if is_number(args.mix_name):
-                log.error("Mix name can't be a number!")
-            else:
-                create_mix(conn, args.mix_name)
-                print_help(all_mixes_table(db.get_all_mixes(conn)))
+            mix = Mix_cli(conn)
+            mix.create(args.mix_name)
             # mix is created (or not), nothing else to do
             raise SystemExit(0)
         ### DO STUFF WITH EXISTING MIXES ###################################
