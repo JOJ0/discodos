@@ -684,7 +684,9 @@ def main():
         if user.WANTS_TO_PULL_TRACK_INFO:
             pull_track_info_from_discogs(conn)
         else:
-            print_help(all_mixes_table(db.get_all_mixes(conn)))
+            #print_help(all_mixes_table(db.get_all_mixes(conn)))
+            mix = Mix_cli(conn)
+            mix.view_mixes_list()
 
     ### SPECIFIC MIX ID GIVEN #############################################
     ### SHOW MIX DETAILS ##################################################
