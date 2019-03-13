@@ -3,18 +3,58 @@ from abc import ABC, abstractmethod
 from discodos import log, db
 from tabulate import tabulate as tab
 
-# mix class
+# mix class (abstract)
 class Mix (ABC):
 
-    def __init__(self, db_conn):
+    def __init__(self, db_conn, mix_name_or_id):
         self.db_conn = db_conn
+        self.name_or_id = mix_name_or_id
+        self.id_existing = False
+        self.name_existing = False
+        if is_number(mix_name_or_id):
+            self.id = mix_name_or_id
+            # if it's a mix-id, get mix-name and info
+            try:
+                self.info = db.get_mix_info(self.db_conn, self.id)
+                # FIXME info should also be available as single attrs: created, venue, etc.
+                self.name = self.info[1]
+                self.id_existing = True
+            except:
+                log.info("Mix ID is not existing yet!")
+                #raise Exception # use this for debugging
+                #raise SystemExit(1)
+        else:
+            self.name = mix_name_or_id
+            # if it's a mix-name, get the id unless it's "all"
+            # (default value, should only show mix list)
+            if not self.name == "all":
+                try:
+                    mix_id_tuple = db.get_mix_id(db_conn, self.name)
+                    log.info('%s', mix_id_tuple)
+                    self.id = mix_id_tuple[0]
+                    self.id_existing = True
+                    self.name_existing = True
+                    # load basic mix-info from DB
+                    # FIXME info should also be available as single attrs: created, venue, etc.
+                    # FIXME or okay? here we assume mix is existing and id could be fetched
+                    try:
+                        self.info = db.get_mix_info(self.db_conn, self.id)
+                    except:
+                        log.info("Can't get mix info.")
+                        #raise Exception # use this for debugging
+                except:
+                    log.info("Can't get mix-name from id. Mix not existing yet?")
+                    #raise Exception # use this for debugging
+                    #raise SystemExit(1)
 
-    def create(self, name):
-        if is_number(name):
+
+    def create(self):
+        if is_number(self.name_or_id):
             log.error("Mix name can't be a number!")
         else:
+            print_help("Creating new mix \"{}\".".format(self.name))
             answers = self._create_ask_details()
-            created_id = db.add_new_mix(self.db_conn, name, answers['played'], answers['venue'])
+            created_id = db.add_new_mix(self.db_conn, self.name, answers['played'], answers['venue'])
             self.db_conn.commit()
             # FIXME print_help should be a general help output tool, eg also for Mix_gui child,
             # thus it should be abstract here and must be overridden in child class
