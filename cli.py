@@ -715,28 +715,6 @@ def main():
             # mix is deleted (or not), nothing else to do
             raise SystemExit(0)
         ### DO STUFF WITH EXISTING MIXES ###################################
-        # if it's a mix ID, load basic mix-info from DB
-        #if is_number(args.mix_name):
-        #    mix_id = args.mix_name
-        #    try:
-        #        mix_info = db.get_mix_info(conn, mix_id)
-        #        mix_name = mix_info[1]
-        #    except:
-        #        print_help("This Mix ID is not existing yet!")
-        #        #raise Exception
-        #        raise SystemExit(1)
-        #else:
-        #    mix_name = args.mix_name
-        #    # if it's a mix-name, get the id
-        #    try:
-        #        mix_id_tuple = db.get_mix_id(conn, mix_name)
-        #        log.info('%s', mix_id_tuple)
-        #        mix_id = mix_id_tuple[0]
-        #    except:
-        #        print_help("No mix-name matching.")
-        #        raise SystemExit(1)
-        #    # load basic mix-info from DB, FIXME error handling necessary??
-        #    mix_info = db.get_mix_info(conn, mix_id)
         # new class based mix initialization
         mix = Mix_cli(conn, mix_name_or_id = args.mix_name)
         ### EDIT A MIX-TRACK ###############################################
