@@ -65,7 +65,7 @@ def create_track(conn, release_id, track_no, track_title):
                                          d_track_name, import_timestamp)
                            VALUES(?, ?, ?, datetime('now', 'localtime'))''',
                            (release_id, track_no, track_title))
-        log.info("cur.rowcount: %s\n", cur.rowcount)
+        log.info("DB: cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 
 
@@ -75,7 +75,7 @@ def add_new_mix(conn, name, played='', venue=''):
     cur.execute('''INSERT INTO mix (name, created, updated, played, venue)
                        VALUES (?, datetime('now', 'localtime'), '', date(?), ?)''',
                        (name, played, venue))
-    log.info("cur.rowcount: %s", cur.rowcount)
+    log.info("DB: cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
 
 def get_all_mixes(conn):
@@ -113,6 +113,13 @@ def get_mix_info(conn, mix_id):
     cur.execute('''SELECT * FROM mix WHERE mix_id == ?''', (mix_id, ))
     rows = cur.fetchone()
     return rows
+
+def delete_mix(conn, _mix_id):
+    cur = conn.cursor()
+    log.info('DB: Deleting mix %s and all its mix_track entries (through cascade)', _mix_id)
+    cur.execute('''DELETE FROM mix WHERE mix_id == ?''', (_mix_id, ))
+    log.info("DB: cur.rowcount: %s", cur.rowcount)
+    return cur.lastrowid
 
 
 # TRACKS IN MIXES

@@ -70,6 +70,9 @@ def argparser(argv):
         "-c", "--create-mix", action='store_true',
         help='create a new mix')
     mix_subp_excl_group.add_argument(
+        "-D", "--delete-mix", action='store_true',
+        help='deletes a mix and all its contained tracks!')
+    mix_subp_excl_group.add_argument(
         "-e", "--edit", type=str,
         dest='edit_mix_track',
         metavar='POSITION',
@@ -550,6 +553,7 @@ class User_int(object):
         self.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = False
         self.WANTS_TO_COPY_MIX = False
         self.WANTS_TO_TRACK_SEARCH = False
+        self.WANTS_TO_DELETE_MIX = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -572,6 +576,9 @@ class User_int(object):
                 if self.args.create_mix == True:
                     log.error("Please provide a mix name to be created!")
                     log.error("(Mix name \"all\" is not valid.)")
+                    raise SystemExit(1)
+                elif self.args.delete_mix == True:
+                    log.error("Please provide a mix name or ID to be deleted!")
                     raise SystemExit(1)
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO = True
@@ -606,6 +613,9 @@ class User_int(object):
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO = True
                     self.WANTS_ONLINE = True
+                if self.args.delete_mix:
+                    self.WANTS_TO_DELETE_MIX = True
+                    self.WANTS_ONLINE = False
 
         # TRACK MODE
         if hasattr(self.args, 'track_search'):
@@ -632,7 +642,7 @@ def discogs_connect(_userToken, _appIdentifier):
     except Exception as Exc:
         log.error("connecting to Discogs API, let's stay offline!\n")
         _ONLINE = False
-        raise Exc
+        #raise Exc
     return _ONLINE
 
 
@@ -697,6 +707,12 @@ def main():
             mix = Mix_cli(conn, args.mix_name)
             mix.create()
             # mix is created (or not), nothing else to do
+            raise SystemExit(0)
+        ### DELETE A MIX ##############################################
+        if user.WANTS_TO_DELETE_MIX:
+            mix = Mix_cli(conn, args.mix_name)
+            mix.delete()
+            # mix is deleted (or not), nothing else to do
             raise SystemExit(0)
         ### DO STUFF WITH EXISTING MIXES ###################################
         # if it's a mix ID, load basic mix-info from DB

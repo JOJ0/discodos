@@ -47,6 +47,14 @@ class Mix (ABC):
                     #raise Exception # use this for debugging
                     #raise SystemExit(1)
 
+    def delete(self):
+        if self.id_existing:
+            if self._delete_confirm() == True:
+                db.delete_mix(self.db_conn, self.id)
+                self.db_conn.commit()
+                print_help("Mix \"{} - {}\" deleted successfully.".format(self.id, self.name))
+        else:
+           print_help("Mix \"{}\" doesn't exist.".format(self.name_or_id))
 
     def create(self):
         if is_number(self.name_or_id):
@@ -152,6 +160,18 @@ e.g. found_releases[47114711]
 # mix_cli child of mix class - cli specific stuff is handled here
 class Mix_cli (Mix):
 
+    def _create_ask_details(self):
+        played = ask_user("When did you (last) play it? eg 2018-01-01 ")
+        venue = ask_user(text="And where? ")
+        return {'played': played, 'venue': venue}
+
+    def _delete_confirm(self):
+        really_delete = ask_user(
+            "Are you sure you want to delete mix \"{} - {}\" and all its containing tracks? ".format(
+                self.id, self.name))
+        if really_delete == "y": return True
+        else: return False
+
     def _del_track_confirm(self, pos):
         pass
 
@@ -160,11 +180,6 @@ class Mix_cli (Mix):
 
     def _view_tabulate(self):
         pass
-
-    def _create_ask_details(self):
-        played = ask_user("When did you (last) play it? eg 2018-01-01 ")
-        venue = ask_user(text="And where? ") 
-        return {'played': played, 'venue': venue}
 
     def view_mixes_list(self):
         """
