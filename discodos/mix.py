@@ -2,12 +2,27 @@ from discodos.utils import *
 from abc import ABC, abstractmethod
 from discodos import log, db
 from tabulate import tabulate as tab
+import pprint
 
 # mix class (abstract)
 class Mix (ABC):
 
     def __init__(self, db_conn, mix_name_or_id):
         self.db_conn = db_conn
+        # list of edit_track_questions is defined here once (for all child classes):
+        # dbfield, question
+        self._edit_track_questions = [
+            ["key", "Key ({}): "],
+            ["bpm", "BPM ({}): "],
+            ["d_track_no", "Track # on record ({}): "],
+            ["track_pos", "Move track's position ({}): "],
+            ["key_notes", "Key notes/bassline/etc. ({}): "],
+            ["trans_rating", "Transition rating ({}): "],
+            ["trans_notes", "Transition notes ({}): "],
+            ["d_release_id", "Release ID ({}): "],
+            ["notes", "Other track notes: ({}): "]
+        ]
+        # figuring out names and IDs, just logs and sets instance attributes, no exits here! 
         self.name_or_id = mix_name_or_id
         self.id_existing = False
         self.name_existing = False
@@ -19,6 +34,7 @@ class Mix (ABC):
                 # FIXME info should also be available as single attrs: created, venue, etc.
                 self.name = self.info[1]
                 self.id_existing = True
+                self.name_existing = True
             except:
                 log.info("Mix ID is not existing yet!")
                 #raise Exception # use this for debugging
@@ -99,7 +115,84 @@ e.g. found_releases[47114711]
     def del_track(self, pos):
         pass
 
-    def edit_track(self):
+    def edit_track(self, edit_track):
+        if self.id_existing:
+            print_help("Editing track "+edit_track+" in \""+
+                        self.name+"\":")
+            track_details = db.get_one_mix_track(self.db_conn, self.id, edit_track)
+            print_help("{} - {} - {}".format(
+                       track_details['discogs_title'],
+                       track_details['d_track_no'],
+                       track_details['d_track_name']))
+            if track_details:
+                log.info("current d_release_id: %s", track_details['d_release_id'])
+                edit_answers = self._edit_track_ask_details(track_details)
+                for a in edit_answers.items():
+                    log.info("answers: %s", str(a))
+                try:
+                    db.update_track_in_mix(self.db_conn,
+                        track_details['mix_track_id'],
+                        edit_answers['d_release_id'],
+                        edit_answers['d_track_no'],
+                        edit_answers['track_pos'],
+                        edit_answers['trans_rating'],
+                        edit_answers['trans_notes'])
+                    db.update_or_insert_track_ext(self.db_conn,
+                        track_details['d_release_id'],
+                        edit_answers['d_release_id'],
+                        edit_answers['d_track_no'],
+                        edit_answers['key'],
+                        edit_answers['key_notes'],
+                        edit_answers['bpm'],
+                        edit_answers['notes'],
+                        )
+                except Exception as edit_err:
+                    log.error("Something went wrong on mix_track edit!")
+                    raise edit_err
+                    raise SystemExit(1)
+                pretty_print_mix_tracklist(self.id, mix_info)
+            else:
+                print_help("No track "+edit_track+" in \""+
+                            self.name+"\".")
+        else:
+            print_help("Mix unknown: \"{}\".".format(self.mix_name_or_id))
+
+    def reorder_tracks(self, startpos = 1):
+        pass
+
+    def view(self, verbosity = "coarse"):
+        """
+
+
+        @param string verbosity : or fine
+        @return tab :
+        @author
+        """
+        pass
+
+    def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
+        """
+         like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
+         _pos=None),
+         also add_track_at_pos() schould be handled here.
+
+        @param int release_id : simply the release_id, all figuring out stuff has been done before in add_track_discogs() or add_track_db()
+        @param string track_no : eg A1, A2 as a string
+        @return  :
+        @author
+        """
+        pass
+
+    @abstractmethod
+    def _del_track_confirm(self, pos):
+        pass
+
+    @abstractmethod
+    def _create_ask_details(self):
+        pass
+
+    @abstractmethod
+    def _edit_track_ask_details(self):
         pass
 
     def reorder_tracks(self, startpos = 1):
@@ -175,8 +268,28 @@ class Mix_cli (Mix):
     def _del_track_confirm(self, pos):
         pass
 
-    def _edit_track_ask_details(self):
-        pass
+    def _edit_track_ask_details(self, _track_det):
+        #print(_track_det['d_track_no'])
+        # collect answers from user input
+        answers = {}
+        answers['track_pos'] = "x"
+        for db_field, question in self._edit_track_questions:
+            if db_field == 'track_pos':
+                while not is_number(answers['track_pos']):
+                    answers[db_field] = ask_user(
+                                             question.format(_track_det[db_field]))
+                    if answers[db_field] == "":
+                        answers[db_field] = _track_det[db_field]
+                        break
+            else:
+                answers[db_field] = ask_user(
+                                         question.format(_track_det[db_field]))
+                if answers[db_field] == "":
+                    log.info("Answer was empty, keeping previous value: %s",
+                             _track_det[db_field])
+                    answers[db_field] = _track_det[db_field]
+        #pprint.pprint(answers) # debug
+        return answers
 
     def _view_tabulate(self):
         pass

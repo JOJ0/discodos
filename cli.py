@@ -127,42 +127,6 @@ def argparser(argv):
     log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
     return arguments 
 
-# UI: what info should be edited in mix-track
-def ask_details_to_edit(_track_det):
-    # dbfield, question
-    questions_table = [
-        ["key", "Key ({}): "],
-        ["bpm", "BPM ({}): "],
-        ["d_track_no", "Track # on record ({}): "],
-        ["track_pos", "Move track's position ({}): "],
-        ["key_notes", "Key notes/bassline/etc. ({}): "],
-        ["trans_rating", "Transition rating ({}): "],
-        ["trans_notes", "Transition notes ({}): "],
-        ["d_release_id", "Release ID ({}): "],
-        ["notes", "Other track notes: ({}): "]
-    ]
-    #print(_track_det['d_track_no'])
-    # collect answers from user input
-    answers = {}
-    answers['track_pos'] = "x"
-    for db_field, question in questions_table:
-        if db_field == 'track_pos':
-            while not is_number(answers['track_pos']):
-                answers[db_field] = ask_user(
-                                         question.format(_track_det[db_field]))
-                if answers[db_field] == "":
-                    answers[db_field] = _track_det[db_field]
-                    break
-        else:
-            answers[db_field] = ask_user(
-                                     question.format(_track_det[db_field]))
-            if answers[db_field] == "":
-                log.info("Answer was empty, keeping previous value: %s",
-                         _track_det[db_field])
-                answers[db_field] = _track_det[db_field]
-    #pprint.pprint(answers)
-    return answers
-
 # search release online try/except wrapper
 def search_release_online(discogs, id_or_title):
         try:
@@ -719,44 +683,8 @@ def main():
         mix = Mix_cli(conn, mix_name_or_id = args.mix_name)
         ### EDIT A MIX-TRACK ###############################################
         if user.WANTS_TO_EDIT_MIX_TRACK:
-            edit_track = args.edit_mix_track
-            print_help("Editing track "+edit_track+" in \""+
-                        mix_name+"\":")
-            track_details = db.get_one_mix_track(conn, mix_id, edit_track)
-            print_help("{} - {} - {}".format(
-                       track_details['discogs_title'],
-                       track_details['d_track_no'],
-                       track_details['d_track_name']))
-            if track_details:
-                log.info("current d_release_id: %s", track_details['d_release_id'])
-                edit_answers = ask_details_to_edit(track_details)
-                for a in edit_answers.items():
-                    log.info("answers: %s", str(a))
-                try:
-                    db.update_track_in_mix(conn,
-                        track_details['mix_track_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['track_pos'],
-                        edit_answers['trans_rating'],
-                        edit_answers['trans_notes'])
-                    db.update_or_insert_track_ext(conn,
-                        track_details['d_release_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['key'],
-                        edit_answers['key_notes'],
-                        edit_answers['bpm'],
-                        edit_answers['notes'],
-                        )
-                except Exception as edit_err:
-                    log.error("Something went wrong on mix_track edit!")
-                    raise edit_err
-                    raise SystemExit(1)
-                pretty_print_mix_tracklist(mix_id, mix_info)
-            else:
-                print_help("No track "+edit_track+" in \""+
-                            mix_name+"\".")
+            mix.edit_track(args.edit_mix_track)
+
         ### REORDER TRACKLIST
         elif user.WANTS_TO_REORDER_MIX_TRACKLIST:
             print_help("Tracklist reordering starting at position {}".format(
