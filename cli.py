@@ -665,26 +665,22 @@ def main():
     ### SPECIFIC MIX ID GIVEN #############################################
     ### SHOW MIX DETAILS ##################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-        log.info("A mix_name or ID was given\n")
+        log.info("A mix_name or ID was given. Instantiating Mix_cli class.\n")
+        mix = Mix_cli(conn, args.mix_name)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
-            mix = Mix_cli(conn, args.mix_name)
             mix.create()
             # mix is created (or not), nothing else to do
             raise SystemExit(0)
         ### DELETE A MIX ##############################################
         if user.WANTS_TO_DELETE_MIX:
-            mix = Mix_cli(conn, args.mix_name)
             mix.delete()
             # mix is deleted (or not), nothing else to do
             raise SystemExit(0)
         ### DO STUFF WITH EXISTING MIXES ###################################
-        # new class based mix initialization
-        mix = Mix_cli(conn, mix_name_or_id = args.mix_name)
         ### EDIT A MIX-TRACK ###############################################
         if user.WANTS_TO_EDIT_MIX_TRACK:
             mix.edit_track(args.edit_mix_track)
-
         ### REORDER TRACKLIST
         elif user.WANTS_TO_REORDER_MIX_TRACKLIST:
             print_help("Tracklist reordering starting at position {}".format(
