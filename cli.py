@@ -726,7 +726,11 @@ def main():
         #### JUST SHOW MIX-TRACKLIST:
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
             if mix.id_existing:
-                pretty_print_mix_tracklist(mix.id, mix.info)
+                #pretty_print_mix_tracklist(mix.id, mix.info)
+                if user.WANTS_VERBOSE_MIX_TRACKLIST:
+                    mix.view("fine")
+                else:
+                    mix.view("coarse")
             else:
                 print_help("Mix ID is not existing yet!")
 
