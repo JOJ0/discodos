@@ -1,91 +1,14 @@
-from discodos.utils import * # most of this should only be in view
+from discodos.utils import * # some of this is a view thing right?
+from discodos.models import *
+from discodos.views import *
 from abc import ABC, abstractmethod
-from discodos import log, db
-from tabulate import tabulate as tab # should only be in view
+from discodos import log, db # db should only be in model.py
+from tabulate import tabulate as tab # should be only in views.py
 import pprint
 
-# mix model class
-class Mix (object):
 
-    def __init__(self, db_conn, mix_name_or_id):
-        self.db_conn = db_conn
-        # list of edit_track_questions is defined here once (for all child classes):
-        # dbfield, question
-        self._edit_track_questions = [
-            ["key", "Key ({}): "],
-            ["bpm", "BPM ({}): "],
-            ["d_track_no", "Track # on record ({}): "],
-            ["track_pos", "Move track's position ({}): "],
-            ["key_notes", "Key notes/bassline/etc. ({}): "],
-            ["trans_rating", "Transition rating ({}): "],
-            ["trans_notes", "Transition notes ({}): "],
-            ["d_release_id", "Release ID ({}): "],
-            ["notes", "Other track notes: ({}): "]
-        ]
-        # figuring out names and IDs, just logs and sets instance attributes, no exits here! 
-        self.name_or_id = mix_name_or_id
-        self.id_existing = False
-        self.name_existing = False
-        if is_number(mix_name_or_id):
-            self.id = mix_name_or_id
-            # if it's a mix-id, get mix-name and info
-            try:
-                self.info = db.get_mix_info(self.db_conn, self.id)
-                # FIXME info should also be available as single attrs: created, venue, etc.
-                self.name = self.info[1]
-                self.id_existing = True
-                self.name_existing = True
-            except:
-                log.info("Mix ID is not existing yet!")
-                #raise Exception # use this for debugging
-                #raise SystemExit(1)
-        else:
-            self.name = mix_name_or_id
-            # if it's a mix-name, get the id unless it's "all"
-            # (default value, should only show mix list)
-            if not self.name == "all":
-                try:
-                    mix_id_tuple = db.get_mix_id(db_conn, self.name)
-                    log.info('%s', mix_id_tuple)
-                    self.id = mix_id_tuple[0]
-                    self.id_existing = True
-                    self.name_existing = True
-                    # load basic mix-info from DB
-                    # FIXME info should also be available as single attrs: created, venue, etc.
-                    # FIXME or okay? here we assume mix is existing and id could be fetched
-                    try:
-                        self.info = db.get_mix_info(self.db_conn, self.id)
-                    except:
-                        log.info("Can't get mix info.")
-                        #raise Exception # use this for debugging
-                except:
-                    log.info("Can't get mix-name from id. Mix not existing yet?")
-                    #raise Exception # use this for debugging
-                    #raise SystemExit(1)
-
-    def delete(self):
-        db_return = db.delete_mix(self.db_conn, self.id)
-        self.db_conn.commit()
-        log.info("MODEL: Deleted mix, DB returned: {}".format(db_return))
-
-    def create(self, _played, _venue):
-        created_id = db.add_new_mix(self.db_conn, self.name, _played, _venue)
-        self.db_conn.commit()
-        log.info("MODEL: New mix created with ID {}.".format(created_id))
-        return created_id
-
-    def get_all_mixes(self):
-        """
-        get metadata of all mixes from db
-
-
-        @param
-        @return
-        @author
-        """
-        mixes_data = db.get_all_mixes(self.db_conn)
-        log.info("MODEL: Returning mixes table")
-        return mixes_data
+# mix controller class (abstract) - common attrs and methods  for gui and cli
+class Mix_ctrl_common (ABC):
 
     def add_track_from_db(self, release, track_no, pos = False):
         """
@@ -162,9 +85,6 @@ e.g. found_releases[47114711]
     def reorder_tracks(self, startpos = 1):
         pass
 
-    def get_full_mix(self, verbosity = "coarse"):
-        return db.get_full_mix(self.db_conn, self.id, verbosity)
-
     def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
         """
          like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
@@ -176,18 +96,6 @@ e.g. found_releases[47114711]
         @return  :
         @author
         """
-        pass
-
-    #@abstractmethod
-    def _del_track_confirm(self, pos):
-        pass
-
-    #@abstractmethod
-    def _create_ask_details(self):
-        pass
-
-    #@abstractmethod
-    def _edit_track_ask_details(self):
         pass
 
     def reorder_tracks(self, startpos = 1):
@@ -206,29 +114,101 @@ e.g. found_releases[47114711]
         """
         pass
 
-    #@abstractmethod
-    def _del_track_confirm(self, pos):
-        pass
+# mix controller class CLI implementation
+class Mix_ctrl_cli (Mix_ctrl_common):
 
-    #@abstractmethod
+    def __init__(self, db_conn, mix_name_or_id, _user_int):
+        self.mix = Mix(db_conn, mix_name_or_id) # instantiate the Mix model class
+        self.cli = Mix_view_cli()
+        self.user = _user_int
+
+    def create(self):
+        if is_number(self.mix.name_or_id):
+            log.error("Mix name can't be a number!") # log is everywhere, also in view
+        else:
+            print_help("Creating new mix \"{}\".".format(self.mix.name)) # view
+            answers = self._create_ask_details() # view with questions from common
+            created_id = self.mix.create(answers['played'], answers['venue']) # model
+            self.mix.db_conn.commit() # model
+            print_help("New mix created with ID {}.".format(created_id)) # view
+            self.view_mixes_list() # view
+
     def _create_ask_details(self):
-        pass
+        played = ask_user("When did you (last) play it? eg 2018-01-01 ")
+        venue = ask_user(text="And where? ")
+        return {'played': played, 'venue': venue}
 
-    #@abstractmethod
-    def _edit_track_ask_details(self):
-        pass
+    def view_mixes_list(self):
+        """
+        view a list of all mixes
 
-    #@abstractmethod
-    def _view_pretty(self):
-        pass
 
-# mix_cli child of mix class - cli specific stuff is handled here
-class Mix_cli (Mix):
+        @param
+        @return
+        @author
+        """
+        mixes_data = self.mix.get_all_mixes()
+        self.cli.tab_mixes_list(mixes_data)
+
+    def view(self):
+        self.cli.tab_mix_info_header(self.mix.info)
+        if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
+            full_mix = self.mix.get_full_mix("fine")
+        else:
+            full_mix = self.mix.get_full_mix("coarse")
+
+        if not full_mix:
+            print_help("No tracks in mix yet.")
+        else:
+            # newline chars after 24 chars magic, our new row_list:
+            # FIXME this has to move to Mix_cli class or maybe also useful in Mix_gui class?
+            # in any case: move to separate method
+            cut_pos = 16
+            full_mix_nl = []
+            # first convert list of tuples to list of lists:
+            for tuple_row in full_mix:
+                full_mix_nl.append(list(tuple_row))
+            # now put newlines if longer that cut_pos chars
+            for i, row in enumerate(full_mix_nl):
+                for j, field in enumerate(row):
+                    if not is_number(field) and field is not None:
+                        if len(field) > cut_pos:
+                            cut_pos_space = field.find(" ", cut_pos)
+                            log.info("cut_pos_space index: %s", cut_pos_space)
+                            # don't edit if no space following (almost at end)
+                            if cut_pos_space == -1:
+                                edited_field = field
+                                log.info(edited_field)
+                            else:
+                                edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
+                                log.info(edited_field)
+                            #log.info(field[0:cut_pos_space])
+                            #log.info(field[cut_pos_space:])
+                            full_mix_nl[i][j] = edited_field
+
+            # debug only
+            for row in full_mix_nl:
+               log.debug(str(row))
+            log.debug("")
+            # now really
+            if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
+                self.cli.tab_mix_table(full_mix_nl, "fine")
+            else:
+                self.cli.tab_mix_table(full_mix_nl, "coarse")
+
+    def delete(self):
+        if self.mix.id_existing:
+            if self._delete_confirm() == True:
+                self.mix.delete()
+                self.mix.db_conn.commit()
+                print_help("Mix \"{} - {}\" deleted successfully.".format(self.mix.id, self.mix.name))
+        else:
+           print_help("Mix \"{}\" doesn't exist.".format(self.mix.name_or_id))
 
     def _delete_confirm(self):
         really_delete = ask_user(
             "Are you sure you want to delete mix \"{} - {}\" and all its containing tracks? ".format(
-                self.id, self.name))
+                self.mix.id, self.mix.name))
         if really_delete == "y": return True
         else: return False
 
@@ -258,13 +238,6 @@ class Mix_cli (Mix):
         #pprint.pprint(answers) # debug
         return answers
 
-    def _view_pretty(self, _mix_data, _verbose = False):
-        # FIXME _mix_data should be object attribute "tracklist"
-        # tabulate tracklist COARSLY
-        def _mix_table_coarse(_mix_data):
-            return tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"])
-
         # tabulate tracklist in DETAIL
         def _mix_table_fine(_mix_data):
             return tab(_mix_data, tablefmt="pipe",
@@ -281,5 +254,4 @@ class Mix_cli (Mix):
             print_help(_mix_table_fine(_mix_data))
         else:
             print_help(_mix_table_coarse(_mix_data))
-
 
