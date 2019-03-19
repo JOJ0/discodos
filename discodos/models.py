@@ -4,8 +4,8 @@ from discodos import log, db
 from tabulate import tabulate as tab
 import pprint
 
-# mix class (abstract)
-class Mix (ABC):
+# mix model class
+class Mix (object):
 
     def __init__(self, db_conn, mix_name_or_id):
         self.db_conn = db_conn
@@ -72,18 +72,11 @@ class Mix (ABC):
         else:
            print_help("Mix \"{}\" doesn't exist.".format(self.name_or_id))
 
-    def create(self):
-        if is_number(self.name_or_id):
-            log.error("Mix name can't be a number!")
-        else:
-            print_help("Creating new mix \"{}\".".format(self.name))
-            answers = self._create_ask_details()
-            created_id = db.add_new_mix(self.db_conn, self.name, answers['played'], answers['venue'])
-            self.db_conn.commit()
-            # FIXME print_help should be a general help output tool, eg also for Mix_gui child,
-            # thus it should be abstract here and must be overridden in child class
-            print_help("New mix created with ID {}.".format(created_id))
-            self.view_mixes_list()
+    def create(self, _played, _venue):
+        created_id = db.add_new_mix(self.db_conn, self.name, _played, _venue)
+        self.db_conn.commit()
+        log.info("MODEL: New mix created with ID {}.".format(created_id))
+        return created_id
 
     def add_track_from_db(self, release, track_no, pos = False):
         """
@@ -226,15 +219,15 @@ e.g. found_releases[47114711]
         """
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _del_track_confirm(self, pos):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _create_ask_details(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _edit_track_ask_details(self):
         pass
 
@@ -254,23 +247,23 @@ e.g. found_releases[47114711]
         """
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _del_track_confirm(self, pos):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _create_ask_details(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _edit_track_ask_details(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _view_pretty(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def view_mixes_list(self):
         """
         view a list of all mixes in db
@@ -285,11 +278,6 @@ e.g. found_releases[47114711]
 
 # mix_cli child of mix class - cli specific stuff is handled here
 class Mix_cli (Mix):
-
-    def _create_ask_details(self):
-        played = ask_user("When did you (last) play it? eg 2018-01-01 ")
-        venue = ask_user(text="And where? ")
-        return {'played': played, 'venue': venue}
 
     def _delete_confirm(self):
         really_delete = ask_user(

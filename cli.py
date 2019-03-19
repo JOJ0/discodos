@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-from discodos import log, db, mix
+from discodos import log, db
 from discodos.utils import *
-from discodos.mix import *
+from discodos.models import *
+from discodos.ctrls import *
+from discodos.views import *
 import discogs_client
 import csv
 import time
@@ -659,28 +661,28 @@ def main():
             pull_track_info_from_discogs(conn)
         else:
             #print_help(all_mixes_table(db.get_all_mixes(conn)))
-            mix = Mix_cli(conn, args.mix_name)
-            mix.view_mixes_list()
+            mix_ctrl = Mix_ctrl_cli(conn, args.mix_name)
+            mix_ctrl.view_mixes_list()
 
     ### SPECIFIC MIX ID GIVEN #############################################
     ### SHOW MIX DETAILS ##################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-        log.info("A mix_name or ID was given. Instantiating Mix_cli class.\n")
-        mix = Mix_cli(conn, args.mix_name)
+        log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
+        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
-            mix.create()
+            mix_ctrl.create()
             # mix is created (or not), nothing else to do
             raise SystemExit(0)
         ### DELETE A MIX ##############################################
         if user.WANTS_TO_DELETE_MIX:
-            mix.delete()
+            mix_ctrl.delete()
             # mix is deleted (or not), nothing else to do
             raise SystemExit(0)
         ### DO STUFF WITH EXISTING MIXES ###################################
         ### EDIT A MIX-TRACK ###############################################
         if user.WANTS_TO_EDIT_MIX_TRACK:
-            mix.edit_track(args.edit_mix_track)
+            mix_ctrl.edit_track(args.edit_mix_track)
         ### REORDER TRACKLIST
         elif user.WANTS_TO_REORDER_MIX_TRACKLIST:
             print_help("Tracklist reordering starting at position {}".format(
@@ -725,12 +727,12 @@ def main():
 
         #### JUST SHOW MIX-TRACKLIST:
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-            if mix.id_existing:
-                #pretty_print_mix_tracklist(mix.id, mix.info)
+            if mix_ctrl.id_existing:
+                #pretty_print_mix_tracklist(mix_ctrl.id, mix_ctrl.info)
                 if user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    mix.view("fine")
+                    mix_ctrl.view("fine")
                 else:
-                    mix.view("coarse")
+                    mix_ctrl.view("coarse")
             else:
                 print_help("Mix ID is not existing yet!")
 
