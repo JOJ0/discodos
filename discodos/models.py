@@ -1,7 +1,7 @@
-from discodos.utils import *
+from discodos.utils import * # most of this should only be in view
 from abc import ABC, abstractmethod
 from discodos import log, db
-from tabulate import tabulate as tab
+from tabulate import tabulate as tab # should only be in view
 import pprint
 
 # mix model class
@@ -77,6 +77,19 @@ class Mix (object):
         self.db_conn.commit()
         log.info("MODEL: New mix created with ID {}.".format(created_id))
         return created_id
+
+    def get_all_mixes(self):
+        """
+        get metadata of all mixes from db
+
+
+        @param
+        @return
+        @author
+        """
+        mixes_data = db.get_all_mixes(self.db_conn)
+        log.info("MODEL: Returning mixes table")
+        return mixes_data
 
     def add_track_from_db(self, release, track_no, pos = False):
         """
@@ -263,19 +276,6 @@ e.g. found_releases[47114711]
     def _view_pretty(self):
         pass
 
-    #@abstractmethod
-    def view_mixes_list(self):
-        """
-        view a list of all mixes in db
-
-
-        @param
-        @return
-        @author
-        """
-        pass
-
-
 # mix_cli child of mix class - cli specific stuff is handled here
 class Mix_cli (Mix):
 
@@ -337,16 +337,3 @@ class Mix_cli (Mix):
             print_help(_mix_table_coarse(_mix_data))
 
 
-    def view_mixes_list(self):
-        """
-        view a list of all mixes in db
-
-
-        @param
-        @return
-        @author
-        """
-        mixes_data = db.get_all_mixes(self.db_conn)
-        tabulated = tab(mixes_data, tablefmt="simple",
-                headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
-        print_help(tabulated)
