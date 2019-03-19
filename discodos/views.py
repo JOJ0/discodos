@@ -14,3 +14,17 @@ class Mix_view_cli(object):
         tabulated = tab(mixes_data, tablefmt="simple",
                 headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
         print_help(tabulated)
+
+    def tab_mix_table(self, _mix_data, _verbose = False):
+        if _verbose:
+            print_help(tab(_mix_data, tablefmt="pipe",
+                headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
+                         "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
+        else:
+            print_help(tab(_mix_data, tablefmt="pipe",
+                headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
+
+    def tab_mix_info_header(self, mix_info):
+        print_help(tab([mix_info], tablefmt="plain",
+                headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
+

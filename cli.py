@@ -181,22 +181,6 @@ def all_releases_table(release_data):
     return tab(release_data, tablefmt="plain",
         headers=["ID", "Release name", "Last import"])
 
-# tabulate tracklist COARSLY
-def mix_table_coarse(mix_data):
-    return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"])
-
-# tabulate tracklist in DETAIL
-def mix_table_fine(mix_data):
-    return tab(mix_data, tablefmt="pipe",
-        headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM", 
-                 "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"])
-
-# tabulate header of mix-tracklist
-def mix_info_header(mix_info):
-    return tab([mix_info], tablefmt="plain",
-        headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
-
 # tabulate OFFLINE release search results
 def offline_release_table(release_list):
     return tab(release_list, tablefmt="simple",
@@ -498,6 +482,7 @@ def search_online_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False, _p
         raise TErr
 
 # user interaction class - holds info about what user wants to do
+# currently this only analyzes argparser args and puts it to nicely human readable properties
 class User_int(object):
 
     def __init__(self, _args):
@@ -661,14 +646,14 @@ def main():
             pull_track_info_from_discogs(conn)
         else:
             #print_help(all_mixes_table(db.get_all_mixes(conn)))
-            mix_ctrl = Mix_ctrl_cli(conn, args.mix_name)
+            mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
             mix_ctrl.view_mixes_list()
 
     ### SPECIFIC MIX ID GIVEN #############################################
     ### SHOW MIX DETAILS ##################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
-        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name)
+        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
             mix_ctrl.create()
@@ -727,14 +712,8 @@ def main():
 
         #### JUST SHOW MIX-TRACKLIST:
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-            if mix_ctrl.id_existing:
-                #pretty_print_mix_tracklist(mix_ctrl.id, mix_ctrl.info)
-                if user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    mix_ctrl.view("fine")
-                else:
-                    mix_ctrl.view("coarse")
-            else:
-                print_help("Mix ID is not existing yet!")
+            #pretty_print_mix_tracklist(mix_ctrl.id, mix_ctrl.info)
+            mix_ctrl.view()
 
 
     ### TRACK MODE
