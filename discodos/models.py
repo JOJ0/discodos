@@ -166,58 +166,8 @@ e.g. found_releases[47114711]
     def reorder_tracks(self, startpos = 1):
         pass
 
-    def view(self, verbosity = "coarse"):
-        """
-
-
-        @param string verbosity : or fine
-        @return tab :
-        @author
-        """
-        print("debug inside")
-        #print_help(mix_info_header(self.info))
-        if verbosity == "fine":
-            full_mix = db.get_full_mix(self.db_conn, self.id, detail="fine")
-        else:
-            full_mix = db.get_full_mix(self.db_conn, self.id, detail="coarse")
-
-
-        if not full_mix:
-            print_help("No tracks in mix yet.")
-        else:
-            # newline chars after 24 chars magic, our new row_list:
-            # FIXME this has to move to Mix_cli class or maybe also useful in Mix_gui class?
-            # in any case: move to separate method
-            cut_pos = 16
-            full_mix_nl = []
-            # first convert list of tuples to list of lists:
-            for tuple_row in full_mix:
-                full_mix_nl.append(list(tuple_row))
-            # now put newlines if longer that cut_pos chars
-            for i, row in enumerate(full_mix_nl):
-                for j, field in enumerate(row):
-                    if not is_number(field) and field is not None:
-                        if len(field) > cut_pos:
-                            cut_pos_space = field.find(" ", cut_pos)
-                            log.info("cut_pos_space index: %s", cut_pos_space)
-                            # don't edit if no space following (almost at end)
-                            if cut_pos_space == -1:
-                                edited_field = field
-                                log.info(edited_field)
-                            else:
-                                edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                                log.info(edited_field)
-                            #log.info(field[0:cut_pos_space])
-                            #log.info(field[cut_pos_space:])
-                            full_mix_nl[i][j] = edited_field
-
-            # debug only
-            for row in full_mix_nl:
-               log.debug(str(row))
-            log.debug("")
-            # now really
-            self._view_pretty(full_mix_nl, verbosity)
-
+    def get_full_mix(self, verbosity = "coarse"):
+        return db.get_full_mix(self.db_conn, self.id, verbosity)
 
     def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
         """
