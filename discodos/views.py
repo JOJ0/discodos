@@ -4,12 +4,26 @@ from discodos import log
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
 
-# general stuff:
+# general stuff, useful for all UIs:
+class Mix_view_common(ABC):
+    def __init__():
+        # list of edit_track_questions is defined here once (for all child classes):
+        # dbfield, question
+        self._edit_track_questions = [
+            ["key", "Key ({}): "],
+            ["bpm", "BPM ({}): "],
+            ["d_track_no", "Track # on record ({}): "],
+            ["track_pos", "Move track's position ({}): "],
+            ["key_notes", "Key notes/bassline/etc. ({}): "],
+            ["trans_rating", "Transition rating ({}): "],
+            ["trans_notes", "Transition notes ({}): "],
+            ["d_release_id", "Release ID ({}): "],
+            ["notes", "Other track notes: ({}): "]
+        ]
 
-# viewing mixes:
-class Mix_view_cli(object):
+# viewing mixes in CLI mode:
+class Mix_view_cli(Mix_view_common):
     #def __init__():
-
     def tab_mixes_list(self, mixes_data):
         tabulated = tab(mixes_data, tablefmt="simple",
                 headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])

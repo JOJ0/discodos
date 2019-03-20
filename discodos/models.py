@@ -9,19 +9,6 @@ class Mix (object):
 
     def __init__(self, db_conn, mix_name_or_id):
         self.db_conn = db_conn
-        # list of edit_track_questions is defined here once (for all child classes):
-        # dbfield, question
-        self._edit_track_questions = [
-            ["key", "Key ({}): "],
-            ["bpm", "BPM ({}): "],
-            ["d_track_no", "Track # on record ({}): "],
-            ["track_pos", "Move track's position ({}): "],
-            ["key_notes", "Key notes/bassline/etc. ({}): "],
-            ["trans_rating", "Transition rating ({}): "],
-            ["trans_notes", "Transition notes ({}): "],
-            ["d_release_id", "Release ID ({}): "],
-            ["notes", "Other track notes: ({}): "]
-        ]
         # figuring out names and IDs, just logs and sets instance attributes, no exits here! 
         self.name_or_id = mix_name_or_id
         self.id_existing = False
