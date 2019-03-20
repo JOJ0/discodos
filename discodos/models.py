@@ -55,6 +55,7 @@ class Mix (object):
                     # FIXME or okay? here we assume mix is existing and id could be fetched
                     try:
                         self.info = db.get_mix_info(self.db_conn, self.id)
+                        self.name = self.info[1]
                     except:
                         log.info("Can't get mix info.")
                         #raise Exception # use this for debugging

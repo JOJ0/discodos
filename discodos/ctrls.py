@@ -40,48 +40,6 @@ e.g. found_releases[47114711]
     def del_track(self, pos):
         pass
 
-    def edit_track(self, edit_track):
-        if self.id_existing:
-            print_help("Editing track "+edit_track+" in \""+
-                        self.name+"\":")
-            track_details = db.get_one_mix_track(self.db_conn, self.id, edit_track)
-            print_help("{} - {} - {}".format(
-                       track_details['discogs_title'],
-                       track_details['d_track_no'],
-                       track_details['d_track_name']))
-            if track_details:
-                log.info("current d_release_id: %s", track_details['d_release_id'])
-                edit_answers = self._edit_track_ask_details(track_details)
-                for a in edit_answers.items():
-                    log.info("answers: %s", str(a))
-                try:
-                    db.update_track_in_mix(self.db_conn,
-                        track_details['mix_track_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['track_pos'],
-                        edit_answers['trans_rating'],
-                        edit_answers['trans_notes'])
-                    db.update_or_insert_track_ext(self.db_conn,
-                        track_details['d_release_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['key'],
-                        edit_answers['key_notes'],
-                        edit_answers['bpm'],
-                        edit_answers['notes'],
-                        )
-                except Exception as edit_err:
-                    log.error("Something went wrong on mix_track edit!")
-                    raise edit_err
-                    raise SystemExit(1)
-                pretty_print_mix_tracklist(self.id, mix_info)
-            else:
-                print_help("No track "+edit_track+" in \""+
-                            self.name+"\".")
-        else:
-            print_help("Mix unknown: \"{}\".".format(self.mix_name_or_id))
-
     def reorder_tracks(self, startpos = 1):
         pass
 
@@ -119,8 +77,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def __init__(self, db_conn, mix_name_or_id, _user_int):
         self.mix = Mix(db_conn, mix_name_or_id) # instantiate the Mix model class
-        self.cli = Mix_view_cli()
-        self.user = _user_int
+        self.cli = Mix_view_cli() # instantiatie the Mix view class (the CLI)
+        self.user = _user_int # take an instance of the User_int class and set as attribute
 
     def create(self):
         if is_number(self.mix.name_or_id):
@@ -151,50 +109,53 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         self.cli.tab_mixes_list(mixes_data)
 
     def view(self):
-        self.cli.tab_mix_info_header(self.mix.info)
-        if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-            full_mix = self.mix.get_full_mix("fine")
-        else:
-            full_mix = self.mix.get_full_mix("coarse")
-
-        if not full_mix:
-            print_help("No tracks in mix yet.")
-        else:
-            # newline chars after 24 chars magic, our new row_list:
-            # FIXME this has to move to Mix_cli class or maybe also useful in Mix_gui class?
-            # in any case: move to separate method
-            cut_pos = 16
-            full_mix_nl = []
-            # first convert list of tuples to list of lists:
-            for tuple_row in full_mix:
-                full_mix_nl.append(list(tuple_row))
-            # now put newlines if longer that cut_pos chars
-            for i, row in enumerate(full_mix_nl):
-                for j, field in enumerate(row):
-                    if not is_number(field) and field is not None:
-                        if len(field) > cut_pos:
-                            cut_pos_space = field.find(" ", cut_pos)
-                            log.info("cut_pos_space index: %s", cut_pos_space)
-                            # don't edit if no space following (almost at end)
-                            if cut_pos_space == -1:
-                                edited_field = field
-                                log.info(edited_field)
-                            else:
-                                edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                                log.info(edited_field)
-                            #log.info(field[0:cut_pos_space])
-                            #log.info(field[cut_pos_space:])
-                            full_mix_nl[i][j] = edited_field
-
-            # debug only
-            for row in full_mix_nl:
-               log.debug(str(row))
-            log.debug("")
-            # now really
+        if self.mix.id_existing:
+            self.cli.tab_mix_info_header(self.mix.info)
             if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                self.cli.tab_mix_table(full_mix_nl, "fine")
+                full_mix = self.mix.get_full_mix("fine")
             else:
-                self.cli.tab_mix_table(full_mix_nl, "coarse")
+                full_mix = self.mix.get_full_mix("coarse")
+
+            if not full_mix:
+                print_help("No tracks in mix yet.")
+            else:
+                # newline chars after 24 chars magic, our new row_list:
+                # FIXME this has to move to Mix_cli class or maybe also useful in Mix_gui class?
+                # in any case: move to separate method
+                cut_pos = 16
+                full_mix_nl = []
+                # first convert list of tuples to list of lists:
+                for tuple_row in full_mix:
+                    full_mix_nl.append(list(tuple_row))
+                # now put newlines if longer that cut_pos chars
+                for i, row in enumerate(full_mix_nl):
+                    for j, field in enumerate(row):
+                        if not is_number(field) and field is not None:
+                            if len(field) > cut_pos:
+                                cut_pos_space = field.find(" ", cut_pos)
+                                log.info("cut_pos_space index: %s", cut_pos_space)
+                                # don't edit if no space following (almost at end)
+                                if cut_pos_space == -1:
+                                    edited_field = field
+                                    log.info(edited_field)
+                                else:
+                                    edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
+                                    log.info(edited_field)
+                                #log.info(field[0:cut_pos_space])
+                                #log.info(field[cut_pos_space:])
+                                full_mix_nl[i][j] = edited_field
+
+                # debug only
+                for row in full_mix_nl:
+                   log.debug(str(row))
+                log.debug("")
+                # now really
+                if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
+                    self.cli.tab_mix_table(full_mix_nl, "fine")
+                else:
+                    self.cli.tab_mix_table(full_mix_nl, "coarse")
+        else:
+            print_help("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 
     def delete(self):
         if self.mix.id_existing:
@@ -204,6 +165,49 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 print_help("Mix \"{} - {}\" deleted successfully.".format(self.mix.id, self.mix.name))
         else:
            print_help("Mix \"{}\" doesn't exist.".format(self.mix.name_or_id))
+
+    def edit_track(self, edit_track):
+        if self.mix.id_existing:
+            print_help("Editing track "+edit_track+" in \""+
+                        self.name+"\":")
+            track_details = db.get_one_mix_track(self.db_conn, self.mix.id, edit_track)
+            print_help("{} - {} - {}".format(
+                       track_details['discogs_title'],
+                       track_details['d_track_no'],
+                       track_details['d_track_name']))
+            if track_details:
+                log.info("current d_release_id: %s", track_details['d_release_id'])
+                edit_answers = self._edit_track_ask_details(track_details)
+                for a in edit_answers.items():
+                    log.info("answers: %s", str(a))
+                try:
+                    db.update_track_in_mix(self.db_conn,
+                        track_details['mix_track_id'],
+                        edit_answers['d_release_id'],
+                        edit_answers['d_track_no'],
+                        edit_answers['track_pos'],
+                        edit_answers['trans_rating'],
+                        edit_answers['trans_notes'])
+                    db.update_or_insert_track_ext(self.db_conn,
+                        track_details['d_release_id'],
+                        edit_answers['d_release_id'],
+                        edit_answers['d_track_no'],
+                        edit_answers['key'],
+                        edit_answers['key_notes'],
+                        edit_answers['bpm'],
+                        edit_answers['notes'],
+                        )
+                except Exception as edit_err:
+                    log.error("Something went wrong on mix_track edit!")
+                    raise edit_err
+                    raise SystemExit(1)
+                pretty_print_mix_tracklist(self.id, mix_info)
+            else:
+                print_help("No track "+edit_track+" in \""+
+                            self.name+"\".")
+        else:
+            print_help("Mix unknown: \"{}\".".format(self.mix.mix_name_or_id))
+
 
     def _delete_confirm(self):
         really_delete = ask_user(
