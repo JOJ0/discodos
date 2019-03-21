@@ -6,7 +6,7 @@ import pprint
 
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
-    def __init__():
+    def __init__(self):
         # list of edit_track_questions is defined here once (for all child classes):
         # dbfield, question
         self._edit_track_questions = [
@@ -23,7 +23,9 @@ class Mix_view_common(ABC):
 
 # viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common):
-    #def __init__():
+    def __init__(self):
+        super(Mix_view_cli, self).__init__()
+
     def tab_mixes_list(self, mixes_data):
         tabulated = tab(mixes_data, tablefmt="simple",
                 headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
@@ -40,5 +42,6 @@ class Mix_view_cli(Mix_view_common):
 
     def tab_mix_info_header(self, mix_info):
         print_help(tab([mix_info], tablefmt="plain",
+        #print_help(tab(mix_info, tablefmt="plain",
                 headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
 
