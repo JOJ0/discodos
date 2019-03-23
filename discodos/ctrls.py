@@ -23,7 +23,7 @@ class Mix_ctrl_common (ABC):
         """
         pass
 
-    def reorder_tracks(self, startpos = 1):
+    def _reorder_tracks_db_wrapper(self, startpos = 1):
         pass
 
 # mix controller class CLI implementation
@@ -81,22 +81,22 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 # first convert list of tuples to list of lists:
                 for tuple_row in full_mix:
                     full_mix_nl.append(list(tuple_row))
-                # now put newlines if longer that cut_pos chars
+                # now put newlines if longer than cut_pos chars
                 for i, row in enumerate(full_mix_nl):
                     for j, field in enumerate(row):
                         if not is_number(field) and field is not None:
                             if len(field) > cut_pos:
                                 cut_pos_space = field.find(" ", cut_pos)
-                                log.info("cut_pos_space index: %s", cut_pos_space)
+                                log.debug("cut_pos_space index: %s", cut_pos_space)
                                 # don't edit if no space following (almost at end)
                                 if cut_pos_space == -1:
                                     edited_field = field
-                                    log.info(edited_field)
+                                    log.debug(edited_field)
                                 else:
                                     edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                                    log.info(edited_field)
-                                #log.info(field[0:cut_pos_space])
-                                #log.info(field[cut_pos_space:])
+                                    log.debug(edited_field)
+                                #log.debug(field[0:cut_pos_space])
+                                #log.debug(field[cut_pos_space:])
                                 full_mix_nl[i][j] = edited_field
 
                 # debug only
