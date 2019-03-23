@@ -82,7 +82,7 @@ class Mix (object):
 
         @param int pos : track position in mix
         @param release_dict_db release : a release_dict object returned from offline db: eg: found_in_db_releases[123456]
-        @param string track_no : eg. A1, A2 
+        @param string track_no : eg. A1, A2
         @return  :
         @author
         """
@@ -166,18 +166,6 @@ e.g. found_releases[47114711]
         """
         pass
 
-    #@abstractmethod
-    def _del_track_confirm(self, pos):
-        pass
-
-    #@abstractmethod
-    def _create_ask_details(self):
-        pass
-
-    #@abstractmethod
-    def _edit_track_ask_details(self):
-        pass
-
     def reorder_tracks(self, startpos = 1):
         pass
 
@@ -193,81 +181,3 @@ e.g. found_releases[47114711]
         @author
         """
         pass
-
-    #@abstractmethod
-    def _del_track_confirm(self, pos):
-        pass
-
-    #@abstractmethod
-    def _create_ask_details(self):
-        pass
-
-    #@abstractmethod
-    def _edit_track_ask_details(self):
-        pass
-
-    #@abstractmethod
-    def _view_pretty(self):
-        pass
-
-# mix_cli child of mix class - cli specific stuff is handled here
-class Mix_cli (Mix):
-
-    def _delete_confirm(self):
-        really_delete = ask_user(
-            "Are you sure you want to delete mix \"{} - {}\" and all its containing tracks? ".format(
-                self.id, self.name))
-        if really_delete == "y": return True
-        else: return False
-
-    def _del_track_confirm(self, pos):
-        pass
-
-    def _edit_track_ask_details(self, _track_det):
-        #print(_track_det['d_track_no'])
-        # collect answers from user input
-        answers = {}
-        answers['track_pos'] = "x"
-        for db_field, question in self._edit_track_questions:
-            if db_field == 'track_pos':
-                while not is_number(answers['track_pos']):
-                    answers[db_field] = ask_user(
-                                             question.format(_track_det[db_field]))
-                    if answers[db_field] == "":
-                        answers[db_field] = _track_det[db_field]
-                        break
-            else:
-                answers[db_field] = ask_user(
-                                         question.format(_track_det[db_field]))
-                if answers[db_field] == "":
-                    log.info("Answer was empty, keeping previous value: %s",
-                             _track_det[db_field])
-                    answers[db_field] = _track_det[db_field]
-        #pprint.pprint(answers) # debug
-        return answers
-
-    def _view_pretty(self, _mix_data, _verbose = False):
-        # FIXME _mix_data should be object attribute "tracklist"
-        # tabulate tracklist COARSLY
-        def _mix_table_coarse(_mix_data):
-            return tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"])
-
-        # tabulate tracklist in DETAIL
-        def _mix_table_fine(_mix_data):
-            return tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
-                         "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"])
-
-        # tabulate header of mix-tracklist
-        def _mix_info_header(_mix_info):
-            return tab([_mix_info], tablefmt="plain",
-                headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
-
-        print_help(_mix_info_header(self.info))
-        if _verbose:
-            print_help(_mix_table_fine(_mix_data))
-        else:
-            print_help(_mix_table_coarse(_mix_data))
-
-

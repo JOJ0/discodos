@@ -10,39 +10,6 @@ import pprint
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
 
-    def add_track_from_db(self, release, track_no, pos = False):
-        """
-         release_dict_db and release_dict_discogs look a little different
-         
-
-        @param int pos : track position in mix
-        @param release_dict_db release : a release_dict object returned from offline db: eg: found_in_db_releases[123456]
-        @param string track_no : eg. A1, A2 
-        @return  :
-        @author
-        """
-        pass
-
-    def add_track_from_discogs(self, release, track_no, pos = False):
-        """
-         release_dict_db and release_dict_discogs look a little different
-         
-
-        @param int pos : eg. 5 or 12
-        @param release_dict_discogs release : eg. a releases_list + release_id index
-e.g. found_releases[47114711]
-        @param string track_no : e.g. A2 or A
-        @return  :
-        @author
-        """
-        pass
-
-    def del_track(self, pos):
-        pass
-
-    def reorder_tracks(self, startpos = 1):
-        pass
-
     def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
         """
          like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
@@ -57,19 +24,6 @@ e.g. found_releases[47114711]
         pass
 
     def reorder_tracks(self, startpos = 1):
-        pass
-
-    def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
-        """
-         like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
-         _pos=None),
-         also add_track_at_pos() schould be handled here.
-
-        @param int release_id : simply the release_id, all figuring out stuff has been done before in add_track_discogs() or add_track_db()
-        @param string track_no : eg A1, A2 as a string
-        @return  :
-        @author
-        """
         pass
 
 # mix controller class CLI implementation
@@ -209,6 +163,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             print_help("Mix unknown: \"{}\".".format(self.mix.mix_name_or_id))
 
 
+# definitely cli specific
+
     def _delete_confirm(self):
         really_delete = ask_user(
             "Are you sure you want to delete mix \"{} - {}\" and all its containing tracks? ".format(
@@ -260,4 +216,37 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             print_help(_mix_table_coarse(_mix_data))
 
 
+
+    def add_track_from_db(self, release, track_no, pos = False):
+        """
+        release_dict_db and release_dict_discogs look a little different
+
+
+        @param int pos : track position in mix
+        @param release_dict_db release : a release_dict object returned from offline db: eg: found_in_db_releases[123456]
+        @param string track_no : eg. A1, A2 
+        @return  :
+        @author
+        """
+        pass
+
+    def add_track_from_discogs(self, release, track_no, pos = False):
+        """
+         release_dict_db and release_dict_discogs look a little different
+
+
+        @param int pos : eg. 5 or 12
+        @param release_dict_discogs release : eg. a releases_list + release_id index
+e.g. found_releases[47114711]
+        @param string track_no : e.g. A2 or A
+        @return  :
+        @author
+        """
+        pass
+
+    def del_track(self, pos):
+        pass
+
+    def reorder_tracks(self, startpos = 1):
+        pass
 
