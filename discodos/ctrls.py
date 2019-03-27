@@ -105,9 +105,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 log.debug("")
                 # now really
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix_nl, "fine")
+                    self.cli.tab_mix_table(full_mix_nl, _verbose = True)
                 else:
-                    self.cli.tab_mix_table(full_mix_nl, "coarse")
+                    self.cli.tab_mix_table(full_mix_nl, _verbose = False)
         else:
             print_help("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 
@@ -123,39 +123,24 @@ class Mix_ctrl_cli (Mix_ctrl_common):
     def edit_track(self, edit_track):
         if self.mix.id_existing:
             print_help("Editing track "+edit_track+" in \""+
-                        self.name+"\":")
-            track_details = db.get_one_mix_track(self.db_conn, self.mix.id, edit_track)
-            print_help("{} - {} - {}".format(
-                       track_details['discogs_title'],
-                       track_details['d_track_no'],
-                       track_details['d_track_name']))
+                        self.mix.name+"\":")
+            track_details = self.mix.get_one_mix_track(edit_track)
             if track_details:
+                print_help("{} - {} - {}".format(
+                           track_details['discogs_title'],
+                           track_details['d_track_no'],
+                           track_details['d_track_name']))
                 log.info("current d_release_id: %s", track_details['d_release_id'])
                 edit_answers = self._edit_track_ask_details(track_details)
                 for a in edit_answers.items():
                     log.info("answers: %s", str(a))
-                try:
-                    db.update_track_in_mix(self.db_conn,
-                        track_details['mix_track_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['track_pos'],
-                        edit_answers['trans_rating'],
-                        edit_answers['trans_notes'])
-                    db.update_or_insert_track_ext(self.db_conn,
-                        track_details['d_release_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['key'],
-                        edit_answers['key_notes'],
-                        edit_answers['bpm'],
-                        edit_answers['notes'],
-                        )
-                except Exception as edit_err:
+                update_ok = self.mix.update_track_in_mix(track_details, edit_answers)
+                if update_ok:
+                    print_help("Track edit was successful.")
+                else:
                     log.error("Something went wrong on mix_track edit!")
-                    raise edit_err
                     raise SystemExit(1)
-                pretty_print_mix_tracklist(self.id, mix_info)
+                self.view()
             else:
                 print_help("No track "+edit_track+" in \""+
                             self.name+"\".")
@@ -180,7 +165,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         # collect answers from user input
         answers = {}
         answers['track_pos'] = "x"
-        for db_field, question in self._edit_track_questions:
+        for db_field, question in self.cli._edit_track_questions:
             if db_field == 'track_pos':
                 while not is_number(answers['track_pos']):
                     answers[db_field] = ask_user(

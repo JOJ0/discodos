@@ -75,6 +75,35 @@ class Mix (object):
         log.info("MODEL: Returning mixes table")
         return mixes_data
 
+    def get_one_mix_track(self, track_id):
+        log.info("MODEL: Returning track {} from {}.".format(track_id, self.id))
+        return db.get_one_mix_track(self.db_conn, self.id, track_id)
+
+    def update_track_in_mix(self, track_details, edit_answers):
+        try:
+            db.update_track_in_mix(self.db_conn,
+                track_details['mix_track_id'],
+                edit_answers['d_release_id'],
+                edit_answers['d_track_no'],
+                edit_answers['track_pos'],
+                edit_answers['trans_rating'],
+                edit_answers['trans_notes'])
+            db.update_or_insert_track_ext(self.db_conn,
+                track_details['d_release_id'],
+                edit_answers['d_release_id'],
+                edit_answers['d_track_no'],
+                edit_answers['key'],
+                edit_answers['key_notes'],
+                edit_answers['bpm'],
+                edit_answers['notes'],
+                )
+            log.info("MODEL: Track edit was successful.")
+            return True
+        except Exception as edit_err:
+            log.error("MODEL: Something went wrong in update_track_in_mix!")
+            raise edit_err
+            return False
+
     def add_track_from_db(self, release, track_no, pos = False):
         """
          release_dict_db and release_dict_discogs look a little different
@@ -104,48 +133,6 @@ e.g. found_releases[47114711]
 
     def del_track(self, pos):
         pass
-
-    def edit_track(self, edit_track):
-        if self.id_existing:
-            print_help("Editing track "+edit_track+" in \""+
-                        self.name+"\":")
-            track_details = db.get_one_mix_track(self.db_conn, self.id, edit_track)
-            print_help("{} - {} - {}".format(
-                       track_details['discogs_title'],
-                       track_details['d_track_no'],
-                       track_details['d_track_name']))
-            if track_details:
-                log.info("current d_release_id: %s", track_details['d_release_id'])
-                edit_answers = self._edit_track_ask_details(track_details)
-                for a in edit_answers.items():
-                    log.info("answers: %s", str(a))
-                try:
-                    db.update_track_in_mix(self.db_conn,
-                        track_details['mix_track_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['track_pos'],
-                        edit_answers['trans_rating'],
-                        edit_answers['trans_notes'])
-                    db.update_or_insert_track_ext(self.db_conn,
-                        track_details['d_release_id'],
-                        edit_answers['d_release_id'],
-                        edit_answers['d_track_no'],
-                        edit_answers['key'],
-                        edit_answers['key_notes'],
-                        edit_answers['bpm'],
-                        edit_answers['notes'],
-                        )
-                except Exception as edit_err:
-                    log.error("Something went wrong on mix_track edit!")
-                    raise edit_err
-                    raise SystemExit(1)
-                pretty_print_mix_tracklist(self.id, mix_info)
-            else:
-                print_help("No track "+edit_track+" in \""+
-                            self.name+"\".")
-        else:
-            print_help("Mix unknown: \"{}\".".format(self.mix_name_or_id))
 
     def reorder_tracks(self, startpos = 1):
         pass
