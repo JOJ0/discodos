@@ -342,51 +342,6 @@ def pull_track_info_from_discogs(_conn, _mix_id = False):
     else:
         print_help("Not online, can't pull from Discogs...")
 
-# show pretty mix-tracklist
-def pretty_print_mix_tracklist(_mix_id, _mix_info):
-    print_help(mix_info_header(_mix_info))
-    if user.WANTS_VERBOSE_MIX_TRACKLIST:
-        full_mix = db.get_full_mix(conn, _mix_id, detail="fine")
-    else:
-        full_mix = db.get_full_mix(conn, _mix_id, detail="coarse")
-
-    if not full_mix:
-        print_help("No tracks in mix yet.")
-    else:
-        # newline chars after 24 chars magic, our new row_list:
-        cut_pos = 16
-        full_mix_nl = []
-        # first convert list of tuples to list of lists:
-        for tuple_row in full_mix:
-            full_mix_nl.append(list(tuple_row))
-        # now put newlines if longer that cut_pos chars
-        for i, row in enumerate(full_mix_nl):
-            for j, field in enumerate(row):
-                if not is_number(field) and field is not None:
-                    if len(field) > cut_pos:
-                        cut_pos_space = field.find(" ", cut_pos)
-                        log.info("cut_pos_space index: %s", cut_pos_space)
-                        # don't edit if no space following (almost at end)
-                        if cut_pos_space == -1:
-                            edited_field = field
-                            log.info(edited_field)
-                        else:
-                            edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                            log.info(edited_field)
-                        #log.info(field[0:cut_pos_space])
-                        #log.info(field[cut_pos_space:])
-                        full_mix_nl[i][j] = edited_field
-
-        # debug only
-        for row in full_mix_nl:
-           log.debug(str(row))
-        log.debug("")
-        # now really
-        if user.WANTS_VERBOSE_MIX_TRACKLIST:
-            print_help(mix_table_fine(full_mix_nl))
-        else:
-            print_help(mix_table_coarse(full_mix_nl))
-
 def search_offline_and_add_to_mix(_searchterm, _conn, _mix_id, _track = False,
                                   _pos = False):
     print_help('Searching offline DB for \"' + _searchterm +'\"')
