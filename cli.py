@@ -628,8 +628,6 @@ def main():
             print_help("Tracklist reordering starting at position {}".format(
                        args.reorder_from_pos))
             mix_ctrl.reorder_tracks(args.reorder_from_pos)
-            #reorder_tracks_in_mix(conn, args.reorder_from_pos, mix_id)
-            #pretty_print_mix_tracklist(mix_id, mix_info)
         ### DELETE A TRACK FROM MIX
         elif user.WANTS_TO_DELETE_MIX_TRACK:
             really_del = ask_user(text="Delete Track {} from mix {}? ".format(
