@@ -143,9 +143,18 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 self.view()
             else:
                 print_help("No track "+edit_track+" in \""+
-                            self.name+"\".")
+                            self.mix.name+"\".")
         else:
-            print_help("Mix unknown: \"{}\".".format(self.mix.mix_name_or_id))
+            print_help("Mix unknown: \"{}\".".format(self.mix.name_or_id))
+
+    def reorder_tracks(self, startpos = 1):
+        reorder_pos = int(startpos)
+        reordered = self.mix.reorder_tracks(startpos)
+        if not reordered:
+            log.error("Reorder failed. No track {} in mix.".format(startpos))
+        else:
+            log.info("Reordering tracks successful")
+            self.view()
 
 
 # definitely cli specific
@@ -200,7 +209,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             print_help(_mix_table_coarse(_mix_data))
 
-
+# todo
 
     def add_track_from_db(self, release, track_no, pos = False):
         """
@@ -230,8 +239,5 @@ e.g. found_releases[47114711]
         pass
 
     def del_track(self, pos):
-        pass
-
-    def reorder_tracks(self, startpos = 1):
         pass
 

@@ -274,18 +274,28 @@ def get_tracks_from_position(conn, _mix_id, _pos):
     cur.execute('''SELECT mix_track_id, track_pos FROM mix_track WHERE mix_id == ?
                        AND track_pos >= ?''', (_mix_id, _pos))
     rows = cur.fetchall()
-    #log.info('DB: get_tracks_from_position: %s\n', row)
-    return rows
+    log.debug('DB: get_tracks_from_position: %s\n', rows)
+    if len(rows) == 0:
+        log.info('DB: get_tracks_from_position: Nothing found')
+        return False
+    else:
+        return rows
 
 def update_pos_in_mix(conn, mix_track_id, track_pos_new):
     cur = conn.cursor()
-    cur.execute('''UPDATE mix_track SET track_pos = ?
-                       WHERE mix_track_id == ?
-                       ''',
-                       (track_pos_new,
-                        mix_track_id))
-    log.info("DB: update_pos_in_mix rowcount: %s", cur.rowcount)
-    return cur.lastrowid
+    try:
+        cur.execute('''UPDATE mix_track SET track_pos = ?
+                           WHERE mix_track_id == ?
+                           ''',
+                           (track_pos_new,
+                            mix_track_id))
+        conn.commit()
+        log.info("DB: update_pos_in_mix rowcount: %s", cur.rowcount)
+        return True
+    except sqlite3.Error as er:
+        log.error("DB: update_pos_in_mix error: %s", er.message)
+        return False
+
 
 def delete_track_from_mix(conn, _mix_id, _pos):
     cur = conn.cursor()

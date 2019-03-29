@@ -104,6 +104,18 @@ class Mix (object):
             raise edit_err
             return False
 
+    def reorder_tracks(self, pos):
+        tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        if not tracks_to_shift:
+            return False
+        for t in tracks_to_shift:
+            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
+                     t['track_pos'], pos)
+            if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], pos):
+                return False
+            pos = pos + 1
+        return True
+
     def add_track_from_db(self, release, track_no, pos = False):
         """
          release_dict_db and release_dict_discogs look a little different
@@ -134,9 +146,6 @@ e.g. found_releases[47114711]
     def del_track(self, pos):
         pass
 
-    def reorder_tracks(self, startpos = 1):
-        pass
-
     def get_full_mix(self, verbosity = "coarse"):
         return db.get_full_mix(self.db_conn, self.id, verbosity)
 
@@ -151,9 +160,6 @@ e.g. found_releases[47114711]
         @return  :
         @author
         """
-        pass
-
-    def reorder_tracks(self, startpos = 1):
         pass
 
     def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
