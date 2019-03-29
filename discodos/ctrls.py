@@ -153,6 +153,20 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             log.info("Reordering tracks successful")
             self.view()
 
+    def delete_track(self, delete_track_pos):
+         really_del = ask_user(text="Delete Track {} from mix {}? ".format(
+                                      delete_track_pos, self.mix.id))
+         if really_del.lower() == "y":
+             successful = self.mix.delete_track(delete_track_pos)
+             # reorder existing and print tracklist
+             if successful:
+                 if delete_track_pos == 1:
+                    self.mix.reorder_tracks(1)
+                 else:
+                    self.mix.reorder_tracks(delete_track_pos - 1)
+                 self.view()
+             else:
+                 print_help("Delete failed, maybe nonexistent track position?")
 
 # definitely cli specific
 

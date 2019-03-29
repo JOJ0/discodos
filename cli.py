@@ -630,17 +630,7 @@ def main():
             mix_ctrl.reorder_tracks(args.reorder_from_pos)
         ### DELETE A TRACK FROM MIX
         elif user.WANTS_TO_DELETE_MIX_TRACK:
-            really_del = ask_user(text="Delete Track {} from mix {}? ".format(
-                                         args.delete_track_pos, mix_id))
-            if really_del.lower() == "y":
-                successful = db.delete_track_from_mix(conn, mix_id,
-                                             args.delete_track_pos)
-                # reorder existing and print tracklist
-                if successful:
-                    reorder_tracks_in_mix(conn, args.delete_track_pos - 1, mix_id)
-                    pretty_print_mix_tracklist(mix_id, mix_info)
-                else:
-                    print_help("Delete failed, maybe nonexistent track position?")
+            mix_ctrl.delete_track(args.delete_track_pos)
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
             if ONLINE:

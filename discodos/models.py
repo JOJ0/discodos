@@ -116,6 +116,10 @@ class Mix (object):
             pos = pos + 1
         return True
 
+    def delete_track(self, pos):
+        log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
+        return db.delete_track_from_mix(self.db_conn, self.id, pos)
+
     def add_track_from_db(self, release, track_no, pos = False):
         """
          release_dict_db and release_dict_discogs look a little different
@@ -143,8 +147,6 @@ e.g. found_releases[47114711]
         """
         pass
 
-    def del_track(self, pos):
-        pass
 
     def get_full_mix(self, verbosity = "coarse"):
         return db.get_full_mix(self.db_conn, self.id, verbosity)
