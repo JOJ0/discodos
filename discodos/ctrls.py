@@ -23,9 +23,6 @@ class Mix_ctrl_common (ABC):
         """
         pass
 
-    def _reorder_tracks_db_wrapper(self, startpos = 1):
-        pass
-
 # mix controller class CLI implementation
 class Mix_ctrl_cli (Mix_ctrl_common):
 
