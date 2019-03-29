@@ -192,22 +192,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         #pprint.pprint(answers) # debug
         return answers
 
-        # tabulate tracklist in DETAIL
-        def _mix_table_fine(_mix_data):
-            return tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
-                         "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"])
-
-        # tabulate header of mix-tracklist
-        def _mix_info_header(_mix_info):
-            return tab([_mix_info], tablefmt="plain",
-                headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"])
-
-        print_help(_mix_info_header(self.info))
-        if _verbose:
-            print_help(_mix_table_fine(_mix_data))
-        else:
-            print_help(_mix_table_coarse(_mix_data))
 
 # todo
 
