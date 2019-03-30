@@ -236,3 +236,41 @@ e.g. found_releases[47114711]
     def del_track(self, pos):
         pass
 
+
+# Collection controller class
+class Coll_ctrl_cli (object):
+    """
+    manages the record collection, offline and with help of discogs data
+
+    @param
+    @return
+    @author
+    """
+
+    def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier):
+        self.user = _user_int # take an instance of the User_int class and set as attribute
+        self.db_conn = _db_conn
+        self.user = _user_int
+        if self.user.WANTS_ONLINE:
+            self.ONLINE = self.discogs_connect(_userToken, _appIdentifier)
+        else:
+            self.ONLINE = False
+
+    # discogs connect try,except wrapper, sets attributes d and me
+    # leave globals for compatibility for now
+    def discogs_connect(self, _userToken, _appIdentifier):
+        try:
+            self.d = discogs_client.Client(
+                    _appIdentifier,
+                    user_token = _userToken)
+            self.me = self.d.identity()
+            global d
+            d = self.d
+            global me
+            me = self.me
+            _ONLINE = True
+        except Exception as Exc:
+            log.error("connecting to Discogs API, let's stay offline!\n")
+            _ONLINE = False
+            #raise Exc
+        return _ONLINE

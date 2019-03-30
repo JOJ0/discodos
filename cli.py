@@ -572,13 +572,14 @@ def main():
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
 
-    # DISCOGS API CONNECTION
-    if user.WANTS_ONLINE:
-        ONLINE = discogs_connect(userToken, appIdentifier)
-    else:
-        ONLINE = False
+    # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
+    coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
+    #if user.WANTS_ONLINE:
+    #    ONLINE = coll_ctrl.ONLINE
+    #else:
+    #    ONLINE = False
 
-    log.info("ONLINE: %s", ONLINE)
+    log.info("ONLINE: %s", coll_ctrl.ONLINE)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -586,7 +587,7 @@ def main():
         print_help(all_releases_table(db.all_releases(conn)))
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
-        if ONLINE:
+        if coll_ctrl.ONLINE:
             search_online_and_add_to_mix(searchterm, conn, args.add_to_mix,
                                           args.track_to_add, args.add_at_pos)
         else:
@@ -604,11 +605,12 @@ def main():
             mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
             mix_ctrl.view_mixes_list()
 
-    ### SPECIFIC MIX ID GIVEN #############################################
+    ### MIX ID GIVEN #############################################
     ### SHOW MIX DETAILS ##################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
         mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+        #coll_ctrl = Coll_ctrl_cli(conn, user)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
             mix_ctrl.create()
@@ -633,7 +635,7 @@ def main():
             mix_ctrl.delete_track(args.delete_track_pos)
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            if ONLINE:
+            if coll_ctrl.ONLINE:
                 search_online_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
                                               False, args.mix_mode_add_at_pos)
             else:
