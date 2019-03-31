@@ -579,7 +579,7 @@ def main():
     #else:
     #    ONLINE = False
 
-    log.info("ONLINE: %s", coll_ctrl.ONLINE)
+    #log.info("ONLINE: %s", coll_ctrl.ONLINE)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -636,11 +636,18 @@ def main():
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
             if coll_ctrl.ONLINE:
-                search_online_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
-                                              False, args.mix_mode_add_at_pos)
+                #search_online_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
+                #                              False, args.mix_mode_add_at_pos)
+                # this returns a online or offline release type object depending on models state:
+                discogs_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
+                # the question which track to add is handled here
+                mix_ctrl.add_discogs_track(args.mix_mode_add_at_pos, discogs_rel_found)
             else:
-                search_offline_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
-                                              False, args.mix_mode_add_at_pos)
+                # (args.add_release_to_mix, conn, mix_id,
+                #                              False, args.mix_mode_add_at_pos)
+                database_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
+                mix_ctrl.add_offline_track(args.mix_mode_add_at_pos, database_rel_found)
+
         #### COPY A MIX
         elif user.WANTS_TO_COPY_MIX:
             print_help("Copying mix {} - {}.".format(mix_id, mix_name))

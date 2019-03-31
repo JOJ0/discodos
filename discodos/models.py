@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 from discodos import log, db
 from tabulate import tabulate as tab # should only be in view
 import pprint
+import discogs_client
+import discogs_client.exceptions as errors
+import requests.exceptions as reqerrors
+import urllib3.exceptions as urlerrors
 
 # mix model class
 class Mix (object):
@@ -176,3 +180,87 @@ e.g. found_releases[47114711]
         @author
         """
         pass
+
+
+
+# record collection class
+class Collection (object):
+
+    def __init__(self, db_conn):
+        self.db_conn = db_conn
+        # discogs api objects are online set when discogs_connect method is called
+        self.d = False
+        self.me = False
+        self.ONLINE = False
+
+    # discogs connect try,except wrapper, sets attributes d and me
+    # leave globals for compatibility for now
+    def discogs_connect(self, _userToken, _appIdentifier):
+        try:
+            self.d = discogs_client.Client(
+                    _appIdentifier,
+                    user_token = _userToken)
+            self.me = self.d.identity()
+            global d
+            d = self.d
+            global me
+            me = self.me
+            _ONLINE = True
+        except Exception as Exc:
+            _ONLINE = False
+            #raise Exc
+        self.ONLINE = _ONLINE
+        return _ONLINE
+
+    def get_all_db_releases(self):
+        return db.all_releases(self.db_conn)
+
+    def search_release_online(self, id_or_title):
+        try:
+            if is_number(id_or_title):
+                release = self.d.release(id_or_title)
+                #return '|'+str(release.id)+'|'+ str(release.title)+'|'
+                return [release]
+            else:
+                releases = self.d.search(id_or_title, type='release')
+                log.info("First found release: {}".format(releases[0]))
+                log.info("All found releases: {}".format(releases))
+                return releases
+        except errors.HTTPError as HtErr:
+            log.error("%s", HtErr)
+        except urlerrors.NewConnectionError as ConnErr:
+            log.error("%s", ConnErr)
+        except urlerrors.MaxRetryError as RetryErr:
+            log.error("%s", RetryErr)
+        except Exception as Exc:
+            log.error("Exception: %s", Exc)
+
+
+    def search_release_offline(self, id_or_title):
+        if is_number(id_or_title):
+            try:
+                release = db.search_release_id(self.db_conn, id_or_title)
+                if release:
+                    #return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
+                    return [release]
+                else:
+                    release_not_found = None
+                    return release_not_found
+            except Exception as Exc:
+                log.error("Not found or Database Exception: %s\n", Exc)
+                raise Exc
+        else:
+            try:
+                releases = db.search_release_title(self.db_conn, id_or_title)
+                if releases:
+                    # return all releases (so it's a list for tabulate),
+                    # but only first one is used later on...
+                    return [releases]
+                else:
+                    return None
+            except Exception as Exc:
+                log.error("Not found or Database Exception: %s\n", Exc)
+                raise Exc
+
+
+
