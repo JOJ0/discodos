@@ -297,6 +297,7 @@ class Coll_ctrl_cli (object):
         self.db_conn = _db_conn
         self.user = _user_int
         self.collection = Collection(_db_conn)
+        self.cli = Collection_view_cli() # instantiate cli frontend class 
         if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
@@ -317,7 +318,7 @@ class Coll_ctrl_cli (object):
             search_results = self.collection.search_release_online(_searchterm)
 
             # SEARCH RESULTS OUTPUT HAPPENS HERE
-            compiled_results_list = self.pretty_print_found_release(
+            compiled_results_list = self.cli.print_found_discogs_release(
                                         search_results, _searchterm, db_releases)
             #return compiled_results_list
         else:
@@ -325,40 +326,3 @@ class Coll_ctrl_cli (object):
             search_results = self.collection.search_release_offline(_searchterm)
             return search_results
 
-    # FIXME move to view
-    # Discogs: formatted output of release search results
-    def pretty_print_found_release(self, discogs_results, _searchterm, _db_releases):
-        # only show pages count if it's a Release Title Search
-        if not is_number(_searchterm):
-            print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
-        else:
-            print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
-        for result_item in discogs_results:
-            print_help("Checking " + str(result_item.id))
-            for dbr in _db_releases:
-                if result_item.id == dbr[0]:
-                    print_help("Good, first matching record in your collection is:")
-                    result_list=[]
-                    result_list.append([])
-                    result_list[0].append(result_item.id)
-                    result_list[0].append(str(result_item.artists[0].name))
-                    result_list[0].append(result_item.title)
-                    result_list[0].append(str(result_item.labels[0].name))
-                    result_list[0].append(result_item.country)
-                    result_list[0].append(str(result_item.year))
-                    #result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                    #           ", "+str(result_item.formats[0]['descriptions'][1]))
-                    result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                               ", "+str(result_item.formats[0]['descriptions'][0]))
-
-                    print_help(tab(result_list, tablefmt="simple",
-                              headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
-                    tracklist = result_item.tracklist
-                    for track in tracklist:
-                       print(track.position + "\t" + track.title)
-                    print()
-                    break
-            if result_item.id == dbr[0]:
-                #return result_list[0]
-                return result_list
-                break

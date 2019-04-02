@@ -63,7 +63,7 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
 
-# collection view common things for cli and gui
+# collection view - common things for cli and gui
 class Collection_view_common(ABC):
     def __init__(self):
         pass
@@ -73,4 +73,40 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
     def __init__(self):
         super(Collection_view_cli, self).__init__()
 
+    # Discogs: formatted output of release search results
+    def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
+        # only show pages count if it's a Release Title Search
+        if not is_number(_searchterm):
+            print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
+        else:
+            print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+        for result_item in discogs_results:
+            print_help("Checking " + str(result_item.id))
+            for dbr in _db_releases:
+                if result_item.id == dbr[0]:
+                    print_help("Good, first matching record in your collection is:")
+                    result_list=[]
+                    result_list.append([])
+                    result_list[0].append(result_item.id)
+                    result_list[0].append(str(result_item.artists[0].name))
+                    result_list[0].append(result_item.title)
+                    result_list[0].append(str(result_item.labels[0].name))
+                    result_list[0].append(result_item.country)
+                    result_list[0].append(str(result_item.year))
+                    #result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                    #           ", "+str(result_item.formats[0]['descriptions'][1]))
+                    result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                               ", "+str(result_item.formats[0]['descriptions'][0]))
+
+                    print_help(tab(result_list, tablefmt="simple",
+                              headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
+                    tracklist = result_item.tracklist
+                    for track in tracklist:
+                       print(track.position + "\t" + track.title)
+                    print()
+                    break
+            if result_item.id == dbr[0]:
+                #return result_list[0]
+                return result_list
+                break
 
