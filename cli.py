@@ -595,7 +595,7 @@ def main():
         else:
             database_rel_found = coll_ctrl.search_release(searchterm)
             mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
-            mix_ctrl.add_offline_track(database_rel_found[0][0], args.track_to_add, args.add_at_pos)
+            mix_ctrl.add_offline_track(database_rel_found, args.track_to_add, args.add_at_pos)
             mix_ctrl.view()
 
 
@@ -642,7 +642,8 @@ def main():
             if coll_ctrl.ONLINE:
                 # this returns a online or offline releases type object depending on models state:
                 discogs_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                mix_ctrl.add_discogs_track(args.mix_mode_add_at_pos, discogs_rel_found)
+                mix_ctrl.add_discogs_track(discogs_rel_found, False,
+                                            args.mix_mode_add_at_pos)
             else:
                 database_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
                 mix_ctrl.add_offline_track(database_rel_found, False,
