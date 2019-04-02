@@ -4,6 +4,11 @@ from discodos import log
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
 
+class Cli_view_common(ABC):
+    # cli util: print a UI message
+    def print_help(self, message):
+        print(''+str(message)+'\n')
+
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
     def __init__(self):
@@ -22,7 +27,7 @@ class Mix_view_common(ABC):
         ]
 
 # viewing mixes in CLI mode:
-class Mix_view_cli(Mix_view_common):
+class Mix_view_cli(Mix_view_common, Cli_view_common):
     def __init__(self):
         super(Mix_view_cli, self).__init__()
 
@@ -44,4 +49,17 @@ class Mix_view_cli(Mix_view_common):
         print_help(tab([mix_info], tablefmt="plain",
         #print_help(tab(mix_info, tablefmt="plain",
                 headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
+
+    # util: ask user for some string
+    def ask_user(self, text=""):
+        return input(text)
+
+    def really_add_track(self, track_to_add, release_name, mix_id, pos):
+        quest=(
+        #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
+        'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
+            .format(track_to_add, release_name, int(mix_id), pos))
+        _answ = self.ask_user(quest)
+        if _answ.lower() == "y" or _answ.lower() == "":
+            return True
 

@@ -6,7 +6,6 @@ from discodos import log, db # db should only be in model.py
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
 
-
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
 
@@ -206,31 +205,77 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
 # todo
 
-    def add_offline_track(self, release, track_no, pos = False):
-        """
-        release_dict_db and release_dict_discogs look a little different
+    def add_offline_track(self, rel_list, track_no, pos):
+        self._add_track(rel_list[0], track_no, pos)
 
+    # _add_track should only be called from add_offline_track() and add_discogs_track()
+    def _add_track(self, _release_tuple, _track_no, _pos):
+        def _user_is_sure(__pos):
+            quest=(
+            #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
+            'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
+                .format(track_to_add, _release_tuple[1], int(self.mix.id), __pos))
+            _answ = ask_user(quest)
+            if _answ.lower() == "y" or _answ.lower() == "":
+                return True
+        #####  User wants to add Track at given position or just add at end #####
+        #if (self.user.WANTS_TO_ADD_AT_POSITION or self.user.WANTS_TO_ADD_AT_POS_IN_MIX_MODE
+        #  or self.user.WANTS_TO_ADD_TO_MIX or self.user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE):
+        if not _track_no:
+            track_to_add = self.cli.ask_user("Which track? ")
+        else:
+            track_to_add = _track_no
+        #cur_id_add_pos = self.mix.add_track_no_at_pos(_conn, _self.mix.id, track_to_add,
+        #                              _pos, compiled_results_list)
+        if _pos == None:
+            _pos = 0
+        log.info("Value of pos in controller add_offline_track:".format(_pos))
+        log.info("This is _release_tuple: %s", _release_tuple)
+        if self.mix.id_existing:
+            last_track = self.mix.get_last_track()
+            log.debug("Currently last track in mix is: %s", last_track[0])
+            current_id = False
+            if _pos:
+                if self.cli.really_add_track(track_to_add, _release_tuple[1],
+                                             self.mix.id, int(_pos)):
+                    current_id = self.mix.add_track(_release_tuple[0],
+                                                    track_to_add, track_pos = _pos)
+                    if current_id:
+                        log.info("Track add to mix successful, now reordering ...")
+                        self.mix.reorder_tracks(_pos)
+            elif is_number(last_track[0]):
+                if self.cli.really_add_track(track_to_add, _release_tuple[1],
+                                             self.mix.id, last_track[0]+1):
 
-        @param int pos : track position in mix
-        @param release_dict_db release : a release_dict object returned from offline db: eg: found_in_db_releases[123456]
-        @param string track_no : eg. A1, A2 
-        @return  :
-        @author
-        """
-        pass
+                    current_id = self.mix.add_track(_release_tuple[0],
+                                                    track_to_add, track_pos = last_track[0] + 1)
+            else:
+                if self.cli.really_add_track(track_to_add, _release_tuple[1],
+                                             self.mix.id, 1):
+
+                    current_id = self.mix.add_track(_release_tuple[0],
+                                                    track_to_add, track_pos = 1)
+            # FIXME untested if this is actually a proper sanity check
+            log.info("Value of current_id in add_offline_track: {}".format(current_id))
+            if current_id:
+                self.view()
+                #return True
+            else:
+                log.error("Add track to DB failed!")
+                #return False
+        else:
+            self.cli.print_help("Mix ID "+str(self.mix.id)+" is not existing yet.")
+            return False
+
 
     def add_discogs_track(self, release, track_no, pos = False):
-        """
-         release_dict_db and release_dict_discogs look a little different
-
-
-        @param int pos : eg. 5 or 12
-        @param release_dict_discogs release : eg. a releases_list + release_id index
-e.g. found_releases[47114711]
-        @param string track_no : e.g. A2 or A
-        @return  :
-        @author
-        """
+        def _user_is_sure(_pos):
+            quest=(
+            'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
+                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), _pos))
+            _answ = ask_user(quest)
+            if _answ.lower() == "y" or _answ.lower() == "":
+                return True
         pass
 
     def del_track(self, pos):
@@ -274,9 +319,11 @@ class Coll_ctrl_cli (object):
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.pretty_print_found_release(
                                         search_results, _searchterm, db_releases)
+            #return compiled_results_list
         else:
             print_help('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
+            return search_results
 
     # FIXME move to view
     # Discogs: formatted output of release search results
@@ -315,5 +362,3 @@ class Coll_ctrl_cli (object):
                 #return result_list[0]
                 return result_list
                 break
-
-

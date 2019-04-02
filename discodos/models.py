@@ -124,62 +124,15 @@ class Mix (object):
         log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
         return db.delete_track_from_mix(self.db_conn, self.id, pos)
 
-    def add_track_from_db(self, release, track_no, pos = False):
-        """
-         release_dict_db and release_dict_discogs look a little different
-         
-
-        @param int pos : track position in mix
-        @param release_dict_db release : a release_dict object returned from offline db: eg: found_in_db_releases[123456]
-        @param string track_no : eg. A1, A2
-        @return  :
-        @author
-        """
-        pass
-
-    def add_track_from_discogs(self, release, track_no, pos = False):
-        """
-         release_dict_db and release_dict_discogs look a little different
-         
-
-        @param int pos : eg. 5 or 12
-        @param release_dict_discogs release : eg. a releases_list + release_id index
-e.g. found_releases[47114711]
-        @param string track_no : e.g. A2 or A
-        @return  :
-        @author
-        """
-        pass
-
-
     def get_full_mix(self, verbosity = "coarse"):
         return db.get_full_mix(self.db_conn, self.id, verbosity)
 
-    def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
-        """
-         like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
-         _pos=None),
-         also add_track_at_pos() schould be handled here.
+    def add_track(self, release, track_no, track_pos, trans_rating='', trans_notes=''):
+        return db.add_track_to_mix(self.db_conn, self.id, release, track_no, track_pos,
+                trans_rating='', trans_notes='')
 
-        @param int release_id : simply the release_id, all figuring out stuff has been done before in add_track_discogs() or add_track_db()
-        @param string track_no : eg A1, A2 as a string
-        @return  :
-        @author
-        """
-        pass
-
-    def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
-        """
-         like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
-         _pos=None),
-         also add_track_at_pos() schould be handled here.
-
-        @param int release_id : simply the release_id, all figuring out stuff has been done before in add_track_discogs() or add_track_db()
-        @param string track_no : eg A1, A2 as a string
-        @return  :
-        @author
-        """
-        pass
+    def get_last_track(self):
+        return db.get_last_track_in_mix(self.db_conn, self.id)
 
 
 
@@ -224,7 +177,7 @@ class Collection (object):
             else:
                 releases = self.d.search(id_or_title, type='release')
                 log.info("First found release: {}".format(releases[0]))
-                log.info("All found releases: {}".format(releases))
+                log.debug("All found releases: {}".format(releases))
                 return releases
         except errors.HTTPError as HtErr:
             log.error("%s", HtErr)
@@ -253,9 +206,12 @@ class Collection (object):
             try:
                 releases = db.search_release_title(self.db_conn, id_or_title)
                 if releases:
+                    log.debug("First found release: {}".format(releases[0]))
+                    log.debug("All found releases: {}".format(releases))
                     # return all releases (so it's a list for tabulate),
                     # but only first one is used later on...
-                    return [releases]
+                    #return [releases]
+                    return releases
                 else:
                     return None
             except Exception as Exc:

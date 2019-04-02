@@ -191,7 +191,7 @@ def get_tracks_of_one_mix(conn, _mix_id):
 
 def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                      trans_rating='', trans_notes=''):
-    #print(mix_id, release_id, track_no, track_pos,trans_rating, trans_notes)
+    log.info("DB: add_track_to_mix got this: mix_id: {}, d_release_id: {}, track_no: {}, track_pos: {}, trans_rating: {}, trans_notes: {}".format(mix_id, release_id, track_no, track_pos, trans_rating, trans_notes))
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, d_track_no, track_pos,
                        trans_rating, trans_notes)
@@ -200,6 +200,7 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                         trans_rating, trans_notes))
     log.info("DB: cur.rowcount: %s", cur.rowcount)
     return cur.lastrowid
+    #return cur.rowcount
 
 def get_one_mix_track(conn, mix_id, position):
     conn.row_factory = sqlite3.Row

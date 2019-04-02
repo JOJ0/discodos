@@ -43,7 +43,7 @@ def argparser(argv):
         help='search for this release name or ID')
     release_subparser.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix',
-        help='add found release to given mix ID', default="all")
+        help='add found release to given mix ID', default=0)
     release_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add',
         help='add track number to mix (eg. A1, AA, B2, ...)', default=0)
@@ -468,11 +468,15 @@ class User_int(object):
                 self.WANTS_ONLINE = False
             else:
                 self.WANTS_TO_SEARCH_FOR_RELEASE = True
-                if self.args.add_to_mix and self.args.track_to_add and self.args.add_at_pos:
+                if (self.args.add_to_mix != 0 and self.args.track_to_add != 0
+                  and self.args.add_at_pos):
                     self.WANTS_TO_ADD_AT_POSITION = True
                     #self.WANTS_TO_SHOW_MIX_TRACKLIST = True
-                elif self.args.add_to_mix and self.args.track_to_add:
+                elif self.args.add_to_mix !=0 and self.args.track_to_add !=0:
                     self.WANTS_TO_ADD_TO_MIX = True
+                else:
+                    log.error("args.add_to_mix, args.track_to_add or args.add_at_pos is 0")
+                    raise SystemExit(1)
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):
@@ -558,7 +562,7 @@ def main():
     # DISCOGS API CONFIG
     userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
     appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
-	# SETUP / INIT
+    # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)
     # DEBUG stuff
@@ -571,15 +575,8 @@ def main():
     # db connection global (classes get it passed)
     global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
-
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
     coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
-    #if user.WANTS_ONLINE:
-    #    ONLINE = coll_ctrl.ONLINE
-    #else:
-    #    ONLINE = False
-
-    #log.info("ONLINE: %s", coll_ctrl.ONLINE)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -588,11 +585,18 @@ def main():
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         if coll_ctrl.ONLINE:
-            search_online_and_add_to_mix(searchterm, conn, args.add_to_mix,
-                                          args.track_to_add, args.add_at_pos)
+            #search_online_and_add_to_mix(searchterm, conn, args.add_to_mix,
+            #                              args.track_to_add, args.add_at_pos)
+            discogs_rel_found = coll_ctrl.search_release(searchterm)
+            # initialize a mix_ctrl object from release mode
+            mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
+            mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add, args.add_at_pos)
+            mix_ctrl.view()
         else:
-            search_offline_and_add_to_mix(searchterm, conn, args.add_to_mix,
-                                          args.track_to_add, args.add_at_pos)
+            database_rel_found = coll_ctrl.search_release(searchterm)
+            mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
+            mix_ctrl.add_offline_track(database_rel_found[0][0], args.track_to_add, args.add_at_pos)
+            mix_ctrl.view()
 
 
     ##### MIX MODE ########################################################
@@ -636,17 +640,13 @@ def main():
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
             if coll_ctrl.ONLINE:
-                #search_online_and_add_to_mix(args.add_release_to_mix, conn, mix_id,
-                #                              False, args.mix_mode_add_at_pos)
-                # this returns a online or offline release type object depending on models state:
+                # this returns a online or offline releases type object depending on models state:
                 discogs_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                # the question which track to add is handled here
                 mix_ctrl.add_discogs_track(args.mix_mode_add_at_pos, discogs_rel_found)
             else:
-                # (args.add_release_to_mix, conn, mix_id,
-                #                              False, args.mix_mode_add_at_pos)
                 database_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                mix_ctrl.add_offline_track(args.mix_mode_add_at_pos, database_rel_found)
+                mix_ctrl.add_offline_track(database_rel_found, False,
+                                            args.mix_mode_add_at_pos)
 
         #### COPY A MIX
         elif user.WANTS_TO_COPY_MIX:
