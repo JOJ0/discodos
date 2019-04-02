@@ -63,3 +63,14 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
 
+# collection view common things for cli and gui
+class Collection_view_common(ABC):
+    def __init__(self):
+        pass
+
+# viewing collection (search) outputs in CLI mode:
+class Collection_view_cli(Collection_view_common, Cli_view_common):
+    def __init__(self):
+        super(Collection_view_cli, self).__init__()
+
+
