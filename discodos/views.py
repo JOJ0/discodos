@@ -107,6 +107,7 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
                     break
             if result_item.id == dbr[0]:
                 #return result_list[0]
+                log.info("Compiled Discogs result_list: {}".format(result_list))
                 return result_list
                 break
 

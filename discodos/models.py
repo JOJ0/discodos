@@ -108,7 +108,11 @@ class Mix (object):
             raise edit_err
             return False
 
+    def get_tracks_from_position(self, pos):
+        return db.get_tracks_from_position(self.db_conn, self.id, pos)
+
     def reorder_tracks(self, pos):
+        log.info("MODEL: reorder_tracks got pos {}".format(pos))
         tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
         if not tracks_to_shift:
             return False
@@ -118,6 +122,19 @@ class Mix (object):
             if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], pos):
                 return False
             pos = pos + 1
+        return True
+
+    def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
+        log.info("MODEL: reorder_tracks got pos {}".format(pos))
+        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        if not tracks_to_shift:
+            return False
+        for t in tracks_to_shift:
+            new_pos = t['track_pos'] + 1
+            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
+                     t['track_pos'], new_pos)
+            if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):
+                return False
         return True
 
     def delete_track(self, pos):

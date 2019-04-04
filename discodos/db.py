@@ -199,8 +199,9 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                        (mix_id, release_id, track_no, track_pos,
                         trans_rating, trans_notes))
     log.info("DB: cur.rowcount: %s", cur.rowcount)
-    return cur.lastrowid
-    #return cur.rowcount
+    conn.commit()
+    #return cur.lastrowid
+    return cur.rowcount
 
 def get_one_mix_track(conn, mix_id, position):
     conn.row_factory = sqlite3.Row
@@ -273,7 +274,7 @@ def get_tracks_from_position(conn, _mix_id, _pos):
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     cur.execute('''SELECT mix_track_id, track_pos FROM mix_track WHERE mix_id == ?
-                       AND track_pos >= ?''', (_mix_id, _pos))
+                       AND track_pos >= ? ''', (_mix_id, _pos))
     rows = cur.fetchall()
     log.debug('DB: get_tracks_from_position: %s\n', rows)
     if len(rows) == 0:
@@ -283,6 +284,7 @@ def get_tracks_from_position(conn, _mix_id, _pos):
         return rows
 
 def update_pos_in_mix(conn, mix_track_id, track_pos_new):
+    log.info("DB: update_pos_in_mix: track_pos_new is {}".format(track_pos_new))
     cur = conn.cursor()
     try:
         cur.execute('''UPDATE mix_track SET track_pos = ?

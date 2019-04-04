@@ -206,54 +206,62 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 # todo
 
     def add_offline_track(self, rel_list, track_no, pos):
-        self._add_track(rel_list[0], track_no, pos)
+        self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
 
-    # _add_track should only be called from add_offline_track() and add_discogs_track()
-    def _add_track(self, _release_tuple, _track_no, _pos):
-        def _user_is_sure(__pos):
+    def add_discogs_track(self, rel_list, track_no, pos):
+        def _user_is_sure(_pos):
             quest=(
-            #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
-            'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
-                .format(track_to_add, _release_tuple[1], int(self.mix.id), __pos))
+            'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
+                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), _pos))
             _answ = ask_user(quest)
             if _answ.lower() == "y" or _answ.lower() == "":
                 return True
-        #####  User wants to add Track at given position or just add at end #####
-        #if (self.user.WANTS_TO_ADD_AT_POSITION or self.user.WANTS_TO_ADD_AT_POS_IN_MIX_MODE
-        #  or self.user.WANTS_TO_ADD_TO_MIX or self.user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE):
+        log.info("discogs rel_list: {}".format(rel_list))
+        self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
+
+    # _add_track should only be called from add_offline_track() and add_discogs_track()
+    def _add_track(self, _release_id, _release_title, _track_no, _pos):
         if not _track_no:
             track_to_add = self.cli.ask_user("Which track? ")
         else:
+            log.info("_track_no was given, value is".format(_track_no))
             track_to_add = _track_no
-        #cur_id_add_pos = self.mix.add_track_no_at_pos(_conn, _self.mix.id, track_to_add,
-        #                              _pos, compiled_results_list)
         if _pos == None:
+            log.info("_pos was None, setting to 0")
             _pos = 0
-        log.info("Value of pos in controller add_offline_track:".format(_pos))
-        log.info("This is _release_tuple: %s", _release_tuple)
+        log.info("This is _pos: {}".format(_pos))
+        log.info("This is track_to_add: {}".format(track_to_add))
+        log.info("This is _release_id: %s", _release_id)
+        log.info("This is _release_title: %s", _release_title)
         if self.mix.id_existing:
             last_track = self.mix.get_last_track()
             log.debug("Currently last track in mix is: %s", last_track[0])
             current_id = False
             if _pos:
-                if self.cli.really_add_track(track_to_add, _release_tuple[1],
-                                             self.mix.id, int(_pos)):
-                    current_id = self.mix.add_track(_release_tuple[0],
+                # a position to squeeze in the track was given
+                # get current tracks >= pos
+                tracks_to_shift = self.mix.get_tracks_from_position(_pos)
+                if self.cli.really_add_track(track_to_add, _release_title,
+                                             self.mix.id, _pos):
+                    current_id = self.mix.add_track(_release_id,
                                                     track_to_add, track_pos = _pos)
+                    # all good? reorder tracks
                     if current_id:
-                        log.info("Track add to mix successful, now reordering ...")
-                        self.mix.reorder_tracks(_pos)
+                        log.info("Add track to mix successful, now reordering ...")
+                        self.mix.reorder_tracks_squeeze_in(_pos, tracks_to_shift)
             elif is_number(last_track[0]):
-                if self.cli.really_add_track(track_to_add, _release_tuple[1],
+                # no position was given, tracks already mix
+                if self.cli.really_add_track(track_to_add, _release_title,
                                              self.mix.id, last_track[0]+1):
 
-                    current_id = self.mix.add_track(_release_tuple[0],
+                    current_id = self.mix.add_track(_release_id,
                                                     track_to_add, track_pos = last_track[0] + 1)
             else:
-                if self.cli.really_add_track(track_to_add, _release_tuple[1],
+                # no position and it's the first track ever added
+                if self.cli.really_add_track(track_to_add, _release_name,
                                              self.mix.id, 1):
 
-                    current_id = self.mix.add_track(_release_tuple[0],
+                    current_id = self.mix.add_track(_release_id,
                                                     track_to_add, track_pos = 1)
             # FIXME untested if this is actually a proper sanity check
             log.info("Value of current_id in add_offline_track: {}".format(current_id))
@@ -264,22 +272,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 log.error("Add track to DB failed!")
                 #return False
         else:
-            self.cli.print_help("Mix ID "+str(self.mix.id)+" is not existing yet.")
+            self.cli.print_help("Mix ID {} is not existing yet.".format(self.mix.id))
             return False
-
-
-    def add_discogs_track(self, release, track_no, pos = False):
-        def _user_is_sure(_pos):
-            quest=(
-            'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
-                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), _pos))
-            _answ = ask_user(quest)
-            if _answ.lower() == "y" or _answ.lower() == "":
-                return True
-        pass
-
-    def del_track(self, pos):
-        pass
 
 
 # Collection controller class
@@ -320,7 +314,7 @@ class Coll_ctrl_cli (object):
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.cli.print_found_discogs_release(
                                         search_results, _searchterm, db_releases)
-            #return compiled_results_list
+            return compiled_results_list
         else:
             print_help('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
