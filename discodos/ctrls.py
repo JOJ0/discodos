@@ -8,18 +8,7 @@ import pprint
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
-
-    def _add_track_to_db_wrapper(self, release_id, track_no, pos = False):
-        """
-         like in first version add_track_to_mix(conn, _mix_id, _track, _rel_list,
-         _pos=None),
-         also add_track_at_pos() schould be handled here.
-
-        @param int release_id : simply the release_id, all figuring out stuff has been done before in add_track_discogs() or add_track_db()
-        @param string track_no : eg A1, A2 as a string
-        @return  :
-        @author
-        """
+    def __init__():
         pass
 
 # mix controller class CLI implementation
@@ -199,11 +188,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         #pprint.pprint(answers) # debug
         return answers
 
-    # add database track wrapper
     def add_offline_track(self, rel_list, track_no, pos):
         self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
 
-    # add discogs track wrapper
     def add_discogs_track(self, rel_list, track_no, pos):
         log.info("discogs rel_list: {}".format(rel_list))
         self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
@@ -213,15 +200,15 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if not _track_no:
             track_to_add = self.cli.ask_user("Which track? ")
         else:
-            log.info("_track_no was given, value is".format(_track_no))
+            log.debug("_track_no was given, value is".format(_track_no))
             track_to_add = _track_no
         if _pos == None:
-            log.info("_pos was None, setting to 0")
+            log.debug("_pos was None, setting to 0")
             _pos = 0
-        log.info("This is _pos: {}".format(_pos))
-        log.info("This is track_to_add: {}".format(track_to_add))
-        log.info("This is _release_id: %s", _release_id)
-        log.info("This is _release_title: %s", _release_title)
+        log.debug("This is _pos: {}".format(_pos))
+        log.debug("This is track_to_add: {}".format(track_to_add))
+        log.debug("This is _release_id: %s", _release_id)
+        log.debug("This is _release_title: %s", _release_title)
         if self.mix.id_existing:
             last_track = self.mix.get_last_track()
             log.debug("Currently last track in mix is: %s", last_track[0])
@@ -247,13 +234,13 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                                                     track_to_add, track_pos = last_track[0] + 1)
             else:
                 # no position and it's the first track ever added
-                if self.cli.really_add_track(track_to_add, _release_name,
+                if self.cli.really_add_track(track_to_add, _release_title,
                                              self.mix.id, 1):
 
                     current_id = self.mix.add_track(_release_id,
                                                     track_to_add, track_pos = 1)
             # FIXME untested if this is actually a proper sanity check
-            log.info("Value of current_id in add_offline_track: {}".format(current_id))
+            log.debug("Value of current_id in add_offline_track: {}".format(current_id))
             if current_id:
                 self.view()
                 #return True

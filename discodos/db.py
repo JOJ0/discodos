@@ -200,8 +200,8 @@ def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                         trans_rating, trans_notes))
     log.info("DB: cur.rowcount: %s", cur.rowcount)
     conn.commit()
-    #return cur.lastrowid
-    return cur.rowcount
+    return cur.lastrowid
+    #return cur.rowcount
 
 def get_one_mix_track(conn, mix_id, position):
     conn.row_factory = sqlite3.Row
