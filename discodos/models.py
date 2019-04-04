@@ -70,9 +70,8 @@ class Mix (object):
         """
         get metadata of all mixes from db
 
-
         @param
-        @return
+        @return sqlite fetchall rows object
         @author
         """
         mixes_data = db.get_all_mixes(self.db_conn)
@@ -151,6 +150,8 @@ class Mix (object):
     def get_last_track(self):
         return db.get_last_track_in_mix(self.db_conn, self.id)
 
+    def get_all_releases(self):
+        return db.get_all_releases(self.db_conn, self.id)
 
 
 # record collection class
@@ -235,5 +236,7 @@ class Collection (object):
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
 
+    def get_all_releases(self):
+        return db.all_releases(self.db_conn)
 
 

@@ -580,8 +580,7 @@ def main():
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
-        print_help("Showing all releases, this is gonna take some time")
-        print_help(all_releases_table(db.all_releases(conn)))
+        coll_ctrl.view_all_releases()
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         if coll_ctrl.ONLINE:

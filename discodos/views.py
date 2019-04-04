@@ -34,20 +34,19 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
     def tab_mixes_list(self, mixes_data):
         tabulated = tab(mixes_data, tablefmt="simple",
                 headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
-        print_help(tabulated)
+        self.print_help(tabulated)
 
     def tab_mix_table(self, _mix_data, _verbose = False):
         if _verbose:
-            print_help(tab(_mix_data, tablefmt="pipe",
+            self.print_help(tab(_mix_data, tablefmt="pipe",
                 headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
                          "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
         else:
-            print_help(tab(_mix_data, tablefmt="pipe",
+            self.print_help(tab(_mix_data, tablefmt="pipe",
                 headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
 
     def tab_mix_info_header(self, mix_info):
-        print_help(tab([mix_info], tablefmt="plain",
-        #print_help(tab(mix_info, tablefmt="plain",
+        self.print_help(tab([mix_info], tablefmt="plain",
                 headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
 
     # util: ask user for some string
@@ -77,14 +76,14 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
     def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
         # only show pages count if it's a Release Title Search
         if not is_number(_searchterm):
-            print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
+            self.print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
         else:
-            print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+            self.print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
         for result_item in discogs_results:
-            print_help("Checking " + str(result_item.id))
+            self.print_help("Checking " + str(result_item.id))
             for dbr in _db_releases:
                 if result_item.id == dbr[0]:
-                    print_help("Good, first matching record in your collection is:")
+                    self.print_help("Good, first matching record in your collection is:")
                     result_list=[]
                     result_list.append([])
                     result_list[0].append(result_item.id)
@@ -98,16 +97,25 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
                     result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
                                ", "+str(result_item.formats[0]['descriptions'][0]))
 
-                    print_help(tab(result_list, tablefmt="simple",
-                              headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
-                    tracklist = result_item.tracklist
-                    for track in tracklist:
-                       print(track.position + "\t" + track.title)
-                    print()
+                    self.tab_online_search_results(result_list)
+                    self.online_search_results_tracklist(result_item.tracklist)
                     break
             if result_item.id == dbr[0]:
                 #return result_list[0]
                 log.info("Compiled Discogs result_list: {}".format(result_list))
                 return result_list
                 break
+
+    def tab_online_search_results(self, _result_list):
+        self.print_help(tab(_result_list, tablefmt="simple",
+                  headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
+
+    def online_search_results_tracklist(self, _tracklist):
+        for track in _tracklist:
+            print(track.position + "\t" + track.title)
+        print()
+
+    def tab_all_releases(self, releases_data):
+        self.print_help(tab(releases_data, tablefmt="plain",
+            headers=["ID", "Release name", "Last import"]))
 

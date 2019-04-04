@@ -39,7 +39,7 @@ def create_release(conn, release, collection_item = True):
 
 def all_releases(conn):
     cur = conn.cursor()
-    cur.execute('''SELECT * FROM release''')
+    cur.execute('''SELECT * FROM release ORDER BY discogs_title''')
     rows = cur.fetchall()
     return rows
 

@@ -176,9 +176,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if really_delete == "y": return True
         else: return False
 
-    def _del_track_confirm(self, pos):
-        pass
-
     def _edit_track_ask_details(self, _track_det):
         #print(_track_det['d_track_no'])
         # collect answers from user input
@@ -202,20 +199,12 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         #pprint.pprint(answers) # debug
         return answers
 
-
-# todo
-
+    # add database track wrapper
     def add_offline_track(self, rel_list, track_no, pos):
         self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
 
+    # add discogs track wrapper
     def add_discogs_track(self, rel_list, track_no, pos):
-        def _user_is_sure(_pos):
-            quest=(
-            'Add "{:s}" on "{:s}" - "{:s}" to mix #{:d}, at position {:d}? (y) '
-                .format(track, _rel_list[0][1], _rel_list[0][2], int(mix_id), _pos))
-            _answ = ask_user(quest)
-            if _answ.lower() == "y" or _answ.lower() == "":
-                return True
         log.info("discogs rel_list: {}".format(rel_list))
         self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
 
@@ -320,3 +309,7 @@ class Coll_ctrl_cli (object):
             search_results = self.collection.search_release_offline(_searchterm)
             return search_results
 
+    def view_all_releases(self):
+        self.cli.print_help("Showing all releases in DB.")
+        all_releases_result = self.collection.get_all_releases()
+        self.cli.tab_all_releases(all_releases_result)
