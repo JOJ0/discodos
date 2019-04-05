@@ -7,6 +7,7 @@ import discogs_client
 import discogs_client.exceptions as errors
 import requests.exceptions as reqerrors
 import urllib3.exceptions as urlerrors
+from sqlite3 import Error as sqlerr
 
 # mix model class
 class Mix (object):
@@ -153,6 +154,12 @@ class Mix (object):
     def get_all_releases(self):
         return db.get_all_releases(self.db_conn, self.id)
 
+    def get_tracks_of_one_mix(self):
+        return db.get_tracks_of_one_mix(self.db_conn, self.id)
+
+    def get_all_tracks_in_mixes(self):
+        return db.get_all_tracks_in_mixes(self.db_conn)
+
 
 # record collection class
 class Collection (object):
@@ -239,4 +246,11 @@ class Collection (object):
     def get_all_releases(self):
         return db.all_releases(self.db_conn)
 
+    def create_track(self, release_id, track_no, track_title):
+        try:
+           return db.create_track(self.db_conn, release_id, track_no, track_title)
+        except sqlerr as err:
+            log.info("Not added, probably already there.\n")
+            log.info("DB returned: %s", err)
+            return False
 

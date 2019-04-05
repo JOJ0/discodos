@@ -5,11 +5,16 @@ from abc import ABC, abstractmethod
 from discodos import log, db # db should only be in model.py
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
+from datetime import time
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
     def __init__():
         pass
+
+    @property
+    def id():
+        return self.mix.id
 
 # mix controller class CLI implementation
 class Mix_ctrl_cli (Mix_ctrl_common):
@@ -251,9 +256,53 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.print_help("Mix ID {} is not existing yet.".format(self.mix.id))
             return False
 
+    def pull_track_info_from_discogs(self, coll_ctrl):
+        if coll_ctrl.ONLINE:
+            if self.mix.id_existing:
+                self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
+                #mixed_tracks = db.get_tracks_of_one_mix(self.db_conn, _mix_id)
+                mixed_tracks = self.mix.get_tracks_of_one_mix()
+            else:
+                self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
+                #mixed_tracks = db.get_all_tracks_in_mixes(_conn)
+                mixed_tracks = self.mix.get_all_tracks_in_mixes()
+            for mix_track in mixed_tracks:
+                coll_ctrl.rate_limit_slow_downer(remaining=5, sleep=2)
+                name = coll_ctrl.cli.d_tracklist_parse(coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
+                #artist = tracklist_parse_artist(d.release(mix_track[2]).tracklist, mix_track[3])
+                #print_help(d.release(mix_track[2]).tracklist)
+                if name:
+                    print("Adding track info: "+ str(mix_track[2])+" "+
+                            mix_track[3] + " " + name)
+                            #mix_track[3] + " " + artist + " - " + name)
+                    #try:
+                    #    db.create_track(_conn, mix_track[2], mix_track[3], name)
+                    #except sqlerr as err:
+                    #    log.info("Not added, probably already there.\n")
+                    #    log.info("DB returned: %s", err)
+                    coll_ctrl.collection.create_track(mix_track[2], mix_track[3], name)
+                else:
+                    print("Adding track info: "+ str(mix_track[2])+" "+
+                            mix_track[3])
+                    log.error("No trackname found for Tr.Pos %s",
+                            mix_track[3])
+                    log.error("Probably you misspelled? (eg A vs. A1)\n")
+        else:
+            self.cli.print_help("Not online, can't pull from Discogs...")
+
+# Collection controller common methods
+class Coll_ctrl_common (ABC):
+
+    def rate_limit_slow_downer(self, remaining=10, sleep=2):
+        '''Discogs util: stay in 60/min rate limit'''
+        if int(self.d._fetcher.rate_limit_remaining) < remaining:
+            log.info("Discogs request rate limit is about to exceed,\
+                      let's wait a bit: %s\n",
+                         self.d._fetcher.rate_limit_remaining)
+            time.sleep(sleep)
 
 # Collection controller class
-class Coll_ctrl_cli (object):
+class Coll_ctrl_cli (Coll_ctrl_common):
     """
     manages the record collection, offline and with help of discogs data
 
@@ -281,6 +330,18 @@ class Coll_ctrl_cli (object):
         log.debug("CTRL: Collection model has ONLINE status %s", status)
         return status
 
+    @property
+    def d(self):
+        discogs_cli_o = self.collection.d
+        log.debug("CTRL: Getting Collection.d instance from MODEL: %s", discogs_cli_o)
+        return discogs_cli_o
+
+    @property
+    def me(self):
+        discogs_me_o = self.collection.d
+        log.debug("CTRL: Getting Collection.me instance from MODEL: %s", discogs_me_o)
+        return discogs_me_o
+
     def search_release(self, _searchterm): # online on offline search is decided in this method
         if self.collection.ONLINE:
             db_releases = self.collection.get_all_db_releases()
@@ -300,3 +361,4 @@ class Coll_ctrl_cli (object):
         self.cli.print_help("Showing all releases in DB.")
         all_releases_result = self.collection.get_all_releases()
         self.cli.tab_all_releases(all_releases_result)
+

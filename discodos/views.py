@@ -67,6 +67,13 @@ class Collection_view_common(ABC):
     def __init__(self):
         pass
 
+    def d_tracklist_parse(self, d_tracklist, track_number):
+        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
+        for tr in d_tracklist:
+            if tr.position == track_number:
+                return tr.title
+
+
 # viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, Cli_view_common):
     def __init__(self):

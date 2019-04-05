@@ -601,11 +601,12 @@ def main():
     ##### MIX MODE ########################################################
     ### NO MIX ID GIVEN ###################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
+        # wen instantiate a mix object anyway!!!
+        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
         if user.WANTS_TO_PULL_TRACK_INFO:
-            pull_track_info_from_discogs(conn)
+            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
         else:
             #print_help(all_mixes_table(db.get_all_mixes(conn)))
-            mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
             mix_ctrl.view_mixes_list()
 
     ### MIX ID GIVEN #############################################
@@ -661,7 +662,7 @@ def main():
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO:
-            pull_track_info_from_discogs(conn, mix_id)
+            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
 
         #### JUST SHOW MIX-TRACKLIST:
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
@@ -672,7 +673,8 @@ def main():
     ### TRACK MODE
     if user.WANTS_TO_TRACK_SEARCH:
         if user.WANTS_TO_PULL_TRACK_INFO:
-            pull_track_info_from_discogs(conn)
+            mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
 
     # most importantly commit stuff to DB
     #time.sleep(10)
