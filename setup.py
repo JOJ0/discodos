@@ -10,6 +10,10 @@ import datetime
 import argparse
 import sys
 
+from discodos.models import *
+from disodos.ctrls import *
+from discodos.views import *
+
 # argparser init
 def argparser(argv):
     parser = argparse.ArgumentParser()
