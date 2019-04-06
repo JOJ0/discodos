@@ -290,6 +290,20 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             self.cli.print_help("Not online, can't pull from Discogs...")
 
+    def copy_mix(self):
+        self.cli.print_help("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
+        copy_tr = self.mix.get_tracks_to_copy()
+        new_mix_name = self.cli.ask_user("How should the copy be named? ")
+        new_mix_id = self.mix.create(self.mix.played, self.mix.venue, new_mix_name)
+        new_mix = Mix(self.mix.db_conn, new_mix_id)
+        for tr in copy_tr:
+            log.debug("CTRL copy_mix: This is tr: {}, {}, {}, {}, {}, ".format(
+                tr[0], tr[1], tr[2], tr[3], tr[4]))
+            new_mix.add_track(tr[0], tr[1], tr[2], tr[3], tr[4])
+            #release, track_no, track_pos, trans_rating='', trans_notes=''
+        new_mix.db_conn.commit()
+        self.cli.print_help("Copy mix successful. New ID is {}.".format(new_mix.id))
+
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
 

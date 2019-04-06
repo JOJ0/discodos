@@ -71,6 +71,7 @@ def create_track(conn, release_id, track_no, track_title):
 
 # MIXES
 def add_new_mix(conn, name, played='', venue=''):
+    log.debug("DB: add_new_mix got: {}, {}, {}.".format(name, played, venue))
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix (name, created, updated, played, venue)
                        VALUES (?, datetime('now', 'localtime'), '', date(?), ?)''',
@@ -191,7 +192,7 @@ def get_tracks_of_one_mix(conn, _mix_id):
 
 def add_track_to_mix(conn, mix_id, release_id, track_no, track_pos=0,
                      trans_rating='', trans_notes=''):
-    log.info("DB: add_track_to_mix got this: mix_id: {}, d_release_id: {}, track_no: {}, track_pos: {}, trans_rating: {}, trans_notes: {}".format(mix_id, release_id, track_no, track_pos, trans_rating, trans_notes))
+    log.debug("DB: add_track_to_mix got this: mix_id: {}, d_release_id: {}, track_no: {}, track_pos: {}, trans_rating: {}, trans_notes: {}".format(mix_id, release_id, track_no, track_pos, trans_rating, trans_notes))
     cur = conn.cursor()
     cur.execute('''INSERT INTO mix_track (mix_id, d_release_id, d_track_no, track_pos,
                        trans_rating, trans_notes)

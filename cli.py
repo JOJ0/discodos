@@ -651,14 +651,7 @@ def main():
 
         #### COPY A MIX
         elif user.WANTS_TO_COPY_MIX:
-            print_help("Copying mix {} - {}.".format(mix_id, mix_name))
-            copy_tr = db.get_mix_tracks_to_copy(conn, mix_id)
-            new_mix_name = ask_user("How should the copy be named? ")
-            new_mix_id = create_mix(conn, new_mix_name)
-            for tr in copy_tr:
-                db.add_track_to_mix(conn, new_mix_id, tr[0], tr[1], tr[2], tr[3], tr[4])
-            conn.commit()
-            pretty_print_mix_tracklist(new_mix_id, db.get_mix_info(conn, new_mix_id))
+            mix_ctrl.copy_mix()
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO:

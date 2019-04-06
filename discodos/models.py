@@ -18,6 +18,12 @@ class Mix (object):
         self.name_or_id = mix_name_or_id
         self.id_existing = False
         self.name_existing = False
+        self.info = []
+        self.name = False
+        self.created = False
+        self.updated = False
+        self.played = False
+        self.venue = False
         if is_number(mix_name_or_id):
             self.id = mix_name_or_id
             # if it's a mix-id, get mix-name and info
@@ -55,14 +61,30 @@ class Mix (object):
                     log.info("Can't get mix-name from id. Mix not existing yet?")
                     #raise Exception # use this for debugging
                     #raise SystemExit(1)
+        if self.id_existing:
+            self.created = self.info[2]
+            self.played = self.info[4]
+            self.venue = self.info[5]
+        log.debug("MODEL: Mix info is {}.".format(self.info))
+        log.debug("MODEL: Name is {}.".format(self.name))
+        log.debug("MODEL: Played is {}.".format(self.played))
+        log.debug("MODEL: Venue is {}.".format(self.venue))
+
+    # fixme mix info should probably be properties to keep them current
+    #@property
+    #def.name(self):
+    #    return db.get_mix_info(self.db_conn, self.id)[1]
+
 
     def delete(self):
         db_return = db.delete_mix(self.db_conn, self.id)
         self.db_conn.commit()
         log.info("MODEL: Deleted mix, DB returned: {}".format(db_return))
 
-    def create(self, _played, _venue):
-        created_id = db.add_new_mix(self.db_conn, self.name, _played, _venue)
+    def create(self, _played, _venue, new_mix_name = False):
+        if not new_mix_name:
+            new_mix_name = self.name
+        created_id = db.add_new_mix(self.db_conn, new_mix_name, _played, _venue)
         self.db_conn.commit()
         log.info("MODEL: New mix created with ID {}.".format(created_id))
         return created_id
@@ -159,6 +181,9 @@ class Mix (object):
 
     def get_all_tracks_in_mixes(self):
         return db.get_all_tracks_in_mixes(self.db_conn)
+
+    def get_tracks_to_copy(self):
+        return db.get_mix_tracks_to_copy(self.db_conn, self.id)
 
 
 # record collection class
