@@ -341,7 +341,7 @@ def main():
     ### TRACK MODE
     if user.WANTS_TO_TRACK_SEARCH:
         if user.WANTS_TO_PULL_TRACK_INFO:
-            mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+            mix_ctrl = Mix_ctrl_cli(conn, False, user)
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
 
     # most importantly commit stuff to DB
