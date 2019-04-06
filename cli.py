@@ -247,8 +247,6 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    # db connection global (classes get it passed)
-    global conn
     conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
     coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
