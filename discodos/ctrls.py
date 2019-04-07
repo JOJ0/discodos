@@ -376,3 +376,30 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         all_releases_result = self.collection.get_all_releases()
         self.cli.tab_all_releases(all_releases_result)
 
+
+    # ADD RELEASE TO COLLECTION
+    def add_release(self, release_id):
+        #if args.add_release_id:
+        if is_number(release_id):
+            # setup.py argparser only allows integer, this is for calls from somewhere else
+            #if db.search_release_id(conn, args.add_release_id):
+            if self.collection.search_release_id(release_id):
+                self.cli.print_help(
+                  "Release ID is already existing in DiscoBASE, won't add it to your Discogs collection."
+                   )
+            else:
+                self.cli.print_help("Asking Discogs if release ID {:d} is valid.".format(
+                       release_id))
+                result = self.collection.d.release(release_id)
+                if result:
+                    log.debug(dir(result))
+                    self.cli.print_help("Adding \"{}\" to collection".format(result.title))
+                    for folder in self.collection.me.collection_folders:
+                        if folder.id == 1:
+                            folder.add_release(release_id)
+                            #import_release(conn, d, me, args.add_release_id)
+                            #last_row_id = db.create_release(conn, result, collection_item = False)
+                            last_row_id = self.collection.create_release(result.id, result.title)
+                    if not last_row_id:
+                        self.cli.print_help("This is not the release you are looking for!")
+

@@ -279,3 +279,9 @@ class Collection (object):
             log.info("DB returned: %s", err)
             return False
 
+    def search_release_id(self, release_id):
+        return db.search_release_id(self.db_conn, release_id)
+
+    def create_release(self, release_id, release_title):
+        return db.create_release(self.db_conn, release_id, release_title)
+

@@ -24,16 +24,16 @@ def create_table(conn, create_table_sql):
 
 
 # RELEASE / TRACK INFO FROM DISCOGS
-def create_release(conn, release, collection_item = True):
+def create_release(conn, release_id, release_title):
     cur = conn.cursor()
-    if collection_item == True:
-        cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp)
-                           VALUES(?, ?, datetime('now', 'localtime'))''',
-                           (release.release.id, release.release.title))
-    else:
-        cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp)
-                           VALUES(?, ?, datetime('now', 'localtime'))''',
-                           (release.id, release.title))
+    #if collection_item == True:
+    cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp)
+                       VALUES(?, ?, datetime('now', 'localtime'))''',
+                       (release_id, release_title))
+    #else:
+    #    cur.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp)
+    #                       VALUES(?, ?, datetime('now', 'localtime'))''',
+    #                       (release.id, release.title))
     log.info("cur.rowcount: %s\n", cur.rowcount)
     return cur.lastrowid
 

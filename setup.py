@@ -11,7 +11,7 @@ import argparse
 import sys
 
 from discodos.models import *
-from disodos.ctrls import *
+from discodos.ctrls import *
 from discodos.views import *
 
 # argparser init
@@ -21,6 +21,10 @@ def argparser(argv):
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
         help="increases log verbosity for each occurence.")
+    parser.add_argument(
+		"-o", "--offline", dest="offline_mode",
+        action="store_true",
+        help="stays in offline mode, doesn't even try to connect to Discogs")
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
 		"-i", "--import", dest="release_id",
@@ -120,13 +124,18 @@ def import_release(_conn, api_d, api_me, _release_id, force = False):
         if r.release.id == _release_id:
             print("Found it in collection:", r.release.id, "-", r.release.title)
             print("Importing to DISCOBASE.\n")
-            last_row_id = db.create_release(_conn, r)
+            #last_row_id = db.create_release(_conn, r)
+            last_row_id = db.create_release(_conn, r.release.id, r.release.title)
             break
     if not last_row_id:
         print_help("This is not the release you are looking for!")
 
 # main program
 def main():
+    # DISCOGS API config
+    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
+    appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
+    # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
       "This script sets up the DISCOBASE, and imports data from Discogs")
@@ -155,39 +164,12 @@ def main():
     log.info(vars(args))
 
     # PREPARE DISCOGS API
-    try:
-        userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-        d = discogs_client.Client(
-                "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0",
-                user_token=userToken)
-        me = d.identity()
-    #except HTTPError:
-    #    print("Can't connect do Discogs! HTTPError. Quitting.")
-    #    raise SystemExit(1)
-    except Exception:
-        print("Can't connect do Discogs! Quitting")
-        raise SystemExit(1)
+    user = User_int(args)
+    coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
 
-    # ADD RELEASE TO COLLECTION
+    # ADD RELEASE TO DISCOGS COLLECTION
     if args.add_release_id:
-        if db.search_release_id(conn, args.add_release_id):
-            print_help(
-              "Release ID is already existing in DISCOBASE, won't add it to your Discogs collection."
-               )
-        else:
-            print_help("Asking Discogs if release ID {:d} is valid.".format(
-                   args.add_release_id))
-            result = d.release(args.add_release_id)
-            if result:
-                #print(dir(result))
-                print_help("Adding \"{}\" to collection".format(result.title))
-                for folder in me.collection_folders:
-                    if folder.id == 1:
-                        folder.add_release(args.add_release_id)
-                        #import_release(conn, d, me, args.add_release_id)
-                        last_row_id = db.create_release(conn, result, collection_item = False)
-                if not last_row_id:
-                    print_help("This is not the release you are looking for!")
+        coll_ctrl.add_release(args.add_release_id)
 
     # IMPORT MODE, if we said so
     #print(len(args.release_id))
