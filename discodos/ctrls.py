@@ -267,7 +267,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 #mixed_tracks = db.get_all_tracks_in_mixes(_conn)
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
             for mix_track in mixed_tracks:
-                coll_ctrl.rate_limit_slow_downer(remaining=5, sleep=2)
+                self.collection.rate_limit_slow_downer(remaining=5, sleep=2)
                 name = coll_ctrl.cli.d_tracklist_parse(coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
                 #artist = tracklist_parse_artist(d.release(mix_track[2]).tracklist, mix_track[3])
                 #print_help(d.release(mix_track[2]).tracklist)
@@ -307,13 +307,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
 
-    def rate_limit_slow_downer(self, remaining=10, sleep=2):
-        '''Discogs util: stay in 60/min rate limit'''
-        if int(self.d._fetcher.rate_limit_remaining) < remaining:
-            log.info("Discogs request rate limit is about to exceed,\
-                      let's wait a bit: %s\n",
-                         self.d._fetcher.rate_limit_remaining)
-            time.sleep(sleep)
+    def __init__():
+        pass
 
 # Collection controller class
 class Coll_ctrl_cli (Coll_ctrl_common):
@@ -403,3 +398,40 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     if not last_row_id:
                         self.cli.print_help("This is not the release you are looking for!")
 
+
+
+    # import specific release ID into DB
+    def import_release(self, _release_id):
+        #print(dir(me.collection_folders[0].releases))
+        #print(dir(me))
+        #print(me.collection_item)
+        #if not force == True:
+        self.cli.print_help("Asking Discogs for release ID {:d}".format(
+               _release_id))
+        result = self.collection.get_d_release(_release_id)
+        self.cli.print_help("Release ID is valid: "+result.title+"\n"+
+                   "Let's see if it's in your collection, this might take some time...")
+        in_collection = self.collection.is_in_d_coll(_release_id)
+        if in_collection:
+            self.cli.print_help("Found it in collection: {} - {}.\nImporting to DiscoBASE.".format(
+                                      in_collection.release.id, in_collection.release.title))
+        else:
+            self.cli.print_help("This is not the release you are looking for!")
+
+    def import_collection(self):
+        print(
+        "Gathering your Discogs collection and importing necessary fields into DiscoBASE")
+        insert_count = 0
+        for r in self.collection.me.collection_folders[0].releases:
+            self.collection.rate_limit_slow_downer(remaining=5, sleep=2)
+            print("Release :", r.release.id, "-", r.release.title)
+            last_row_id = self.collection.create_release(r.release.id, r.release.title)
+            # FIXME I don't know if cur.lastrowid is False if unsuccessful
+            if last_row_id:
+                insert_count = insert_count + 1
+                print("Created so far:", insert_count, "")
+                log.info("discogs-rate-limit-remaining: %s\n",
+                         self.collection.d._fetcher.rate_limit_remaining)
+            else:
+                self.cli.print_help("Something wrong while importing \""+
+                           r.release.title+"\"")

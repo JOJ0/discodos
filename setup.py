@@ -171,35 +171,15 @@ def main():
     if args.add_release_id:
         coll_ctrl.add_release(args.add_release_id)
 
+    log.debug("args.release_id length: ".format(len(args.release_id)))
     # IMPORT MODE, if we said so
-    #print(len(args.release_id))
-    # IMPORT OF WHOLE COLLECTION is the default
     if args.release_id != False:
         if len(args.release_id) == 0:
-            print(
-            "Gathering your Discogs collection and importing necessary fields into DISCOBASE")
-            insert_count = 0
-            for r in me.collection_folders[0].releases:
-                rate_limit_slow_downer(d, remaining=5, sleep=2)
-                print("Release :", r.release.id, "-", r.release.title)
-                #vars(r.release)
-                #for track in r.release.tracklist:
-                #    log.debug("Track:", track)
-                    #time.sleep(0.2)
-                last_row_id = db.create_release(conn, r)
-                # FIXME I don't know if cur.lastrowid is False if unsuccessful
-                if last_row_id:
-                    #log.info("last_row_id: %s", last_row_id)
-                    insert_count = insert_count + 1
-                    print("Created so far:", insert_count, "")
-                    log.info("discogs-rate-limit-remaining: %s\n",
-                             d._fetcher.rate_limit_remaining)
-                else:
-                    print_help("Something wrong while importing \""+
-                               r.release.title+"\"")
+            # IMPORT OF WHOLE COLLECTION is the default
+            coll_ctrl.import_collection()
         else:
             # IMPORT SPECIFIC RELEASE ID
-            import_release(conn, d, me, args.release_id[0])
+            coll_ctrl.import_release(args.release_id[0])
 
     conn.commit()
     conn.close()

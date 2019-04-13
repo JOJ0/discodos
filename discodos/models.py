@@ -285,3 +285,26 @@ class Collection (object):
     def create_release(self, release_id, release_title):
         return db.create_release(self.db_conn, release_id, release_title)
 
+    def get_d_release(self, release_id):
+        return self.d.release(release_id)
+
+    def is_in_d_coll(self, release_id):
+        successful = False
+        for r in self.me.collection_folders[0].releases:
+            #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
+            if r.release.id == release_id:
+                #last_row_id = db.create_release(_conn, r)
+                #last_row_id = db.create_release(_conn, r.release.id, r.release.title)
+                successful = self.create_release(r.release.id, r.release.title)
+                #break
+                return r
+        if not successful:
+            return False
+
+    def rate_limit_slow_downer(self, remaining=10, sleep=2):
+        '''Discogs util: stay in 60/min rate limit'''
+        if int(self.d._fetcher.rate_limit_remaining) < remaining:
+            log.info("Discogs request rate limit is about to exceed,\
+                      let's wait a bit: %s\n",
+                         self.d._fetcher.rate_limit_remaining)
+            time.sleep(sleep)
