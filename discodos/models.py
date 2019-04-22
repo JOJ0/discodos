@@ -8,12 +8,35 @@ import discogs_client.exceptions as errors
 import requests.exceptions as reqerrors
 import urllib3.exceptions as urlerrors
 from sqlite3 import Error as sqlerr
+import sqlite3
+import time
+
+class Database (object):
+
+    def __init__(self, db_conn=False, db_file=False):
+        if db_conn:
+            log.debug("Database: db_conn argument was handed over.")
+            self.db_conn = db_conn
+        else:
+            log.debug("Database: Creating connection to db_file.")
+            if not db_file:
+                log.debug("Database: No db_file given, using default name.")
+                db_file = './discobase.db'
+            self.db_conn = self.create_conn(db_file)
+
+    def create_conn(self, db_file):
+        try:
+            conn = sqlite3.connect(db_file)
+            return conn
+        except sqlerr as e:
+            log.error("Database: Connection error: %s", e)
+        return None
 
 # mix model class
-class Mix (object):
+class Mix (Database):
 
-    def __init__(self, db_conn, mix_name_or_id):
-        self.db_conn = db_conn
+    def __init__(self, db_conn, mix_name_or_id, db_file = False):
+        super(Mix, self).__init__(db_conn, db_file)
         # figuring out names and IDs, just logs and sets instance attributes, no exits here! 
         self.name_or_id = mix_name_or_id
         self.id_existing = False
@@ -187,9 +210,9 @@ class Mix (object):
 
 
 # record collection class
-class Collection (object):
+class Collection (Database):
 
-    def __init__(self, db_conn):
+    def __init__(self, db_conn, db_file = False):
         self.db_conn = db_conn
         # discogs api objects are online set when discogs_connect method is called
         self.d = False

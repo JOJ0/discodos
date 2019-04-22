@@ -173,8 +173,9 @@ def main():
     ##### MIX MODE ########################################################
     ### NO MIX ID GIVEN ###################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
-        # wen instantiate a mix object anyway!!!
-        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+        # we instantiate a mix controller object
+        #mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user) # conn = False, init from file
         if user.WANTS_TO_PULL_TRACK_INFO:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
         else:
