@@ -15,22 +15,49 @@ class Database (object):
 
     def __init__(self, db_conn=False, db_file=False):
         if db_conn:
-            log.debug("Database: db_conn argument was handed over.")
+            log.debug("DB-NEW: db_conn argument was handed over.")
             self.db_conn = db_conn
         else:
-            log.debug("Database: Creating connection to db_file.")
+            log.debug("DB-NEW: Creating connection to db_file.")
             if not db_file:
-                log.debug("Database: No db_file given, using default name.")
+                log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file)
+        # what we had in each db.function before
+        self.db_conn.row_factory = sqlite3.Row
+        self.cur = self.db_conn.cursor()
 
     def create_conn(self, db_file):
         try:
             conn = sqlite3.connect(db_file)
             return conn
         except sqlerr as e:
-            log.error("Database: Connection error: %s", e)
+            log.error("DB-NEW: Connection error: %s", e)
         return None
+
+    def _select(self, fields_list, table, condition = False, fetchone = False):
+        fields_str = ""
+        for cnt,field in enumerate(fields_list):
+            if cnt == 0:
+                fields_str += field
+            else:
+                fields_str += ", {}".format(field)
+        if condition:
+            where_or_not = "WHERE {}".format(condition)
+        else:
+            where_or_not = ""
+        select_str = "SELECT {} FROM {} {};".format(fields_str, table, where_or_not)
+        log.info("DB-NEW SQL: {}".format(select_str))
+        self.cur.execute(select_str)
+        if fetchone:
+            rows = self.cur.fetchone()
+        else:
+            rows = self.cur.fetchall()
+        if len(rows) == 0:
+            log.info('DB-NEW: Nothing found.')
+            return False
+        else:
+            return rows
 
 # mix model class
 class Mix (Database):
@@ -51,14 +78,14 @@ class Mix (Database):
             self.id = mix_name_or_id
             # if it's a mix-id, get mix-name and info
             try:
-                self.info = db.get_mix_info(self.db_conn, self.id)
+                self.info = self.get_mix_info()
                 # FIXME info should also be available as single attrs: created, venue, etc.
                 self.name = self.info[1]
                 self.id_existing = True
                 self.name_existing = True
             except:
                 log.info("Mix ID is not existing yet!")
-                #raise Exception # use this for debugging
+                raise Exception # use this for debugging
                 #raise SystemExit(1)
         else:
             self.name = mix_name_or_id
@@ -75,7 +102,7 @@ class Mix (Database):
                     # FIXME info should also be available as single attrs: created, venue, etc.
                     # FIXME or okay? here we assume mix is existing and id could be fetched
                     try:
-                        self.info = db.get_mix_info(self.db_conn, self.id)
+                        self.info = self.get_mix_info()
                         self.name = self.info[1]
                     except:
                         log.info("Can't get mix info.")
@@ -120,8 +147,9 @@ class Mix (Database):
         @return sqlite fetchall rows object
         @author
         """
-        mixes_data = db.get_all_mixes(self.db_conn)
-        log.info("MODEL: Returning mixes table")
+        #mixes_data = db.get_all_mixes(self.db_conn)
+        mixes_data = self._select(['*'], 'mix', False)
+        log.info("MODEL: Returning mixes table.")
         return mixes_data
 
     def get_one_mix_track(self, track_id):
@@ -208,6 +236,17 @@ class Mix (Database):
     def get_tracks_to_copy(self):
         return db.get_mix_tracks_to_copy(self.db_conn, self.id)
 
+    def get_mix_info(self):
+        """
+        get metadata of ONE mix from db
+
+        @param
+        @return sqlite fetchone rows object
+        @author
+        """
+        mix_info = self._select(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
+        log.info("MODEL: Returning mix info.")
+        return mix_info
 
 # record collection class
 class Collection (Database):
