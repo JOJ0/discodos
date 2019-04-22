@@ -19,8 +19,8 @@ class Mix_ctrl_common (ABC):
 # mix controller class CLI implementation
 class Mix_ctrl_cli (Mix_ctrl_common):
 
-    def __init__(self, db_conn, mix_name_or_id, _user_int):
-        self.mix = Mix(db_conn, mix_name_or_id) # instantiate the Mix model class
+    def __init__(self, db_conn, mix_name_or_id, _user_int, db_file = False):
+        self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
         self.cli = Mix_view_cli() # instantiatie the Mix view class (the CLI)
         self.user = _user_int # take an instance of the User_int class and set as attribute
 
