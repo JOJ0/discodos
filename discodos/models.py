@@ -56,12 +56,16 @@ class Database (object):
             rows = self.cur.fetchone()
         else:
             rows = self.cur.fetchall()
-        if len(rows) == 0:
-            log.info('DB-NEW: Nothing found.')
-            return False
+        if rows:
+            if len(rows) == 0:
+                log.info('DB-NEW: Nothing found - rows length 0.')
+                return False
+            else:
+                log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
+                return rows
         else:
-            log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
-            return rows
+            log.info('DB-NEW: Nothing found - rows NoneType.')
+            return False
 
 # mix model class
 class Mix (Database):
@@ -89,7 +93,7 @@ class Mix (Database):
                 self.name_existing = True
             except:
                 log.info("Mix ID is not existing yet!")
-                raise Exception # use this for debugging
+                #raise Exception # use this for debugging
                 #raise SystemExit(1)
         else:
             self.name = mix_name_or_id
@@ -218,8 +222,32 @@ class Mix (Database):
         log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
         return db.delete_track_from_mix(self.db_conn, self.id, pos)
 
-    def get_full_mix(self, verbosity = "coarse"):
-        return db.get_full_mix(self.db_conn, self.id, verbosity)
+    def get_full_mix(self, verbose = False):
+        if verbose:
+            sql_sel = '''SELECT track_pos, discogs_title, d_track_name,
+                               mix_track.d_track_no,
+                               key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
+        else:
+            sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
+                               trans_rating, key, bpm FROM'''
+        sql_sel+=''' 
+                           mix_track INNER JOIN mix
+                             ON mix.mix_id = mix_track.mix_id
+                               INNER JOIN release
+                               ON mix_track.d_release_id = release.discogs_id
+                                 LEFT OUTER JOIN track
+                                 ON mix_track.d_release_id = track.d_release_id
+                                 AND mix_track.d_track_no = track.d_track_no
+                                   LEFT OUTER JOIN track_ext
+                                   ON mix_track.d_release_id = track_ext.d_release_id
+                                   AND mix_track.d_track_no = track_ext.d_track_no
+                       WHERE mix_track.mix_id == {}
+                       ORDER BY mix_track.track_pos'''.format(self.id)
+        mix = self._select(sql_sel, fetchone = False)
+        if not mix:
+            return False
+        else:
+            return mix
 
     def add_track(self, release, track_no, track_pos, trans_rating='', trans_notes=''):
         return db.add_track_to_mix(self.db_conn, self.id, release, track_no, track_pos,
