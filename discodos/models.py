@@ -35,7 +35,7 @@ class Database (object):
             log.error("DB-NEW: Connection error: %s", e)
         return None
 
-    def _select(self, fields_list, table, condition = False, fetchone = False):
+    def _select_simple(self, fields_list, table, condition = False, fetchone = False):
         fields_str = ""
         for cnt,field in enumerate(fields_list):
             if cnt == 0:
@@ -47,8 +47,11 @@ class Database (object):
         else:
             where_or_not = ""
         select_str = "SELECT {} FROM {} {};".format(fields_str, table, where_or_not)
-        log.info("DB-NEW SQL: {}".format(select_str))
-        self.cur.execute(select_str)
+        return self._select(select_str, fetchone)
+
+    def _select(self, sql_select, fetchone = False):
+        log.info("DB-NEW: SQL: {}".format(sql_select))
+        self.cur.execute(sql_select)
         if fetchone:
             rows = self.cur.fetchone()
         else:
@@ -57,6 +60,7 @@ class Database (object):
             log.info('DB-NEW: Nothing found.')
             return False
         else:
+            log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
             return rows
 
 # mix model class
@@ -148,7 +152,7 @@ class Mix (Database):
         @author
         """
         #mixes_data = db.get_all_mixes(self.db_conn)
-        mixes_data = self._select(['*'], 'mix', False)
+        mixes_data = self._select_simple(['*'], 'mix', False)
         log.info("MODEL: Returning mixes table.")
         return mixes_data
 
@@ -244,7 +248,7 @@ class Mix (Database):
         @return sqlite fetchone rows object
         @author
         """
-        mix_info = self._select(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
+        mix_info = self._select_simple(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
         log.info("MODEL: Returning mix info.")
         return mix_info
 
