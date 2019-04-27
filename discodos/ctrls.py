@@ -268,7 +268,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 #mixed_tracks = db.get_all_tracks_in_mixes(_conn)
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
             for mix_track in mixed_tracks:
-                self.collection.rate_limit_slow_downer(remaining=5, sleep=2)
+                coll_ctrl.collection.rate_limit_slow_downer(remaining=5, sleep=2)
                 name = coll_ctrl.cli.d_tracklist_parse(coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
                 #artist = tracklist_parse_artist(d.release(mix_track[2]).tracklist, mix_track[3])
                 #print_help(d.release(mix_track[2]).tracklist)
