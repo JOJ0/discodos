@@ -56,9 +56,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if self.mix.id_existing:
             self.cli.tab_mix_info_header(self.mix.info)
             if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                full_mix = self.mix.get_full_mix("fine")
+                full_mix = self.mix.get_full_mix(verbose = True)
             else:
-                full_mix = self.mix.get_full_mix("coarse")
+                full_mix = self.mix.get_full_mix(verbose = False)
 
             if not full_mix:
                 print_help("No tracks in mix yet.")
