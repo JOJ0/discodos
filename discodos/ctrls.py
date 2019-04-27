@@ -4,7 +4,7 @@ from discodos.views import *
 from abc import ABC, abstractmethod
 from discodos import log, db # db should only be in model.py
 from tabulate import tabulate as tab # should be only in views.py
-import pprint
+import pprint as p
 from datetime import time
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
@@ -194,7 +194,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         return answers
 
     def add_offline_track(self, rel_list, track_no, pos):
-        self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
+        if rel_list:
+            self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
 
     def add_discogs_track(self, rel_list, track_no, pos):
         log.info("discogs rel_list: {}".format(rel_list))
@@ -361,10 +362,38 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             compiled_results_list = self.cli.print_found_discogs_release(
                                         search_results, _searchterm, db_releases)
             return compiled_results_list
+            #if compiled_results_list:
+            #    if len(compiled_results_list) == 1:
+            #        print_help('Found release: {}'.format(compiled_results_list[0][1]))
+            #        return compiled_results_list
+            #    else:
+            #        print_help('Found several releases:')
+            #        for cnt,release in enumerate(compiled_results_list):
+            #            print_help('{} - {}'.format(cnt, release[1]))
+            #        answ = int(self.cli.ask_user('Which release? '))
+            #        return [compiled_results_list[answ]]
+
         else:
             print_help('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
-            return search_results
+            if search_results:
+                if len(search_results) == 1:
+                    print_help('Found release: {}'.format(search_results[0][1]))
+                    return search_results
+                else:
+                    print_help('Found several releases:')
+                    for cnt,release in enumerate(search_results):
+                        print_help('{} - {}'.format(cnt, release[1]))
+                        #for col in release:
+                        #    print(col)
+                    #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
+                    #print(num_search_results)
+                    answ = int(self.cli.ask_user('Which release? '))
+                    return [search_results[answ]]
+                    #return num_search_results[answ][0]
+            else:
+                print_help('Nothing found.')
+                return False
 
     def view_all_releases(self):
         self.cli.print_help("Showing all releases in DB.")

@@ -113,6 +113,11 @@ class Cli_view_common(ABC):
     def print_help(self, message):
         print(''+str(message)+'\n')
 
+    # util: ask user for some string
+    def ask_user(self, text=""):
+        return input(text)
+
+
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
     def __init__(self):
@@ -152,10 +157,6 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
     def tab_mix_info_header(self, mix_info):
         self.print_help(tab([mix_info], tablefmt="plain",
                 headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
-
-    # util: ask user for some string
-    def ask_user(self, text=""):
-        return input(text)
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
         quest=(
