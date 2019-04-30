@@ -204,7 +204,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
     # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
         if not _track_no:
-            track_to_add = self.cli.ask_user("Which track? ")
+            track_to_add = self.cli.ask_user("Which track? (A1) ")
+            # FIXME a sanity checker, at least for online search, would be nice here.
+            # also the default value is not checked, eg it could be A in reality!
+            if track_to_add == '':
+                track_to_add = 'A1'
         else:
             log.debug("_track_no was given, value is".format(_track_no))
             track_to_add = _track_no
@@ -388,7 +392,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                         #    print(col)
                     #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
                     #print(num_search_results)
-                    answ = int(self.cli.ask_user('Which release? '))
+                    answ = self.cli.ask_user('Which release? (0) ')
+                    if answ == '':
+                        answ = 0
+                    else:
+                        answ = int(answ)
                     return [search_results[answ]]
                     #return num_search_results[answ][0]
             else:
