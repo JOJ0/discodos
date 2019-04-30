@@ -204,11 +204,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
     # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
         if not _track_no:
-            track_to_add = self.cli.ask_user("Which track? (A1) ")
-            # FIXME a sanity checker, at least for online search, would be nice here.
-            # also the default value is not checked, eg it could be A in reality!
-            if track_to_add == '':
-                track_to_add = 'A1'
+            track_to_add = self.cli.ask_user_for_track()
         else:
             log.debug("_track_no was given, value is".format(_track_no))
             track_to_add = _track_no

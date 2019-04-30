@@ -117,6 +117,13 @@ class Cli_view_common(ABC):
     def ask_user(self, text=""):
         return input(text)
 
+    def ask_user_for_track()
+        track_no = self.cli.ask_user("Which track? (A1) ")
+        # FIXME a sanity checker, at least for online search, would be nice here.
+        # also the default value is not checked, eg it could be A in reality!
+        if track_no == '':
+            track_no = 'A1'
+        return track_no
 
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
