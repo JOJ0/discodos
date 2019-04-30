@@ -284,6 +284,7 @@ class Mix (Database):
 class Collection (Database):
 
     def __init__(self, db_conn, db_file = False):
+        super(Collection, self).__init__(db_conn, db_file)
         self.db_conn = db_conn
         # discogs api objects are online set when discogs_connect method is called
         self.d = False
@@ -402,3 +403,40 @@ class Collection (Database):
                       let's wait a bit: %s\n",
                          self.d._fetcher.rate_limit_remaining)
             time.sleep(sleep)
+
+    def track_report_snippet(self, track_pos, mix_id):
+        track_pos_before = track_pos - 1
+        track_pos_after = track_pos + 1
+        sql_sel = '''SELECT track_pos, discogs_title, d_track_name,
+                           mix_track.d_track_no,
+                           key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
+        sql_sel+='''
+                           mix_track INNER JOIN mix
+                             ON mix.mix_id = mix_track.mix_id
+                               INNER JOIN release
+                               ON mix_track.d_release_id = release.discogs_id
+                                 LEFT OUTER JOIN track
+                                 ON mix_track.d_release_id = track.d_release_id
+                                 AND mix_track.d_track_no = track.d_track_no
+                                   LEFT OUTER JOIN track_ext
+                                   ON mix_track.d_release_id = track_ext.d_release_id
+                                   AND mix_track.d_track_no = track_ext.d_track_no
+                       WHERE (mix_track.track_pos == "{}" OR mix_track.track_pos == "{}"
+                             OR mix_track.track_pos == "{}") AND mix_track.mix_id == "{}"
+                       ORDER BY mix_track.track_pos'''.format(
+                               track_pos, track_pos_before, track_pos_after, mix_id)
+        tracks_snippet = self._select(sql_sel, fetchone = False)
+        if not tracks_snippet:
+            return False
+        else:
+            log.info("MODEL: Returning Track-combination report.")
+            #self.cli.print_help(tracks_snippet)
+            return tracks_snippet
+
+    def track_report_occurences(self, release_id, track_no):
+        occurences_data = self._select_simple(
+                ['track_pos', 'mix_id'], 'mix_track', 'd_release_id == "{}" AND d_track_no == "{}"'.format(
+                    release_id, track_no))
+        log.info("MODEL: Returning track_occurences_data.")
+        return occurences_data
+

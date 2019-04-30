@@ -352,7 +352,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         log.debug("CTRL: Getting Collection.me instance from MODEL: %s", discogs_me_o)
         return discogs_me_o
 
-    def search_release(self, _searchterm): # online on offline search is decided in this method
+    def search_release(self, _searchterm): # online or offline search is decided in this method
         if self.collection.ONLINE:
             db_releases = self.collection.get_all_db_releases()
             print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
@@ -404,6 +404,21 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         all_releases_result = self.collection.get_all_releases()
         self.cli.tab_all_releases(all_releases_result)
 
+    def track_report(self, track_searchterm):
+        release = self.search_release(track_searchterm)
+        track_no = self.cli.ask_user_for_track()
+        if self.collection.ONLINE == True:
+            rel_id = release[0][0]
+            #rel_name = release[0]["title"]
+        else:
+            rel_id = release[0][0]
+            rel_name = release[0][1]
+        track_occurences = self.collection.track_report_occurences(rel_id, track_no)
+        self.cli.print_help('\nTrack-combination-report for track {} on "{}":'.format(track_no, rel_name))
+        for tr in track_occurences:
+            self.cli.print_help("Snippet from Mix {}:".format(tr['mix_id']))
+            report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
+            self.cli.tab_mix_table(report_snippet, _verbose = True)
 
     # ADD RELEASE TO COLLECTION
     def add_release(self, release_id):

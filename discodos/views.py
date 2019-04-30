@@ -28,6 +28,7 @@ class User_int(object):
         self.WANTS_TO_COPY_MIX = False
         self.WANTS_TO_TRACK_SEARCH = False
         self.WANTS_TO_DELETE_MIX = False
+        self.WANTS_TRACK_REPORT = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -98,11 +99,13 @@ class User_int(object):
         # TRACK MODE
         if hasattr(self.args, 'track_search'):
             self.WANTS_TO_TRACK_SEARCH = True
-            if args.track_pull:
+            if self.args.track_pull:
                 self.WANTS_TO_PULL_TRACK_INFO = True
             else:
-                log.error("Online track search not implemented yet.")
-                raise SystemExit(1)
+                self.WANTS_TRACK_REPORT = True
+                log.debug("Entered Track-combination report.")
+                #log.error("track search not implemented yet.")
+                #raise SystemExit(1)
 
         if self.args.offline_mode == True:
             self.WANTS_ONLINE = False
@@ -117,13 +120,23 @@ class Cli_view_common(ABC):
     def ask_user(self, text=""):
         return input(text)
 
-    def ask_user_for_track()
-        track_no = self.cli.ask_user("Which track? (A1) ")
+    def ask_user_for_track(self):
+        track_no = self.ask_user("Which track? (A1) ")
         # FIXME a sanity checker, at least for online search, would be nice here.
         # also the default value is not checked, eg it could be A in reality!
         if track_no == '':
             track_no = 'A1'
         return track_no
+
+    def tab_mix_table(self, _mix_data, _verbose = False):
+        if _verbose:
+            self.print_help(tab(_mix_data, tablefmt="pipe",
+                headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
+                         "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
+        else:
+            self.print_help(tab(_mix_data, tablefmt="pipe",
+                headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
+
 
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
@@ -152,15 +165,6 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
                 headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
         self.print_help(tabulated)
 
-    def tab_mix_table(self, _mix_data, _verbose = False):
-        if _verbose:
-            self.print_help(tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
-                         "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
-        else:
-            self.print_help(tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
-
     def tab_mix_info_header(self, mix_info):
         self.print_help(tab([mix_info], tablefmt="plain",
                 headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
@@ -177,6 +181,7 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
 # collection view - common things for cli and gui
 class Collection_view_common(ABC):
     def __init__(self):
+        #super(Collection_view_cli, self).__init__()
         pass
 
     def d_tracklist_parse(self, d_tracklist, track_number):

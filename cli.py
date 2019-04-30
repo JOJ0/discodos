@@ -111,11 +111,11 @@ def argparser(argv):
     ### TRACK subparser ##########################################################
     track_subparser = subparsers.add_parser(
         name='track',
-        help='search for tracks, add to mix, FIXME not implemented',
+        help='search for Track name, show Track-combination report',
         aliases=('tr', 't'))
     track_subparser.add_argument(
         dest='track_search',
-        help='track_search help',
+        help='The name of the track you want to show a report for.',
         nargs='?',
         default='0')
     track_subparser.add_argument(
@@ -237,10 +237,12 @@ def main():
 
 
     ### TRACK MODE
-    if user.WANTS_TO_TRACK_SEARCH:
-        if user.WANTS_TO_PULL_TRACK_INFO:
-            mix_ctrl = Mix_ctrl_cli(conn, False, user)
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+    #if user.WANTS_TO_TRACK_SEARCH:
+    if user.WANTS_TO_PULL_TRACK_INFO:
+        mix_ctrl = Mix_ctrl_cli(conn, False, user)
+        mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+    elif user.WANTS_TRACK_REPORT:
+        coll_ctrl.track_report(args.track_search)
 
     # most importantly commit stuff to DB
     #time.sleep(10)
