@@ -429,7 +429,7 @@ class Collection (Database):
         if not tracks_snippet:
             return False
         else:
-            log.info("MODEL: Returning Track-combination report.")
+            log.info("MODEL: Returning track_report_snippet data.")
             #self.cli.print_help(tracks_snippet)
             return tracks_snippet
 
@@ -437,6 +437,6 @@ class Collection (Database):
         occurences_data = self._select_simple(
                 ['track_pos', 'mix_id'], 'mix_track', 'd_release_id == "{}" AND d_track_no == "{}"'.format(
                     release_id, track_no))
-        log.info("MODEL: Returning track_occurences_data.")
+        log.info("MODEL: Returning track_report_occurences data.")
         return occurences_data
 
