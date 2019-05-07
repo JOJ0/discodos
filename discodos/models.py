@@ -35,7 +35,7 @@ class Database (object):
             log.error("DB-NEW: Connection error: %s", e)
         return None
 
-    def _select_simple(self, fields_list, table, condition = False, fetchone = False):
+    def _select_simple(self, fields_list, table, condition = False, fetchone = False, orderby = False):
         fields_str = ""
         for cnt,field in enumerate(fields_list):
             if cnt == 0:
@@ -46,7 +46,11 @@ class Database (object):
             where_or_not = "WHERE {}".format(condition)
         else:
             where_or_not = ""
-        select_str = "SELECT {} FROM {} {};".format(fields_str, table, where_or_not)
+        if orderby:
+            orderby_or_not = "ORDER BY {}".format(orderby)
+        else:
+            orderby_or_not = ""
+        select_str = "SELECT {} FROM {} {} {};".format(fields_str, table, where_or_not, orderby_or_not)
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone = False):
@@ -156,7 +160,7 @@ class Mix (Database):
         @author
         """
         #mixes_data = db.get_all_mixes(self.db_conn)
-        mixes_data = self._select_simple(['*'], 'mix', False)
+        mixes_data = self._select_simple(['*'], 'mix', condition=False, orderby='played')
         log.info("MODEL: Returning mixes table.")
         return mixes_data
 

@@ -354,6 +354,10 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     def search_release(self, _searchterm): # online or offline search is decided in this method
         if self.collection.ONLINE:
+            if is_number(_searchterm):
+                print_help('Searchterm is a number, trying to add Release ID to collection...')
+                self.add_release(int(_searchterm))
+
             db_releases = self.collection.get_all_db_releases()
             print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_online(_searchterm)
@@ -410,7 +414,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             track_no = self.cli.ask_user_for_track()
             if self.collection.ONLINE == True:
                 rel_id = release[0][0]
-                #rel_name = release[0]["title"]
+                rel_name = release[0][3]
             else:
                 rel_id = release[0][0]
                 rel_name = release[0][1]
