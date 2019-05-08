@@ -17,12 +17,14 @@ class Database (object):
         if db_conn:
             log.debug("DB-NEW: db_conn argument was handed over.")
             self.db_conn = db_conn
+            self.configure_db() # set PRAGMA options
         else:
             log.debug("DB-NEW: Creating connection to db_file.")
             if not db_file:
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file)
+            self.configure_db() # set PRAGMA options
         # what we had in each db.function before
         self.db_conn.row_factory = sqlite3.Row
         self.cur = self.db_conn.cursor()
@@ -34,6 +36,21 @@ class Database (object):
         except sqlerr as e:
             log.error("DB-NEW: Connection error: %s", e)
         return None
+
+    def execute_sql(self, sql):
+        '''used for eg. creating tables'''
+        log.info("DB-NEW: Executing sql: %s", sql)
+        try:
+            c = self.db_conn.cursor()
+            c.execute(sql)
+            return True
+        except Error as e:
+            log.error("DB-NEW: %s", e)
+            return False
+
+    def configure_db(self):
+        settings = "PRAGMA foreign_keys = ON;"
+        self.execute_sql(settings)
 
     def _select_simple(self, fields_list, table, condition = False, fetchone = False, orderby = False):
         fields_str = ""

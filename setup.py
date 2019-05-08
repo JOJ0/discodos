@@ -153,6 +153,7 @@ def main():
                                         d_artist; """
         db.create_table(conn, sql_alter_something)
         sql_settings = "PRAGMA foreign_keys = ON;"
+        db.create_table(conn, sql_settings)
         conn.commit()
         conn.close()
         print("DB schema update DONE - EXPERIMENTAL")
