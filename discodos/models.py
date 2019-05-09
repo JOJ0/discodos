@@ -38,14 +38,17 @@ class Database (object):
         return None
 
     def execute_sql(self, sql):
-        '''used for eg. creating tables'''
+        '''used for eg. creating tables or inserts'''
         log.info("DB-NEW: Executing sql: %s", sql)
         try:
             c = self.db_conn.cursor()
             c.execute(sql)
-            return True
-        except Error as e:
-            log.error("DB-NEW: %s", e)
+            log.info("DB-NEW: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
+            return c.rowcount
+        except sqlerr as e:
+            #log.error("DB-NEW: %s", dir(e))
+            log.error("DB-NEW: %s", e.args[0])
+            #raise e
             return False
 
     def configure_db(self):
@@ -398,8 +401,34 @@ class Collection (Database):
     def search_release_id(self, release_id):
         return db.search_release_id(self.db_conn, release_id)
 
-    def create_release(self, release_id, release_title):
-        return db.create_release(self.db_conn, release_id, release_title)
+    def create_release(self, release_id, release_title, release_artists):
+        #return db.create_release(self.db_conn, release_id, release_title)
+        c = self.db_conn.cursor()
+        try:
+            c.execute(
+                    '''INSERT INTO release(discogs_id, discogs_title, import_timestamp, d_artist)
+                                      VALUES("{}", "{}", datetime('now', 'localtime'), "{}")'''.format(
+                                      release_id, release_title, release_artists))
+            log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
+            return c.rowcount
+        except sqlerr as e:
+            if "UNIQUE constraint failed" in e.args[0]:
+                log.warning("Release already in DiscoBASE, updating ...")
+                try:
+                    c.execute(
+                            '''UPDATE release SET (discogs_title, import_timestamp, d_artist)
+                                        = ("{}", datetime('now', 'localtime'), "{}")
+                                           WHERE discogs_id == {}'''.format(
+                                           release_title, release_artists, release_id))
+                    log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
+                    return c.rowcount
+                except sqlerr as e:
+                    log.error("MODEL: %s", e.args[0])
+                    return False
+            else:
+                log.error("MODEL: %s", e.args[0])
+                return False
+
 
     def get_d_release(self, release_id):
         return self.d.release(release_id)
@@ -409,13 +438,11 @@ class Collection (Database):
         for r in self.me.collection_folders[0].releases:
             #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
             if r.release.id == release_id:
-                #last_row_id = db.create_release(_conn, r)
-                #last_row_id = db.create_release(_conn, r.release.id, r.release.title)
-                successful = self.create_release(r.release.id, r.release.title)
-                #break
+                #log.info(dir(r.release))
                 return r
-        if not successful:
-            return False
+        return False
+        #if not successful:
+        #    return False
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
@@ -460,4 +487,15 @@ class Collection (Database):
                     release_id, track_no))
         log.info("MODEL: Returning track_report_occurences data.")
         return occurences_data
+
+    def d_artists_to_str(self, d_artists):
+        '''gets a combined string from discogs artistlist object'''
+        artist_str=''
+        for cnt,artist in enumerate(d_artists):
+            if cnt == 0:
+                artist_str = artist.name
+            else:
+                artist_str += ' / {}'.format(artist.name)
+        log.info('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
+        return artist_str
 

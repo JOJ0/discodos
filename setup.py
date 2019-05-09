@@ -138,7 +138,7 @@ def main():
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
-      "This script sets up the DISCOBASE, and imports data from Discogs")
+      "This script sets up the DiscoBASE, and imports data from Discogs")
     log.info(vars(args))
     #print(vars(args))
 

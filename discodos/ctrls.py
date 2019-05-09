@@ -466,12 +466,24 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         result = self.collection.get_d_release(_release_id)
         self.cli.print_help("Release ID is valid: "+result.title+"\n"+
                    "Let's see if it's in your collection, this might take some time...")
-        in_collection = self.collection.is_in_d_coll(_release_id)
-        if in_collection:
-            self.cli.print_help("Found it in collection: {} - {}.\nImporting to DiscoBASE.".format(
-                                      in_collection.release.id, in_collection.release.title))
+        in_coll = self.collection.is_in_d_coll(_release_id)
+        if in_coll:
+            artists = self.collection.d_artists_to_str(in_coll.release.artists)
+            self.cli.print_help(
+                "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
+                in_coll.release.id, artists, in_coll.release.title))
+            self.collection.create_release(in_coll.release.id, in_coll.release.title,
+                    self.collection.d_artists_to_str(in_coll.release.artists))
         else:
-            self.cli.print_help("This is not the release you are looking for!")
+            log.error("This is not the release you are looking for!")
+            print(r'''
+                                 .=.
+                                '==c|
+                                [)-+|
+                                //'_|
+                           snd /]==;\
+            ''')
+
 
     def import_collection(self):
         print(
@@ -479,14 +491,16 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         insert_count = 0
         for r in self.collection.me.collection_folders[0].releases:
             self.collection.rate_limit_slow_downer(remaining=5, sleep=2)
-            print("Release :", r.release.id, "-", r.release.title)
-            last_row_id = self.collection.create_release(r.release.id, r.release.title)
-            # FIXME I don't know if cur.lastrowid is False if unsuccessful
-            if last_row_id:
+            artists = self.collection.d_artists_to_str(r.release.artists)
+            print("Release :", r.release.id, "-", artists, "-",  r.release.title)
+            rowcount = self.collection.create_release(r.release.id, r.release.title,
+                    artists)
+            # create_release will return False if unsuccessful
+            if rowcount:
                 insert_count = insert_count + 1
                 print("Created so far:", insert_count, "")
-                log.info("discogs-rate-limit-remaining: %s\n",
+                log.info("discogs-rate-limit-remaining: %s",
                          self.collection.d._fetcher.rate_limit_remaining)
+                print()
             else:
-                self.cli.print_help("Something wrong while importing \""+
-                           r.release.title+"\"")
+                log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
