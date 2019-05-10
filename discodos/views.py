@@ -243,3 +243,19 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
         self.print_help(tab(releases_data, tablefmt="plain",
             headers=["ID", "Release name", "Last import"]))
 
+    def error_not_the_release(self):
+        log.error("This is not the release you are looking for!")
+        print(r'''
+                                     .=.
+                                    '==c|
+                                    [)-+|
+                                    //'_|
+                               snd /]==;\
+              ''')
+
+    def exit_if_offline(self, online):
+        if not online:
+            log.error("Need to be ONLINE to do that!")
+            raise SystemExit(3)
+
+

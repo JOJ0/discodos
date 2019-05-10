@@ -350,12 +350,16 @@ class Collection (Database):
                 return releases
         except errors.HTTPError as HtErr:
             log.error("%s", HtErr)
+            return False
         except urlerrors.NewConnectionError as ConnErr:
             log.error("%s", ConnErr)
+            return False
         except urlerrors.MaxRetryError as RetryErr:
             log.error("%s", RetryErr)
+            return False
         except Exception as Exc:
             log.error("Exception: %s", Exc)
+            return False
 
 
     def search_release_offline(self, id_or_title):
@@ -431,7 +435,25 @@ class Collection (Database):
 
 
     def get_d_release(self, release_id):
-        return self.d.release(release_id)
+        try:
+            r = self.d.release(release_id)
+            log.debug("try to access r here to catch err {}".format(r.title))
+            return r
+        except errors.HTTPError as HtErr:
+            log.error('Release not existing on Discogs ({})'.format(HtErr))
+            #log.error("%s", HtErr)
+            return False
+        except urlerrors.NewConnectionError as ConnErr:
+            log.error("%s", ConnErr)
+            return False
+        except urlerrors.MaxRetryError as RetryErr:
+            log.error("%s", RetryErr)
+            return False
+        except Exception as Exc:
+            log.error("Exception: %s", Exc)
+            #raise Exc
+            return False
+
 
     def is_in_d_coll(self, release_id):
         successful = False

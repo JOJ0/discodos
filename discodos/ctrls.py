@@ -404,7 +404,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 return False
 
     def view_all_releases(self):
-        self.cli.print_help("Showing all releases in DB.")
+        self.cli.print_help("Showing all releases in DiscoBASE.")
         all_releases_result = self.collection.get_all_releases()
         self.cli.tab_all_releases(all_releases_result)
 
@@ -429,6 +429,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     # ADD RELEASE TO COLLECTION
     def add_release(self, release_id):
+        self.cli.exit_if_offline(self.collection.ONLINE)
         #if args.add_release_id:
         if is_number(release_id):
             # setup.py argparser only allows integer, this is for calls from somewhere else
@@ -451,12 +452,14 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                             #last_row_id = db.create_release(conn, result, collection_item = False)
                             last_row_id = self.collection.create_release(result.id, result.title)
                     if not last_row_id:
-                        self.cli.print_help("This is not the release you are looking for!")
+                        #self.cli.print_help("This is not the release you are looking for!")
+                        self.cli.error_not_the_release()
 
 
 
     # import specific release ID into DB
     def import_release(self, _release_id):
+        self.cli.exit_if_offline(self.collection.ONLINE)
         #print(dir(me.collection_folders[0].releases))
         #print(dir(me))
         #print(me.collection_item)
@@ -464,29 +467,35 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.print_help("Asking Discogs for release ID {:d}".format(
                _release_id))
         result = self.collection.get_d_release(_release_id)
-        self.cli.print_help("Release ID is valid: "+result.title+"\n"+
-                   "Let's see if it's in your collection, this might take some time...")
-        in_coll = self.collection.is_in_d_coll(_release_id)
-        if in_coll:
-            artists = self.collection.d_artists_to_str(in_coll.release.artists)
-            self.cli.print_help(
-                "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
-                in_coll.release.id, artists, in_coll.release.title))
-            self.collection.create_release(in_coll.release.id, in_coll.release.title,
-                    self.collection.d_artists_to_str(in_coll.release.artists))
+        if not result:
+            raise SystemExit(3)
         else:
-            log.error("This is not the release you are looking for!")
-            print(r'''
-                                 .=.
-                                '==c|
-                                [)-+|
-                                //'_|
-                           snd /]==;\
-            ''')
+            self.cli.print_help("Release ID is valid: {}\n".format(result.title) +
+                  "Let's see if it's in your collection, this might take some time...")
+            in_coll = self.collection.is_in_d_coll(_release_id)
+            if in_coll:
+                artists = self.collection.d_artists_to_str(in_coll.release.artists)
+                self.cli.print_help(
+                    "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
+                    in_coll.release.id, artists, in_coll.release.title))
+                self.collection.create_release(in_coll.release.id, in_coll.release.title,
+                        self.collection.d_artists_to_str(in_coll.release.artists))
+            else:
+                self.cli.error_not_the_release()
+                #log.error("This is not the release you are looking for!")
+                #print(r'''
+                #                     .=.
+                #                    '==c|
+                #                    [)-+|
+                #                    //'_|
+                #               snd /]==;\
+                #''')
+
 
 
     def import_collection(self):
-        print(
+        self.cli.exit_if_offline(self.collection.ONLINE)
+        self.cli.print_help(
         "Gathering your Discogs collection and importing necessary fields into DiscoBASE")
         insert_count = 0
         for r in self.collection.me.collection_folders[0].releases:
