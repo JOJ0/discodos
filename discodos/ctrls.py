@@ -455,8 +455,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                         #self.cli.print_help("This is not the release you are looking for!")
                         self.cli.error_not_the_release()
 
-
-
     # import specific release ID into DB
     def import_release(self, _release_id):
         self.cli.exit_if_offline(self.collection.ONLINE)
@@ -482,16 +480,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                         self.collection.d_artists_to_str(in_coll.release.artists))
             else:
                 self.cli.error_not_the_release()
-                #log.error("This is not the release you are looking for!")
-                #print(r'''
-                #                     .=.
-                #                    '==c|
-                #                    [)-+|
-                #                    //'_|
-                #               snd /]==;\
-                #''')
-
-
 
     def import_collection(self):
         self.cli.exit_if_offline(self.collection.ONLINE)
