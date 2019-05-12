@@ -78,7 +78,13 @@ def argparser(argv):
         "-e", "--edit", type=str,
         dest='edit_mix_track',
         metavar='POSITION',
-        help='add/edit rating, notes, key and other info in mix-track')
+        help='add/edit rating, notes, key and other info of a track in a mix')
+    mix_subp_excl_group.add_argument(
+        "-b", "--bulk-edit", type=str,
+        dest='bulk_edit',
+        metavar='FIELD_LIST',
+        help='''bulk-edit specific columns of whole mixes. Syntax of col list eg: <col1>,<col2>,...
+        possible cols: key,bpm,track_no,track_pos,key_notes,trans_rating,trans_notes,release_id,notes''')
     mix_subp_excl_group.add_argument(
         "-a", "--add-to-mix", type=str,
         dest='add_release_to_mix',
@@ -229,6 +235,10 @@ def main():
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+
+        #### BULK EDIT MIX COLUMNS
+        elif user.WANTS_TO_BULK_EDIT:
+            mix_ctrl.bulk_edit_tracks(args.bulk_edit, args.mix_mode_add_at_pos)
 
         #### JUST SHOW MIX-TRACKLIST:
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:

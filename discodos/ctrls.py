@@ -121,7 +121,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                            track_details['d_track_no'],
                            track_details['d_track_name']))
                 log.info("current d_release_id: %s", track_details['d_release_id'])
-                edit_answers = self._edit_track_ask_details(track_details)
+                edit_answers = self._edit_track_ask_details(track_details,
+                        self.cli._edit_track_questions)
                 for a in edit_answers.items():
                     log.info("answers: %s", str(a))
                 update_ok = self.mix.update_track_in_mix(track_details, edit_answers)
@@ -136,6 +137,57 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                             self.mix.name+"\".")
         else:
             print_help("Mix unknown: \"{}\".".format(self.mix.name_or_id))
+
+    def _edit_track_ask_details(self, _track_det, edit_track_questions):
+        #print(_track_det['d_track_no'])
+        # collect answers from user input
+        answers = {}
+        answers['track_pos'] = "not a number"
+        #answers['track_pos'] = ""
+        for db_field, question in edit_track_questions:
+            if db_field == 'track_pos':
+                while not is_number(answers['track_pos']):
+                    answers[db_field] = ask_user(
+                                             question.format(_track_det[db_field]))
+                    if answers[db_field] == "":
+                        answers[db_field] = _track_det[db_field]
+                        break
+            else:
+                answers[db_field] = ask_user(
+                                         question.format(_track_det[db_field]))
+                if answers[db_field] == "":
+                    log.info("Answer was empty, keeping previous value: %s",
+                             _track_det[db_field])
+                    answers[db_field] = _track_det[db_field]
+        #pprint.pprint(answers) # debug
+        return answers
+
+    def bulk_edit_tracks(self, fields_str, first_track):
+        log.debug("bulk_edit_tracks args: {} {}".format(fields_str, first_track))
+        fields_list = fields_str.split(',')
+        log.debug('fields split: {}'.format(fields_list))
+        if not first_track:
+            first_track = 1
+        if self.mix.id_existing:
+            for track in self.mix.get_full_mix(verbose = True):
+                if not track['track_pos'] < first_track:
+                    self.cli.print_help("Editing track {} - \"{}\" - \"{}\"".format(
+                      track['track_pos'], track['discogs_title'], track['d_track_name']))
+                    track_details = self.mix.get_one_mix_track(track['track_pos'])
+                    bulk_questions = []
+                    for field in fields_list:
+                        #field=field.replace('d_', '')
+                        #log.info("checking field: {}".format(field))
+                        for question in self.cli._edit_track_questions:
+                            if field == question[0]:
+                                #log.info("appending to bulk_questions list")
+                                bulk_questions.append(question)
+                    log.debug(bulk_questions)
+                    edit_answers = self._edit_track_ask_details(track_details,
+                        bulk_questions)
+                    update_ok = self.mix.update_mix_track_and_track_ext(track_details,
+                            edit_answers)
+                    print("") # just some space
 
     def reorder_tracks(self, startpos = 1):
         reorder_pos = int(startpos)
@@ -169,29 +221,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 self.mix.id, self.mix.name))
         if really_delete == "y": return True
         else: return False
-
-    def _edit_track_ask_details(self, _track_det):
-        #print(_track_det['d_track_no'])
-        # collect answers from user input
-        answers = {}
-        answers['track_pos'] = "x"
-        for db_field, question in self.cli._edit_track_questions:
-            if db_field == 'track_pos':
-                while not is_number(answers['track_pos']):
-                    answers[db_field] = ask_user(
-                                             question.format(_track_det[db_field]))
-                    if answers[db_field] == "":
-                        answers[db_field] = _track_det[db_field]
-                        break
-            else:
-                answers[db_field] = ask_user(
-                                         question.format(_track_det[db_field]))
-                if answers[db_field] == "":
-                    log.info("Answer was empty, keeping previous value: %s",
-                             _track_det[db_field])
-                    answers[db_field] = _track_det[db_field]
-        #pprint.pprint(answers) # debug
-        return answers
 
     def add_offline_track(self, rel_list, track_no, pos):
         if rel_list:

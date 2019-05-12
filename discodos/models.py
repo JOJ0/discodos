@@ -17,6 +17,7 @@ class Database (object):
         if db_conn:
             log.debug("DB-NEW: db_conn argument was handed over.")
             self.db_conn = db_conn
+            self.cur = self.db_conn.cursor() # we had this in each db function before
             self.configure_db() # set PRAGMA options
         else:
             log.debug("DB-NEW: Creating connection to db_file.")
@@ -24,10 +25,9 @@ class Database (object):
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file)
+            self.cur = self.db_conn.cursor() # we had this in each db function before
             self.configure_db() # set PRAGMA options
-        # what we had in each db.function before
-        self.db_conn.row_factory = sqlite3.Row
-        self.cur = self.db_conn.cursor()
+        self.db_conn.row_factory = sqlite3.Row # also this was in each db.function before
 
     def create_conn(self, db_file):
         try:
@@ -37,12 +37,16 @@ class Database (object):
             log.error("DB-NEW: Connection error: %s", e)
         return None
 
-    def execute_sql(self, sql):
+    def execute_sql(self, sql, values_tuple = False):
         '''used for eg. creating tables or inserts'''
         log.info("DB-NEW: Executing sql: %s", sql)
         try:
-            c = self.db_conn.cursor()
-            c.execute(sql)
+            c = self.cur
+            if values_tuple:
+                c.execute(sql, values_tuple)
+                log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
+            else:
+                c.execute(sql)
             log.info("DB-NEW: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
             return c.rowcount
         except sqlerr as e:
@@ -185,7 +189,7 @@ class Mix (Database):
         return mixes_data
 
     def get_one_mix_track(self, track_id):
-        log.info("MODEL: Returning track {} from {}.".format(track_id, self.id))
+        log.info("MODEL: Returning track {} from mix {}.".format(track_id, self.id))
         return db.get_one_mix_track(self.db_conn, self.id, track_id)
 
     def update_track_in_mix(self, track_details, edit_answers):
@@ -209,9 +213,94 @@ class Mix (Database):
             log.info("MODEL: Track edit was successful.")
             return True
         except Exception as edit_err:
+
             log.error("MODEL: Something went wrong in update_track_in_mix!")
             raise edit_err
             return False
+
+    def update_mix_track_and_track_ext(self, track_details, edit_answers):
+        mix_track_cols=['d_release_id', 'd_track_no', 'track_pos', 'trans_rating', 'trans_notes']
+        track_ext_cols=['key', 'bpm', 'key_notes', 'notes']
+        values_mix_track = '' # mix_track update
+        values_list_mix_track = []
+        values_track_ext = '' # track_ext update
+        values_list_track_ext = []
+        cols_insert_track_ext = '' # track_ext insert
+        values_insert_track_ext = '' # (the tuple is the same obviously)
+        if 'track_pos' in edit_answers: #filter out track_pos='not a number'
+            if edit_answers['track_pos'] == 'not a number':
+                edit_answers.pop('track_pos')
+        mix_track_edit = False # decide if it's table mix_track or track_ext
+        track_ext_edit = False
+        for key in edit_answers:
+            if key in mix_track_cols:
+                mix_track_edit = True
+            if key in track_ext_cols:
+                track_ext_edit = True
+
+        if mix_track_edit:
+            update_mix_track = 'UPDATE mix_track SET '
+            where_mix_track = 'WHERE mix_track_id == {}'.format(track_details['mix_track_id'])
+            for cnt,answer in enumerate(edit_answers.items()):
+                log.debug('key: {}, value: {}'.format(answer[0], answer[1]))
+                if answer[0] in mix_track_cols:
+                    if values_mix_track == '':
+                        values_mix_track += "{} = ? ".format(answer[0], answer[1])
+                    else:
+                        values_mix_track += ", {} = ? ".format(answer[0], answer[1])
+                    values_list_mix_track.append(answer[1])
+            final_update_mix_track = update_mix_track + values_mix_track + where_mix_track
+            log.info('DB-NEW: {}'.format(final_update_mix_track))
+            log.info(log.info('DB-NEW: {}'.format(tuple(values_list_mix_track))))
+            with self.db_conn:
+                log.info("DB-NEW: Now really executing mix_track update...")
+                self.execute_sql(final_update_mix_track, tuple(values_list_mix_track))
+
+        if track_ext_edit:
+            update_track_ext = 'UPDATE track_ext SET '
+            insert_track_ext = 'INSERT INTO track_ext'
+            where_track_ext = 'WHERE d_release_id == {} AND d_track_no == \"{}\"'.format(
+                                track_details['d_release_id'], track_details['d_track_no'])
+            for cnt,answer in enumerate(edit_answers.items()):
+                log.debug('key: {}, value: {}'.format(answer[0], answer[1]))
+                if answer[0] in track_ext_cols:
+                    if values_track_ext == '':
+                        values_track_ext += "{} = ? ".format(answer[0], answer[1])
+                    else:
+                        values_track_ext += ", {} = ? ".format(answer[0], answer[1])
+                    values_list_track_ext.append(answer[1])
+
+                    if values_insert_track_ext == '':
+                        cols_insert_track_ext += "{}".format(answer[0])
+                        values_insert_track_ext += "?".format(answer[1])
+                    else:
+                        cols_insert_track_ext += ", {}".format(answer[0])
+                        values_insert_track_ext += ", ?".format(answer[1])
+                    # the list is the same as with update
+
+            final_update_track_ext = update_track_ext + values_track_ext + where_track_ext
+            final_insert_track_ext = "{} ({}, d_release_id, d_track_no) VALUES ({}, ?, ?)".format(
+                    insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
+
+            log.info('DB-NEW: {}'.format(final_update_track_ext))
+            log.info('DB-NEW: {}'.format(tuple(values_list_track_ext)))
+
+            log.info('DB-NEW: {}'.format(final_insert_track_ext))
+            values_insert_list_track_ext = values_list_track_ext[:]
+            values_insert_list_track_ext.append(track_details['d_release_id'])
+            values_insert_list_track_ext.append(track_details['d_track_no'])
+            log.info('DB-NEW: {}'.format(tuple(values_insert_list_track_ext)))
+
+            with self.db_conn:
+                log.info("DB-NEW: Now really executing track_ext update/insert...")
+                log.info(values_list_track_ext)
+                log.info(tuple(values_list_track_ext))
+
+                self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
+                if self.cur.rowcount == 0:
+                    log.info("DB-NEW: UPDATE didn't change anything, trying INSERT...".format(
+                        self.cur.rowcount))
+                    self.execute_sql(final_insert_track_ext, tuple(values_insert_list_track_ext))
 
     def get_tracks_from_position(self, pos):
         return db.get_tracks_from_position(self.db_conn, self.id, pos)
@@ -309,7 +398,7 @@ class Collection (Database):
 
     def __init__(self, db_conn, db_file = False):
         super(Collection, self).__init__(db_conn, db_file)
-        self.db_conn = db_conn
+        #self.db_conn = db_conn # this is handled with super already
         # discogs api objects are online set when discogs_connect method is called
         self.d = False
         self.me = False

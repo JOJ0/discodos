@@ -29,6 +29,7 @@ class User_int(object):
         self.WANTS_TO_TRACK_SEARCH = False
         self.WANTS_TO_DELETE_MIX = False
         self.WANTS_TRACK_REPORT = False
+        self.WANTS_TO_BULK_EDIT = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -95,6 +96,8 @@ class User_int(object):
                 if self.args.delete_mix:
                     self.WANTS_TO_DELETE_MIX = True
                     self.WANTS_ONLINE = False
+                if self.args.bulk_edit:
+                    self.WANTS_TO_BULK_EDIT = True
 
         # TRACK MODE
         if hasattr(self.args, 'track_search'):
@@ -153,6 +156,18 @@ class Mix_view_common(ABC):
             ["trans_notes", "Transition notes ({}): "],
             ["d_release_id", "Release ID ({}): "],
             ["notes", "Other track notes: ({}): "]
+        ]
+
+        self._edit_questions = [
+            {'db_field': 'key', 'question': "Key ({}): "},
+            {'db_field': 'bpm', 'question': "BPM ({}): "},
+            {'db_field': 'd_track_no', 'question': "Track # on record ({}): "},
+            {'db_field': 'track_pos', 'question': "Move track's position ({}): "},
+            {'db_field': 'key_notes', 'question': "Key notes/bassline/etc. ({}): "},
+            {'db_field': 'trans_rating', 'question': "Transition rating ({}): "},
+            {'db_field': 'trans_notes', 'question': "Transition notes ({}): "},
+            {'db_field': 'd_release_id', 'question': "Release ID ({}): "},
+            {'db_field': 'notes', 'question': "Other track notes: ({}): "}
         ]
 
 # viewing mixes in CLI mode:
