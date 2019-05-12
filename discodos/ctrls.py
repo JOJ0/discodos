@@ -471,6 +471,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 self.cli.print_help("Asking Discogs if release ID {:d} is valid.".format(
                        release_id))
                 result = self.collection.d.release(release_id)
+                artists = self.collection.d_artists_to_str(result.artists)
                 if result:
                     log.debug(dir(result))
                     self.cli.print_help("Adding \"{}\" to collection".format(result.title))
@@ -479,7 +480,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                             folder.add_release(release_id)
                             #import_release(conn, d, me, args.add_release_id)
                             #last_row_id = db.create_release(conn, result, collection_item = False)
-                            last_row_id = self.collection.create_release(result.id, result.title)
+                            last_row_id = self.collection.create_release(result.id, result.title, artists)
                     if not last_row_id:
                         #self.cli.print_help("This is not the release you are looking for!")
                         self.cli.error_not_the_release()

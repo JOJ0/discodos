@@ -263,7 +263,7 @@ def update_or_insert_track_ext(conn, release_id_orig, release_id_new, track_no,
         log.info("release_id_orig: %s", release_id_orig)
         log.info("release_id_new: %s", release_id_new)
         if cur.rowcount == 0:
-            self.execute_sql('''INSERT INTO track_ext (key, key_notes, bpm, notes,
+            cur.execute('''INSERT INTO track_ext (key, key_notes, bpm, notes,
                                                   d_release_id, d_track_no)
                            VALUES (?, ?, ?, ?, ?, ?)''',
                            (key, key_notes, bpm, notes,
