@@ -17,17 +17,15 @@ class Database (object):
         if db_conn:
             log.debug("DB-NEW: db_conn argument was handed over.")
             self.db_conn = db_conn
-            self.cur = self.db_conn.cursor() # we had this in each db function before
-            self.configure_db() # set PRAGMA options
         else:
             log.debug("DB-NEW: Creating connection to db_file.")
             if not db_file:
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file)
-            self.cur = self.db_conn.cursor() # we had this in each db function before
-            self.configure_db() # set PRAGMA options
         self.db_conn.row_factory = sqlite3.Row # also this was in each db.function before
+        self.cur = self.db_conn.cursor() # we had this in each db function before
+        self.configure_db() # set PRAGMA options
 
     def create_conn(self, db_file):
         try:
@@ -398,7 +396,6 @@ class Collection (Database):
 
     def __init__(self, db_conn, db_file = False):
         super(Collection, self).__init__(db_conn, db_file)
-        #self.db_conn = db_conn # this is handled with super already
         # discogs api objects are online set when discogs_connect method is called
         self.d = False
         self.me = False
