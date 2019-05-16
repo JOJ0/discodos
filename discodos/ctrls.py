@@ -290,30 +290,28 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if coll_ctrl.ONLINE:
             if self.mix.id_existing:
                 self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
-                #mixed_tracks = db.get_tracks_of_one_mix(self.db_conn, _mix_id)
                 mixed_tracks = self.mix.get_tracks_of_one_mix()
             else:
                 self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
-                #mixed_tracks = db.get_all_tracks_in_mixes(_conn)
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
             for mix_track in mixed_tracks:
                 coll_ctrl.collection.rate_limit_slow_downer(remaining=5, sleep=2)
-                name = coll_ctrl.cli.d_tracklist_parse(coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
-                #artist = tracklist_parse_artist(d.release(mix_track[2]).tracklist, mix_track[3])
-                #print_help(d.release(mix_track[2]).tracklist)
+                name = coll_ctrl.cli.d_tracklist_parse(
+                        coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
+                artist = coll_ctrl.collection.d_artists_parse(
+                           coll_ctrl.d.release(mix_track[2]).tracklist,
+                           mix_track[3],
+                           coll_ctrl.d.release(mix_track[2]).artists)
+
                 if name:
-                    print("Adding track info: "+ str(mix_track[2])+" "+
-                            mix_track[3] + " " + name)
-                            #mix_track[3] + " " + artist + " - " + name)
-                    #try:
-                    #    db.create_track(_conn, mix_track[2], mix_track[3], name)
-                    #except sqlerr as err:
-                    #    log.info("Not added, probably already there.\n")
-                    #    log.info("DB returned: %s", err)
-                    coll_ctrl.collection.create_track(mix_track[2], mix_track[3], name)
+                    print("Adding track info: {} {} - {} - {}".format(
+                        mix_track[2], mix_track[3], artist, name))
+                    coll_ctrl.collection.create_track(mix_track[2], mix_track[3], name, artist)
                 else:
-                    print("Adding track info: "+ str(mix_track[2])+" "+
-                            mix_track[3])
+                    #print("Adding track info: "+ str(mix_track[2])+" "+
+                    #        mix_track[3])
+                    print("Adding track info: {} {}".format(
+                        mix_track[2], mix_track[3]))
                     log.error("No trackname found for Tr.Pos %s",
                             mix_track[3])
                     log.error("Probably you misspelled? (eg A vs. A1)\n")
@@ -411,12 +409,13 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             search_results = self.collection.search_release_offline(_searchterm)
             if search_results:
                 if len(search_results) == 1:
-                    print_help('Found release: {}'.format(search_results[0][1]))
+                    print_help('Found release: {} - {}'.format(search_results[0][3],
+                                                          search_results[0][1]))
                     return search_results
                 else:
                     print_help('Found several releases:')
                     for cnt,release in enumerate(search_results):
-                        print_help('{} - {}'.format(cnt, release[1]))
+                        print_help('({}) {} - {}'.format(cnt, release[3], release[1]))
                         #for col in release:
                         #    print(col)
                     #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
@@ -450,10 +449,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             track_occurences = self.collection.track_report_occurences(rel_id, track_no)
             self.cli.print_help('\nTrack-combination-report for track {} on "{}":'.format(
                 track_no, rel_name))
-            for tr in track_occurences:
-                self.cli.print_help("Snippet from Mix {}:".format(tr['mix_id']))
-                report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
-                self.cli.tab_mix_table(report_snippet, _verbose = True)
+            if track_occurences:
+                for tr in track_occurences:
+                    self.cli.print_help("Snippet from Mix {} - {}:".format(
+                        tr['mix_id'], tr['name']))
+                    report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
+                    self.cli.tab_mix_table(report_snippet, _verbose = True)
         else:
             raise SystemExit(3)
 

@@ -335,7 +335,7 @@ class Mix (Database):
 
     def get_full_mix(self, verbose = False):
         if verbose:
-            sql_sel = '''SELECT track_pos, discogs_title, d_track_name,
+            sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
                                mix_track.d_track_no,
                                key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
         else:
@@ -480,13 +480,19 @@ class Collection (Database):
     def get_all_releases(self):
         return db.all_releases(self.db_conn)
 
-    def create_track(self, release_id, track_no, track_title):
-        try:
-           return db.create_track(self.db_conn, release_id, track_no, track_title)
-        except sqlerr as err:
-            log.info("Not added, probably already there.\n")
-            log.info("DB returned: %s", err)
-            return False
+    def create_track(self, release_id, track_no, track_title, track_artist):
+        #try:
+        #   return db.create_track(self.db_conn, release_id, track_no, track_title)
+        #except sqlerr as err:
+        #    log.info("Not added, probably already there.\n")
+        #    log.info("DB returned: %s", err)
+        #    return False
+        data_tuple = (release_id, track_artist, track_no, track_title)
+        with self.db_conn:
+            return self.execute_sql('''INSERT INTO track(d_release_id, d_artist, d_track_no,
+                                                         d_track_name, import_timestamp)
+                                           VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
+                                    data_tuple)
 
     def search_release_id(self, release_id):
         return db.search_release_id(self.db_conn, release_id)
@@ -591,8 +597,9 @@ class Collection (Database):
 
     def track_report_occurences(self, release_id, track_no):
         occurences_data = self._select_simple(
-                ['track_pos', 'mix_id'], 'mix_track', 'd_release_id == "{}" AND d_track_no == "{}"'.format(
-                    release_id, track_no))
+                ['track_pos', 'mix_track.mix_id', 'mix.name'],
+                 'mix_track INNER JOIN MIX ON mix.mix_id = mix_track.mix_id',
+                 'd_release_id == "{}" AND d_track_no == "{}"'.format(release_id, track_no))
         log.info("MODEL: Returning track_report_occurences data.")
         return occurences_data
 
@@ -607,3 +614,30 @@ class Collection (Database):
         log.info('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
         return artist_str
 
+    def d_artists_parse(self, d_tracklist, track_number, d_artists):
+        '''gets Artist name from discogs release (child)objects via track_number, eg. A1'''
+        for tr in d_tracklist:
+            #log.info("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            if tr.position == track_number:
+                #log.info("d_tracklist_parse: found by track number.")
+                if len(tr.artists) == 1:
+                    name = tr.artists[0].name
+                    log.info("MODEL: d_artists_parse: just one artist, returning name: {}".format(name))
+                    return name
+                elif len(tr.artists) == 0:
+                    #log.info(
+                    #  "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
+                    #            dir(tr.artists)))
+                    log.info(
+                      "MODEL: d_artists_parse: no artists in tracklist, checking d_artists object..")
+                    combined_name = self.d_artists_to_str(d_artists)
+                    return combined_name
+                else:
+                    log.info("tr.artists len: {}".format(len(tr.artists)))
+                    for a in tr.artists:
+                        log.info("release.artists debug loop: {}".format(a.name))
+                    combined_name = self.d_artists_to_str(tr.artists)
+                    log.info(
+                      "MODEL: d_artists_parse: several artists, returning combined named {}".format(
+                        combined_name))
+                    return combined_name

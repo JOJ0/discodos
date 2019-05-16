@@ -134,7 +134,7 @@ class Cli_view_common(ABC):
     def tab_mix_table(self, _mix_data, _verbose = False):
         if _verbose:
             self.print_help(tab(_mix_data, tablefmt="pipe",
-                headers=["#", "Release", "Track\nName", "Track\nPos", "Key", "BPM",
+                headers=["#", "Release", "Track\nArtist", "Track\nName", "Track\nPos", "Key", "BPM",
                          "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
         else:
             self.print_help(tab(_mix_data, tablefmt="pipe",
@@ -202,9 +202,9 @@ class Collection_view_common(ABC):
     def d_tracklist_parse(self, d_tracklist, track_number):
         '''gets Track name from discogs tracklist object via track_number, eg. A1'''
         for tr in d_tracklist:
+            #log.info("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
             if tr.position == track_number:
                 return tr.title
-
 
 # viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, Cli_view_common):

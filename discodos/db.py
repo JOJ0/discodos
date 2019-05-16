@@ -186,7 +186,7 @@ def get_all_tracks_in_mixes(conn):
 def get_tracks_of_one_mix(conn, _mix_id):
     cur = conn.cursor()
     log.info('DB: Getting tracks of mix %s\n', _mix_id)
-    cur.execute('''SELECT * FROM mix_track WHERE mix_id == ?''', (_mix_id, ))
+    cur.execute('''SELECT * FROM mix_track WHERE mix_id == ? ORDER BY track_pos''', (_mix_id, ))
     rows = cur.fetchall()
     return rows
 
