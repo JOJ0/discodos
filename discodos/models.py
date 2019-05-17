@@ -447,7 +447,6 @@ class Collection (Database):
             log.error("Exception: %s", Exc)
             return False
 
-
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
@@ -524,7 +523,6 @@ class Collection (Database):
             else:
                 log.error("MODEL: %s", e.args[0])
                 return False
-
 
     def get_d_release(self, release_id):
         try:
