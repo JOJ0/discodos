@@ -295,7 +295,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
             for mix_track in mixed_tracks:
-                coll_ctrl.collection.rate_limit_slow_downer(remaining=5, sleep=2)
+                coll_ctrl.collection.rate_limit_slow_downer(remaining=10, sleep=2)
                 name = coll_ctrl.cli.d_tracklist_parse(
                         coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
                 artist = coll_ctrl.collection.d_artists_parse(

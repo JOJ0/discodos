@@ -182,7 +182,9 @@ class Mix (Database):
         @author
         """
         #mixes_data = db.get_all_mixes(self.db_conn)
-        mixes_data = self._select_simple(['*'], 'mix', condition=False, orderby='played')
+        # we want to select * but in a different order:
+        mixes_data = self._select_simple(['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
+                'mix', condition=False, orderby='played')
         log.info("MODEL: Returning mixes table.")
         return mixes_data
 

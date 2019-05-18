@@ -180,12 +180,10 @@ def main():
     ### NO MIX ID GIVEN ###################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
         # we instantiate a mix controller object
-        #mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
         mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user) # conn = False, init from file
-        if user.WANTS_TO_PULL_TRACK_INFO:
+        if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
         else:
-            #print_help(all_mixes_table(db.get_all_mixes(conn)))
             mix_ctrl.view_mixes_list()
 
     ### MIX ID GIVEN #############################################
@@ -233,7 +231,7 @@ def main():
             mix_ctrl.copy_mix()
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
-        elif user.WANTS_TO_PULL_TRACK_INFO:
+        elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
 
         #### BULK EDIT MIX COLUMNS

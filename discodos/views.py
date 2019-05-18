@@ -19,6 +19,7 @@ class User_int(object):
         self.WANTS_TO_CREATE_MIX = False
         self.WANTS_TO_EDIT_MIX_TRACK = False
         self.WANTS_TO_PULL_TRACK_INFO = False
+        self.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = False
         self.WANTS_VERBOSE_MIX_TRACKLIST = False
         self.WANTS_TO_REORDER_MIX_TRACKLIST = False
         self.WANTS_TO_ADD_AT_POSITION = False
@@ -61,7 +62,7 @@ class User_int(object):
                     log.error("Please provide a mix name or ID to be deleted!")
                     raise SystemExit(1)
                 if self.args.discogs_update:
-                    self.WANTS_TO_PULL_TRACK_INFO = True
+                    self.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
             else:
                 self.WANTS_TO_SHOW_MIX_TRACKLIST = True
@@ -91,7 +92,7 @@ class User_int(object):
                     self.WANTS_TO_COPY_MIX = True
                     self.WANTS_ONLINE = False
                 if self.args.discogs_update:
-                    self.WANTS_TO_PULL_TRACK_INFO = True
+                    self.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
                 if self.args.delete_mix:
                     self.WANTS_TO_DELETE_MIX = True
@@ -177,7 +178,7 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
 
     def tab_mixes_list(self, mixes_data):
         tabulated = tab(mixes_data, tablefmt="simple",
-                headers=["Mix #", "Name", "Created", "Updated", "Played", "Venue"])
+                headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
         self.print_help(tabulated)
 
     def tab_mix_info_header(self, mix_info):
