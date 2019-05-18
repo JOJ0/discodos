@@ -546,7 +546,6 @@ class Collection (Database):
             #raise Exc
             return False
 
-
     def is_in_d_coll(self, release_id):
         successful = False
         for r in self.me.collection_folders[0].releases:
