@@ -232,7 +232,7 @@ def main():
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+            mix_ctrl.pull_track_info_from_discogs(coll_ctrl, start_pos = args.mix_mode_add_at_pos)
 
         #### BULK EDIT MIX COLUMNS
         elif user.WANTS_TO_BULK_EDIT:

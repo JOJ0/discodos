@@ -372,8 +372,14 @@ class Mix (Database):
     def get_all_releases(self):
         return db.get_all_releases(self.db_conn, self.id)
 
-    def get_tracks_of_one_mix(self):
-        return db.get_tracks_of_one_mix(self.db_conn, self.id)
+    def get_tracks_of_one_mix(self, start_pos = False):
+        if not start_pos:
+            where = "mix_id == {}".format(self.id)
+        else:
+            where = "mix_id == {} and track_pos >= {}".format(self.id, start_pos)
+        log.info("MODEL: Returning tracks of a mix.")
+        return self._select_simple(['*'], 'mix_track', where,
+                fetchone = False, orderby = 'track_pos')
 
     def get_all_tracks_in_mixes(self):
         return db.get_all_tracks_in_mixes(self.db_conn)

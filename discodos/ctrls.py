@@ -288,11 +288,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.print_help("Mix ID {} is not existing yet.".format(self.mix.id))
             return False
 
-    def pull_track_info_from_discogs(self, coll_ctrl):
+    def pull_track_info_from_discogs(self, coll_ctrl, start_pos = False):
         if coll_ctrl.ONLINE:
             if self.mix.id_existing:
                 self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
-                mixed_tracks = self.mix.get_tracks_of_one_mix()
+                mixed_tracks = self.mix.get_tracks_of_one_mix(start_pos)
             else:
                 self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
