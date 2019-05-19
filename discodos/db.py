@@ -51,9 +51,10 @@ def search_release_id(conn, discogs_id):
     return rows
 
 def search_release_title(conn, discogs_title):
-    log.debug('DB: Search for Discogs Release Title: %s\n', discogs_title)
+    log.debug('DB: Search for Discogs Release Title or Artist: %s\n', discogs_title)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM release WHERE discogs_title LIKE ?", ("%"+discogs_title+"%", ), )
+    cur.execute("SELECT * FROM release WHERE discogs_title LIKE ? OR d_artist LIKE ?",
+            ("%"+discogs_title+"%", "%"+discogs_title+"%"), )
     rows = cur.fetchall()
     log.debug('DB: search_release_title returns: %s', rows)
     return rows

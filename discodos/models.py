@@ -464,7 +464,9 @@ class Collection (Database):
                 raise Exc
         else:
             try:
-                releases = db.search_release_title(self.db_conn, id_or_title)
+                releases = self._select_simple(['*'], 'release',
+                        'discogs_title LIKE "%{}%" OR d_artist LIKE "%{}%"'.format(
+                        id_or_title, id_or_title), fetchone = False, orderby = 'd_artist')
                 if releases:
                     log.debug("First found release: {}".format(releases[0]))
                     log.debug("All found releases: {}".format(releases))
