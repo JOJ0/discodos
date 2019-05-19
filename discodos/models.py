@@ -481,19 +481,33 @@ class Collection (Database):
     def get_all_releases(self):
         return db.all_releases(self.db_conn)
 
-    def create_track(self, release_id, track_no, track_title, track_artist):
-        #try:
-        #   return db.create_track(self.db_conn, release_id, track_no, track_title)
-        #except sqlerr as err:
-        #    log.info("Not added, probably already there.\n")
-        #    log.info("DB returned: %s", err)
-        #    return False
-        data_tuple = (release_id, track_artist, track_no, track_title)
+    def create_track(self, release_id, track_no, track_name, track_artist):
+        insert_tuple = (release_id, track_artist, track_no, track_name)
+        update_tuple = (release_id, track_artist, track_no, track_name, release_id, track_no)
+        c = self.db_conn.cursor()
         with self.db_conn:
-            return self.execute_sql('''INSERT INTO track(d_release_id, d_artist, d_track_no,
-                                                         d_track_name, import_timestamp)
-                                           VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
-                                    data_tuple)
+            try:
+                c.execute('''INSERT INTO track(d_release_id, d_artist, d_track_no,
+                                                             d_track_name, import_timestamp)
+                                               VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
+                                        insert_tuple)
+                return c.rowcount
+            except sqlerr as e:
+                if "UNIQUE constraint failed" in e.args[0]:
+                    log.warning("Track details already in DiscoBASE, updating ...")
+                    try:
+                        c.execute('''UPDATE track SET (d_release_id, d_artist, d_track_no,
+                                                       d_track_name, import_timestamp)
+                                       = (?, ?, ?, ?, datetime('now', 'localtime'))
+                                          WHERE d_release_id == ? AND d_track_no == ?''', update_tuple)
+                        log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
+                        return c.rowcount
+                    except sqlerr as e:
+                        log.error("MODEL: %s", e.args[0])
+                        return False
+                else:
+                    log.error("MODEL: %s", e.args[0])
+                    return False
 
     def search_release_id(self, release_id):
         return db.search_release_id(self.db_conn, release_id)
