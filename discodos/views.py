@@ -245,6 +245,7 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
                 log.info("Compiled Discogs result_list: {}".format(result_list))
                 return result_list
                 break
+        return False
 
     def tab_online_search_results(self, _result_list):
         self.print_help(tab(_result_list, tablefmt="simple",

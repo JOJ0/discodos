@@ -230,7 +230,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def add_discogs_track(self, rel_list, track_no, pos):
         log.info("discogs rel_list: {}".format(rel_list))
-        self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
+        if rel_list:
+            self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
+        else:
+            log.error("No release to add.")
+
 
     # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
