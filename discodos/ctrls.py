@@ -172,9 +172,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             for track in self.mix.get_full_mix(verbose = True):
                 if not track['track_pos'] < first_track:
                     self.cli.print_help(
-                            "Editing track {}  |  {} - {}  |  {} - {}".format(
-                      track['track_pos'], track['discogs_title'], track['d_track_no'], track['d_artist'],
-                      track['d_track_name']))
+                           "Editing track {}  |  {} - {}  |  {} - {}".format(
+                           track['track_pos'], track['discogs_title'], track['d_track_no'],
+                           track['d_artist'], track['d_track_name']))
                     track_details = self.mix.get_one_mix_track(track['track_pos'])
                     bulk_questions = []
                     for field in fields_list:

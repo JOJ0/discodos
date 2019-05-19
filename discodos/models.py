@@ -452,9 +452,10 @@ class Collection (Database):
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
-                release = db.search_release_id(self.db_conn, id_or_title)
+                release = self._select_simple(['*'], 'release',
+                        'discogs_id LIKE {}'.format(
+                        id_or_title, id_or_title), fetchone = True, orderby = 'd_artist')
                 if release:
-                    #return '| '+str(release[0][0])+' | '+ str(release[0][1])+' | '
                     return [release]
                 else:
                     release_not_found = None
@@ -470,10 +471,7 @@ class Collection (Database):
                 if releases:
                     log.debug("First found release: {}".format(releases[0]))
                     log.debug("All found releases: {}".format(releases))
-                    # return all releases (so it's a list for tabulate),
-                    # but only first one is used later on...
-                    #return [releases]
-                    return releases
+                    return releases # this is a list
                 else:
                     return None
             except Exception as Exc:
