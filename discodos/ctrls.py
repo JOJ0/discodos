@@ -302,7 +302,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
             for mix_track in mixed_tracks:
                 name, artist = "", ""
-                coll_ctrl.collection.rate_limit_slow_downer(remaining=10, sleep=2)
+                coll_ctrl.collection.rate_limit_slow_downer(remaining=20, sleep=3)
                 #try: # handle error 404 when release is not on discogs
                 # quick and dirty: 404 is handled in this method:
                 if coll_ctrl.collection.get_d_release(mix_track[2]):
@@ -532,7 +532,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         "Gathering your Discogs collection and importing necessary fields into DiscoBASE")
         insert_count = 0
         for r in self.collection.me.collection_folders[0].releases:
-            self.collection.rate_limit_slow_downer(remaining=5, sleep=2)
+            self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
             artists = self.collection.d_artists_to_str(r.release.artists)
             print("Release :", r.release.id, "-", artists, "-",  r.release.title)
             rowcount = self.collection.create_release(r.release.id, r.release.title,
