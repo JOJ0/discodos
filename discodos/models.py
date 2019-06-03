@@ -518,25 +518,25 @@ class Collection (Database):
     def search_release_id(self, release_id):
         return db.search_release_id(self.db_conn, release_id)
 
-    def create_release(self, release_id, release_title, release_artists):
+    def create_release(self, release_id, release_title, release_artists, d_coll = False):
         #return db.create_release(self.db_conn, release_id, release_title)
         c = self.db_conn.cursor()
         try:
-            c.execute(
-                    '''INSERT INTO release(discogs_id, discogs_title, import_timestamp, d_artist)
-                                      VALUES("{}", "{}", datetime('now', 'localtime'), "{}")'''.format(
-                                      release_id, release_title, release_artists))
+            c.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp,
+                                             d_artist, in_d_collection)
+                              VALUES("{}", "{}", datetime('now', 'localtime'), "{}", {})'''.format(
+                              release_id, release_title, release_artists, d_coll))
             log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
             return c.rowcount
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
                 log.warning("Release already in DiscoBASE, updating ...")
                 try:
-                    c.execute(
-                            '''UPDATE release SET (discogs_title, import_timestamp, d_artist)
-                                        = ("{}", datetime('now', 'localtime'), "{}")
-                                           WHERE discogs_id == {}'''.format(
-                                           release_title, release_artists, release_id))
+                    c.execute('''UPDATE release SET (discogs_title, import_timestamp,
+                                                     d_artist, in_d_collection)
+                                   = ("{}", datetime('now', 'localtime'), "{}", {})
+                                      WHERE discogs_id == {}'''.format(
+                                      release_title, release_artists, d_coll, release_id))
                     log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
                     return c.rowcount
                 except sqlerr as e:

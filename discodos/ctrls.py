@@ -301,13 +301,19 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
                 mixed_tracks = self.mix.get_all_tracks_in_mixes()
             for mix_track in mixed_tracks:
+                name, artist = "", ""
                 coll_ctrl.collection.rate_limit_slow_downer(remaining=10, sleep=2)
-                name = coll_ctrl.cli.d_tracklist_parse(
-                        coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
-                artist = coll_ctrl.collection.d_artists_parse(
-                           coll_ctrl.d.release(mix_track[2]).tracklist,
-                           mix_track[3],
-                           coll_ctrl.d.release(mix_track[2]).artists)
+                #try: # handle error 404 when release is not on discogs
+                # quick and dirty: 404 is handled in this method:
+                if coll_ctrl.collection.get_d_release(mix_track[2]):
+                    name = coll_ctrl.cli.d_tracklist_parse(
+                            coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
+                    artist = coll_ctrl.collection.d_artists_parse(
+                               coll_ctrl.d.release(mix_track[2]).tracklist,
+                               mix_track[3],
+                               coll_ctrl.d.release(mix_track[2]).artists)
+                else:
+                    print("") # space for readability
 
                 if name:
                     print("Adding track info: {} {} - {} - {}".format(
@@ -488,7 +494,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                             folder.add_release(release_id)
                             #import_release(conn, d, me, args.add_release_id)
                             #last_row_id = db.create_release(conn, result, collection_item = False)
-                            last_row_id = self.collection.create_release(result.id, result.title, artists)
+                            last_row_id = self.collection.create_release(result.id,
+                                    result.title, artists, d_coll = True)
                     if not last_row_id:
                         #self.cli.print_help("This is not the release you are looking for!")
                         self.cli.error_not_the_release()
@@ -515,7 +522,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
                     in_coll.release.id, artists, in_coll.release.title))
                 self.collection.create_release(in_coll.release.id, in_coll.release.title,
-                        self.collection.d_artists_to_str(in_coll.release.artists))
+                  self.collection.d_artists_to_str(in_coll.release.artists), d_coll = True)
             else:
                 self.cli.error_not_the_release()
 
@@ -529,7 +536,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             artists = self.collection.d_artists_to_str(r.release.artists)
             print("Release :", r.release.id, "-", artists, "-",  r.release.title)
             rowcount = self.collection.create_release(r.release.id, r.release.title,
-                    artists)
+                    artists, d_coll = True)
             # create_release will return False if unsuccessful
             if rowcount:
                 insert_count = insert_count + 1
