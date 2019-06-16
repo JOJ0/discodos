@@ -663,3 +663,12 @@ class Collection (Database):
                       "MODEL: d_artists_parse: several artists, returning combined named {}".format(
                         combined_name))
                     return combined_name
+
+    def get_releases_of_one_mix(self, start_pos = False):
+        if not start_pos:
+            where = "mix_id == {}".format(self.id)
+        else:
+            where = "mix_id == {} and track_pos >= {}".format(self.id, start_pos)
+        log.info("MODEL: Returning tracks of a mix.")
+        return self._select_simple(['*'], 'mix_track', where,
+                fetchone = False, orderby = 'track_pos')

@@ -344,6 +344,16 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         new_mix.db_conn.commit()
         self.cli.print_help("Copy mix successful. New ID is {}.".format(new_mix.id))
 
+    def update_in_d_coll(self, coll_ctrl, start_pos = False):
+        if coll_ctrl.ONLINE:
+            if self.mix.id_existing:
+                self.cli.print_help("Let's update Discogs collection field in current mixes releases...")
+                db_releases = self.mix.get_releases_of_one_mix(start_pos)
+            #else:
+            #    self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
+            #    mixed_tracks = self.mix.get_all_tracks_in_mixes()
+            for db_rel in db_releases:
+
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
 
