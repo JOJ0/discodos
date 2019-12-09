@@ -9,10 +9,13 @@ import time
 import datetime
 import argparse
 import sys
+from pathlib import Path
+import os
 
 from discodos.models import *
 from discodos.ctrls import *
 from discodos.views import *
+from discodos.utils import *
 
 # argparser init
 def argparser(argv):
@@ -47,12 +50,12 @@ def argparser(argv):
 def create_db_tables(_conn):
     sql_settings = "PRAGMA foreign_keys = ON;"
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
-                                       discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
-                                       discogs_title TEXT NOT NULL,
-                                       import_timestamp TEXT
-                                       d_artist TEXT,
-                                     in_d_collection INTEGER,
-                                        ); """
+                                     discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
+                                     discogs_title TEXT NOT NULL,
+                                     import_timestamp TEXT
+                                     d_artist TEXT,
+                                     in_d_collection INTEGER
+                                     ); """
     sql_create_mix_table = """ CREATE TABLE IF NOT EXISTS mix (
                                     mix_id INTEGER PRIMARY KEY,
                                     name TEXT,
@@ -73,7 +76,6 @@ def create_db_tables(_conn):
                                             REFERENCES mix(mix_id)
                                          ON DELETE CASCADE
                                          ON UPDATE CASCADE
-
                                         ); """
     sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
                                      d_release_id INTEGER NOT NULL,
@@ -137,15 +139,18 @@ def main():
     # DISCOGS API config
     userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
     appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
+    discobase_root = Path(os.path.dirname(os.path.abspath(__file__)))
+    discobase_path = discobase_root / "discobase.db"
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
       "This script sets up the DiscoBASE, and imports data from Discogs")
     log.info(vars(args))
+    log.info("discobase_path is: {}".format(discobase_path))
     #print(vars(args))
 
     # DB setup
-    conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
+    conn = db.create_conn(discobase_path)
 
     if args.update_db:
         print("Updating DB schema - EXPERIMENTAL")
