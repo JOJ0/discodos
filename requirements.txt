@@ -7,7 +7,6 @@ idna==2.8
 more-itertools==5.0.0
 oauthlib==3.0.1
 pathlib2==2.3.5
-pkg-resources==0.0.0
 pluggy==0.8.1
 py==1.7.0
 pytest==4.1.1
