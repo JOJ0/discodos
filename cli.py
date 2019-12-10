@@ -18,6 +18,8 @@ import urllib3.exceptions as urlerrors
 import pprint as pp
 #from tabulate import tabulate as tab
 #from sqlite3 import Error as sqlerr
+from pathlib import Path
+import os
 
 # argparser init
 def argparser(argv):
@@ -142,6 +144,8 @@ def main():
     # DISCOGS API CONFIG
     userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
     appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
+    discobase_root = Path(os.path.dirname(os.path.abspath(__file__)))
+    discobase_path = discobase_root / "discobase.db"
     # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)
@@ -152,7 +156,12 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    conn = db.create_conn("/Users/jojo/git/discodos/discobase.db")
+    log.info("discobase_path is: {}".format(discobase_path))
+    # also here refactoring is not through - conn should not be needed in future
+    # Objects derived from models.py should handle it themselves
+    # workaround for now:
+    db_obj = Database(db_file = discobase_path)
+    conn = db_obj.db_conn
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
     coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
 
