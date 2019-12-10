@@ -6,9 +6,12 @@ chardet==3.0.4
 idna==2.8
 more-itertools==5.0.0
 oauthlib==3.0.1
+pathlib2==2.3.5
+pkg-resources==0.0.0
 pluggy==0.8.1
 py==1.7.0
 pytest==4.1.1
+PyYAML==5.2
 requests==2.21.0
 six==1.12.0
 tabulate==0.8.3
