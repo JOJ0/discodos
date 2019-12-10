@@ -15,7 +15,6 @@ import os
 from discodos.models import *
 from discodos.ctrls import *
 from discodos.views import *
-from discodos.utils import *
 
 # argparser init
 def argparser(argv):
