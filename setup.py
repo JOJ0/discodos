@@ -1,5 +1,4 @@
-#!/usr/local/bin/python3
-# pip install discogs_client
+#!/usr/bin/env python3
 
 from discodos import db
 from discodos.utils import *
@@ -149,7 +148,10 @@ def main():
     #print(vars(args))
 
     # DB setup
-    conn = db.create_conn(discobase_path)
+    db_obj = Database(db_file = discobase_path)
+    # clumsy workaround for now - setup.py should be refactored to use
+    # the new Database object. db.functions will be removed in the future
+    conn = db_obj.db_conn
 
     if args.update_db:
         print("Updating DB schema - EXPERIMENTAL")
