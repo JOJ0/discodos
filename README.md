@@ -1,17 +1,29 @@
 # The geekiest Vinyl DJ playlist tool on the planet
 
-It's based on data pulled from your [Discogs](https://www.discogs.com) records collection. Stay tuned...
+This tool helps a Vinyl DJ to remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from one's [Discogs](https://www.discogs.com) records collection.
 
 ## Initial Setup
 
-You just have to install all the dependencies, which can be found in the requirements.tx.
+Create and activate a virtual Python environment, using the venv-tool of your choice.
+
+On Linux and Mac you could possibly use virtualenv.
+
+`virtualenv discodos; source discodos/bin/activate`
+
+Install the necessary dependencies into your environment!
 
 `pip install -r requirements.txt`
 
-When all is set, you should run `python setup.py` for the initial db setup. 
-When it is done, you should get the message `"All is Done!"`
+The setup script creates an empty database.
 
-After that you are all set to go. Create a new mix with: `python cli mix -c made_up_name`
-View your mix with: `python cli.py made_up_name`
+`./setup.py`
 
+You should find a file named `discobase.db` inside the root of your discodos folder.
 
+Create a new mix.
+
+`./cli.py mix -c new_mix_name`
+
+View your mix.
+
+`./cli.py new_mix_name`
