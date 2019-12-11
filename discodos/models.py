@@ -29,7 +29,7 @@ class Database (object):
 
     def create_conn(self, db_file):
         try:
-            conn = sqlite3.connect(db_file)
+            conn = sqlite3.connect(str(db_file)) # make sure it's a string
             return conn
         except sqlerr as e:
             log.error("DB-NEW: Connection error: %s", e)
