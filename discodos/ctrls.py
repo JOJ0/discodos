@@ -6,6 +6,7 @@ from discodos import log, db # db should only be in model.py
 from tabulate import tabulate as tab # should be only in views.py
 import pprint as p
 from datetime import time
+from discodos.gui import *
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
@@ -557,3 +558,23 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 print()
             else:
                 log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
+
+
+class Mix_ctrl_gui(Mix_ctrl_common):
+
+    
+    def view_mixes_list(self):
+        """
+        view a list of all mixes
+
+
+        @param
+        @return
+        @author
+        """
+        mixes_data = self.mix.get_all_mixes()
+        return mixes_data
+        
+
+
+    
