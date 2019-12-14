@@ -141,11 +141,10 @@ def argparser(argv):
 
 # MAIN
 def main():
-    # DISCOGS API CONFIG
-    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-    appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
-    discobase_root = Path(os.path.dirname(os.path.abspath(__file__)))
-    discobase_path = discobase_root / "discobase.db"
+    # DISCOGS API config
+    discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
+    conf = read_yaml(discodos_root / "config.yaml")
+    discobase = discodos_root / "discobase.db"
     # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)
@@ -156,14 +155,14 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    log.info("discobase_path is: {}".format(discobase_path))
+    log.info("discobase path is: {}".format(discobase))
     # also here refactoring is not through - conn should not be needed in future
     # Objects derived from models.py should handle it themselves
     # workaround for now:
-    db_obj = Database(db_file = discobase_path)
+    db_obj = Database(db_file = discobase)
     conn = db_obj.db_conn
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
-    coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
+    coll_ctrl = Coll_ctrl_cli(conn, user, conf['discogs_token'], conf['discogs_appid'])
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
