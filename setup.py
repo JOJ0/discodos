@@ -50,7 +50,7 @@ def create_db_tables(_conn):
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                      discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                                      discogs_title TEXT NOT NULL,
-                                     import_timestamp TEXT
+                                     import_timestamp TEXT,
                                      d_artist TEXT,
                                      in_d_collection INTEGER
                                      ); """
