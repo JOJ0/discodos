@@ -49,7 +49,7 @@ Import your collection to the DiscoBASE
 
 When the import is through you should be able to add your collection's tracks to the "mix" created above.
 
-./cli.py mix new_mix_name -a "Amon Tobin Killer Vanilla"
+`./cli.py mix new_mix_name -a "Amon Tobin Killer Vanilla"`
 
 Note that even though the tracks name actually is "The Killer's Vanilla" it will be found.
 
