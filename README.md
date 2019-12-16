@@ -32,7 +32,7 @@ Double check if your environment is active and you are using the pip binary inst
 `pip --version`
 
 (You should see something like this)
-'pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
+`pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
 
 Install the necessary dependencies into your environment!
 
@@ -61,7 +61,7 @@ Double check if your environment is active and you are using the pip binary inst
 `pip --version`
 
 (You should see something like this)
-'pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
+`pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
 
 Install the necessary dependencies into your environment!
 
@@ -80,10 +80,6 @@ The setup script creates an empty database.
 `./setup.py`
 
 You should find a file named `discobase.db` inside the root of your discodos folder.
-
-
-
-## Usage
 
 Create a new mix.
 
@@ -111,6 +107,9 @@ To access your Discogs collection you need to generate an API access token.
 Import your collection to the DiscoBASE
 
 `./setup.py -i`
+
+
+## Usage
 
 When the import is through you should be able to add your collection's tracks to the "mix" created above.
 
