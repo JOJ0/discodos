@@ -1,5 +1,6 @@
 from . import views
 from . import ctrls
+from . import models
 import tkinter as tk
 from tkinter import ttk
 
@@ -23,6 +24,25 @@ class main_frame():
         self.main_win.destroy()
         exit() 
 
+    # Instantiate the DB-Connector and load the Data
+
+    # DISCOGS API config
+    def mix_starter(self):
+        discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
+        conf = read_yaml(discodos_root / "config.yaml")
+        discobase = discodos_root / "discobase.db"
+        # SETUP / INIT
+        # DEBUG stuff
+        #log.info("dir(args): %s", dir(args))
+        # check cli args and set attributes
+        # also here refactoring is not through - conn should not be needed in future
+        # Objects derived from models.py should handle it themselves
+        # workaround for now:
+        db_obj = Database(db_file = discobase)
+        conn = db_obj.db_conn
+  
+  # Need to find offline mode to pull the data out of the db and insert in list
+
 
     #####################################################################################    
     # CREATE WIDGETS
@@ -31,7 +51,7 @@ class main_frame():
         self.mix_list = ttk.Treeview(self.main_win )
         self.mix_list.grid(row=0, column=0, sticky="ns")
 
-        self.mix_list["columns"]=("one","two","three")
+        self.mix_list["columns"]=("name","played", "venue", "created", "updated")
         self.mix_list.column("#0",  minwidth=4, stretch=tk.NO)
         self.mix_list.column("name", minwidth=80)
         self.mix_list.column("played",  minwidth=20, stretch=tk.NO)
@@ -46,4 +66,6 @@ class main_frame():
         self.mix_list.heading("created", text="Created",anchor=tk.W)
         self.mix_list.heading("updated", text="Updated",anchor=tk.W)
 
+        mix_ctrl = ctrls.Mix_ctrl_gui()
+        print(mix_list.view_mixes_list())
     
