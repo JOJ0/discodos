@@ -33,7 +33,7 @@ def read_yaml(yamlfile):
     """expects path/file"""
     try:
         with open(yamlfile, "r") as fyamlfile:
-            return yaml.load(fyamlfile)
+            return yaml.load(fyamlfile, Loader=yaml.SafeLoader)
     except IOError as errio:
         log.warn("Can't find %s \n\n", yamlfile)
         raise errio

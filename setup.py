@@ -50,7 +50,7 @@ def create_db_tables(_conn):
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                      discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                                      discogs_title TEXT NOT NULL,
-                                     import_timestamp TEXT
+                                     import_timestamp TEXT,
                                      d_artist TEXT,
                                      in_d_collection INTEGER
                                      ); """
@@ -135,20 +135,19 @@ def import_release(_conn, api_d, api_me, _release_id, force = False):
 # main program
 def main():
     # DISCOGS API config
-    userToken = "NcgNaeOXSCgCfBQsaeKhChNXqEQbKaNBQrayltht"
-    appIdentifier = "J0J0 Todos Discodos/0.0.1 +http://github.com/JOJ0"
-    discobase_root = Path(os.path.dirname(os.path.abspath(__file__)))
-    discobase_path = discobase_root / "discobase.db"
+    discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
+    conf = read_yaml(discodos_root / "config.yaml")
+    discobase = discodos_root / "discobase.db"
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
       "This script sets up the DiscoBASE, and imports data from Discogs")
     log.info(vars(args))
-    log.info("discobase_path is: {}".format(discobase_path))
+    log.info("discobase path is: {}".format(discobase))
     #print(vars(args))
 
     # DB setup
-    db_obj = Database(db_file = discobase_path)
+    db_obj = Database(db_file = discobase)
     # clumsy workaround for now - setup.py should be refactored to use
     # the new Database object. db.functions will be removed in the future
     conn = db_obj.db_conn
@@ -172,9 +171,9 @@ def main():
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
-    # PREPARE DISCOGS API
+    # PREPARE DISCOGS API and
     user = User_int(args)
-    coll_ctrl = Coll_ctrl_cli(conn, user, userToken, appIdentifier)
+    coll_ctrl = Coll_ctrl_cli(conn, user, conf['discogs_token'], conf['discogs_appid'])
 
     # ADD RELEASE TO DISCOGS COLLECTION
     if args.add_release_id:
