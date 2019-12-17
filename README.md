@@ -74,6 +74,21 @@ Install the necessary dependencies into your environment!
 
 ## Initial Setup
 
+To access your Discogs collection you need to generate an API access token.
+
+- Login to discogs.com
+- Click your avatar (top right)
+- Select _Settings_
+- Switch to section _Developers_
+- Click _Generate new token_
+- Create a file named `config.yaml` inside the discodos root dir (next to the files `setup.py` and `cli.py`) that looks like this:
+
+ ```
+ ---
+ discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
+ discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
+ ```
+
 Change into the cloned repo directory
 
 Linux/Mac
@@ -97,21 +112,6 @@ Create a new mix.
 View your mix.
 
 `./cli.py mix new_mix_name`
-
-To access your Discogs collection you need to generate an API access token.
-
-- Login to discogs.com
-- Click your avatar (top right)
-- Select _Settings_
-- Switch to section _Developers_
-- Click _Generate new token_
-- Create a file named `config.yaml` inside the discodos root dir (next to the files `setup.py` and `cli.py`) that looks like this:
-
- ```
- ---
- discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
- discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
- ```
 
 Import your collection to the DiscoBASE
 
