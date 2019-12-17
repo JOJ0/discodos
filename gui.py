@@ -44,6 +44,7 @@ class main_frame():
 
         self.db_obj = models.Database(db_file = self.discobase)
         #Debugging DB Connection
+        #TODO Add Logging 
         try:
             self.conn = self.db_obj.db_conn
             print("DB Connection Success")
@@ -60,8 +61,16 @@ class main_frame():
 
     
     def show_mix(self, event):
-        mix = models.Mix(self.conn, self.mix_list.selection()[0])
-        print(mix)
+
+        curItem = self.mix_list.focus()
+        # print(self.mix_list.item(curItem,"text"))
+        mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
+        mix_data = mix.get_full_mix(verbose = False)       
+        # print(mix_data[0][1])
+
+        for i, row in enumerate(mix_data):
+            self.tracks_list.insert("" , i, text=row["d_track_no"])
+
 
         
         # item = self.mix_list.selection()[0]
