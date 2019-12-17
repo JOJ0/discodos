@@ -56,7 +56,7 @@ Create and activate a virtual Python environment!
 
 ```
 python -m venv "%HOMEPATH%/python-envs/discodos"
-"%HOMEPATH%"/python-envs/discodos/Scripts/activate.bat
+"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
 ```
 
 Double check if your environment is active and you are using the pip binary installed inside your venvs directory.
@@ -76,7 +76,13 @@ Install the necessary dependencies into your environment!
 
 Change into the cloned repo directory
 
-`cd discodos`
+Linux/Mac
+
+`cd "$HOME/discodos"`
+
+Windows
+
+`cd "%HOMEPATH%/discodos"`
 
 The setup script creates an empty database.
 
