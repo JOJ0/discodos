@@ -46,8 +46,11 @@ Clone the github repo to your homedirectory
 ```
 cd %HOMEPATH%
 git clone https://github.com/JOJ0/discodos.git
-dir discodos
 ```
+
+Check if the directory has been created
+
+`dir discodos`
 
 Create and activate a virtual Python environment!
 
