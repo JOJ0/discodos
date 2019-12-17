@@ -52,7 +52,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         """
         mixes_data = self.mix.get_all_mixes()
         self.cli.tab_mixes_list(mixes_data)
-        return(mixes_data)
 
     def view(self):
         if self.mix.id_existing:
