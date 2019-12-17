@@ -60,8 +60,9 @@ class main_frame():
 
     
     def show_mix(self, event):
-        mix = models.Mix(self.conn, self.mix_list.selection()[0][1])
+        mix = models.Mix(self.conn, self.mix_list.selection()[0])
         print(mix)
+
         
         # item = self.mix_list.selection()[0]
         # print("you clicked on", self.mix_list.item(item,"text"))
