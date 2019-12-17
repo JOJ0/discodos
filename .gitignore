@@ -2,3 +2,4 @@ discodos/__pycache__/
 discobase.db
 src/
 config.yaml
+/.vscode
