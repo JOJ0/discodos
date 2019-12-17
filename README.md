@@ -55,8 +55,8 @@ Check if the directory has been created
 Create and activate a virtual Python environment!
 
 ```
-python -m venv %HOMEPATH%/python-envs/discodos
-%HOMEPATH%/python-envs/discodos/Scripts/activate.bat
+python -m venv "%HOMEPATH%/python-envs/discodos"
+"%HOMEPATH%"/python-envs/discodos/Scripts/activate.bat
 ```
 
 Double check if your environment is active and you are using the pip binary installed inside your venvs directory.
