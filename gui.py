@@ -69,7 +69,9 @@ class main_frame():
         # print(mix_data[0][1])
 
         for i, row in enumerate(mix_data):
-            self.tracks_list.insert("" , i, text=row["d_track_no"])
+            self.tracks_list.insert("" , i, text=row["d_track_no"], values=(row["key"], row["bpm"], row["d_track_name"]))
+
+            # IndexError: No item with that key -> Which keys are in a mix-object??
 
 
         
