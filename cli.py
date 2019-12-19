@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-#from discodos import log, db
+from discodos import log
 from discodos.utils import *
-#from discodos.models import *
 from discodos.ctrls import *
 from discodos.views import *
 import discogs_client
@@ -16,8 +15,6 @@ import discogs_client.exceptions as errors
 import requests.exceptions as reqerrors
 import urllib3.exceptions as urlerrors
 import pprint as pp
-#from tabulate import tabulate as tab
-#from sqlite3 import Error as sqlerr
 from pathlib import Path
 import os
 
@@ -141,13 +138,11 @@ def argparser(argv):
 
 # MAIN
 def main():
-    # DISCOGS API config
-    discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
-    conf = read_yaml(discodos_root / "config.yaml")
-    discobase = discodos_root / "discobase.db"
     # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)
+    # CONFIGURATOR INIT / DISCOGS API conf
+    conf = Config()
     # DEBUG stuff
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
@@ -155,14 +150,13 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    log.info("discobase path is: {}".format(discobase))
     # also here refactoring is not through - conn should not be needed in future
     # Objects derived from models.py should handle it themselves
     # workaround for now:
-    db_obj = Database(db_file = discobase)
+    db_obj = Database(db_file = conf.discobase)
     conn = db_obj.db_conn
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
-    coll_ctrl = Coll_ctrl_cli(conn, user, conf['discogs_token'], conf['discogs_appid'])
+    coll_ctrl = Coll_ctrl_cli(conn, user, conf.discogs_token, conf.discogs_appid)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
