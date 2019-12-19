@@ -45,7 +45,7 @@ class Database (object):
                 log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
             else:
                 c.execute(sql)
-            log.info("DB-NEW: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
+            log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount, c.lastrowid))
             return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
