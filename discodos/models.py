@@ -85,13 +85,13 @@ class Database (object):
         if rows:
             if len(rows) == 0:
                 log.info('DB-NEW: Nothing found - rows length 0.')
-                return False
+                return [] # FIXME was False before, not sure if this will break things
             else:
                 log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
                 return rows
         else:
             log.info('DB-NEW: Nothing found - rows NoneType.')
-            return False
+            return [] # FIXME was False before, not sure if this will break things
 
 # mix model class
 class Mix (Database):
