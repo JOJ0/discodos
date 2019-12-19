@@ -68,8 +68,9 @@ class Config():
             log.error("Missing key in config.yaml: {}".format(ke))
             raise SystemExit(3)
         try: # optional setting log_level
-            self.loglevel = self.conf["log_level"]
+            self.log_level = self.conf["log_level"]
             log.info("Config.log_level set to {}.".format(
                 self.log_level))
         except KeyError:
+            self.log_level = "WARNING"
             log.warn("Config.log_level not set, will take from argparser or default.")

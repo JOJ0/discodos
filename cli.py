@@ -138,11 +138,12 @@ def argparser(argv):
 
 # MAIN
 def main():
+    # CONFIGURATOR INIT / DISCOGS API conf
+    conf = Config()
+    log.setLevel(conf.log_level)
     # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)
-    # CONFIGURATOR INIT / DISCOGS API conf
-    conf = Config()
     # DEBUG stuff
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
