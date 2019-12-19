@@ -55,8 +55,8 @@ Check if the directory has been created
 Create and activate a virtual Python environment!
 
 ```
-python -m venv %HOMEPATH%/python-envs/discodos
-%HOMEPATH%/python-envs/discodos/Scripts/activate.bat
+python -m venv "%HOMEPATH%/python-envs/discodos"
+"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
 ```
 
 Double check if your environment is active and you are using the pip binary installed inside your venvs directory.
@@ -74,24 +74,6 @@ Install the necessary dependencies into your environment!
 
 ## Initial Setup
 
-Change into the cloned repo directory
-
-`cd discodos`
-
-The setup script creates an empty database.
-
-`./setup.py`
-
-You should find a file named `discobase.db` inside the root of your discodos folder.
-
-Create a new mix.
-
-`./cli.py mix -c new_mix_name`
-
-View your mix.
-
-`./cli.py mix new_mix_name`
-
 To access your Discogs collection you need to generate an API access token.
 
 - Login to discogs.com
@@ -106,6 +88,30 @@ To access your Discogs collection you need to generate an API access token.
  discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
  discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
  ```
+
+Change into the cloned repo directory
+
+Linux/Mac
+
+`cd "$HOME/discodos"`
+
+Windows
+
+`cd "%HOMEPATH%/discodos"`
+
+The setup script creates an empty database.
+
+`./setup.py`
+
+You should find a file named `discobase.db` inside the root of your discodos folder.
+
+Create a new mix.
+
+`./cli.py mix -c new_mix_name`
+
+View your mix.
+
+`./cli.py mix new_mix_name`
 
 Import your collection to the DiscoBASE
 

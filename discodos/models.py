@@ -45,7 +45,7 @@ class Database (object):
                 log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
             else:
                 c.execute(sql)
-            log.info("DB-NEW: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
+            log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount, c.lastrowid))
             return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
@@ -85,13 +85,13 @@ class Database (object):
         if rows:
             if len(rows) == 0:
                 log.info('DB-NEW: Nothing found - rows length 0.')
-                return False
+                return [] # FIXME was False before, not sure if this will break things
             else:
                 log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
                 return rows
         else:
             log.info('DB-NEW: Nothing found - rows NoneType.')
-            return False
+            return [] # FIXME was False before, not sure if this will break things
 
 # mix model class
 class Mix (Database):
