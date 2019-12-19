@@ -3,3 +3,8 @@ discobase.db
 src/
 config.yaml
 __pycache__
+*.swp
+curls.txt
+*.pyc
+.DS_store
+issues.txt
