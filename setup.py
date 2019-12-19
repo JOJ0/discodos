@@ -134,16 +134,13 @@ def import_release(_conn, api_d, api_me, _release_id, force = False):
 
 # main program
 def main():
-    # DISCOGS API config
-    discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
-    conf = read_yaml(discodos_root / "config.yaml")
-    discobase = discodos_root / "discobase.db"
+    # CONFIGURATOR INIT / DISCOGS API conf
+    conf = Config()
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
       "This script sets up the DiscoBASE, and imports data from Discogs")
     log.info(vars(args))
-    log.info("discobase path is: {}".format(discobase))
     #print(vars(args))
 
     # DB setup
@@ -173,7 +170,7 @@ def main():
 
     # PREPARE DISCOGS API and
     user = User_int(args)
-    coll_ctrl = Coll_ctrl_cli(conn, user, conf['discogs_token'], conf['discogs_appid'])
+    coll_ctrl = Coll_ctrl_cli(conn, user, conf.discogs_token, conf.discogs_appid)
 
     # ADD RELEASE TO DISCOGS COLLECTION
     if args.add_release_id:
