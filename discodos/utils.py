@@ -34,7 +34,7 @@ def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
 def read_yaml(yamlfile):
     """expects path/file"""
     try:
-        with open(yamlfile, "r") as fyamlfile:
+        with open(str(yamlfile), "r") as fyamlfile:
             return yaml.load(fyamlfile, Loader=yaml.SafeLoader)
     except IOError as errio:
         log.error("Can't find %s.", yamlfile)
@@ -50,7 +50,7 @@ def read_yaml(yamlfile):
         raise SystemExit(3)
     except Exception as err:
         log.error(" trying to load %s.", yamlfile)
-        #raise err
+        raise err
         raise SystemExit(3)
 
 class Config():
