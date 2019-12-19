@@ -144,7 +144,7 @@ def main():
     #print(vars(args))
 
     # DB setup
-    db_obj = Database(db_file = discobase)
+    db_obj = Database(db_file = conf.discobase)
     # clumsy workaround for now - setup.py should be refactored to use
     # the new Database object. db.functions will be removed in the future
     conn = db_obj.db_conn
