@@ -19,6 +19,10 @@ from tabulate import tabulate as tab
 
 class main_frame():
     def __init__(self):
+
+        self.mix_window_started = False
+        self.track_window_started = False
+
         self.main_win = tk.Tk()                           
         self.main_win.geometry("800x600")                # Fixed size for now, maybe scalable later
         # self.main_win.resizable(False, False)    
@@ -71,6 +75,14 @@ class main_frame():
 
         self.mix_list.bind('<<TreeviewSelect>>', self.show_mix)
 
+        try:
+            start_child_id = self.mix_list.get_children()[0]
+            self.mix_list.selection_set(start_child_id)
+            log.debug("Set Focus on first Item")
+        except:
+            log.debug("Couldn't Set Focus on First Item")
+            self.status.set("Couldn't Set Focus on First Item")
+
     
     def show_mix(self, event):
 
@@ -101,9 +113,22 @@ class main_frame():
             self.status.set("Mix Data is " + str(mix_data)) 
             self.tracks_list.delete(*self.tracks_list.get_children())
 
+
     def open_widget(self, view):
-        if view == "mix":
-            self.mix_edit_win = edit_mix_view(self.main_win)
+        if view == "mix" and not self.mix_window_started:
+            curItem = self.mix_list.focus()
+            try:
+                mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
+                mix_data = mix.get_mix_info() 
+                log.debug("Retrieved Mix Info")   
+                self.status.set("Retrieved Mix Info") 
+                self.mix_edit_win = edit_mix_view(self.main_win, mix_data)  
+                self.mix_window_started = True
+            except: 
+                log.error("Getting Mix Data failed")
+                self.status.set("Getting Mix Data failed")  
+            
+
         elif view == "track":
             self.track_edit_win = edit_track_info(self.main_win)
 
@@ -188,12 +213,14 @@ class main_frame():
         self.new_mix_btn = tk.Button(self.btn_frame, text="New Mix")
         self.edit_mix_btn = tk.Button(self.btn_frame, text="Edit Mix", command=lambda: self.open_widget("mix"))
         self.del_mix_btn = tk.Button(self.btn_frame, text="Delete Mix")
-        self.edit_track_btn = tk.Button(self.btn_frame, text="Edit Track", command=lambda: self.open_widget("track"))
+        self.edit_track_btn = tk.Button(self.btn_frame, text="Edit Track Info", command=lambda: self.open_widget("track"))
+        self.rmv_track_btn = tk.Button(self.btn_frame, text="Remove Track")
 
         self.new_mix_btn.pack(side="left")
         self.edit_mix_btn.pack(side="left")
         self.del_mix_btn.pack(side="left")
         self.edit_track_btn.pack(side="right")
+        self.rmv_track_btn.pack(side="right")
         
 
         self.btn_frame.pack(side="bottom", fill="x", expand=1, padx=5)
