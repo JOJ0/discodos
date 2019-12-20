@@ -6,6 +6,8 @@ from discodos import ctrls
 from discodos import models
 from discodos import utils
 from discodos import log
+from discodos.widgets import edit_mix_view
+from discodos.widgets import edit_track_info
 import os
 from pathlib import Path
 import tkinter as tk
@@ -83,12 +85,12 @@ class main_frame():
             self.status.set("Getting Mix Data failed")  
 
             # TODO
-            # Everythings working except RELEASE and TRACK NOTES
+            # Everything's working except RELEASE
 
         if mix_data is not False:
             for i, row in enumerate(mix_data):
                 try:
-                    self.tracks_list.insert("" , i, text="", values=(row["d_artist"], row["d_track_name"], row["d_track_no"], row["key"], row["bpm"], row["key_notes"], row["trans_rating"], row["trans_notes"]))
+                    self.tracks_list.insert("" , i, text="", values=(row["d_artist"], row["d_track_name"], row["d_track_no"], row["key"], row["bpm"], row["key_notes"], row["trans_rating"], row["trans_notes"], row["notes"]))
                     log.info("Inserted Track row")
                     self.status.set("Inserted Track row")  
                 except:
@@ -99,11 +101,11 @@ class main_frame():
             self.status.set("Mix Data is " + str(mix_data)) 
             self.tracks_list.delete(*self.tracks_list.get_children())
 
-
-
-        
-        # item = self.mix_list.selection()[0]
-        # print("you clicked on", self.mix_list.item(item,"text"))
+    def open_widget(self, view):
+        if view == "mix":
+            self.mix_edit_win = edit_mix_view(self.main_win)
+        elif view == "track":
+            self.track_edit_win = edit_track_info(self.main_win)
 
 
 
@@ -184,12 +186,14 @@ class main_frame():
         self.btn_frame = tk.Frame(self.main_win)
         
         self.new_mix_btn = tk.Button(self.btn_frame, text="New Mix")
-        self.edit_mix_btn = tk.Button(self.btn_frame, text="Edit Mix")
+        self.edit_mix_btn = tk.Button(self.btn_frame, text="Edit Mix", command=lambda: self.open_widget("mix"))
         self.del_mix_btn = tk.Button(self.btn_frame, text="Delete Mix")
+        self.edit_track_btn = tk.Button(self.btn_frame, text="Edit Track", command=lambda: self.open_widget("track"))
 
         self.new_mix_btn.pack(side="left")
         self.edit_mix_btn.pack(side="left")
         self.del_mix_btn.pack(side="left")
+        self.edit_track_btn.pack(side="right")
         
 
         self.btn_frame.pack(side="bottom", fill="x", expand=1, padx=5)
