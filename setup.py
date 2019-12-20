@@ -40,8 +40,13 @@ def argparser(argv):
         type=int,
         help="add release ID to collection")
     arguments = parser.parse_args(argv[1:])
+    log.info("log_level set to {} via config.yaml or default".format(log.level))
     # Sets log level to WARN going more verbose for each new -v.
-    log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
+    cli_level = max(3 - arguments.verbose_count, 0) * 10
+    #print("cli_level: {}".format(cli_level))
+    if cli_level < log.level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.setLevel(cli_level)
+        log.info("log_level override via cli. Set to {}".format(log.level))
     return arguments 
 
 # initial db setup
