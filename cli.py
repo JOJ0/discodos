@@ -224,16 +224,21 @@ def main():
             mix_ctrl.delete_track(args.delete_track_pos)
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            if coll_ctrl.ONLINE:
-                # this returns a online or offline releases type object depending on models state:
-                discogs_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                mix_ctrl.add_discogs_track(discogs_rel_found, False,
-                                            args.mix_mode_add_at_pos)
+            if mix_ctrl.mix.id_existing: # accessing a mix attr directly is bad practice
+                if coll_ctrl.ONLINE:
+                    # search_release returns an online or offline releases type object
+                    # depending on the models online-state
+                    discogs_rel_found = coll_ctrl.search_release(
+                            args.add_release_to_mix)
+                    mix_ctrl.add_discogs_track(discogs_rel_found, False,
+                            args.mix_mode_add_at_pos)
+                else:
+                    database_rel_found = coll_ctrl.search_release(
+                            args.add_release_to_mix)
+                    mix_ctrl.add_offline_track(database_rel_found, False,
+                            args.mix_mode_add_at_pos)
             else:
-                database_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                mix_ctrl.add_offline_track(database_rel_found, False,
-                                            args.mix_mode_add_at_pos)
-
+                log.error("Mix not existing.")
         #### COPY A MIX
         elif user.WANTS_TO_COPY_MIX:
             mix_ctrl.copy_mix()
