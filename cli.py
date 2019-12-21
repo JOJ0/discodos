@@ -265,22 +265,11 @@ def main():
     elif user.WANTS_TRACK_REPORT:
         coll_ctrl.track_report(args.track_search)
 
-    # most importantly commit stuff to DB
-    #time.sleep(10)
-    log.debug("DB commiting...")
-    conn.commit()
-    log.debug("DB closing...")
-    conn.close()
-    log.debug("DB closed.")
-
 # __MAIN try/except wrap
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        # most importantly commit stuff to DB
-        #conn.commit()
-        #conn.close()
         log.error('Program interrupted!')
     #finally:
         #log.shutdown()
