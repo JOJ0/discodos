@@ -371,11 +371,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     @author
     """
 
-    def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier):
+    def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
+            _db_file = False):
         self.user = _user_int # take an instance of the User_int class and set as attribute
-        self.db_conn = _db_conn
         self.user = _user_int
-        self.collection = Collection(self.db_conn)
+        self.collection = Collection(_db_conn, _db_file)
         self.cli = Collection_view_cli() # instantiate cli frontend class 
         if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
