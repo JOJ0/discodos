@@ -10,6 +10,7 @@ import urllib3.exceptions as urlerrors
 from sqlite3 import Error as sqlerr
 import sqlite3
 import time
+from datetime import datetime
 
 class Database (object):
 
@@ -35,7 +36,7 @@ class Database (object):
             log.error("DB-NEW: Connection error: %s", e)
         return None
 
-    def execute_sql(self, sql, values_tuple = False):
+    def execute_sql(self, sql, values_tuple = False, raise_err = False):
         '''used for eg. creating tables or inserts'''
         log.info("DB-NEW: Executing sql: %s", sql)
         try:
@@ -48,11 +49,16 @@ class Database (object):
                     c.execute(sql)
                 log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount,
                     c.lastrowid))
-                return c.rowcount
+                #log.info("DB-NEW: Committing NOW")
+                #self.db_conn.commit()
+            log.info("DB-NEW: Committing via context close NOW")
+            return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
             log.error("DB-NEW: %s", e.args[0])
-            #raise e
+            if raise_err:
+                log.info("DB-NEW: Raising error to upper level.")
+                raise e
             return False
 
     def configure_db(self):
@@ -524,26 +530,27 @@ class Collection (Database):
         return db.search_release_id(self.db_conn, release_id)
 
     def create_release(self, release_id, release_title, release_artists, d_coll = False):
-        #return db.create_release(self.db_conn, release_id, release_title)
-        c = self.db_conn.cursor()
         try:
-            c.execute('''INSERT INTO release(discogs_id, discogs_title, import_timestamp,
-                                             d_artist, in_d_collection)
-                              VALUES("{}", "{}", datetime('now', 'localtime'), "{}", {})'''.format(
-                              release_id, release_title, release_artists, d_coll))
-            log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
-            return c.rowcount
+            insert_sql = '''INSERT OR FAIL INTO release(discogs_id, discogs_title,
+                                    import_timestamp, d_artist, in_d_collection)
+                                    VALUES(?, ?, ?, ?, ?)'''
+            in_tuple = (release_id, release_title, datetime.today().isoformat(' ', 'seconds'),
+                    release_artists, d_coll)
+            rowcnt = self.execute_sql(insert_sql, in_tuple, raise_err = True)
+            log.info("MODEL: rowcount: %d", rowcnt)
+            return rowcnt
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
                 log.warning("Release already in DiscoBASE, updating ...")
                 try:
-                    c.execute('''UPDATE release SET (discogs_title, import_timestamp,
-                                                     d_artist, in_d_collection)
-                                   = ("{}", datetime('now', 'localtime'), "{}", {})
-                                      WHERE discogs_id == {}'''.format(
-                                      release_title, release_artists, d_coll, release_id))
-                    log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
-                    return c.rowcount
+                    upd_sql = '''UPDATE release SET (discogs_title,
+                        import_timestamp, d_artist, in_d_collection)
+                        = (?, ?, ?, ?) WHERE discogs_id == ?;'''
+                    upd_tuple = (release_title, datetime.today().isoformat(' ', 'seconds'),
+                        release_artists, d_coll, release_id)
+                    rowcnt = self.execute_sql(upd_sql, upd_tuple, raise_err = True)
+                    log.info("MODEL: rowcount: %d", rowcnt)
+                    return rowcnt
                 except sqlerr as e:
                     log.error("MODEL: %s", e.args[0])
                     return False

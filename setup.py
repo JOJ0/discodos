@@ -167,6 +167,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        #db_obj.close_conn()
     except KeyboardInterrupt:
         log.error('Program interrupted!')
 
