@@ -50,7 +50,7 @@ def argparser(argv):
     return arguments 
 
 # initial db setup
-def create_db_tables(_conn):
+def create_db_tables(_db_obj):
     sql_settings = "PRAGMA foreign_keys = ON;"
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                      discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
@@ -106,12 +106,12 @@ def create_db_tables(_conn):
                                         #    REFERENCES track(d_release_id)
                                         #FOREIGN KEY (d_track_no)
                                         #    REFERENCES track(d_track_no)
-    db.create_table(_conn, sql_settings)
-    db.create_table(_conn, sql_create_release_table)
-    db.create_table(_conn, sql_create_mix_table)
-    db.create_table(_conn, sql_create_mix_track_table)
-    db.create_table(_conn, sql_create_track_table)
-    db.create_table(_conn, sql_create_track_ext_table)
+    _db_obj.execute_sql(sql_settings)
+    _db_obj.execute_sql(sql_create_release_table)
+    _db_obj.execute_sql(sql_create_mix_table)
+    _db_obj.execute_sql(sql_create_mix_track_table)
+    _db_obj.execute_sql(sql_create_track_table)
+    _db_obj.execute_sql(sql_create_track_ext_table)
 
 # import specific release ID into DB
 def import_release(_conn, api_d, api_me, _release_id, force = False):
@@ -169,7 +169,7 @@ def main():
         raise SystemExit(0)
 
     # create DB tables if not existing already
-    create_db_tables(conn)
+    create_db_tables(db_obj)
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
