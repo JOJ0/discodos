@@ -132,7 +132,7 @@ class Mix (Database):
             # (default value, should only show mix list)
             if not self.name == "all":
                 try:
-                    mix_id_tuple = db.get_mix_id(db_conn, self.name)
+                    mix_id_tuple = db.get_mix_id(self.db_conn, self.name)
                     log.info('%s', mix_id_tuple)
                     self.id = mix_id_tuple[0]
                     self.id_existing = True

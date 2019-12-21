@@ -156,13 +156,9 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    # also here refactoring is not through - conn should not be needed in future
-    # Objects derived from models.py should handle it themselves
-    # workaround for now:
-    db_obj = Database(db_file = conf.discobase)
-    conn = db_obj.db_conn
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
-    coll_ctrl = Coll_ctrl_cli(conn, user, conf.discogs_token, conf.discogs_appid)
+    coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
+            conf.discobase)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -174,12 +170,12 @@ def main():
             #                              args.track_to_add, args.add_at_pos)
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             # initialize a mix_ctrl object from release mode
-            mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
+            mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
             mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add, args.add_at_pos)
             mix_ctrl.view()
         else:
             database_rel_found = coll_ctrl.search_release(searchterm)
-            mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
+            mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
             mix_ctrl.add_offline_track(database_rel_found, args.track_to_add, args.add_at_pos)
             mix_ctrl.view()
 
@@ -188,7 +184,7 @@ def main():
     ### NO MIX ID GIVEN ###################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
         # we instantiate a mix controller object
-        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user) # conn = False, init from file
+        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
         else:
@@ -198,7 +194,7 @@ def main():
     ### SHOW MIX DETAILS ##################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
-        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         #coll_ctrl = Coll_ctrl_cli(conn, user)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
@@ -260,7 +256,7 @@ def main():
     ### TRACK MODE
     #if user.WANTS_TO_TRACK_SEARCH:
     if user.WANTS_TO_PULL_TRACK_INFO:
-        mix_ctrl = Mix_ctrl_cli(conn, False, user)
+        mix_ctrl = Mix_ctrl_cli(False, False, user, conf.discobase)
         mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
     elif user.WANTS_TRACK_REPORT:
         coll_ctrl.track_report(args.track_search)
