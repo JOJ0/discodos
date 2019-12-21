@@ -113,30 +113,6 @@ def create_db_tables(_db_obj):
     _db_obj.execute_sql(sql_create_track_table)
     _db_obj.execute_sql(sql_create_track_ext_table)
 
-# import specific release ID into DB
-def import_release(_conn, api_d, api_me, _release_id, force = False):
-    #print(dir(me.collection_folders[0].releases))
-    #print(dir(me))
-    #print(me.collection_item)
-    #if not force == True:
-    print_help("Asking Discogs for release ID {:d}".format(
-           _release_id))
-    result = api_d.release(_release_id)
-    print_help("Release ID is valid: "+result.title+"\n"+
-               "Let's see if it's in your collection, this might take some time...")
-
-    last_row_id = False
-    for r in api_me.collection_folders[0].releases:
-        #rate_limit_slow_downer(d, remaining=5, sleep=2)
-        if r.release.id == _release_id:
-            print("Found it in collection:", r.release.id, "-", r.release.title)
-            print("Importing to DISCOBASE.\n")
-            #last_row_id = db.create_release(_conn, r)
-            last_row_id = db.create_release(_conn, r.release.id, r.release.title)
-            break
-    if not last_row_id:
-        print_help("This is not the release you are looking for!")
-
 # main program
 def main():
     # CONFIGURATOR INIT / DISCOGS API conf
@@ -150,9 +126,6 @@ def main():
 
     # DB setup
     db_obj = Database(db_file = conf.discobase)
-    # clumsy workaround for now - setup.py should be refactored to use
-    # the new Database object. db.functions will be removed in the future
-    conn = db_obj.db_conn
 
     if args.update_db:
         print("Updating DB schema - EXPERIMENTAL")
@@ -173,7 +146,8 @@ def main():
 
     # PREPARE DISCOGS API and
     user = User_int(args)
-    coll_ctrl = Coll_ctrl_cli(conn, user, conf.discogs_token, conf.discogs_appid)
+    coll_ctrl = Coll_ctrl_cli(db_obj.db_conn, user, conf.discogs_token,
+            conf.discogs_appid)
 
     # ADD RELEASE TO DISCOGS COLLECTION
     if args.add_release_id:
@@ -188,11 +162,6 @@ def main():
         else:
             # IMPORT SPECIFIC RELEASE ID
             coll_ctrl.import_release(args.release_id[0])
-
-    conn.commit()
-    conn.close()
-    print("Done!")
-
 
 # __main__ try/except wrap
 if __name__ == "__main__":
