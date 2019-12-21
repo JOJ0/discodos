@@ -40,12 +40,17 @@ def argparser(argv):
         type=int,
         help="add release ID to collection")
     arguments = parser.parse_args(argv[1:])
+    log.info("log_level set to {} via config.yaml or default".format(log.level))
     # Sets log level to WARN going more verbose for each new -v.
-    log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
+    cli_level = max(3 - arguments.verbose_count, 0) * 10
+    #print("cli_level: {}".format(cli_level))
+    if cli_level < log.level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.setLevel(cli_level)
+        log.info("log_level override via cli. Set to {}".format(log.level))
     return arguments 
 
 # initial db setup
-def create_db_tables(_conn):
+def create_db_tables(_db_obj):
     sql_settings = "PRAGMA foreign_keys = ON;"
     sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
                                      discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
@@ -101,36 +106,12 @@ def create_db_tables(_conn):
                                         #    REFERENCES track(d_release_id)
                                         #FOREIGN KEY (d_track_no)
                                         #    REFERENCES track(d_track_no)
-    db.create_table(_conn, sql_settings)
-    db.create_table(_conn, sql_create_release_table)
-    db.create_table(_conn, sql_create_mix_table)
-    db.create_table(_conn, sql_create_mix_track_table)
-    db.create_table(_conn, sql_create_track_table)
-    db.create_table(_conn, sql_create_track_ext_table)
-
-# import specific release ID into DB
-def import_release(_conn, api_d, api_me, _release_id, force = False):
-    #print(dir(me.collection_folders[0].releases))
-    #print(dir(me))
-    #print(me.collection_item)
-    #if not force == True:
-    print_help("Asking Discogs for release ID {:d}".format(
-           _release_id))
-    result = api_d.release(_release_id)
-    print_help("Release ID is valid: "+result.title+"\n"+
-               "Let's see if it's in your collection, this might take some time...")
-
-    last_row_id = False
-    for r in api_me.collection_folders[0].releases:
-        #rate_limit_slow_downer(d, remaining=5, sleep=2)
-        if r.release.id == _release_id:
-            print("Found it in collection:", r.release.id, "-", r.release.title)
-            print("Importing to DISCOBASE.\n")
-            #last_row_id = db.create_release(_conn, r)
-            last_row_id = db.create_release(_conn, r.release.id, r.release.title)
-            break
-    if not last_row_id:
-        print_help("This is not the release you are looking for!")
+    _db_obj.execute_sql(sql_settings)
+    _db_obj.execute_sql(sql_create_release_table)
+    _db_obj.execute_sql(sql_create_mix_table)
+    _db_obj.execute_sql(sql_create_mix_track_table)
+    _db_obj.execute_sql(sql_create_track_table)
+    _db_obj.execute_sql(sql_create_track_ext_table)
 
 # main program
 def main():
@@ -145,32 +126,28 @@ def main():
 
     # DB setup
     db_obj = Database(db_file = conf.discobase)
-    # clumsy workaround for now - setup.py should be refactored to use
-    # the new Database object. db.functions will be removed in the future
-    conn = db_obj.db_conn
 
     if args.update_db:
         print("Updating DB schema - EXPERIMENTAL")
         sql_settings = "PRAGMA foreign_keys = OFF;"
-        db.create_table(conn, sql_settings)
+        db_obj.execute(sql_settings)
         sql_alter_something = """ALTER TABLE track ADD
                                         d_artist; """
-        db.create_table(conn, sql_alter_something)
+        db_obj.execute(sql_alter_something)
         sql_settings = "PRAGMA foreign_keys = ON;"
-        db.create_table(conn, sql_settings)
-        conn.commit()
-        conn.close()
+        db_obj.execute(sql_settings)
         print("DB schema update DONE - EXPERIMENTAL")
         raise SystemExit(0)
 
     # create DB tables if not existing already
-    create_db_tables(conn)
+    create_db_tables(db_obj)
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
     # PREPARE DISCOGS API and
     user = User_int(args)
-    coll_ctrl = Coll_ctrl_cli(conn, user, conf.discogs_token, conf.discogs_appid)
+    coll_ctrl = Coll_ctrl_cli(db_obj.db_conn, user, conf.discogs_token,
+            conf.discogs_appid)
 
     # ADD RELEASE TO DISCOGS COLLECTION
     if args.add_release_id:
@@ -186,15 +163,11 @@ def main():
             # IMPORT SPECIFIC RELEASE ID
             coll_ctrl.import_release(args.release_id[0])
 
-    conn.commit()
-    conn.close()
-    print("Done!")
-
-
 # __main__ try/except wrap
 if __name__ == "__main__":
     try:
         main()
+        #db_obj.close_conn()
     except KeyboardInterrupt:
         log.error('Program interrupted!')
 

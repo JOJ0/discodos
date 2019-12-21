@@ -130,8 +130,13 @@ def argparser(argv):
         help='all tracks used in mixes are updated with info pulled from Discogs')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
+    log.info("log_level set to {} via config.yaml or default".format(log.level))
     # Sets log level to WARN going more verbose for each new -v.
-    log.setLevel(max(3 - arguments.verbose_count, 0) * 10) 
+    cli_level = max(3 - arguments.verbose_count, 0) * 10
+    #print("cli_level: {}".format(cli_level))
+    if cli_level < log.level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.setLevel(cli_level)
+        log.info("log_level override via cli. Set to {}".format(log.level))
     return arguments 
 
 
@@ -151,13 +156,9 @@ def main():
     # check cli args and set attributes
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    # also here refactoring is not through - conn should not be needed in future
-    # Objects derived from models.py should handle it themselves
-    # workaround for now:
-    db_obj = Database(db_file = conf.discobase)
-    conn = db_obj.db_conn
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
-    coll_ctrl = Coll_ctrl_cli(conn, user, conf.discogs_token, conf.discogs_appid)
+    coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
+            conf.discobase)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -169,12 +170,12 @@ def main():
             #                              args.track_to_add, args.add_at_pos)
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             # initialize a mix_ctrl object from release mode
-            mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
+            mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
             mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add, args.add_at_pos)
             mix_ctrl.view()
         else:
             database_rel_found = coll_ctrl.search_release(searchterm)
-            mix_ctrl = Mix_ctrl_cli(conn, args.add_to_mix, user)
+            mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
             mix_ctrl.add_offline_track(database_rel_found, args.track_to_add, args.add_at_pos)
             mix_ctrl.view()
 
@@ -183,7 +184,7 @@ def main():
     ### NO MIX ID GIVEN ###################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
         # we instantiate a mix controller object
-        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user) # conn = False, init from file
+        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
         else:
@@ -193,7 +194,7 @@ def main():
     ### SHOW MIX DETAILS ##################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
-        mix_ctrl = Mix_ctrl_cli(conn, args.mix_name, user)
+        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         #coll_ctrl = Coll_ctrl_cli(conn, user)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
@@ -219,16 +220,21 @@ def main():
             mix_ctrl.delete_track(args.delete_track_pos)
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            if coll_ctrl.ONLINE:
-                # this returns a online or offline releases type object depending on models state:
-                discogs_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                mix_ctrl.add_discogs_track(discogs_rel_found, False,
-                                            args.mix_mode_add_at_pos)
+            if mix_ctrl.mix.id_existing: # accessing a mix attr directly is bad practice
+                if coll_ctrl.ONLINE:
+                    # search_release returns an online or offline releases type object
+                    # depending on the models online-state
+                    discogs_rel_found = coll_ctrl.search_release(
+                            args.add_release_to_mix)
+                    mix_ctrl.add_discogs_track(discogs_rel_found, False,
+                            args.mix_mode_add_at_pos)
+                else:
+                    database_rel_found = coll_ctrl.search_release(
+                            args.add_release_to_mix)
+                    mix_ctrl.add_offline_track(database_rel_found, False,
+                            args.mix_mode_add_at_pos)
             else:
-                database_rel_found = coll_ctrl.search_release(args.add_release_to_mix)
-                mix_ctrl.add_offline_track(database_rel_found, False,
-                                            args.mix_mode_add_at_pos)
-
+                log.error("Mix not existing.")
         #### COPY A MIX
         elif user.WANTS_TO_COPY_MIX:
             mix_ctrl.copy_mix()
@@ -250,27 +256,16 @@ def main():
     ### TRACK MODE
     #if user.WANTS_TO_TRACK_SEARCH:
     if user.WANTS_TO_PULL_TRACK_INFO:
-        mix_ctrl = Mix_ctrl_cli(conn, False, user)
+        mix_ctrl = Mix_ctrl_cli(False, False, user, conf.discobase)
         mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
     elif user.WANTS_TRACK_REPORT:
         coll_ctrl.track_report(args.track_search)
-
-    # most importantly commit stuff to DB
-    #time.sleep(10)
-    log.debug("DB commiting...")
-    conn.commit()
-    log.debug("DB closing...")
-    conn.close()
-    log.debug("DB closed.")
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        # most importantly commit stuff to DB
-        #conn.commit()
-        #conn.close()
         log.error('Program interrupted!')
     #finally:
         #log.shutdown()

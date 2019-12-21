@@ -240,11 +240,16 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
                     self.tab_online_search_results(result_list)
                     self.online_search_results_tracklist(result_item.tracklist)
                     break
-            if result_item.id == dbr[0]:
-                #return result_list[0]
-                log.info("Compiled Discogs result_list: {}".format(result_list))
-                return result_list
-                break
+            try:
+                if result_item.id == dbr[0]:
+                    #return result_list[0]
+                    log.info("Compiled Discogs result_list: {}".format(result_list))
+                    return result_list
+                    break
+            except UnboundLocalError as unb:
+                log.error("Discogs collection was not imported to DiscoBASE properly!")
+                #raise unb
+                raise SystemExit(1)
         return False
 
     def tab_online_search_results(self, _result_list):
