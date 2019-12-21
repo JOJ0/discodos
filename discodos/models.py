@@ -39,14 +39,16 @@ class Database (object):
         '''used for eg. creating tables or inserts'''
         log.info("DB-NEW: Executing sql: %s", sql)
         try:
-            c = self.cur
-            if values_tuple:
-                c.execute(sql, values_tuple)
-                log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
-            else:
-                c.execute(sql)
-            log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount, c.lastrowid))
-            return c.rowcount
+            with self.db_conn: # auto commits and auto rolls back on exceptions
+                c = self.cur  # connection close has to be done manually though!
+                if values_tuple:
+                    c.execute(sql, values_tuple)
+                    log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
+                else:
+                    c.execute(sql)
+                log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount,
+                    c.lastrowid))
+                return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
             log.error("DB-NEW: %s", e.args[0])
@@ -92,6 +94,9 @@ class Database (object):
         else:
             log.info('DB-NEW: Nothing found - rows NoneType.')
             return [] # FIXME was False before, not sure if this will break things
+
+    def close_conn(self): # manually close conn! - context manager (with) doesn't do it
+        self.db_conn.close()
 
 # mix model class
 class Mix (Database):
