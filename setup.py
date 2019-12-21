@@ -157,14 +157,12 @@ def main():
     if args.update_db:
         print("Updating DB schema - EXPERIMENTAL")
         sql_settings = "PRAGMA foreign_keys = OFF;"
-        db.create_table(conn, sql_settings)
+        db_obj.execute(sql_settings)
         sql_alter_something = """ALTER TABLE track ADD
                                         d_artist; """
-        db.create_table(conn, sql_alter_something)
+        db_obj.execute(sql_alter_something)
         sql_settings = "PRAGMA foreign_keys = ON;"
-        db.create_table(conn, sql_settings)
-        conn.commit()
-        conn.close()
+        db_obj.execute(sql_settings)
         print("DB schema update DONE - EXPERIMENTAL")
         raise SystemExit(0)
 
