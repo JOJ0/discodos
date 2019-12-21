@@ -5,6 +5,9 @@ from discodos import log
 class widget_frame():
     def __init__(self, parent, title):
         self.edit_win = tk.Toplevel(parent)
+        # log.debug("Window State is " + self.edit_win.state())
+        global win_state 
+        self.win_state = self.edit_win.state()
 
         self.edit_win.geometry("350x600")               
         self.edit_win.resizable(False, False) 
@@ -89,6 +92,9 @@ class edit_mix_view(widget_frame):
         self.tracks_list.heading("trackpos", text="Track Pos",anchor=tk.W)
         self.tracks_list.heading("key", text="Key",anchor=tk.W)
         self.tracks_list.heading("bpm", text="BPM",anchor=tk.W)
+
+
+        # TODO: fetch discogs track data
 
 
         ###############################################

@@ -3,7 +3,7 @@
 import logging
 
 def logger_init():
-    # logging.basicConfig(filename='uapi.log',level=logging.DEBUG)
+    logging.basicConfig(filename='uapi.log',level=logging.INFO)
     logger=logging.getLogger()
     handler=logging.StreamHandler()
 #    formatter=logging.Formatter('%(asctime)s %s(name)-12s $(levelname)-8s %(message)s')

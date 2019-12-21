@@ -20,12 +20,12 @@ from tabulate import tabulate as tab
 class main_frame():
     def __init__(self):
 
-        self.mix_window_started = False
-        self.track_window_started = False
 
         self.main_win = tk.Tk()                           
         self.main_win.geometry("800x600")                # Fixed size for now, maybe scalable later
-        # self.main_win.resizable(False, False)    
+        # self.main_win.resizable(False, False) 
+        
+        
         
     
         self.main_win.title("Discodos") # EDIT: Add relevant Information to title, like Titles in Mix etc
@@ -33,6 +33,8 @@ class main_frame():
         # Create all Widgets, outsourced to its own function
         self.create_widgets()
         self.mix_starter()
+
+        
         
         
                     
@@ -64,14 +66,27 @@ class main_frame():
         self.all_mix = models.Mix(self.conn, "all")
         self.mixes_data = self.all_mix.get_all_mixes()
 
+        #################################################
+        # TODO: Make column widths as wide as the widest dataset of each column
+
+        # Create Dictionary for all columns
+        # Dictionary["name"] = []
+
         for i, row in enumerate(self.mixes_data):
             try:
+                # self.mix_list.column('name', width=len(row["name"]))
+                # print(len(row["name"]))
+                # Append all width numbers to the list per dictionary entry
+
                 self.mix_list.insert("" , i, text=row["mix_id"], values=(row["name"], row["played"], row["venue"], row["created"], row["updated"]))
                 log.debug("Inserted Mix Row")
                 self.status.set("Inserted Mix Row")
             except:
                 log.error("Inserting Mix Row failed")
                 self.status.set("Inserting Mix Row failed")
+
+        # Get the highest number of every column-dataset of the dictionary
+        # set every columnwdith equal to the highest number
 
         self.mix_list.bind('<<TreeviewSelect>>', self.show_mix)
 
@@ -115,24 +130,29 @@ class main_frame():
 
 
     def open_widget(self, view):
-        if view == "mix" and not self.mix_window_started:
+        if view == "mix":
             curItem = self.mix_list.focus()
             try:
                 mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
                 mix_data = mix.get_mix_info() 
                 log.debug("Retrieved Mix Info")   
                 self.status.set("Retrieved Mix Info") 
-                self.mix_edit_win = edit_mix_view(self.main_win, mix_data)  
-                self.mix_window_started = True
+
+                # ############## # # # # # # # # # #
+                # TODO: Get Mix Edit Window to change info on selected list item in mix view
+                try:
+                    if self.mix_edit_win.win_state == "normal": self.mix_edit_win.edit_win.focus()
+                    log.debug("Mix Window State is " + self.mix_edit_win.win_state)
+                except:
+                    self.mix_edit_win = edit_mix_view(self.main_win, mix_data)  
+                    log.debug("Mix Window State is " + self.mix_edit_win.win_state) 
             except: 
                 log.error("Getting Mix Data failed")
                 self.status.set("Getting Mix Data failed")  
-            
 
+            
         elif view == "track":
             self.track_edit_win = edit_track_info(self.main_win)
-
-
 
 
     #####################################################################################    
@@ -164,6 +184,7 @@ class main_frame():
         self.mix_list.heading("venue", text="Venue",anchor=tk.W)
         self.mix_list.heading("created", text="Created",anchor=tk.W)
         self.mix_list.heading("updated", text="Updated",anchor=tk.W)
+
 
         # TRACKS LISTVIEW
 
