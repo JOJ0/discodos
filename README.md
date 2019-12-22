@@ -89,18 +89,20 @@ To access your Discogs collection you need to generate an API access token.
  log_level: "WARNING"
  ```
 
-Change into the cloned repo directory
+Now jump into the discodos root directory!
 
-Linux/Mac
+**Linux/Mac**
 
 ```
 cd
 cd discodos
 ```
 
-Windows
+**Windows**
 
 `cd "%HOMEPATH%/discodos"`
+
+_Remove the ./ in front of the commands if you are on Windows! Depending on your python installation you may have to put python or py in front of them._
 
 The setup script creates an empty database.
 
