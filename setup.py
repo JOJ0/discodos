@@ -21,11 +21,11 @@ def argparser(argv):
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
-        help="increases log verbosity for each occurence.")
+        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
 		"-o", "--offline", dest="offline_mode",
         action="store_true",
-        help="stays in offline mode, doesn't even try to connect to Discogs")
+        help="stay in offline mode, don't connect to Discogs")
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
 		"-i", "--import", dest="release_id",
@@ -34,11 +34,11 @@ def argparser(argv):
     parser_group1.add_argument(
 		"-u", "--update-db", dest="update_db",
         action="store_true",
-        help="update database schema FIXME randomly coded in when neeeded")
+        help="update database schema - experimental feature, don't use yet!")
     parser_group1.add_argument(
 		"-a", "--add_to_collection", dest="add_release_id",
         type=int,
-        help="add release ID to collection")
+        help="add release ID to collection (on Discogs and in the DiscoBase)")
     arguments = parser.parse_args(argv[1:])
     log.info("log_level set to {} via config.yaml or default".format(log.level))
     # Sets log level to WARN going more verbose for each new -v.
@@ -144,7 +144,7 @@ def main():
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
-      "This script sets up the DiscoBASE, and imports data from Discogs")
+      "This script sets up the DiscoBASE and/or imports data from Discogs.")
     log.info(vars(args))
     #print(vars(args))
 
