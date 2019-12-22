@@ -87,6 +87,7 @@ To access your Discogs collection you need to generate an API access token.
  ---
  discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
  discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
+ log_level: "WARNING"
  ```
 
 Change into the cloned repo directory
