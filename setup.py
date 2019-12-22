@@ -145,6 +145,10 @@ def main():
     args=argparser(sys.argv)
     print_help(
       "This script sets up the DiscoBASE and/or imports data from Discogs.")
+    if args.release_id == False and not args.add_release_id:
+        print("Run setup.py -i to import your whole Discogs collection.")
+        print("Run setup.py -i <ID> to import only one release.")
+        print("Run setup.py -a <ID> to add a release to your collection.")
     log.info(vars(args))
     #print(vars(args))
 
