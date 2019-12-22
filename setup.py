@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import discogs_client
 import csv
 import time
@@ -42,9 +43,9 @@ def argparser(argv):
     # Sets log level to WARN going more verbose for each new -v.
     cli_level = max(3 - arguments.verbose_count, 0) * 10
     #print("cli_level: {}".format(cli_level))
-    if cli_level < log.level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
-        log.setLevel(cli_level)
-        log.info("log_level override via cli. Set to {}".format(log.level))
+    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.handlers[0].setLevel(cli_level)
+        log.warning("log_level override via cli. Set to {}".format(log.level))
     return arguments 
 
 # initial db setup
@@ -148,7 +149,6 @@ def main():
         print("Run setup.py -i <ID> to import only one release.")
         print("Run setup.py -a <ID> to add a release to your collection.")
     log.info(vars(args))
-    #print(vars(args))
 
     # DB setup
     db_obj = Database(db_file = conf.discobase)
