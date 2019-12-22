@@ -57,10 +57,10 @@ class main_frame():
 
         try:
             self.conn = self.db_obj.db_conn
-            log.info("DB Connection Success")
+            log.info("GUI: DB Connection Success")
             self.status.set("DB Connection Success")
         except:
-            log.error("DB connection failed")
+            log.error("GUI: DB connection failed")
             self.status.set("DB Connection failed")
 
         self.all_mix = models.Mix(self.conn, "all")
@@ -79,10 +79,10 @@ class main_frame():
                 # Append all width numbers to the list per dictionary entry
 
                 self.mix_list.insert("" , i, text=row["mix_id"], values=(row["name"], row["played"], row["venue"], row["created"], row["updated"]))
-                log.debug("Inserted Mix Row")
+                log.debug("GUI: Inserted Mix Row")
                 self.status.set("Inserted Mix Row")
             except:
-                log.error("Inserting Mix Row failed")
+                log.error("GUI: Inserting Mix Row failed")
                 self.status.set("Inserting Mix Row failed")
 
         # Get the highest number of every column-dataset of the dictionary
@@ -93,9 +93,9 @@ class main_frame():
         try:
             start_child_id = self.mix_list.get_children()[0]
             self.mix_list.selection_set(start_child_id)
-            log.debug("Set Focus on first Item")
+            log.debug("GUI: Set Focus on first Item")
         except:
-            log.debug("Couldn't Set Focus on First Item")
+            log.error("GUI: Couldn't Set Focus on First Item")
             self.status.set("Couldn't Set Focus on First Item")
 
     
@@ -105,10 +105,10 @@ class main_frame():
         try:
             mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
             mix_data = mix.get_full_mix(verbose = True) 
-            log.debug("Retrieved Mix data")   
+            log.debug("GUI: Retrieved Mix data")   
             self.status.set("Retrieved Mix data")   
         except: 
-            log.error("Getting Mix Data failed")
+            log.error("GUI: Getting Mix Data failed")
             self.status.set("Getting Mix Data failed")  
 
             # TODO
@@ -118,14 +118,14 @@ class main_frame():
             for i, row in enumerate(mix_data):
                 try:
                     self.tracks_list.insert("" , i, text="", values=(row["d_artist"], row["d_track_name"], row["d_track_no"], row["key"], row["bpm"], row["key_notes"], row["trans_rating"], row["trans_notes"], row["notes"]))
-                    log.info("Inserted Track row")
+                    log.debug("GUI: Inserted Track row")
                     self.status.set("Inserted Track row")  
                 except:
-                    log.error("Inserting Track Row failed")
+                    log.error("GUI: Inserting Track Row failed")
                     self.status.set("Inserting Track Row failed") 
         else:
-            log.error("Mix Data is " + str(mix_data))
-            self.status.set("Mix Data is " + str(mix_data)) 
+            log.error("GUI: Mix Data is " + str(mix_data))
+            self.status.set("GUI: Mix Data is " + str(mix_data)) 
             self.tracks_list.delete(*self.tracks_list.get_children())
 
 
@@ -135,19 +135,37 @@ class main_frame():
             try:
                 mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
                 mix_data = mix.get_mix_info() 
-                log.debug("Retrieved Mix Info")   
+                log.debug("GUI: Retrieved Mix Info")   
                 self.status.set("Retrieved Mix Info") 
 
                 # ############## # # # # # # # # # #
                 # TODO: Get Mix Edit Window to change info on selected list item in mix view
                 try:
-                    if self.mix_edit_win.win_state == "normal": self.mix_edit_win.edit_win.focus()
-                    log.debug("Mix Window State is " + self.mix_edit_win.win_state)
+                    if self.mix_edit_win.win_state == "normal" and curItem is self.mix_list.focus(): 
+                        self.mix_edit_win.edit_win.focus()
+
+                    elif self.mix_edit_win.win_state == "normal" and curItem is not self.mix_list.focus():
+                        self.mix_edit_win._quit()
+
+                        try:
+                            mix = models.Mix(self.conn, self.mix_list.item(self.mix_list.focus(),"text"))
+                            mix_data = mix.get_mix_info() 
+                            log.debug("GUI: Got Mix data again")
+
+                        except:
+                            log.error("GUI: Couldn't get mix data again")
+
+                        self.mix_edit_win = edit_mix_view(self.main_win, mix_data, self.conn)
+                        self.mix_edit_win.edit_win.focus()
+
+                    log.debug("GUI: Mix Window State is " + self.mix_edit_win.win_state)
+
                 except:
-                    self.mix_edit_win = edit_mix_view(self.main_win, mix_data)  
-                    log.debug("Mix Window State is " + self.mix_edit_win.win_state) 
+                    self.mix_edit_win = edit_mix_view(self.main_win, mix_data, self.conn)  
+                    log.debug("GUI: Mix Window State is " + self.mix_edit_win.win_state) 
+
             except: 
-                log.error("Getting Mix Data failed")
+                log.error("GUI: Getting Mix Data failed")
                 self.status.set("Getting Mix Data failed")  
 
             
@@ -236,12 +254,14 @@ class main_frame():
         self.del_mix_btn = tk.Button(self.btn_frame, text="Delete Mix")
         self.edit_track_btn = tk.Button(self.btn_frame, text="Edit Track Info", command=lambda: self.open_widget("track"))
         self.rmv_track_btn = tk.Button(self.btn_frame, text="Remove Track")
+        
 
         self.new_mix_btn.pack(side="left")
         self.edit_mix_btn.pack(side="left")
         self.del_mix_btn.pack(side="left")
         self.edit_track_btn.pack(side="right")
         self.rmv_track_btn.pack(side="right")
+        
         
 
         self.btn_frame.pack(side="bottom", fill="x", expand=1, padx=5)
