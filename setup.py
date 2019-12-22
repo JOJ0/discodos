@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-
-from discodos import db
-from discodos.utils import *
 import discogs_client
 import csv
 import time
@@ -14,6 +11,7 @@ import os
 from discodos.models import *
 from discodos.ctrls import *
 from discodos.views import *
+from discodos.utils import *
 
 # argparser init
 def argparser(argv):
