@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from discodos import log
 from discodos.utils import *
 from discodos.ctrls import *
 from discodos.views import *
@@ -25,7 +24,7 @@ def argparser(argv):
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
-        help="increases log verbosity for each occurence.")
+        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
 		"-o", "--offline", dest="offline_mode",
         action="store_true",
@@ -130,13 +129,14 @@ def argparser(argv):
         help='all tracks used in mixes are updated with info pulled from Discogs')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
-    log.info("log_level set to {} via config.yaml or default".format(log.level))
+    log.info("Console log_level currently set to {} via config.yaml or default".format(
+        log.handlers[0].level))
     # Sets log level to WARN going more verbose for each new -v.
     cli_level = max(3 - arguments.verbose_count, 0) * 10
-    #print("cli_level: {}".format(cli_level))
     if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
         log.handlers[0].setLevel(cli_level)
-        log.warning("log_level override via cli. Set to {}".format(log.handlers[0].level))
+        log.warning("Console log_level override via cli. Now set to {}.".format(
+            log.handlers[0].level))
     return arguments 
 
 
@@ -145,7 +145,7 @@ def argparser(argv):
 def main():
     # CONFIGURATOR INIT / DISCOGS API conf
     conf = Config()
-    log.setLevel(conf.log_level)
+    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)

@@ -39,13 +39,14 @@ def argparser(argv):
         type=int,
         help="add release ID to collection (on Discogs and in the DiscoBase)")
     arguments = parser.parse_args(argv[1:])
-    log.info("log_level set to {} via config.yaml or default".format(log.level))
+    log.info("Console log_level currently set to {} via config.yaml or default.".format(
+        log.handlers[0].level))
     # Sets log level to WARN going more verbose for each new -v.
     cli_level = max(3 - arguments.verbose_count, 0) * 10
-    #print("cli_level: {}".format(cli_level))
     if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
         log.handlers[0].setLevel(cli_level)
-        log.warning("log_level override via cli. Set to {}".format(log.handlers[0].level))
+        log.warning("Console log_level override via cli. Now set to {}.".format(
+            log.handlers[0].level))
     return arguments 
 
 # initial db setup
@@ -140,6 +141,7 @@ def create_db_tables(_db_obj):
 def main():
     # CONFIGURATOR INIT / DISCOGS API conf
     conf = Config()
+    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
