@@ -136,7 +136,7 @@ def argparser(argv):
     #print("cli_level: {}".format(cli_level))
     if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
         log.handlers[0].setLevel(cli_level)
-        log.warning("log_level override via cli. Set to {}".format(log.level))
+        log.warning("log_level override via cli. Set to {}".format(log.handlers[0].level))
     return arguments 
 
 
