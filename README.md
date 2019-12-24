@@ -73,7 +73,9 @@ Install the necessary dependencies into your environment!
 
 ## Initial Setup
 
-To access your Discogs collection you need to generate an API access token.
+### Configuring Discogs API access
+
+To access your Discogs collection you need to generate an API login token.
 
 - Login to discogs.com
 - Click your avatar (top right)
@@ -89,18 +91,24 @@ To access your Discogs collection you need to generate an API access token.
  log_level: "WARNING"
  ```
 
-Now jump into the discodos root directory!
+Make sure you are still in the discodos application directory before you move on with setup.
 
-**Linux/Mac**
+on Linux/Mac
 
 ```
 cd
 cd discodos
 ```
 
-**Windows**
+on Windows
 
-`cd "%HOMEPATH%/discodos"`
+```
+cd "%HOMEPATH%"
+cd discodos
+```
+
+
+### Initializing the database and importing your discogs collection 
 
 _Remove the ./ in front of the commands if you are on Windows! Depending on your python installation you may have to put python or py in front of them._
 
@@ -108,9 +116,7 @@ The setup script creates an empty database.
 
 `./setup.py`
 
-You should find a file named `discobase.db` inside the root of your discodos folder.
-
-Create a new mix.
+You should find a file named `discobase.db` inside the root of your discodos folder. Check if the database is working by creating a new mix.
 
 `./cli.py mix -c new_mix_name`
 
