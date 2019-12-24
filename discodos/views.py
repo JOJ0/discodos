@@ -42,12 +42,10 @@ class User_int(object):
                 if (self.args.add_to_mix != 0 and self.args.track_to_add != 0
                   and self.args.add_at_pos):
                     self.WANTS_TO_ADD_AT_POSITION = True
-                    #self.WANTS_TO_SHOW_MIX_TRACKLIST = True
-                elif self.args.add_to_mix !=0 and self.args.track_to_add !=0:
+                if self.args.add_to_mix !=0 and self.args.track_to_add !=0:
                     self.WANTS_TO_ADD_TO_MIX = True
-                else:
-                    log.error("args.add_to_mix, args.track_to_add or args.add_at_pos is 0")
-                    raise SystemExit(1)
+                if self.args.add_to_mix !=0:
+                    self.WANTS_TO_ADD_TO_MIX = True
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):
