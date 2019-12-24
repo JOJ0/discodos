@@ -8,7 +8,14 @@ You need to have these software packages installed
 * git
 * Python version 3.7 or higher
 
-Make sure git and python can be executed from everywhere (Adjust your PATH environment variable accordingly).
+Getting them differs according to your OS
+
+* Most Linux distributions have git and Python available within their package repositories.
+* On Windows download from here: https://git-scm.com/download, https://www.python.org/downloads
+* On MacOS I suggest getting both packages via homebrew: https://brew.sh/
+  (If homebrew seems overkill to you, just use the Windows links above)
+
+Make sure git and python can be executed from everywhere (Adjust your PATH environment variable accordingly). On Windows make sure you select the "Add Python 3.x to PATH" checkbox during the Python setup.
 
 ### Linux / MacOS
 
