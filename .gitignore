@@ -8,5 +8,4 @@ curls.txt
 *.pyc
 .DS_store
 issues.txt
-test/
-uapi.log
+debug.log

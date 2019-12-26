@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from discodos import db
-from discodos.utils import *
 import discogs_client
 import csv
 import time
@@ -14,6 +12,7 @@ import os
 from discodos.models import *
 from discodos.ctrls import *
 from discodos.views import *
+from discodos.utils import *
 
 # argparser init
 def argparser(argv):
@@ -21,11 +20,11 @@ def argparser(argv):
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
-        help="increases log verbosity for each occurence.")
+        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
 		"-o", "--offline", dest="offline_mode",
         action="store_true",
-        help="stays in offline mode, doesn't even try to connect to Discogs")
+        help="stay in offline mode, don't connect to Discogs")
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
 		"-i", "--import", dest="release_id",
@@ -34,32 +33,33 @@ def argparser(argv):
     parser_group1.add_argument(
 		"-u", "--update-db", dest="update_db",
         action="store_true",
-        help="update database schema FIXME randomly coded in when neeeded")
+        help="update database schema - experimental feature, don't use yet!")
     parser_group1.add_argument(
 		"-a", "--add_to_collection", dest="add_release_id",
         type=int,
-        help="add release ID to collection")
+        help="add release ID to collection (on Discogs and in the DiscoBase)")
     arguments = parser.parse_args(argv[1:])
-    log.info("log_level set to {} via config.yaml or default".format(log.level))
+    log.info("Console log_level currently set to {} via config.yaml or default.".format(
+        log.handlers[0].level))
     # Sets log level to WARN going more verbose for each new -v.
     cli_level = max(3 - arguments.verbose_count, 0) * 10
-    #print("cli_level: {}".format(cli_level))
-    if cli_level < log.level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
-        log.setLevel(cli_level)
-        log.info("log_level override via cli. Set to {}".format(log.level))
+    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.handlers[0].setLevel(cli_level)
+        log.warning("Console log_level override via cli. Now set to {}.".format(
+            log.handlers[0].level))
     return arguments 
 
 # initial db setup
 def create_db_tables(_db_obj):
     sql_settings = "PRAGMA foreign_keys = ON;"
-    sql_create_release_table = """ CREATE TABLE IF NOT EXISTS release (
+    sql_create_release_table = """ CREATE TABLE release (
                                      discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                                      discogs_title TEXT NOT NULL,
                                      import_timestamp TEXT,
                                      d_artist TEXT,
                                      in_d_collection INTEGER
                                      ); """
-    sql_create_mix_table = """ CREATE TABLE IF NOT EXISTS mix (
+    sql_create_mix_table = """ CREATE TABLE mix (
                                     mix_id INTEGER PRIMARY KEY,
                                     name TEXT,
                                     created TEXT,
@@ -67,7 +67,7 @@ def create_db_tables(_db_obj):
                                     played TEXT,
                                     venue TEXT
                                         ); """
-    sql_create_mix_track_table = """ CREATE TABLE IF NOT EXISTS mix_track (
+    sql_create_mix_track_table = """ CREATE TABLE mix_track (
                                          mix_track_id INTEGER PRIMARY KEY,
                                          mix_id INTEGER,
                                          d_release_id INTEGER NOT NULL,
@@ -80,7 +80,7 @@ def create_db_tables(_db_obj):
                                          ON DELETE CASCADE
                                          ON UPDATE CASCADE
                                         ); """
-    sql_create_track_table = """ CREATE TABLE IF NOT EXISTS track (
+    sql_create_track_table = """ CREATE TABLE track (
                                      d_release_id INTEGER NOT NULL,
                                      d_track_no TEXT NOT NULL,
                                      d_track_name TEXT,
@@ -93,7 +93,7 @@ def create_db_tables(_db_obj):
                                            # FOREIGN KEY (d_release_id)
                                            #     REFERENCES release(d_discogs_id)
     # extend discogs track info with these fields
-    sql_create_track_ext_table = """ CREATE TABLE IF NOT EXISTS track_ext (
+    sql_create_track_ext_table = """ CREATE TABLE track_ext (
                                          d_release_id INTEGER NOT NULL,
                                          d_track_no TEXT NOT NULL,
                                          key TEXT,
@@ -106,23 +106,51 @@ def create_db_tables(_db_obj):
                                         #    REFERENCES track(d_release_id)
                                         #FOREIGN KEY (d_track_no)
                                         #    REFERENCES track(d_track_no)
-    _db_obj.execute_sql(sql_settings)
-    _db_obj.execute_sql(sql_create_release_table)
-    _db_obj.execute_sql(sql_create_mix_table)
-    _db_obj.execute_sql(sql_create_mix_track_table)
-    _db_obj.execute_sql(sql_create_track_table)
-    _db_obj.execute_sql(sql_create_track_ext_table)
+    #try: # settings
+    #    _db_obj.execute_sql(sql_settings)
+    #    log.info("Adjusting sqlite settings")
+    #except sqlerr as e:
+    #    log.info(e.args[0])
+    try: # release
+        _db_obj.execute_sql(sql_create_release_table, raise_err = True)
+        print_help("CREATE TABLE 'release' successful.")
+    except sqlerr as e:
+        log.info("CREATE TABLE 'release': %s", e.args[0])
+    try: # mix
+        _db_obj.execute_sql(sql_create_mix_table, raise_err = True)
+        print_help("CREATE TABLE 'mix' successful.")
+    except sqlerr as e:
+        log.info("CREATE TABLE 'mix': %s", e.args[0])
+    try: # mix_track
+        _db_obj.execute_sql(sql_create_mix_track_table, raise_err = True)
+        print_help("CREATE TABLE 'mix_track' successful.")
+    except sqlerr as e:
+        log.info("CREATE TABLE 'mix_track': %s", e.args[0])
+    try: # track
+        _db_obj.execute_sql(sql_create_track_table, raise_err = True)
+        print_help("CREATE TABLE 'track' successful.")
+    except sqlerr as e:
+        log.info("CREATE TABLE 'track': %s", e.args[0])
+    try: # track_ext
+        _db_obj.execute_sql(sql_create_track_ext_table, raise_err = True)
+        print_help("CREATE TABLE 'track_ext' successful.")
+    except sqlerr as e:
+        log.info("CREATE TABLE 'track_ext': %s", e.args[0])
 
 # main program
 def main():
     # CONFIGURATOR INIT / DISCOGS API conf
     conf = Config()
+    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # ARGPARSER INIT
     args=argparser(sys.argv)
     print_help(
-      "This script sets up the DiscoBASE, and imports data from Discogs")
+      "This script sets up the DiscoBASE and/or imports data from Discogs.")
+    if args.release_id == False and not args.add_release_id:
+        print("Run setup.py -i to import your whole Discogs collection.")
+        print("Run setup.py -i <ID> to import only one release.")
+        print("Run setup.py -a <ID> to add a release to your collection.")
     log.info(vars(args))
-    #print(vars(args))
 
     # DB setup
     db_obj = Database(db_file = conf.discobase)

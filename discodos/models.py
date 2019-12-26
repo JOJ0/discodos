@@ -55,10 +55,11 @@ class Database (object):
             return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
-            log.error("DB-NEW: %s", e.args[0])
             if raise_err:
                 log.info("DB-NEW: Raising error to upper level.")
                 raise e
+            else:
+                log.error("DB-NEW: %s", e.args[0])
             return False
 
     def configure_db(self):

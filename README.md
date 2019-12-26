@@ -8,26 +8,35 @@ You need to have these software packages installed
 * git
 * Python version 3.7 or higher
 
-Make sure git and python can be executed from everywhere (Adjust your PATH environment variable accordingly).
+Getting them differs according to your OS
+
+* Most Linux distributions have git and Python available within their package repositories.
+* On Windows download from here: https://git-scm.com/download, https://www.python.org/downloads
+* On MacOS I suggest getting both packages via homebrew: https://brew.sh/
+  (If homebrew seems overkill to you, just use the Windows links above)
+
+Make sure git and python can be executed from everywhere (Adjust your PATH environment variable accordingly). On Windows make sure you select the "Add Python 3.x to PATH" checkbox during the Python setup.
 
 ### Linux / MacOS
 
-Clone the github repo to your homedirectory
+Clone the github repo
+
+Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
 ```
-cd $HOME
+cd
 git clone https://github.com/JOJ0/discodos.git
 ls -l discodos
 ```
 
-Create and activate a virtual Python environment!
+Create and activate a virtual Python environment! The environment will be saved inside a hidden subfolder of your homedirectory called .venvs/
 
 ```
-python3 -m venv $HOME/.venvs/discodos
-source $HOME/.venvs/discodos/bin/activate
+python3 -m venv ~/.venvs/discodos
+source ~/.venvs/discodos/bin/activate
 ```
 
-Double check if your environment is active and you are using the pip binary installed inside your venvs directory.
+Double check if your environment is active and you are using the pip binary installed inside your ~/.venvs/discodos/ directory.
 
 `pip --version`
 
@@ -36,21 +45,18 @@ Double check if your environment is active and you are using the pip binary inst
 
 Install the necessary dependencies into your environment!
 
-`pip install -r requirements.txt`
+`pip install -r ~/discodos/requirements.txt`
 
 
 ### Windows
 
-Clone the github repo to your homedirectory
+Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
 ```
 cd %HOMEPATH%
 git clone https://github.com/JOJ0/discodos.git
-```
-
-Check if the directory has been created
-
 `dir discodos`
+```
 
 Create and activate a virtual Python environment!
 
@@ -59,22 +65,24 @@ python -m venv "%HOMEPATH%/python-envs/discodos"
 "%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
 ```
 
-Double check if your environment is active and you are using the pip binary installed inside your venvs directory.
+Double check if your environment is active and you are using the pip binary installed inside your %HOMEPATH%/python-envs/discodos directory.
 
 `pip --version`
 
-(You should see something like this)
+(You should see something like this. FIXME this should be a Windows path.)
 `pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
 
 Install the necessary dependencies into your environment!
 
-`pip install -r requirements.txt`
+`pip install -r "%HOMEPATH%/discodos/requirements.txt"`
 
 
 
 ## Initial Setup
 
-To access your Discogs collection you need to generate an API access token.
+### Configuring Discogs API access
+
+To access your Discogs collection you need to generate an API login token.
 
 - Login to discogs.com
 - Click your avatar (top right)
@@ -87,25 +95,35 @@ To access your Discogs collection you need to generate an API access token.
  ---
  discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
  discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
+ log_level: "WARNING"
  ```
 
-Change into the cloned repo directory
+Make sure you are still in the discodos application directory before you move on with setup.
 
-Linux/Mac
+on Linux/Mac
 
-`cd "$HOME/discodos"`
+```
+cd
+cd discodos
+```
 
-Windows
+on Windows
 
-`cd "%HOMEPATH%/discodos"`
+```
+cd "%HOMEPATH%"
+cd discodos
+```
+
+
+### Initializing the database and importing your discogs collection 
+
+_Remove the ./ in front of the commands if you are on Windows! Depending on your python installation you may have to put python or py in front of them._
 
 The setup script creates an empty database.
 
 `./setup.py`
 
-You should find a file named `discobase.db` inside the root of your discodos folder.
-
-Create a new mix.
+You should find a file named `discobase.db` inside the root of your discodos folder. Check if the database is working by creating a new mix.
 
 `./cli.py mix -c new_mix_name`
 

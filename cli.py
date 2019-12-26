@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from discodos import log
 from discodos.utils import *
 from discodos.ctrls import *
 from discodos.views import *
@@ -25,28 +24,27 @@ def argparser(argv):
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
-        help="increases log verbosity for each occurence.")
+        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
 		"-o", "--offline", dest="offline_mode",
         action="store_true",
-        help="stays in offline mode, doesn't even try to connect to Discogs")
+        help="doesn't connect to Discogs (most options work in on- and offline mode.")
     # basic subparser element:
     subparsers = parser.add_subparsers()
-    ### RELEASE subparser #######################################################
-    release_subparser = subparsers.add_parser(
-        name='release',
-        help='search for a discogs release and add it to a mix',
-        aliases=('rel', 'r'))
-    release_subparser.add_argument(
+    ### SEARCH subparser #######################################################
+    search_subparser = subparsers.add_parser(
+        name='search',
+        help='search for a Discogs release and optionally add it to a mix')
+    search_subparser.add_argument(
         dest='release_search',
         help='search for this release name or ID')
-    release_subparser.add_argument(
+    search_subparser.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix',
-        help='add found release to given mix ID', default=0)
-    release_subparser.add_argument(
+        help='add found release to given mix ID (asks which track to add)', default=0)
+    search_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add',
-        help='add track number to mix (eg. A1, AA, B2, ...)', default=0)
-    release_subparser.add_argument(
+        help='add this track number to mix (eg. A1, AA, B2, ...)', default=0)
+    search_subparser.add_argument(
         "-p", "--pos", type=str, dest='add_at_pos',
         help='insert track at specific position in mix (eg. 01, 14, ...), defaults to next',
         default=0)
@@ -130,13 +128,14 @@ def argparser(argv):
         help='all tracks used in mixes are updated with info pulled from Discogs')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
-    log.info("log_level set to {} via config.yaml or default".format(log.level))
+    log.info("Console log_level currently set to {} via config.yaml or default".format(
+        log.handlers[0].level))
     # Sets log level to WARN going more verbose for each new -v.
     cli_level = max(3 - arguments.verbose_count, 0) * 10
-    #print("cli_level: {}".format(cli_level))
-    if cli_level < log.level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
-        log.setLevel(cli_level)
-        log.info("log_level override via cli. Set to {}".format(log.level))
+    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.handlers[0].setLevel(cli_level)
+        log.warning("Console log_level override via cli. Now set to {}.".format(
+            log.handlers[0].level))
     return arguments 
 
 
@@ -145,7 +144,7 @@ def argparser(argv):
 def main():
     # CONFIGURATOR INIT / DISCOGS API conf
     conf = Config()
-    log.setLevel(conf.log_level)
+    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # SETUP / INIT
     global args, ONLINE, user
     args = argparser(sys.argv)
@@ -166,18 +165,21 @@ def main():
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         if coll_ctrl.ONLINE:
-            #search_online_and_add_to_mix(searchterm, conn, args.add_to_mix,
-            #                              args.track_to_add, args.add_at_pos)
             discogs_rel_found = coll_ctrl.search_release(searchterm)
-            # initialize a mix_ctrl object from release mode
-            mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
-            mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add, args.add_at_pos)
-            mix_ctrl.view()
+            if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
+                mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
+                mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add,
+                        args.add_at_pos)
+            else:
+                print_help("Nothing more to do. Use -m <mix_name> to add to a mix.")
         else:
             database_rel_found = coll_ctrl.search_release(searchterm)
-            mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
-            mix_ctrl.add_offline_track(database_rel_found, args.track_to_add, args.add_at_pos)
-            mix_ctrl.view()
+            if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
+                mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
+                mix_ctrl.add_offline_track(database_rel_found, args.track_to_add,
+                        args.add_at_pos)
+            else:
+                print_help("Nothing more to do. Use -m <mix_name> to add to a mix.")
 
 
     ##### MIX MODE ########################################################
