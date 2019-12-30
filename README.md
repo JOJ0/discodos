@@ -1,6 +1,6 @@
 # The geekiest Vinyl DJ playlist tool on the planet
 
-This tool helps a Vinyl DJ to remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from one's [Discogs](https://www.discogs.com) records collection.
+This tool helps a Vinyl DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from one's [Discogs](https://www.discogs.com) records collection.
 
 ## Prerequisites
 
@@ -178,14 +178,14 @@ If you leave out -p 3 (the track position option) you just go through all of you
 
 ## Update database from Discogs
 
-You can update your DiscoBASE from your Discogs collection at any time.
+You can update your DiscoBASE from your Discogs collection at any time using
 
 `./setup.py -i`
 
-but this takes some time due to the Discogs API being not the fastest. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out this command. Instead of searching for a text-term we give a Discogs release ID. Discodos will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
+Due to the Discogs API being not the fastest this takes quite some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out this command. Instead of searching for a text-term we hand over a Discogs release ID. Discodos will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
 `./cli.py mix new_mix_name -a 123456`
 
-To **only** add a release to your local database (because it's been already added to your collection via the Discogs Web Interface) you just use the import command in the setup script with a release ID attached.
+To add a release to your local database **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached.
 
 `./setup.py -i 123456`
