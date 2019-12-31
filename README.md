@@ -50,12 +50,14 @@ Install the necessary dependencies into your environment!
 
 ### Windows
 
+Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days - if that's not the case in your Windows version, please just change the paths to use backslashes.
+
 Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
 ```
 cd %HOMEPATH%
 git clone https://github.com/JOJ0/discodos.git
-`dir discodos`
+dir discodos
 ```
 
 Create and activate a virtual Python environment!
