@@ -172,7 +172,7 @@ def main():
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
-    # PREPARE DISCOGS API and
+    # PREPARE DISCOGS API and USER INTERACTION classes
     user = User_int(args)
     coll_ctrl = Coll_ctrl_cli(db_obj.db_conn, user, conf.discogs_token,
             conf.discogs_appid)
