@@ -6,8 +6,6 @@ import time
 import datetime
 import argparse
 import sys
-from pathlib import Path
-import os
 
 from discodos.models import *
 from discodos.ctrls import *
