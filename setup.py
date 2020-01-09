@@ -38,6 +38,10 @@ def argparser(argv):
 		"-a", "--add_to_collection", dest="add_release_id",
         type=int,
         help="add release ID to collection (on Discogs and in the DiscoBase)")
+    parser.add_argument(
+		"--cli-install", dest="cli_install",
+        action="store_true",
+        help="install the 'disco' command systemwide")
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default.".format(
         log.handlers[0].level))
