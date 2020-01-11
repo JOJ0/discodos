@@ -80,9 +80,10 @@ class Config():
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
         if os.name == "posix":
             disco_file = self.discodos_root / "disco"
+            venvpath = os.getenv("VIRTUAL_ENV")
             script_contents = "#!/bin/bash\n"
             script_contents+= "# This is the DiscoDOS cli wrapper.\n"
-            script_contents+= "source ~/.venvs/discodos/bin/activate\n"
+            script_contents+= "source {}\n".format(venvpath)
             script_contents+= "{} $@\n".format(self.discodos_root / "cli.py")
             sysinst = self.discodos_root / "install_cli_system.sh"
             sysinst_contents = "sudo -p \"Need your users password to allow "
