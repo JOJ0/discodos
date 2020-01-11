@@ -102,10 +102,11 @@ class Config():
             log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
             return True
 
-        if disco_file.is_file():
-            log.info("Config.cli: disco cli wrapper is already existing.")
+        if disco_file.is_file(): # install wrappers only if non-existent
+            log.info("Config.cli: DiscoDOS cli wrapper is already existing: {}".format(
+                disco_file))
         else:
-            print("Creating disco cli wrapper in {}".format(self.discodos_root))
+            print_help("\nInstalling cli wrapper: {}".format(disco_file))
             self._write_textfile(script_contents, disco_file)
             if os.name == "posix":
                 disco_file.chmod(0o755)
@@ -116,8 +117,8 @@ class Config():
                 hlpmsg+="\n(makes disco command executable from everywhere)."
                 print_help(hlpmsg)
             elif os.name == "windows":
-                hlpmsg ="disco.bat was installed correctly."
-                hlpmsg+="(inside this directory!)"
+                hlpmsg ="{} was installed correctly: {}".format(disco_file.name,
+                    disco_file)
                 print_help(hlpmsg)
                 self._write_textfile(discoshell_contents, discoshell)
                 hlpshmsg = "You can now just double click discoshell.bat"
