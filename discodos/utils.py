@@ -91,8 +91,9 @@ class Config():
             sysinst_contents+=  'cp {} /usr/local/bin\n'.format(disco_file)
         elif os.name == 'nt':
             disco_file = self.discodos_root / 'disco.bat'
-            script_contents = 'rem This is the DiscoDOS cli wrapper.\n'
-            script_contents+= 'setlocal enablextensions\n'
+            script_contents = '@echo off\n'
+            script_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
+            script_contents+= 'setlocal enableextensions\n'
             script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
             script_contents+= 'endlocal\n'
             discoshell = self.discodos_root / 'discoshell.bat'
