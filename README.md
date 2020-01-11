@@ -15,7 +15,14 @@ Getting them differs according to your OS
 * On MacOS I suggest getting both packages via homebrew: https://brew.sh/
   (If homebrew seems overkill to you, just use the Windows links above)
 
-Make sure git and python can be executed from everywhere (Adjust your PATH environment variable accordingly). On Windows make sure you select the "Add Python 3.x to PATH" checkbox during the Python setup.
+Make sure git and python can be executed from everywhere (adjust your PATH environment variable accordingly).
+
+During the Python setup on Windows choose "Customize installation" and make sure you select the following options:
+
+- pip
+- py launcher
+- Associate files with Python (requires the py launcher)
+- Add Python to environment variables
 
 ### Linux / MacOS
 
