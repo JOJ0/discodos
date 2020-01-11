@@ -78,26 +78,26 @@ class Config():
     # install cli command (disco) into discodos_root
     def install_cli(self):
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
-        if os.name == "posix":
-            disco_file = self.discodos_root / "disco"
-            venvpath = os.getenv("VIRTUAL_ENV")
-            script_contents = "#!/bin/bash\n"
-            script_contents+= "# This is the DiscoDOS cli wrapper.\n"
-            script_contents+= "source {}\n".format(venvpath)
-            script_contents+= "{} $@\n".format(self.discodos_root / "cli.py")
-            sysinst = self.discodos_root / "install_cli_system.sh"
-            sysinst_contents = "sudo -p \"Need your users password to allow "
-            sysinst_contents+= "systemwide installation of disco cli command: \" "
-            sysinst_contents+=  "cp {} /usr/local/bin\n".format(disco_file)
-        elif os.name == "nt":
-            disco_file = self.discodos_root / "disco.bat"
-            script_contents = "rem This is the DiscoDOS cli wrapper.\n"
-            script_contents+= "setlocal enablextensions\n"
-            script_contents+= "{} %*\n".format(self.discodos_root / "cli.py")
-            script_contents+= "endlocal\n"
-            discoshell = self.discodos_root / "discoshell.bat"
-            venvpath = os.getenv("VIRTUAL_ENV")
-            discoshell_contents = 'start "DiscoDOS shell" /D {} {}\n'.format(
+        if os.name == 'posix':
+            disco_file = self.discodos_root / 'disco'
+            venvpath = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate.bat'
+            script_contents = '#!/bin/bash\n'
+            script_contents+= '# This is the DiscoDOS cli wrapper.\n'
+            script_contents+= 'source "{}"\n'.format(venvpath)
+            script_contents+= '{} $@\n'.format(self.discodos_root / 'cli.py')
+            sysinst = self.discodos_root / 'install_cli_system.sh'
+            sysinst_contents = 'sudo -p "Need your users password to allow '
+            sysinst_contents+= 'systemwide installation of disco cli command: " '
+            sysinst_contents+=  'cp {} /usr/local/bin\n'.format(disco_file)
+        elif os.name == 'nt':
+            disco_file = self.discodos_root / 'disco.bat'
+            script_contents = 'rem This is the DiscoDOS cli wrapper.\n'
+            script_contents+= 'setlocal enablextensions\n'
+            script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
+            script_contents+= 'endlocal\n'
+            discoshell = self.discodos_root / 'discoshell.bat'
+            venvpath = os.getenv('VIRTUAL_ENV')
+            discoshell_contents = 'start 'DiscoDOS shell' /D {} {}\n'.format(
                 self.discodos_root, discoshell.name)
         else:
             log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
