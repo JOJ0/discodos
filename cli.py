@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!python
 
 from discodos.utils import *
 from discodos.ctrls import *
