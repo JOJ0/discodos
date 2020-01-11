@@ -96,7 +96,7 @@ class Config():
             script_contents+= "endlocal\n"
             discoshell = self.discodos_root / "discoshell.bat"
             venvpath = os.getenv("VIRTUAL_ENV")
-            discoshell_contents+= 'start "DiscoDOS shell" /D {} {}\n'.format(
+            discoshell_contents = 'start "DiscoDOS shell" /D {} {}\n'.format(
                 self.discodos_root, discoshell.name)
         else:
             log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
