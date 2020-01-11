@@ -146,6 +146,10 @@ def main():
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # ARGPARSER INIT
     args=argparser(sys.argv)
+    # INSTALL CLI if not there yet
+    conf.install_cli()
+
+    # INFORM USER what this script does
     print_help(
       "This script sets up the DiscoBASE and/or imports data from Discogs.")
     if args.release_id == False and not args.add_release_id:
