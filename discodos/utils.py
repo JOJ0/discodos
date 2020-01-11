@@ -77,23 +77,27 @@ class Config():
 
     # install cli command (disco) into discodos_root
     def install_cli(self):
-        log.info("Config.cli: We are on a {} OS".format(os.name))
+        log.info('Config.cli: We are on a "{}" OS'.format(os.name))
         if os.name == "posix":
             disco_file = self.discodos_root / "disco"
-            script_contents  = "#!/bin/bash\n"
-            script_contents += "# This is the DiscoDOS cli wrapper.\n"
-            script_contents += "source ~/.venvs/discodos/bin/activate\n"
-            script_contents += "{}/cli.py $@\n".format(self.discodos_root)
+            script_contents = "#!/bin/bash\n"
+            script_contents+= "# This is the DiscoDOS cli wrapper.\n"
+            script_contents+= "source ~/.venvs/discodos/bin/activate\n"
+            script_contents+= "{} $@\n".format(self.discodos_root / "cli.py")
             sysinst = self.discodos_root / "install_cli_system.sh"
-            sysinst_contents  = "sudo -p \"Need your users password to allow "
-            sysinst_contents += "systemwide installation of disco cli command: \" "
-            sysinst_contents +=  "cp ./disco /usr/local/bin\n"
+            sysinst_contents = "sudo -p \"Need your users password to allow "
+            sysinst_contents+= "systemwide installation of disco cli command: \" "
+            sysinst_contents+=  "cp {} /usr/local/bin\n".format(disco_file)
         elif os.name == "nt":
             disco_file = self.discodos_root / "disco.bat"
-            script_contents  = "rem This is the DiscoDOS cli wrapper.\n"
-            script_contents += "{}/cli.py $@\n".format(self.discodos_root)
-            sysinst = self.discodos_root / "install_cli_system.bat"
-            sysinst_contents = "copy disco.bat c:\windows\system32\n"
+            script_contents = "rem This is the DiscoDOS cli wrapper.\n"
+            script_contents+= "setlocal enablextensions\n"
+            script_contents+= "{} %*\n".format(self.discodos_root / "cli.py")
+            script_contents+= "endlocal\n"
+            discoshell = self.discodos_root / "discoshell.bat"
+            venvpath = os.getenv("VIRTUAL_ENV")
+            discoshell_contents+= 'start "DiscoDOS shell" /D {} {}\n'.format(
+                self.discodos_root, discoshell.name)
         else:
             log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
             return True
@@ -101,19 +105,24 @@ class Config():
         if disco_file.is_file():
             log.info("Config.cli: disco cli wrapper is already existing.")
         else:
-            print("Creating disco cli wrapper in {}".format(
-                self.discodos_root))
+            print("Creating disco cli wrapper in {}".format(self.discodos_root))
             self._write_textfile(script_contents, disco_file)
-            self._write_textfile(sysinst_contents, sysinst)
             if os.name == "posix":
                 disco_file.chmod(0o755)
                 print("You can now use the DiscoDOS cli using ./disco")
                 sysinst.chmod(0o755)
+                self._write_textfile(sysinst_contents, sysinst)
+                hlpmsg ="Execute ./{} for systemwide installation".format(sysinst.name)
+                hlpmsg+="\n(makes disco command executable from everywhere)."
+                print_help(hlpmsg)
             elif os.name == "windows":
-                helpmsg  ="You can now use the DiscoDOS cli using disco.bat "
-                helpmsg +="(inside this directory!)"
-                print_help(helpmsg)
-            print_help("Execute {} for systemwide installation.".format(sysinst.name))
+                hlpmsg ="disco.bat was installed correctly."
+                hlpmsg+="(inside this directory!)"
+                print_help(hlpmsg)
+                self._write_textfile(discoshell_contents, discoshell)
+                hlpshmsg = "You can now just double click discoshell.bat"
+                hlpshmsg+= "and enter disco commands inside the DiscoDOS shell window."
+                print_help(hlpshmsg)
 
     # write a textile (eg. shell script)
     def _write_textfile(self, contents, file):
