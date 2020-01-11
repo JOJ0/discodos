@@ -88,7 +88,6 @@ class Config():
             sysinst_contents  = "sudo -p \"Need your users password to allow "
             sysinst_contents += "systemwide installation of disco cli command: \" "
             sysinst_contents +=  "cp ./disco /usr/local/bin\n"
-            print(sysinst_contents)
         elif os.name == "windows":
             disco_file = self.discodos_root / "disco.bat"
             script_contents  = "rem This is the DiscoDOS cli wrapper.\n"
