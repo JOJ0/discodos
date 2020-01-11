@@ -116,10 +116,11 @@ class Config():
                 hlpmsg ="Execute ./{} for systemwide installation".format(sysinst.name)
                 hlpmsg+="\n(makes disco command executable from everywhere)."
                 print_help(hlpmsg)
-            elif os.name == "windows":
+            elif os.name == "nt":
                 hlpmsg ="{} was installed correctly: {}".format(disco_file.name,
                     disco_file)
                 print_help(hlpmsg)
+                print("Installing DiscoDOS shell: {}".format(discoshell))
                 self._write_textfile(discoshell_contents, discoshell)
                 hlpshmsg = "You can now just double click discoshell.bat"
                 hlpshmsg+= "and enter disco commands inside the DiscoDOS shell window."
