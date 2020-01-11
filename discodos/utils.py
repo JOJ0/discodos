@@ -80,10 +80,10 @@ class Config():
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
         if os.name == 'posix':
             disco_file = self.discodos_root / 'disco'
-            venvpath = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate.bat'
+            venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate'
             script_contents = '#!/bin/bash\n'
             script_contents+= '# This is the DiscoDOS cli wrapper.\n'
-            script_contents+= 'source "{}"\n'.format(venvpath)
+            script_contents+= 'source "{}"\n'.format(venv_act)
             script_contents+= '{} $@\n'.format(self.discodos_root / 'cli.py')
             sysinst = self.discodos_root / 'install_cli_system.sh'
             sysinst_contents = 'sudo -p "Need your users password to allow '
@@ -96,8 +96,8 @@ class Config():
             script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
             script_contents+= 'endlocal\n'
             discoshell = self.discodos_root / 'discoshell.bat'
-            venvpath = os.getenv('VIRTUAL_ENV')
-            discoshell_contents = 'start 'DiscoDOS shell' /D {} {}\n'.format(
+            venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
+            discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
                 self.discodos_root, discoshell.name)
         else:
             log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
