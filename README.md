@@ -103,7 +103,7 @@ To access your Discogs collection you need to generate an API login token.
  ```
  ---
  discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
- discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
+ discogs_appid: "J0J0 Todos DiscoDOS/0.0.2 +http://github.com/JOJ0"
  log_level: "WARNING"
  ```
 
@@ -126,13 +126,15 @@ cd discodos
 
 ### Initializing the database and importing your discogs collection 
 
-_Remove the ./ in front of the commands if you are on Windows! Depending on your python installation you may have to put python or py in front of them._
+_Remove the ./ in front of the commands if you are on Windows! Also make sure you have the "py launcher" installed and .py files associated (see setup notes above)._
 
-The setup script creates an empty database.
+On first launch, the setup script does several things:
+
+- it creates an empty database -> You should find a file named `discobase.db` in your discodos folder.
 
 `./setup.py`
 
-You should find a file named `discobase.db` inside the root of your discodos folder. Check if the database is working by creating a new mix.
+ Check if the database is working by creating a new mix.
 
 `./cli.py mix -c new_mix_name`
 
@@ -191,7 +193,7 @@ You can update your DiscoBASE from your Discogs collection at any time using
 
 `./setup.py -i`
 
-Due to the Discogs API being not the fastest this takes quite some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out this command. Instead of searching for a text-term we hand over a Discogs release ID. Discodos will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
+Due to the Discogs API being not the fastest this takes quite some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
 `./cli.py mix new_mix_name -a 123456`
 
