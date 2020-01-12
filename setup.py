@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 
 import discogs_client
 import csv
