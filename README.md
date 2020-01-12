@@ -17,12 +17,15 @@ Getting them differs according to your OS
 
 Make sure git and python can be executed from everywhere (adjust your PATH environment variable accordingly).
 
-During the Python setup on Windows choose "Customize installation" and make sure you select the following options:
+During the Python setup on Windows choose "Customize installation" and select the following options:
 
 - pip
 - py launcher
 - Associate files with Python (requires the py launcher)
 - Add Python to environment variables
+
+
+## Initial Setup
 
 ### Linux / MacOS
 
@@ -89,9 +92,6 @@ Install the necessary dependencies into your environment!
 
 `pip install -r "%HOMEPATH%/discodos/requirements.txt"`
 
-
-
-## Initial Setup
 
 ### Configuring Discogs API access
 
