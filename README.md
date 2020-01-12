@@ -26,6 +26,8 @@ During the Python setup on Windows choose "Customize installation" and make sure
 
 ### Linux / MacOS
 
+_Skip this chapter if you are on a Windows OS!_
+
 Clone the github repo
 
 Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
@@ -133,27 +135,38 @@ _Remove the ./ in front of the commands if you are on Windows! Also make sure yo
 On first launch, the setup script does several things:
 
 - it creates an empty database -> You should find a file named `discobase.db` in your discodos folder.
+- it sets up the DiscoDOS cli
+  - Linux/MacOS: You should find the files `disco` and `install_cli_system.sh` in your discodos folder.
+  - Windows: You should find the files `disco.bat` and `discoshell.bat`
+
+Now launch setup and carefully read the output.
 
 `./setup.py`
 
+On **Windows** your starting point to using DiscoDOS is to always first doubleclick `discoshell.bat`. This opens a new command prompt window named "DiscoDOS shell". The "Virtual Python Environment" DiscoDOS needs to function is now active. Once inside this shell you are able to execute cli commands via the disco.bat wrapper. As usual on Windows systems you can leave out the .bat ending and just type `disco`.
+
+On **Linux and MacOS** the workflow is slightly different. To execute DiscoDOS cli commands you just type `./disco`. This wrapper script also takes care of activating the "Virtual Python Environment". To conveniently use the `disco` command from everywhere on your system, copy it to a place that's being searched for according to your PATH variable - the provided script `install_cli_system.sh` does this for you and copies `disco` to /usr/local/bin).
+
+_The following commands assume that, depending on your OS, you are either inside the DiscoDOS shell window or `disco` is being found via the PATH variable._
+
  Check if the database is working by creating a new mix.
 
-`./cli.py mix -c new_mix_name`
+`disco mix -c new_mix_name`
 
 View your mix.
 
-`./cli.py mix new_mix_name`
+`disco mix new_mix_name`
 
 Import your collection to the DiscoBASE
 
 `./setup.py -i`
 
 
-## Usage
+## Basic Usage
 
 When the import is through you should be able to add your collection's tracks to the "mix" created above.
 
-`./cli.py mix new_mix_name -a "Amon Tobin Killer Vanilla"`
+`disco mix new_mix_name -a "Amon Tobin Killer Vanilla"`
 
 Note that even though the tracks name actually is "The Killer's Vanilla" it will be found.
 
@@ -161,33 +174,33 @@ Be precise when asked for the track number on the record: A1 is not the same as 
 
 View your mix again, your track should be there, verbose mode shows that track and artist names are still missing.
 
-`./cli.py mix new_mix_name -v`
+`disco mix new_mix_name -v`
 
 Add some more tracks!
 
 Now update your mix's tracks with data pulled from the Discogs API. If track numbers are not precise (eg A vs A1) data won't be found!
 
-`./cli.py mix new_mix_name -u`
+`disco mix new_mix_name -u`
 
 Use the verbose mode to see all the details pulled from Discogs.
 
-`./cli.py mix new_mix_name -v`
+`disco mix new_mix_name -v`
 
 Ask what more you could do with your mix and its tracks
 
-`./cli.py mix new_mix_name --help`
+`disco mix new_mix_name --help`
 
 You have two options to edit your mix's tracks. Eg to edit the third track in your mix you could either use
 
-`./cli.py mix new_mix_name -e 3`
+`disco mix new_mix_name -e 3`
 
 which edits _all_ fields, or you could select specific fields using the bulk edit option
 
-`./cli.py mix new_mix_name -b trans_rating,bpm -p 3`
+`disco mix new_mix_name -b trans_rating,bpm -p 3`
 
 If you leave out -p 3 (the track position option) you just go through all of your mixes tracks and are asked to put data into the selected fields
 
-`./cli.py mix new_mix_name -b trans_rating,bpm`
+`disco mix new_mix_name -b trans_rating,bpm`
 
 ## Update database from Discogs
 
@@ -197,7 +210,7 @@ You can update your DiscoBASE from your Discogs collection at any time using
 
 Due to the Discogs API being not the fastest this takes quite some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
-`./cli.py mix new_mix_name -a 123456`
+`disco mix new_mix_name -a 123456`
 
 To add a release to your local database **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached.
 
