@@ -91,14 +91,15 @@ class Config():
             sysinst_contents+=  'cp {} /usr/local/bin\n'.format(disco_file)
         elif os.name == 'nt':
             disco_file = self.discodos_root / 'disco.bat'
-            script_contents = 'rem This is the DiscoDOS cli wrapper.\n'
-            script_contents+= 'setlocal enablextensions\n'
+            script_contents = '@echo off\n'
+            script_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
+            script_contents+= 'setlocal enableextensions\n'
             script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
             script_contents+= 'endlocal\n'
             discoshell = self.discodos_root / 'discoshell.bat'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
             discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
-                self.discodos_root, discoshell.name)
+                self.discodos_root, venv_act)
         else:
             log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
             return True
@@ -107,7 +108,7 @@ class Config():
             log.info("Config.cli: DiscoDOS cli wrapper is already existing: {}".format(
                 disco_file))
         else:
-            print_help("\nInstalling cli wrapper: {}".format(disco_file))
+            print_help("\nInstalling DiscoDOS cli wrapper: {}".format(disco_file))
             self._write_textfile(script_contents, disco_file)
             if os.name == "posix":
                 disco_file.chmod(0o755)
@@ -118,13 +119,10 @@ class Config():
                 hlpmsg+="\n(makes disco command executable from everywhere)."
                 print_help(hlpmsg)
             elif os.name == "nt":
-                hlpmsg ="{} was installed correctly: {}".format(disco_file.name,
-                    disco_file)
-                print_help(hlpmsg)
-                print("Installing DiscoDOS shell: {}".format(discoshell))
+                print_help('Installing DiscoDOS shell: {}'.format(discoshell))
                 self._write_textfile(discoshell_contents, discoshell)
-                hlpshmsg = "You can now just double click discoshell.bat"
-                hlpshmsg+= "and enter disco commands inside the DiscoDOS shell window."
+                hlpshmsg = 'Usage: Double click discoshell.bat to open the "DiscoDOS shell" '
+                hlpshmsg+= 'window; Now enter "disco ..." or "setup ..." commands.'
                 print_help(hlpshmsg)
 
     # write a textile (eg. shell script)
