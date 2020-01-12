@@ -43,11 +43,12 @@ python3 -m venv ~/.venvs/discodos
 source ~/.venvs/discodos/bin/activate
 ```
 
-Double check if your environment is active and you are using the pip binary installed inside your ~/.venvs/discodos/ directory.
+Double check if your environment is active and you are using the pip binary installed _inside_ your ~/.venvs/discodos/ directory.
 
 `pip --version`
 
-(You should see something like this)
+You should see something like this:
+
 `pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
 
 Install the necessary dependencies into your environment!
@@ -79,6 +80,7 @@ Double check if your environment is active and you are using the pip binary inst
 `pip --version`
 
 You should see something like this:
+
 `pip 19.2.3 from c:\users\user\python-envs\discodos\lib\site-packages\pip (python 3.8)`
 
 Install the necessary dependencies into your environment!
