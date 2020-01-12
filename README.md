@@ -74,12 +74,12 @@ python -m venv "%HOMEPATH%/python-envs/discodos"
 "%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
 ```
 
-Double check if your environment is active and you are using the pip binary installed inside your %HOMEPATH%/python-envs/discodos directory.
+Double check if your environment is active and you are using the pip binary installed _inside_ your %HOMEPATH%/python-envs/discodos directory.
 
 `pip --version`
 
-(You should see something like this. FIXME this should be a Windows path.)
-`pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
+You should see something like this:
+`pip 19.2.3 from c:\users\user\python-envs\discodos\lib\site-packages\pip (python 3.8)`
 
 Install the necessary dependencies into your environment!
 
