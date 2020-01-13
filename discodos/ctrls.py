@@ -470,11 +470,13 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 rel_id = release[0][0]
                 rel_name = release[0][1]
             track_occurences = self.collection.track_report_occurences(rel_id, track_no)
-            self.cli.print_help('\nTrack-combination-report for track {} on "{}":'.format(
-                track_no, rel_name))
+            tr_sugg_msg = '\nTrack combo suggestions for {} on "{}".'.format(
+                track_no, rel_name)
+            tr_sugg_msg+= '\nThis is how you used this track in the past:'
+            self.cli.print_help(tr_sugg_msg)
             if track_occurences:
                 for tr in track_occurences:
-                    self.cli.print_help("Snippet from Mix {} - {}:".format(
+                    self.cli.print_help('Snippet of Mix {} - "{}":'.format(
                         tr['mix_id'], tr['name']))
                     report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
                     self.cli.tab_mix_table(report_snippet, _verbose = True)

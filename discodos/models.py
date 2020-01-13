@@ -604,7 +604,7 @@ class Collection (Database):
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1
         track_pos_after = track_pos + 1
-        sql_sel = '''SELECT track_pos, discogs_title, d_track_name,
+        sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
                            mix_track.d_track_no,
                            key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
         sql_sel+='''
