@@ -126,7 +126,7 @@ cd discodos
 ```
 
 
-### Initializing the database and importing your discogs collection 
+### Initializing the database and setting up the cli tools 
 
 _Remove the ./ in front of the commands if you are on Windows! Also make sure you have the "py launcher" installed and .py files associated (see setup notes above)._
 
@@ -154,6 +154,8 @@ _The following commands assume that, depending on your OS, you are either inside
 View your (empty) mix.
 
 `disco mix fat_mix`
+
+### Importing your Discogs collection
 
 To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the DiscoBASE.
 
