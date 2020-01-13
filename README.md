@@ -31,8 +31,6 @@ During the Python setup on Windows choose "Customize installation" and select th
 
 _Skip this chapter if you are on a Windows OS!_
 
-Clone the github repo
-
 Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
 ```
@@ -63,7 +61,7 @@ Install the necessary dependencies into your environment!
 
 ### Windows
 
-Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days - if that's not the case in your Windows version, please just change the paths to use backslashes.
+Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
 
 Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
