@@ -3,19 +3,18 @@
 from discodos.utils import *
 from discodos.ctrls import *
 from discodos.views import *
-import discogs_client
-import csv
-import time
-import datetime
+#import discogs_client
+#import time
+#import datetime
 import argparse
 import sys
 import pprint
-import discogs_client.exceptions as errors
-import requests.exceptions as reqerrors
-import urllib3.exceptions as urlerrors
+#import discogs_client.exceptions as errors
+#import requests.exceptions as reqerrors
+#import urllib3.exceptions as urlerrors
 import pprint as pp
-from pathlib import Path
-import os
+#from pathlib import Path
+#import os
 
 # argparser init
 def argparser(argv):
