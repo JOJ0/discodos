@@ -76,12 +76,12 @@ class Config():
             log.warn("Config.log_level not set, will take from argparser or default.")
         try: # optional setting dropbox_token
             if self.conf["dropbox_token"] == "":
-                log.warning("Config.dropbox_token is empty. Backup disabled")
+                log.info("Config.dropbox_token is empty.")
             else:
                 self.dropbox_token = self.conf["dropbox_token"]
-                log.info("Config.dropbox_token is set. Backup enabled")
+                log.info("Config.dropbox_token is set.")
         except KeyError:
-            log.warn("Config.dropbox_token is not set. Backup disabled.")
+            log.info("Config.dropbox_token is not set.")
 
     # install cli command (disco) into discodos_root
     def install_cli(self):
