@@ -12,17 +12,17 @@ import asyncio
 async def main():
     conf=Config()
     log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-    sync = Sync(conf.dropbox_token)
+    sync = Sync(conf.dropbox_token, conf.discobase.name)
     await sync._async_init()
     await sync.backup()
     await sync.select_revision()
 
 class Sync(object):
-    def __init__(self, token):
+    def __init__(self, token, db_file):
         log.info("We are in __init__")
         self.token = token
-        self.discobase = 'discobase.db'
-        self.backuppath = '/discodos/discobase.db'
+        self.discobase = db_file
+        self.backuppath = '/discodos/{}'.format(db_file)
 
     #def __await__(self):
     #    log.info("We are in __await__")
