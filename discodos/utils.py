@@ -121,8 +121,8 @@ class Config():
             if os.name == "posix":
                 disco_file.chmod(0o755)
                 print("You can now use the DiscoDOS cli using ./disco")
-                sysinst.chmod(0o755)
                 self._write_textfile(sysinst_contents, sysinst)
+                sysinst.chmod(0o755)
                 hlpmsg ="Execute ./{} for systemwide installation".format(sysinst.name)
                 hlpmsg+="\n(makes disco command executable from everywhere)."
                 print_help(hlpmsg)
