@@ -52,6 +52,7 @@ class Database (object):
                 #log.info("DB-NEW: Committing NOW")
                 #self.db_conn.commit()
             log.info("DB-NEW: Committing via context close NOW")
+            self.lastrowid = c.lastrowid
             return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
@@ -173,17 +174,38 @@ class Mix (Database):
 
 
     def delete(self):
-        db_return = db.delete_mix(self.db_conn, self.id)
-        self.db_conn.commit()
-        log.info("MODEL: Deleted mix, DB returned: {}".format(db_return))
+        log.info('MODEL: Deleting mix %s and all its mix_track entries (through cascade)',
+            self.id)
+        del_return = self.execute_sql('DELETE FROM mix WHERE mix_id == ?', (self.id, ))
+        log.info("MODEL: Deleted mix, DB returned: {}".format(del_return))
+        self.id_existing = False
+        self.name_existing = False
+        self.info = []
+        self.name = False
+        self.created = False
+        self.updated = False
+        self.played = False
+        self.venue = False
+        return del_return
 
     def create(self, _played, _venue, new_mix_name = False):
         if not new_mix_name:
             new_mix_name = self.name
-        created_id = db.add_new_mix(self.db_conn, new_mix_name, _played, _venue)
-        self.db_conn.commit()
-        log.info("MODEL: New mix created with ID {}.".format(created_id))
-        return created_id
+        sql_create = '''INSERT INTO mix (name, created, updated, played, venue)
+                       VALUES (?, datetime('now', 'localtime'), '', date(?), ?)'''
+        values = (new_mix_name, _played, _venue)
+        db_rowcount = self.execute_sql(sql_create, values)
+        log.info("MODEL: New mix created with ID {}.".format(self.lastrowid))
+        self.id_existing = True
+        self.name_existing = True
+        self.id = self.lastrowid
+        self.info = self.get_mix_info()
+        self.name = self.info[1]
+        self.created = self.info[2]
+        self.updated = self.info[3]
+        self.played = self.info[4]
+        self.venue = self.info[5]
+        return db_rowcount
 
     def get_all_mixes(self):
         """
