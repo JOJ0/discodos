@@ -186,9 +186,9 @@ class Mix (Database):
         del_return = self.execute_sql('DELETE FROM mix WHERE mix_id == ?', (self.id, ))
         log.info("MODEL: Deleted mix, DB returned: {}".format(del_return))
         self.id_existing = False
-        self.name_existing = False
+        self.name_existing = False # as soon as it's deleted, name is available again
         self.info = []
-        self.name = False
+        # self.name = False # keep name so we still know after delete
         self.created = False
         self.updated = False
         self.played = False
