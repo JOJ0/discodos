@@ -103,7 +103,8 @@ class Database (object):
                 if fetchone: # len will return column count
                     log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
                 else: # len will return rows count
-                    log.info('DB-NEW: Found {} rows.'.format(len(rows)))
+                    log.info('DB-NEW: Found {} rows containing {} columns.'.format(
+                        len(rows), len(rows[0])))
                 return rows
         else:
             log.info('DB-NEW: Nothing found - rows NoneType.')
