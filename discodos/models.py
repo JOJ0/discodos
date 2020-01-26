@@ -231,7 +231,22 @@ class Mix (Database):
 
     def get_one_mix_track(self, track_id):
         log.info("MODEL: Returning track {} from mix {}.".format(track_id, self.id))
-        return db.get_one_mix_track(self.db_conn, self.id, track_id)
+        _where = 'mix_track.mix_id == {} AND mix_track.track_pos == {}'.format(self.id,
+            track_id)
+        _join = '''mix_track INNER JOIN mix
+                                ON mix.mix_id = mix_track.mix_id
+                                  INNER JOIN release
+                                  ON mix_track.d_release_id = release.discogs_id
+                                    LEFT OUTER JOIN track
+                                    ON mix_track.d_release_id = track.d_release_id
+                                    AND mix_track.d_track_no = track.d_track_no
+                                      LEFT OUTER JOIN track_ext
+                                      ON mix_track.d_release_id = track_ext.d_release_id
+                                      AND mix_track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track_pos', 'discogs_title', 'd_track_name',
+            'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key', 'key_notes',
+             'bpm', 'notes', 'mix_track_id', 'mix_track.d_release_id'],
+             _join, fetchone = True, condition = _where)
 
     def update_track_in_mix(self, track_details, edit_answers):
         try:

@@ -47,17 +47,27 @@ class TestMix(unittest.TestCase):
         self.assertFalse(self.mix.played)
         print("TestMix.mix_delete: DONE\n")
 
-    def test_mix_get_tracks_to_copy(self):
-        print("\nTestMix.mix_get_tracks_to_copy: BEGIN")
+    def test_mix_get_one_mix_track(self):
+        print("\nTestMix.mix_get_one_mix_track: BEGIN")
         self.mix = Mix(False, 125, self.db_path)
-        db_return = self.mix.get_tracks_to_copy()
-        self.assertEqual(len(db_return), 2)
-        # only difference to get_tracks_of_one_mix: No mix ID here.
-        self.assertEqual(db_return[0]["d_release_id"], 123456)
-        self.assertEqual(db_return[0]["d_track_no"], "A1")
-        self.assertEqual(db_return[1]["d_release_id"], 123456)
-        self.assertEqual(db_return[1]["d_track_no"], "B2")
-        print("TestMix.mix_get_tracks_to_copy: DONE\n")
+        db_return = self.mix.get_one_mix_track(2) # get track #2
+        #print(db_return.keys())
+        #for col in db_return:
+        #    log.debug(col)
+        self.assertEqual(len(db_return), 12) # select returns 12 cols
+        self.assertEqual(db_return["track_pos"], 2)
+        self.assertEqual(db_return["discogs_title"], "Material Love")
+        self.assertEqual(db_return["d_track_name"], "Hedup!")
+        self.assertEqual(db_return["d_track_no"], "B2")
+        self.assertEqual(db_return["trans_rating"], "++++")
+        self.assertEqual(db_return["trans_notes"], "test trans 4")
+        self.assertEqual(db_return["key"], "C")
+        self.assertEqual(db_return["key_notes"], "test key note B2")
+        self.assertEqual(db_return["bpm"], 130)
+        self.assertEqual(db_return["notes"], "test note B2")
+        # how would I test this? db_return["mix_track_id"], "")
+        self.assertEqual(db_return["d_release_id"], 123456)
+        print("TestMix.mix_get_one_mix_track: DONE\n")
 
     def test_mix_get_tracks_of_one_mix(self):
         print("\nTestMix.mix_get_tracks_of_one_mix: BEGIN")
