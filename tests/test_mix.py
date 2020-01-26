@@ -47,6 +47,31 @@ class TestMix(unittest.TestCase):
         self.assertFalse(self.mix.played)
         print("TestMix.mix_delete: DONE\n")
 
+    def test_mix_get_tracks_to_copy(self):
+        print("\nTestMix.mix_get_tracks_to_copy: BEGIN")
+        self.mix = Mix(False, 125, self.db_path)
+        db_return = self.mix.get_tracks_to_copy()
+        self.assertEqual(len(db_return), 2)
+        # only difference to get_tracks_of_one_mix: No mix ID here.
+        self.assertEqual(db_return[0]["d_release_id"], 123456)
+        self.assertEqual(db_return[0]["d_track_no"], "A1")
+        self.assertEqual(db_return[1]["d_release_id"], 123456)
+        self.assertEqual(db_return[1]["d_track_no"], "B2")
+        print("TestMix.mix_get_tracks_to_copy: DONE\n")
+
+    def test_mix_get_tracks_of_one_mix(self):
+        print("\nTestMix.mix_get_tracks_of_one_mix: BEGIN")
+        self.mix = Mix(False, 125, self.db_path)
+        db_return = self.mix.get_tracks_of_one_mix()
+        self.assertEqual(len(db_return), 2)
+        self.assertEqual(db_return[0]["mix_id"], 125)
+        self.assertEqual(db_return[0]["d_release_id"], 123456)
+        self.assertEqual(db_return[0]["d_track_no"], "A1")
+        self.assertEqual(db_return[1]["mix_id"], 125)
+        self.assertEqual(db_return[1]["d_release_id"], 123456)
+        self.assertEqual(db_return[1]["d_track_no"], "B2")
+        print("TestMix.mix_get_tracks_of_one_mix: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)

@@ -93,11 +93,17 @@ class Database (object):
         else:
             rows = self.cur.fetchall()
         if rows:
+            log.debug("DB-NEW: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
+                self.cur.rowcount, self.cur.lastrowid))
             if len(rows) == 0:
                 log.info('DB-NEW: Nothing found - rows length 0.')
                 return [] # FIXME was False before, not sure if this will break things
             else:
-                log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
+                #log.debug('DB-NEW: rows dir {}.'.format(dir(rows))) # debug rows obj
+                if fetchone: # len will return column count
+                    log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
+                else: # len will return rows count
+                    log.info('DB-NEW: Found {} rows.'.format(len(rows)))
                 return rows
         else:
             log.info('DB-NEW: Nothing found - rows NoneType.')
@@ -419,7 +425,9 @@ class Mix (Database):
         return db.get_all_tracks_in_mixes(self.db_conn)
 
     def get_tracks_to_copy(self):
-        return db.get_mix_tracks_to_copy(self.db_conn, self.id)
+        log.info('MODEL: Getting tracks to be copied. mix ID %s', self.id)
+        return self._select_simple(['d_release_id', 'd_track_no', 'track_pos',
+            'trans_rating', 'trans_notes'], "mix_track", "mix_id == {}".format(self.id))
 
     def get_mix_info(self):
         """
