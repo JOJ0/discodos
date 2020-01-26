@@ -42,7 +42,7 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return, 1)
         self.assertFalse(self.mix.id_existing)
         self.assertFalse(self.mix.name_existing)
-        self.assertFalse(self.mix.name)
+        # self.mix.name is kept for user help output
         self.assertFalse(self.mix.venue)
         self.assertFalse(self.mix.played)
         print("TestMix.mix_delete: DONE\n")
