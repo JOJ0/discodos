@@ -332,7 +332,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def copy_mix(self):
         self.cli.print_help("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
-        copy_tr = self.mix.get_tracks_to_copy()
+        copy_tr = self.mix.get_tracks_of_one_mix()
         new_mix_name = self.cli.ask_user("How should the copy be named? ")
         new_mix = Mix(self.mix.db_conn, new_mix_name)
         db_return_new = new_mix.create(self.mix.played, self.mix.venue, new_mix_name)

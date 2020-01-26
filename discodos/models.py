@@ -425,11 +425,6 @@ class Mix (Database):
     def get_all_tracks_in_mixes(self):
         return db.get_all_tracks_in_mixes(self.db_conn)
 
-    def get_tracks_to_copy(self):
-        log.info('MODEL: Getting tracks to be copied. mix ID %s', self.id)
-        return self._select_simple(['d_release_id', 'd_track_no', 'track_pos',
-            'trans_rating', 'trans_notes'], "mix_track", "mix_id == {}".format(self.id))
-
     def get_mix_info(self):
         """
         get metadata of ONE mix from db
