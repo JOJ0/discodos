@@ -82,6 +82,18 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return[1]["d_track_no"], "B2")
         print("TestMix.mix_get_tracks_of_one_mix: DONE\n")
 
+    def test_get_mix_info(self):
+        print("\nTestMix.get_mix_info: BEGIN")
+        self.mix = Mix(False, 126, self.db_path)
+        db_return = self.mix.get_mix_info()
+        self.assertEqual(len(db_return), 6)
+        self.assertTrue(self.mix.id_existing)
+        self.assertTrue(self.mix.name_existing)
+        self.assertEqual(self.mix.name, "test mix 126")
+        self.assertEqual(self.mix.venue, "test venue")
+        self.assertEqual(self.mix.played, "2020-01-01")
+        print("TestMix.get_mix_info: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
