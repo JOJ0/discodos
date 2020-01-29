@@ -418,9 +418,14 @@ class Mix (Database):
         else:
             return mix
 
-    def add_track(self, release, track_no, track_pos, trans_rating='', trans_notes=''):
-        return db.add_track_to_mix(self.db_conn, self.id, release, track_no, track_pos,
-                trans_rating='', trans_notes='')
+    def add_track(self, release_id, track_no, track_pos, trans_rating='', trans_notes=''):
+        log.debug("MODEL: add_track got this: mix_id: {}, d_release_id: {}, track_no: {}, track_pos: {}, trans_rating: {}, trans_notes: {}".format(
+            self.id, release_id, track_no, track_pos, trans_rating, trans_notes))
+        sql_add = '''INSERT INTO mix_track
+            (mix_id, d_release_id, d_track_no, track_pos, trans_rating, trans_notes)
+            VALUES(?, ?, ?, ?, ?, ?)'''
+        values = (self.id, release_id, track_no, track_pos, trans_rating, trans_notes)
+        return self.execute_sql(sql_add, values) # returns rowcount
 
     def get_last_track(self):
         log.info('MODEL: Returning last track in current mix')
