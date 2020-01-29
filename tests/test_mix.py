@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import unittest
 from shutil import copy2
 from os import remove
@@ -8,8 +9,8 @@ from discodos.utils import *
 class TestMix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
+        #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
+        #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         conf = Config() # doesn't get path of test-db, so...
         empty_db_path = conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
         self.db_path = conf.discodos_root / 'tests' / 'discobase.db'
@@ -99,5 +100,12 @@ class TestMix(unittest.TestCase):
         os.remove(self.db_path)
         print("\nTestMix.teardownClass: done")
 
+def suite():
+    testlist = ['test_non_existent', 'test_create', 'test_delete', 'test_get_one_mix_track',
+         'test_get_tracks_of_one_mix', 'test_get_mix_info']
+    return unittest.TestSuite(map(TestMix, testlist))
+
 if __name__ == '__main__':
-    unittest.main()
+    #unittest.main()
+    runner = unittest.TestRunner(verbosity=3, failfast=True)
+    runner.run(suite())
