@@ -108,6 +108,15 @@ class TestMix(unittest.TestCase):
         self.assertEqual(self.mix.played, "2020-01-01")
         print("TestMix.get_mix_info: DONE\n")
 
+    def test_get_last_track(self):
+        print("\nTestMix.get_last_track: BEGIN")
+        self.mix = Mix(False, 125, self.db_path)
+        db_return = self.mix.get_last_track()
+        self.assertEqual(len(db_return), 1)
+        #self.assertEqual(db_return["track_pos"], 2) # no named cols in this case?
+        self.assertEqual(db_return[0], 2) # maybe we use like this somewhere
+        print("TestMix.get_last_track: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)

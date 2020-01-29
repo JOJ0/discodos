@@ -423,7 +423,9 @@ class Mix (Database):
                 trans_rating='', trans_notes='')
 
     def get_last_track(self):
-        return db.get_last_track_in_mix(self.db_conn, self.id)
+        log.info('MODEL: Returning last track in current mix')
+        return self._select_simple(['MAX(track_pos)'], 'mix_track',
+            condition = "mix_id = {}".format(self.id), fetchone = True)
 
     def get_tracks_of_one_mix(self, start_pos = False):
         if not start_pos:
