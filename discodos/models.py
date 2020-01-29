@@ -438,7 +438,8 @@ class Mix (Database):
                 fetchone = False, orderby = 'track_pos')
 
     def get_all_tracks_in_mixes(self):
-        return db.get_all_tracks_in_mixes(self.db_conn)
+        log.info('MODEL: Getting all tracks from mix_track table')
+        return self._select_simple(['*'], 'mix_track', fetchone = False)
 
     def get_mix_info(self):
         """

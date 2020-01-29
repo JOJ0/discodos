@@ -9,7 +9,7 @@ from discodos.utils import *
 class TestMix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
+        log.handlers[0].setLevel("INFO") # handler 0 is the console handler
         #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         conf = Config() # doesn't get path of test-db, so...
         empty_db_path = conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
@@ -82,6 +82,19 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return[1]["d_release_id"], 123456)
         self.assertEqual(db_return[1]["d_track_no"], "B2")
         print("TestMix.get_tracks_of_one_mix: DONE\n")
+
+    def test_get_all_tracks_in_mixes(self):
+        print("\nTestMix.get_all_tracks_in_mixes: BEGIN")
+        self.mix = Mix(False, 0, self.db_path)
+        db_return = self.mix.get_all_tracks_in_mixes()
+        self.assertEqual(len(db_return), 4)
+        self.assertEqual(db_return[0]["mix_id"], 125)
+        self.assertEqual(db_return[0]["d_release_id"], 123456)
+        self.assertEqual(db_return[0]["d_track_no"], "A1")
+        self.assertEqual(db_return[3]["mix_id"], 126)
+        self.assertEqual(db_return[3]["d_release_id"], 123456)
+        self.assertEqual(db_return[3]["d_track_no"], "B2")
+        print("TestMix.get_all_tracks_in_mixes: DONE\n")
 
     def test_get_mix_info(self):
         print("\nTestMix.get_mix_info: BEGIN")
