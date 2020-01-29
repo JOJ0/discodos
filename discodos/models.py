@@ -425,9 +425,6 @@ class Mix (Database):
     def get_last_track(self):
         return db.get_last_track_in_mix(self.db_conn, self.id)
 
-    def get_all_releases(self):
-        return db.get_all_releases(self.db_conn, self.id)
-
     def get_tracks_of_one_mix(self, start_pos = False):
         if not start_pos:
             where = "mix_id == {}".format(self.id)
