@@ -100,12 +100,9 @@ class TestMix(unittest.TestCase):
         os.remove(self.db_path)
         print("\nTestMix.teardownClass: done")
 
-def suite():
-    testlist = ['test_non_existent', 'test_create', 'test_delete', 'test_get_one_mix_track',
-         'test_get_tracks_of_one_mix', 'test_get_mix_info']
-    return unittest.TestSuite(map(TestMix, testlist))
-
 if __name__ == '__main__':
-    #unittest.main()
-    runner = unittest.TestRunner(verbosity=3, failfast=True)
-    runner.run(suite())
+    loader = unittest.TestLoader()
+    ln = lambda f: getattr(TestMix, f).im_func.func_code.co_firstlineno
+    lncmp = lambda _, a, b: cmp(ln(a), ln(b))
+    loader.sortTestMethodsUsing = lncmp
+    unittest.main(testLoader=loader, verbosity=2)
