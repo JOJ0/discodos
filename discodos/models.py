@@ -394,7 +394,9 @@ class Mix (Database):
 
     def delete_track(self, pos):
         log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
-        return db.delete_track_from_mix(self.db_conn, self.id, pos)
+        sql_del = 'DELETE FROM mix_track WHERE mix_id == ? AND track_pos == ?'
+        ids_tuple = (self.id, pos)
+        return self.execute_sql(sql_del, (ids_tuple))
 
     def get_full_mix(self, verbose = False):
         log.info('MODEL: Getting full mix.')
