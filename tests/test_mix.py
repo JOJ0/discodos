@@ -143,6 +143,17 @@ class TestMix(unittest.TestCase):
         self.assertEqual(len(db_return), 0) # select should return nothing
         print("TestMix.delete_track: DONE\n")
 
+    def test_reorder_tracks(self):
+        print("\nTestMix.reorder_tracks: BEGIN")
+        self.mix = Mix(False, 129, self.db_path) # mix 129 is missing track_pos 5
+        db_ret_reord = self.mix.reorder_tracks(4) # reorder starts at pos 4
+        self.assertEqual(db_ret_reord, 1)
+        db_get_ret = self.mix.get_one_mix_track(5) # get the track_pos that was the gap
+        self.assertEqual(len(db_get_ret), 12) # select should return 12 columns
+        self.assertEqual(db_get_ret['d_track_name'],
+            'Material Love (Cab Drivers Remix)') # pos 5 should be this track now
+        print("TestMix.reorder_tracks: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
