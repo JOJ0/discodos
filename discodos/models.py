@@ -340,23 +340,23 @@ class Mix (Database):
             final_insert_track_ext = "{} ({}, d_release_id, d_track_no) VALUES ({}, ?, ?)".format(
                     insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
 
-            log.info('DB-NEW: {}'.format(final_update_track_ext))
-            log.info('DB-NEW: {}'.format(tuple(values_list_track_ext)))
+            log.info('MODEL: {}'.format(final_update_track_ext))
+            log.info('MODEL: {}'.format(tuple(values_list_track_ext)))
 
-            log.info('DB-NEW: {}'.format(final_insert_track_ext))
+            log.info('MODEL: {}'.format(final_insert_track_ext))
             values_insert_list_track_ext = values_list_track_ext[:]
             values_insert_list_track_ext.append(track_details['d_release_id'])
             values_insert_list_track_ext.append(track_details['d_track_no'])
-            log.info('DB-NEW: {}'.format(tuple(values_insert_list_track_ext)))
+            log.info('MODEL: {}'.format(tuple(values_insert_list_track_ext)))
 
             with self.db_conn:
-                log.info("DB-NEW: Now really executing track_ext update/insert...")
+                log.info("MODEL: Now really executing track_ext update/insert...")
                 log.info(values_list_track_ext)
                 log.info(tuple(values_list_track_ext))
 
                 self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
                 if self.cur.rowcount == 0:
-                    log.info("DB-NEW: UPDATE didn't change anything, trying INSERT...".format(
+                    log.info("MODEL: UPDATE didn't change anything, trying INSERT...".format(
                         self.cur.rowcount))
                     self.execute_sql(final_insert_track_ext, tuple(values_insert_list_track_ext))
 
