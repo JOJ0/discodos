@@ -10,7 +10,7 @@ class TestMix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
+        log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         conf = Config() # doesn't get path of test-db, so...
         empty_db_path = conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
         self.db_path = conf.discodos_root / 'tests' / 'discobase.db'
@@ -153,6 +153,25 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_get_ret['d_track_name'],
             'Material Love (Cab Drivers Remix)') # pos 5 should be this track now
         print("TestMix.reorder_tracks: DONE\n")
+
+    def test_reorder_tracks_squeeze_in(self):
+        print("\nTestMix.reorder_tracks_squeeze_in: BEGIN")
+        self.mix = Mix(False, 130, self.db_path) # mix 130 has contains 6 tracks
+        # get tracks to shift
+        tracks_to_shift = self.mix.get_tracks_from_position(3) # track 3 is Material Love
+        # add new track
+        rowcount = self.mix.add_track(8620643, "A", track_pos = 3) # add "The Crane"
+        # now shift previously found tracks, shifting starts at pos 3
+        db_ret_reord = self.mix.reorder_tracks_squeeze_in(3, tracks_to_shift)
+        self.assertEqual(db_ret_reord, 1)
+        db_get_crane = self.mix.get_one_mix_track(3) # get the squeezed in track
+        self.assertEqual(len(db_get_crane), 12) # select should return 12 columns
+        self.assertEqual(db_get_crane['d_track_name'], 'The Crane') # should be The Crane
+        db_get_cab = self.mix.get_one_mix_track(4) # get track after that
+        self.assertEqual(len(db_get_cab), 12) # select should return 12 columns
+        self.assertEqual(db_get_cab['d_track_name'],
+            'Material Love (Cab Drivers Remix)') # should be cab driver remix
+        print("TestMix.reorder_tracks_squeeze_in: DONE\n")
 
     @classmethod
     def tearDownClass(self):

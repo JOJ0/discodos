@@ -382,8 +382,7 @@ class Mix (Database):
         return True
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
-        log.info('MODEL: Reordering tracks in current mix and squeezing something in.')
-        log.info("MODEL: reorder_tracks_squeeze_in got pos {}".format(pos))
+        log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
         #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
         if not tracks_to_shift:
             return False
@@ -391,7 +390,11 @@ class Mix (Database):
             new_pos = t['track_pos'] + 1
             log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
                      t['track_pos'], new_pos)
-            if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):
+            #if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):
+            #    return False
+            sql_upd = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
+            ids_tuple = (new_pos, t['mix_track_id'])
+            if not self.execute_sql(sql_upd, ids_tuple):
                 return False
         return True
 
