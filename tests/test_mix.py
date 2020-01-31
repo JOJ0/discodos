@@ -173,6 +173,15 @@ class TestMix(unittest.TestCase):
             'Material Love (Cab Drivers Remix)') # should be cab driver remix
         print("TestMix.reorder_tracks_squeeze_in: DONE\n")
 
+    def test_get_tracks_from_position(self):
+        print("\nTestMix.get_tracks_from_position: BEGIN")
+        self.mix = Mix(False, 131, self.db_path)
+        db_return = self.mix.get_tracks_from_position(4)
+        self.assertEqual(len(db_return), 2) # should be 2 rows/tracks
+        self.assertEqual(db_return[0]['track_pos'], 4) # first row should be pos 4
+        self.assertEqual(db_return[1]['track_pos'], 5) # second row should be pos 5
+        print("TestMix.get_tracks_from_position: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
