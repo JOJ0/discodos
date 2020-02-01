@@ -1,6 +1,6 @@
 # The geekiest Vinyl DJ playlist tool on the planet
 
-This tool helps a Vinyl DJ to remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from one's [Discogs](https://www.discogs.com) records collection.
+This tool helps a Vinyl DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from one's [Discogs](https://www.discogs.com) records collection.
 
 ## Prerequisites
 
@@ -15,11 +15,21 @@ Getting them differs according to your OS
 * On MacOS I suggest getting both packages via homebrew: https://brew.sh/
   (If homebrew seems overkill to you, just use the Windows links above)
 
-Make sure git and python can be executed from everywhere (Adjust your PATH environment variable accordingly). On Windows make sure you select the "Add Python 3.x to PATH" checkbox during the Python setup.
+Make sure git and python can be executed from everywhere (adjust your PATH environment variable accordingly).
+
+During the Python setup on Windows choose "Customize installation" and select the following options:
+
+- pip
+- py launcher
+- Associate files with Python (requires the py launcher)
+- Add Python to environment variables
+
+
+## Initial Setup
 
 ### Linux / MacOS
 
-Clone the github repo
+_Skip this chapter if you are on a Windows OS!_
 
 Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
@@ -36,11 +46,12 @@ python3 -m venv ~/.venvs/discodos
 source ~/.venvs/discodos/bin/activate
 ```
 
-Double check if your environment is active and you are using the pip binary installed inside your ~/.venvs/discodos/ directory.
+Double check if your environment is active and you are using the pip binary installed _inside_ your ~/.venvs/discodos/ directory.
 
 `pip --version`
 
-(You should see something like this)
+You should see something like this:
+
 `pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
 
 Install the necessary dependencies into your environment!
@@ -50,12 +61,14 @@ Install the necessary dependencies into your environment!
 
 ### Windows
 
+Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
+
 Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
 
 ```
 cd %HOMEPATH%
 git clone https://github.com/JOJ0/discodos.git
-`dir discodos`
+dir discodos
 ```
 
 Create and activate a virtual Python environment!
@@ -65,20 +78,18 @@ python -m venv "%HOMEPATH%/python-envs/discodos"
 "%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
 ```
 
-Double check if your environment is active and you are using the pip binary installed inside your %HOMEPATH%/python-envs/discodos directory.
+Double check if your environment is active and you are using the pip binary installed _inside_ your %HOMEPATH%/python-envs/discodos directory.
 
 `pip --version`
 
-(You should see something like this. FIXME this should be a Windows path.)
-`pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
+You should see something like this:
+
+`pip 19.2.3 from c:\users\user\python-envs\discodos\lib\site-packages\pip (python 3.8)`
 
 Install the necessary dependencies into your environment!
 
 `pip install -r "%HOMEPATH%/discodos/requirements.txt"`
 
-
-
-## Initial Setup
 
 ### Configuring Discogs API access
 
@@ -94,7 +105,7 @@ To access your Discogs collection you need to generate an API login token.
  ```
  ---
  discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
- discogs_appid: "J0J0 Todos Discodos/0.0.2 +http://github.com/JOJ0"
+ discogs_appid: "J0J0 Todos DiscoDOS/0.0.2 +http://github.com/JOJ0"
  log_level: "WARNING"
  ```
 
@@ -115,77 +126,92 @@ cd discodos
 ```
 
 
-### Initializing the database and importing your discogs collection 
+### Initializing the database and setting up the cli tools 
 
-_Remove the ./ in front of the commands if you are on Windows! Depending on your python installation you may have to put python or py in front of them._
+_Remove the ./ in front of the commands if you are on Windows! Also make sure you have the "py launcher" installed and .py files associated (see setup notes above)._
 
-The setup script creates an empty database.
+On first launch, the setup script does several things:
+
+- it creates an empty database -> you should find a file named `discobase.db` in your discodos folder.
+- it sets up the DiscoDOS cli
+  - Linux/MacOS -> find the files `disco` and `install_cli_system.sh` in your discodos folder.
+  - Windows -> find the files `disco.bat` and `discoshell.bat`
+
+Now launch setup and carefully read the output.
 
 `./setup.py`
 
-You should find a file named `discobase.db` inside the root of your discodos folder. Check if the database is working by creating a new mix.
+On **Windows** your starting point to using DiscoDOS is double-clicking `discoshell.bat`. A new command prompt window named "DiscoDOS shell" is opened and the "Virtual Python Environment", DiscoDOS needs to function, is activated. Once inside the shell, execute cli commands via the disco.bat wrapper. As usual on Windows systems you can leave out the .bat ending and just type `disco`.
 
-`./cli.py mix -c new_mix_name`
+On **Linux and MacOS** the workflow is slightly different. To execute DiscoDOS cli commands you just type `./disco`. This wrapper script also takes care of activating the "Virtual Python Environment". To conveniently use the `disco` command from everywhere on your system, copy it to a place that's being searched for according to your PATH variable - the provided script `install_cli_system.sh` does this for you and copies it to /usr/local/bin).
 
-View your mix.
+_The following commands assume that, depending on your OS, you are either inside the DiscoDOS shell window or `disco` is being found via the PATH variable._
 
-`./cli.py mix new_mix_name`
+ Check if the database is working by creating a new mix.
 
-Import your collection to the DiscoBASE
+`disco mix fat_mix -c`
+
+View your (empty) mix.
+
+`disco mix fat_mix`
+
+### Importing your Discogs collection
+
+To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the DiscoBASE.
 
 `./setup.py -i`
 
 
-## Usage
+## Basic Usage
 
-When the import is through you should be able to add your collection's tracks to the "mix" created above.
+When importing is through, try adding one of your collections tracks to the "mix" you just created.
 
-`./cli.py mix new_mix_name -a "Amon Tobin Killer Vanilla"`
+`disco mix fat_mix -a "Amon Tobin Killer Vanilla"`
 
-Note that even though the tracks name actually is "The Killer's Vanilla" it will be found.
+Note that even though the tracks name actually is "The Killer's Vanilla" it will be found. If DiscoDOS realizes you are offline it will search in the local DiscoBASE only. Display of search results will vary!
 
 Be precise when asked for the track number on the record: A1 is not the same as A.
 
 View your mix again, your track should be there, verbose mode shows that track and artist names are still missing.
 
-`./cli.py mix new_mix_name -v`
+`disco mix fat_mix -v`
 
 Add some more tracks!
 
 Now update your mix's tracks with data pulled from the Discogs API. If track numbers are not precise (eg A vs A1) data won't be found!
 
-`./cli.py mix new_mix_name -u`
+`disco mix fat_mix -u`
 
 Use the verbose mode to see all the details pulled from Discogs.
 
-`./cli.py mix new_mix_name -v`
+`disco mix fat_mix -v`
 
-Ask what more you could do with your mix and its tracks
+Ask what more you could do with your mix and its tracks (short option would be -h)
 
-`./cli.py mix new_mix_name --help`
+`disco mix fat_mix --help`
 
 You have two options to edit your mix's tracks. Eg to edit the third track in your mix you could either use
 
-`./cli.py mix new_mix_name -e 3`
+`disco mix fat_mix -e 3`
 
 which edits _all_ fields, or you could select specific fields using the bulk edit option
 
-`./cli.py mix new_mix_name -b trans_rating,bpm -p 3`
+`disco mix fat_mix -b trans_rating,bpm -p 3`
 
 If you leave out -p 3 (the track position option) you just go through all of your mixes tracks and are asked to put data into the selected fields
 
-`./cli.py mix new_mix_name -b trans_rating,bpm`
+`disco mix fat_mix -b trans_rating,bpm`
 
 ## Update database from Discogs
 
-You can update your DiscoBASE from your Discogs collection at any time.
+You can update your DiscoBASE from your Discogs collection at any time using
 
 `./setup.py -i`
 
-but this takes some time due to the Discogs API being not the fastest. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out this command. Instead of searching for a text-term we give a Discogs release ID. Discodos will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
+Due to the Discogs API being not the fastest, it quite takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
-`./cli.py mix new_mix_name -a 123456`
+`disco mix fat_mix -a 123456`
 
-To **only** add a release to your local database (because it's been already added to your collection via the Discogs Web Interface) you just use the import command in the setup script with a release ID attached.
+To add a release to your local database **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached.
 
 `./setup.py -i 123456`

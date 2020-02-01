@@ -9,3 +9,10 @@ curls.txt
 .DS_store
 issues.txt
 debug.log
+cli
+venv.sh
+.vscode
+disco
+install_cli_system.sh
+disco.bat
+discoshell.bat

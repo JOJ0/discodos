@@ -27,9 +27,8 @@ class User_int(object):
         self.WANTS_TO_ADD_RELEASE_IN_MIX_MODE = False
         self.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = False
         self.WANTS_TO_COPY_MIX = False
-        self.WANTS_TO_TRACK_SEARCH = False
         self.WANTS_TO_DELETE_MIX = False
-        self.WANTS_TRACK_REPORT = False
+        self.WANTS_SUGGEST_TRACK_REPORT = False
         self.WANTS_TO_BULK_EDIT = False
 
         # RELEASE MODE:
@@ -99,15 +98,12 @@ class User_int(object):
                     self.WANTS_TO_BULK_EDIT = True
 
         # TRACK MODE
-        if hasattr(self.args, 'track_search'):
-            self.WANTS_TO_TRACK_SEARCH = True
-            if self.args.track_pull:
-                self.WANTS_TO_PULL_TRACK_INFO = True
-            else:
-                self.WANTS_TRACK_REPORT = True
-                log.debug("Entered Track-combination report.")
-                #log.error("track search not implemented yet.")
-                #raise SystemExit(1)
+        if hasattr(self.args, 'suggest_search'):
+            self.WANTS_TO_SUGGEST_SEARCH = True
+            self.WANTS_SUGGEST_TRACK_REPORT = True
+            log.debug("Entered Track-combination report.")
+            #log.error("track search not implemented yet.")
+            #raise SystemExit(1)
 
         if self.args.offline_mode == True:
             self.WANTS_ONLINE = False

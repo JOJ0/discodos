@@ -74,3 +74,77 @@ class Config():
         except KeyError:
             self.log_level = "WARNING"
             log.warn("Config.log_level not set, will take from argparser or default.")
+        try: # optional setting dropbox_token
+            if self.conf["dropbox_token"] == "":
+                log.info("Config.dropbox_token is empty.")
+            else:
+                self.dropbox_token = self.conf["dropbox_token"]
+                log.info("Config.dropbox_token is set.")
+        except KeyError:
+            log.info("Config.dropbox_token is not set.")
+
+    # install cli command (disco) into discodos_root
+    def install_cli(self):
+        log.info('Config.cli: We are on a "{}" OS'.format(os.name))
+        if os.name == 'posix':
+            disco_file = self.discodos_root / 'disco'
+            venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate'
+            script_contents = '#!/bin/bash\n'
+            script_contents+= '# This is the DiscoDOS cli wrapper.\n'
+            script_contents+= 'source "{}"\n'.format(venv_act)
+            script_contents+= '{} "$@"\n'.format(self.discodos_root / 'cli.py')
+            sysinst = self.discodos_root / 'install_cli_system.sh'
+            sysinst_contents = 'sudo -p "Need your users password to allow '
+            sysinst_contents+= 'systemwide installation of disco cli command: " '
+            sysinst_contents+=  'cp {} /usr/local/bin\n'.format(disco_file)
+        elif os.name == 'nt':
+            disco_file = self.discodos_root / 'disco.bat'
+            script_contents = '@echo off\n'
+            script_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
+            script_contents+= 'setlocal enableextensions\n'
+            script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
+            script_contents+= 'endlocal\n'
+            discoshell = self.discodos_root / 'discoshell.bat'
+            venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
+            discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
+                self.discodos_root, venv_act)
+        else:
+            log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
+            return True
+
+        if disco_file.is_file(): # install wrappers only if non-existent
+            log.info("Config.cli: DiscoDOS cli wrapper is already existing: {}".format(
+                disco_file))
+        else:
+            print_help("\nInstalling DiscoDOS cli wrapper: {}".format(disco_file))
+            self._write_textfile(script_contents, disco_file)
+            if os.name == "posix":
+                disco_file.chmod(0o755)
+                print("You can now use the DiscoDOS cli using ./disco")
+                self._write_textfile(sysinst_contents, sysinst)
+                sysinst.chmod(0o755)
+                hlpmsg ="Execute ./{} for systemwide installation".format(sysinst.name)
+                hlpmsg+="\n(makes disco command executable from everywhere)."
+                print_help(hlpmsg)
+            elif os.name == "nt":
+                print_help('Installing DiscoDOS shell: {}'.format(discoshell))
+                self._write_textfile(discoshell_contents, discoshell)
+                hlpshmsg = 'Usage: Double click discoshell.bat to open the "DiscoDOS shell" '
+                hlpshmsg+= 'window; Now enter "disco ..." or "setup ..." commands.'
+                print_help(hlpshmsg)
+
+    # write a textile (eg. shell script)
+    def _write_textfile(self, contents, file):
+        """contents expects string, file expects path/file"""
+        try:
+            with open(file, "w") as f_file:
+                f_file.write(contents)
+                log.info("File %s successfully written", file)
+            return True
+        except IOError as errio:
+            log.error("IOError: could not write file %s \n\n", file)
+            raise errio
+        except Exception as err:
+            log.error(" trying to write %s \n\n", file)
+            raise err
+            raise SystemExit(3)

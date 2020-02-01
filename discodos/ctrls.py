@@ -334,15 +334,17 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         self.cli.print_help("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
         copy_tr = self.mix.get_tracks_to_copy()
         new_mix_name = self.cli.ask_user("How should the copy be named? ")
-        new_mix_id = self.mix.create(self.mix.played, self.mix.venue, new_mix_name)
-        new_mix = Mix(self.mix.db_conn, new_mix_id)
+        new_mix = Mix(self.mix.db_conn, new_mix_name)
+        db_return_new = new_mix.create(self.mix.played, self.mix.venue, new_mix_name)
         for tr in copy_tr:
-            log.debug("CTRL copy_mix: This is tr: {}, {}, {}, {}, {}, ".format(
-                tr[0], tr[1], tr[2], tr[3], tr[4]))
-            new_mix.add_track(tr[0], tr[1], tr[2], tr[3], tr[4])
-            #release, track_no, track_pos, trans_rating='', trans_notes=''
+            log.debug("CTRL copy_mix data: {}, {}, {}, {}, {}, ".format(
+                tr["d_release_id"], tr["d_track_no"], tr["track_pos"], tr["trans_rating"],
+                tr["trans_notes"]))
+            new_mix.add_track(tr["d_release_id"], tr["d_track_no"], tr["track_pos"], tr["trans_rating"],
+                tr["trans_notes"])
         new_mix.db_conn.commit()
         self.cli.print_help("Copy mix successful. New ID is {}.".format(new_mix.id))
+        return True
 
     def update_in_d_coll(self, coll_ctrl, start_pos = False):
         if coll_ctrl.ONLINE:
@@ -465,16 +467,18 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             track_no = self.cli.ask_user_for_track()
             if self.collection.ONLINE == True:
                 rel_id = release[0][0]
-                rel_name = release[0][3]
+                rel_name = release[0][2]
             else:
                 rel_id = release[0][0]
                 rel_name = release[0][1]
             track_occurences = self.collection.track_report_occurences(rel_id, track_no)
-            self.cli.print_help('\nTrack-combination-report for track {} on "{}":'.format(
-                track_no, rel_name))
+            tr_sugg_msg = '\nTrack combo suggestions for {} on "{}".'.format(
+                track_no, rel_name)
+            tr_sugg_msg+= '\nThis is how you used this track in the past:'
+            self.cli.print_help(tr_sugg_msg)
             if track_occurences:
                 for tr in track_occurences:
-                    self.cli.print_help("Snippet from Mix {} - {}:".format(
+                    self.cli.print_help('Snippet of Mix {} - "{}":'.format(
                         tr['mix_id'], tr['name']))
                     report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
                     self.cli.tab_mix_table(report_snippet, _verbose = True)

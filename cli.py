@@ -1,21 +1,20 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 from discodos.utils import *
 from discodos.ctrls import *
 from discodos.views import *
-import discogs_client
-import csv
-import time
-import datetime
+#import discogs_client
+#import time
+#import datetime
 import argparse
 import sys
 import pprint
-import discogs_client.exceptions as errors
-import requests.exceptions as reqerrors
-import urllib3.exceptions as urlerrors
+#import discogs_client.exceptions as errors
+#import requests.exceptions as reqerrors
+#import urllib3.exceptions as urlerrors
 import pprint as pp
-from pathlib import Path
-import os
+#from pathlib import Path
+#import os
 
 # argparser init
 def argparser(argv):
@@ -34,7 +33,7 @@ def argparser(argv):
     ### SEARCH subparser #######################################################
     search_subparser = subparsers.add_parser(
         name='search',
-        help='search for a Discogs release and optionally add it to a mix')
+        help='search for a Discogs release or track and optionally add it to a mix')
     search_subparser.add_argument(
         dest='release_search',
         help='search for this release name or ID')
@@ -51,8 +50,7 @@ def argparser(argv):
     ### MIX subparser #############################################################
     mix_subparser = subparsers.add_parser(
         name='mix',
-        help='do stuff with mixes',
-        aliases=('m', ))
+        help='manage your mixes')
     mix_subparser.add_argument(
         dest='mix_name',
         help='''current mix (mix name or mix ID that should be displayed, edited, created, ...), 
@@ -111,21 +109,15 @@ def argparser(argv):
         "-p", "--pos", type=int,
         dest='mix_mode_add_at_pos',
         help='add found release track at specific position in mix')
-    ### TRACK subparser ##########################################################
-    track_subparser = subparsers.add_parser(
-        name='track',
-        help='search for Track name, show Track-combination report',
-        aliases=('tr', 't'))
-    track_subparser.add_argument(
-        dest='track_search',
-        help='The name of the track you want to show a report for.',
+    ### SUGGEST subparser ##########################################################
+    suggest_subparser = subparsers.add_parser(
+        name='suggest',
+        help='suggests track-combinations based on what you\'ve played in your mixes.')
+    suggest_subparser.add_argument(
+        dest='suggest_search',
+        help='track or release name you want to show a "track-combination report" for.',
         nargs='?',
         default='0')
-    track_subparser.add_argument(
-        "-u", "--discogs-update",
-        dest='track_pull',
-        action="store_true",
-        help='all tracks used in mixes are updated with info pulled from Discogs')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default".format(
@@ -255,13 +247,13 @@ def main():
             mix_ctrl.view()
 
 
-    ### TRACK MODE
-    #if user.WANTS_TO_TRACK_SEARCH:
-    if user.WANTS_TO_PULL_TRACK_INFO:
-        mix_ctrl = Mix_ctrl_cli(False, False, user, conf.discobase)
-        mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
-    elif user.WANTS_TRACK_REPORT:
-        coll_ctrl.track_report(args.track_search)
+    ### SUGGEST MODE (was TRACK MODE)
+    #if user.WANTS_TO_PULL_TRACK_INFO:
+    #    mix_ctrl = Mix_ctrl_cli(False, False, user, conf.discobase)
+    #    mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+    #elif user.WANTS_SUGGEST_TRACK_REPORT:
+    if user.WANTS_SUGGEST_TRACK_REPORT:
+        coll_ctrl.track_report(args.suggest_search)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":

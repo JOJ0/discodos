@@ -52,6 +52,7 @@ class Database (object):
                 #log.info("DB-NEW: Committing NOW")
                 #self.db_conn.commit()
             log.info("DB-NEW: Committing via context close NOW")
+            self.lastrowid = c.lastrowid
             return c.rowcount
         except sqlerr as e:
             #log.error("DB-NEW: %s", dir(e))
@@ -92,11 +93,18 @@ class Database (object):
         else:
             rows = self.cur.fetchall()
         if rows:
+            log.debug("DB-NEW: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
+                self.cur.rowcount, self.cur.lastrowid))
             if len(rows) == 0:
                 log.info('DB-NEW: Nothing found - rows length 0.')
                 return [] # FIXME was False before, not sure if this will break things
             else:
-                log.debug('DB-NEW: Found {} rows.'.format(len(rows)))
+                #log.debug('DB-NEW: rows dir {}.'.format(dir(rows))) # debug rows obj
+                if fetchone: # len will return column count
+                    log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
+                else: # len will return rows count
+                    log.info('DB-NEW: Found {} rows containing {} columns.'.format(
+                        len(rows), len(rows[0])))
                 return rows
         else:
             log.info('DB-NEW: Nothing found - rows NoneType.')
@@ -173,17 +181,38 @@ class Mix (Database):
 
 
     def delete(self):
-        db_return = db.delete_mix(self.db_conn, self.id)
-        self.db_conn.commit()
-        log.info("MODEL: Deleted mix, DB returned: {}".format(db_return))
+        log.info('MODEL: Deleting mix %s and all its mix_track entries (through cascade)',
+            self.id)
+        del_return = self.execute_sql('DELETE FROM mix WHERE mix_id == ?', (self.id, ))
+        log.info("MODEL: Deleted mix, DB returned: {}".format(del_return))
+        self.id_existing = False
+        self.name_existing = False # as soon as it's deleted, name is available again
+        self.info = []
+        # self.name = False # keep name so we still know after delete
+        self.created = False
+        self.updated = False
+        self.played = False
+        self.venue = False
+        return del_return
 
     def create(self, _played, _venue, new_mix_name = False):
         if not new_mix_name:
             new_mix_name = self.name
-        created_id = db.add_new_mix(self.db_conn, new_mix_name, _played, _venue)
-        self.db_conn.commit()
-        log.info("MODEL: New mix created with ID {}.".format(created_id))
-        return created_id
+        sql_create = '''INSERT INTO mix (name, created, updated, played, venue)
+                       VALUES (?, datetime('now', 'localtime'), '', date(?), ?)'''
+        values = (new_mix_name, _played, _venue)
+        db_rowcount = self.execute_sql(sql_create, values)
+        log.info("MODEL: New mix created with ID {}.".format(self.lastrowid))
+        self.id_existing = True
+        self.name_existing = True
+        self.id = self.lastrowid
+        self.info = self.get_mix_info()
+        self.name = self.info[1]
+        self.created = self.info[2]
+        self.updated = self.info[3]
+        self.played = self.info[4]
+        self.venue = self.info[5]
+        return db_rowcount
 
     def get_all_mixes(self):
         """
@@ -397,7 +426,9 @@ class Mix (Database):
         return db.get_all_tracks_in_mixes(self.db_conn)
 
     def get_tracks_to_copy(self):
-        return db.get_mix_tracks_to_copy(self.db_conn, self.id)
+        log.info('MODEL: Getting tracks to be copied. mix ID %s', self.id)
+        return self._select_simple(['d_release_id', 'd_track_no', 'track_pos',
+            'trans_rating', 'trans_notes'], "mix_track", "mix_id == {}".format(self.id))
 
     def get_mix_info(self):
         """
@@ -604,7 +635,7 @@ class Collection (Database):
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1
         track_pos_after = track_pos + 1
-        sql_sel = '''SELECT track_pos, discogs_title, d_track_name,
+        sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
                            mix_track.d_track_no,
                            key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
         sql_sel+='''

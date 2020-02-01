@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import discogs_client
 import csv
@@ -6,8 +6,6 @@ import time
 import datetime
 import argparse
 import sys
-from pathlib import Path
-import os
 
 from discodos.models import *
 from discodos.ctrls import *
@@ -144,6 +142,10 @@ def main():
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # ARGPARSER INIT
     args=argparser(sys.argv)
+    # INSTALL CLI if not there yet
+    conf.install_cli()
+
+    # INFORM USER what this script does
     print_help(
       "This script sets up the DiscoBASE and/or imports data from Discogs.")
     if args.release_id == False and not args.add_release_id:
@@ -172,7 +174,7 @@ def main():
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
-    # PREPARE DISCOGS API and
+    # PREPARE DISCOGS API and USER INTERACTION classes
     user = User_int(args)
     coll_ctrl = Coll_ctrl_cli(db_obj.db_conn, user, conf.discogs_token,
             conf.discogs_appid)
