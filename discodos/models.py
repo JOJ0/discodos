@@ -38,7 +38,7 @@ class Database (object):
 
     def execute_sql(self, sql, values_tuple = False, raise_err = False):
         '''used for eg. creating tables or inserts'''
-        log.info("DB-NEW: Executing sql: %s", sql)
+        log.info("DB-NEW: execute_sql: %s", sql)
         try:
             with self.db_conn: # auto commits and auto rolls back on exceptions
                 c = self.cur  # connection close has to be done manually though!
@@ -68,6 +68,7 @@ class Database (object):
         self.execute_sql(settings)
 
     def _select_simple(self, fields_list, table, condition = False, fetchone = False, orderby = False):
+        log.info("DB-NEW: _select_simple: fetchone = {}".format(fetchone))
         fields_str = ""
         for cnt,field in enumerate(fields_list):
             if cnt == 0:
@@ -86,7 +87,7 @@ class Database (object):
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone = False):
-        log.info("DB-NEW: SQL: {}".format(sql_select))
+        log.info("DB-NEW: _select: {}".format(sql_select))
         self.cur.execute(sql_select)
         if fetchone:
             rows = self.cur.fetchone()
