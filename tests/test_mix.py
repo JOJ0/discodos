@@ -182,6 +182,30 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return[1]['track_pos'], 5) # second row should be pos 5
         print("TestMix.get_tracks_from_position: DONE\n")
 
+    def test_update_mix_track_and_track_ext(self):
+        print("\nTestMix.update_mix_track_and_track_ext: BEGIN")
+        self.mix = Mix(False, 132, self.db_path) # instantiate mix 132
+        # before edit:
+        db_get_bef = self.mix.get_one_mix_track(4) # get a track
+        self.assertEqual(len(db_get_bef), 12) # select should return 12 columns
+        self.assertEqual(db_get_bef['d_track_name'],
+            'The Crane (Inland & Function Rmx)') # we won't/can't edit this
+        self.assertEqual(db_get_bef['bpm'], 120) # will be changed
+        self.assertEqual(db_get_bef['key'], "Am") # will be changed
+        # do the edit
+        track_details = db_get_bef
+        edit_answers = {'bpm': 130, 'key': 'Fm'}
+        db_ret_upd = self.mix.update_mix_track_and_track_ext(track_details, edit_answers)
+        self.assertEqual(db_ret_upd, 1) # was a row updated?
+        # after edit:
+        db_get_aft = self.mix.get_one_mix_track(4) # get the updated track
+        self.assertEqual(len(db_get_aft), 12) # select should return 12 columns
+        self.assertEqual(db_get_bef['d_track_name'],
+            'The Crane (Inland & Function Rmx)') # we didn't edit this
+        self.assertEqual(db_get_aft['bpm'], 130) # we just changed this
+        self.assertEqual(db_get_aft['key'], "Fm") # we just changed this
+        print("TestMix.update_mix_track_and_track_ext: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
