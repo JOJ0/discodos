@@ -223,8 +223,8 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return[3]["discogs_title"], "The Crane")
         self.assertEqual(db_return[3]["d_track_no"], "AA")
         self.assertEqual(db_return[3]["trans_rating"], "")
-        self.assertEqual(db_return[3]["key"], "Fm")
-        self.assertEqual(db_return[3]["bpm"], 130)
+        self.assertEqual(db_return[3]["key"], "Am")
+        self.assertEqual(db_return[3]["bpm"], 120)
         print("TestMix.get_full_mix: DONE\n")
 
     def test_get_full_mix_verbose(self):
@@ -249,8 +249,8 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return[3]["discogs_title"], "The Crane")
         self.assertEqual(db_return[3]["d_track_name"], "The Crane (Inland & Function Rmx)")
         self.assertEqual(db_return[3]["d_track_no"], "AA")
-        self.assertEqual(db_return[3]["key"], "Fm")
-        self.assertEqual(db_return[3]["bpm"], 130)
+        self.assertEqual(db_return[3]["key"], "Am")
+        self.assertEqual(db_return[3]["bpm"], 120)
         self.assertEqual(db_return[3]["key_notes"], None)
         self.assertEqual(db_return[3]["trans_rating"], "")
         self.assertEqual(db_return[3]["trans_notes"], "")
