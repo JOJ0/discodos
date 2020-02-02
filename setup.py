@@ -111,27 +111,37 @@ def create_db_tables(_db_obj):
     #    log.info(e.args[0])
     try: # release
         _db_obj.execute_sql(sql_create_release_table, raise_err = True)
-        print_help("CREATE TABLE 'release' successful.")
+        msg_release="CREATE TABLE 'release' was successful."
+        log.info(msg_release)
+        print_help(msg_release)
     except sqlerr as e:
         log.info("CREATE TABLE 'release': %s", e.args[0])
     try: # mix
         _db_obj.execute_sql(sql_create_mix_table, raise_err = True)
-        print_help("CREATE TABLE 'mix' successful.")
+        msg_mix="CREATE TABLE 'mix' was successful."
+        log.info(msg_mix)
+        print_help(msg_mix)
     except sqlerr as e:
         log.info("CREATE TABLE 'mix': %s", e.args[0])
     try: # mix_track
         _db_obj.execute_sql(sql_create_mix_track_table, raise_err = True)
-        print_help("CREATE TABLE 'mix_track' successful.")
+        msg_mix_track="CREATE TABLE 'mix_track' was successful."
+        log.info(msg_mix_track)
+        print_help(msg_mix_track)
     except sqlerr as e:
         log.info("CREATE TABLE 'mix_track': %s", e.args[0])
     try: # track
         _db_obj.execute_sql(sql_create_track_table, raise_err = True)
-        print_help("CREATE TABLE 'track' successful.")
+        msg_track="CREATE TABLE 'track' was successful."
+        log.info(msg_track)
+        print_help(msg_track)
     except sqlerr as e:
         log.info("CREATE TABLE 'track': %s", e.args[0])
     try: # track_ext
         _db_obj.execute_sql(sql_create_track_ext_table, raise_err = True)
-        print_help("CREATE TABLE 'track_ext' successful.")
+        msg_track_ext="CREATE TABLE 'track_ext' was successful."
+        log.info(msg_track_ext)
+        print_help(msg_track_ext)
     except sqlerr as e:
         log.info("CREATE TABLE 'track_ext': %s", e.args[0])
 
