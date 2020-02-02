@@ -102,7 +102,7 @@ class Config():
             script_contents = '@echo off\n'
             script_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
             script_contents+= 'setlocal enableextensions\n'
-            script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
+            script_contents+= '"{}" %*\n'.format(self.discodos_root / 'cli.py')
             script_contents+= 'endlocal\n'
             discoshell = self.discodos_root / 'discoshell.bat'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
