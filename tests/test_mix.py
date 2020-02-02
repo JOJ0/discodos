@@ -206,6 +206,27 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_get_aft['key'], "Fm") # we just changed this
         print("TestMix.update_mix_track_and_track_ext: DONE\n")
 
+    def test_get_full_mix(self):
+        print("\nTestMix.get_full_mix: BEGIN")
+        self.mix = Mix(False, 133, self.db_path)
+        db_return = self.mix.get_full_mix() # non-verbose select - not all fields
+        self.assertEqual(len(db_return), 5) # mix 133 contains 5 tracks
+        # track 1
+        self.assertEqual(db_return[0]["track_pos"], 1)
+        self.assertEqual(db_return[0]["discogs_title"], "Material Love")
+        self.assertEqual(db_return[0]["d_track_no"], "A1")
+        self.assertEqual(db_return[0]["trans_rating"], "+")
+        self.assertEqual(db_return[0]["key"], "Am")
+        self.assertEqual(db_return[0]["bpm"], 125)
+        # track 4
+        self.assertEqual(db_return[3]["track_pos"], 4)
+        self.assertEqual(db_return[3]["discogs_title"], "The Crane")
+        self.assertEqual(db_return[3]["d_track_no"], "AA")
+        self.assertEqual(db_return[3]["trans_rating"], "")
+        self.assertEqual(db_return[3]["key"], "Fm")
+        self.assertEqual(db_return[3]["bpm"], 130)
+        print("TestMix.get_full_mix: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
