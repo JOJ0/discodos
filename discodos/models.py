@@ -249,33 +249,6 @@ class Mix (Database):
              'bpm', 'notes', 'mix_track_id', 'mix_track.d_release_id'],
              _join, fetchone = True, condition = _where)
 
-    def update_track_in_mix(self, track_details, edit_answers):
-        log.info("MODEL: Updating track in mix_track table.")
-        try:
-            db.update_track_in_mix(self.db_conn,
-                track_details['mix_track_id'],
-                edit_answers['d_release_id'],
-                edit_answers['d_track_no'],
-                edit_answers['track_pos'],
-                edit_answers['trans_rating'],
-                edit_answers['trans_notes'])
-            db.update_or_insert_track_ext(self.db_conn,
-                track_details['d_release_id'],
-                edit_answers['d_release_id'],
-                edit_answers['d_track_no'],
-                edit_answers['key'],
-                edit_answers['key_notes'],
-                edit_answers['bpm'],
-                edit_answers['notes'],
-                )
-            log.info("MODEL: Track edit was successful.")
-            return True
-        except Exception as edit_err:
-
-            log.error("MODEL: Something went wrong in update_track_in_mix!")
-            raise edit_err
-            return False
-
     def update_mix_track_and_track_ext(self, track_details, edit_answers):
         log.info("MODEL: Updating track in mix_track and track_ext tables.")
         log.debug("MODEL: track_details dict: {}".format(track_details))
