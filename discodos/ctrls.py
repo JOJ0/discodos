@@ -159,7 +159,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     log.info("Answer was empty, keeping previous value: %s",
                              _track_det[db_field])
                     answers[db_field] = _track_det[db_field]
-        #pprint.pprint(answers) # debug
+        if log.level == 10:
+            log.debug("CTRL: _edit_track_ask_details: answers dict:".format(answers))
         return answers
 
     def bulk_edit_tracks(self, fields_str, first_track):
@@ -184,7 +185,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                             if field == question[0]:
                                 #log.info("appending to bulk_questions list")
                                 bulk_questions.append(question)
-                    log.debug(bulk_questions)
+                    log.debug("CTRL: bulk_questions: {}".format(bulk_questions))
                     edit_answers = self._edit_track_ask_details(track_details,
                         bulk_questions)
                     update_ok = self.mix.update_mix_track_and_track_ext(track_details,

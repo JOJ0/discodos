@@ -278,6 +278,8 @@ class Mix (Database):
 
     def update_mix_track_and_track_ext(self, track_details, edit_answers):
         log.info("MODEL: Updating track in mix_track and track_ext tables.")
+        log.debug("MODEL: track_details dict: {}".format(track_details))
+        log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
         mix_track_cols=['d_release_id', 'd_track_no', 'track_pos', 'trans_rating', 'trans_notes']
         track_ext_cols=['key', 'bpm', 'key_notes', 'notes']
         values_mix_track = '' # mix_track update
@@ -309,8 +311,8 @@ class Mix (Database):
                         values_mix_track += ", {} = ? ".format(answer[0], answer[1])
                     values_list_mix_track.append(answer[1])
             final_update_mix_track = update_mix_track + values_mix_track + where_mix_track
-            log.info('MODEL: {}'.format(final_update_mix_track))
-            log.info(log.info('MODEL: {}'.format(tuple(values_list_mix_track))))
+            #log.info('MODEL: {}'.format(final_update_mix_track))
+            #log.info(log.info('MODEL: {}'.format(tuple(values_list_mix_track))))
             with self.db_conn:
                 log.info("MODEL: Now really executing mix_track update...")
                 self.execute_sql(final_update_mix_track, tuple(values_list_mix_track))
@@ -341,25 +343,27 @@ class Mix (Database):
             final_insert_track_ext = "{} ({}, d_release_id, d_track_no) VALUES ({}, ?, ?)".format(
                     insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
 
-            log.info('MODEL: {}'.format(final_update_track_ext))
-            log.info('MODEL: {}'.format(tuple(values_list_track_ext)))
+            #log.info('MODEL: {}'.format(final_update_track_ext))
+            #log.info('MODEL: {}'.format(tuple(values_list_track_ext)))
 
-            log.info('MODEL: {}'.format(final_insert_track_ext))
+            #log.info('MODEL: {}'.format(final_insert_track_ext))
             values_insert_list_track_ext = values_list_track_ext[:]
             values_insert_list_track_ext.append(track_details['d_release_id'])
             values_insert_list_track_ext.append(track_details['d_track_no'])
-            log.info('MODEL: {}'.format(tuple(values_insert_list_track_ext)))
+            #log.info('MODEL: {}'.format(tuple(values_insert_list_track_ext)))
 
             with self.db_conn:
                 log.info("MODEL: Now really executing track_ext update/insert...")
-                log.info(values_list_track_ext)
-                log.info(tuple(values_list_track_ext))
+                #log.info(values_list_track_ext)
+                #log.info(tuple(values_list_track_ext))
 
-                self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
-                if self.cur.rowcount == 0:
-                    log.info("MODEL: UPDATE didn't change anything, trying INSERT...".format(
-                        self.cur.rowcount))
-                    self.execute_sql(final_insert_track_ext, tuple(values_insert_list_track_ext))
+                dbret = self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
+                if dbret == 0: # checks rowcount
+                    log.info("MODEL: UPDATE didn't change anything, trying INSERT...")
+                    dbret = self.execute_sql(final_insert_track_ext,
+                        tuple(values_insert_list_track_ext))
+            return dbret
+        return False
 
     def get_tracks_from_position(self, pos):
         log.info('MODEL: Getting tracks in mix, starting at position {}.'.format(pos))

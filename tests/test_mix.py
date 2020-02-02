@@ -182,6 +182,83 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return[1]['track_pos'], 5) # second row should be pos 5
         print("TestMix.get_tracks_from_position: DONE\n")
 
+    def test_update_mix_track_and_track_ext(self):
+        print("\nTestMix.update_mix_track_and_track_ext: BEGIN")
+        self.mix = Mix(False, 132, self.db_path) # instantiate mix 132
+        # before edit:
+        db_get_bef = self.mix.get_one_mix_track(4) # get a track
+        self.assertEqual(len(db_get_bef), 12) # select should return 12 columns
+        self.assertEqual(db_get_bef['d_track_name'],
+            'The Crane (Inland & Function Rmx)') # we won't/can't edit this
+        self.assertEqual(db_get_bef['bpm'], 120) # will be changed
+        self.assertEqual(db_get_bef['key'], "Am") # will be changed
+        # do the edit
+        track_details = db_get_bef
+        edit_answers = {'bpm': 130, 'key': 'Fm'}
+        db_ret_upd = self.mix.update_mix_track_and_track_ext(track_details, edit_answers)
+        self.assertEqual(db_ret_upd, 1) # was a row updated?
+        # after edit:
+        db_get_aft = self.mix.get_one_mix_track(4) # get the updated track
+        self.assertEqual(len(db_get_aft), 12) # select should return 12 columns
+        self.assertEqual(db_get_bef['d_track_name'],
+            'The Crane (Inland & Function Rmx)') # we didn't edit this
+        self.assertEqual(db_get_aft['bpm'], 130) # we just changed this
+        self.assertEqual(db_get_aft['key'], "Fm") # we just changed this
+        print("TestMix.update_mix_track_and_track_ext: DONE\n")
+
+    def test_get_full_mix(self):
+        print("\nTestMix.get_full_mix: BEGIN")
+        self.mix = Mix(False, 133, self.db_path)
+        db_return = self.mix.get_full_mix() # non-verbose select - not all fields
+        self.assertEqual(len(db_return), 5) # mix 133 contains 5 tracks
+        # track 1
+        self.assertEqual(db_return[0]["track_pos"], 1)
+        self.assertEqual(db_return[0]["discogs_title"], "Material Love")
+        self.assertEqual(db_return[0]["d_track_no"], "A1")
+        self.assertEqual(db_return[0]["trans_rating"], "+")
+        self.assertEqual(db_return[0]["key"], "Am")
+        self.assertEqual(db_return[0]["bpm"], 125)
+        # track 4
+        self.assertEqual(db_return[3]["track_pos"], 4)
+        self.assertEqual(db_return[3]["discogs_title"], "The Crane")
+        self.assertEqual(db_return[3]["d_track_no"], "AA")
+        self.assertEqual(db_return[3]["trans_rating"], "")
+        self.assertEqual(db_return[3]["key"], "Am")
+        self.assertEqual(db_return[3]["bpm"], 120)
+        print("TestMix.get_full_mix: DONE\n")
+
+    def test_get_full_mix_verbose(self):
+        print("\nTestMix.get_full_mix_verbose: BEGIN")
+        self.mix = Mix(False, 133, self.db_path)
+        db_return = self.mix.get_full_mix(verbose = True) # verbose select - all fields
+        self.assertEqual(len(db_return), 5) # mix 133 contains 5 tracks
+        # track 1
+        self.assertEqual(db_return[0]["track_pos"], 1)
+        self.assertEqual(db_return[0]["discogs_title"], "Material Love")
+        self.assertEqual(db_return[0]["d_artist"], "Märtini Brös.")
+        self.assertEqual(db_return[0]["d_track_name"], "Material Love")
+        self.assertEqual(db_return[0]["d_track_no"], "A1")
+        self.assertEqual(db_return[0]["key"], "Am")
+        self.assertEqual(db_return[0]["bpm"], 125)
+        self.assertEqual(db_return[0]["key_notes"], "test key note A1")
+        self.assertEqual(db_return[0]["trans_rating"], "+")
+        self.assertEqual(db_return[0]["trans_notes"], "test trans 1")
+        self.assertEqual(db_return[0]["notes"], "test track note")
+        # track 4
+        self.assertEqual(db_return[3]["track_pos"], 4)
+        self.assertEqual(db_return[3]["discogs_title"], "The Crane")
+        self.assertEqual(db_return[3]["d_track_name"], "The Crane (Inland & Function Rmx)")
+        self.assertEqual(db_return[3]["d_track_no"], "AA")
+        self.assertEqual(db_return[3]["key"], "Am")
+        self.assertEqual(db_return[3]["bpm"], 120)
+        self.assertEqual(db_return[3]["key_notes"], None)
+        self.assertEqual(db_return[3]["trans_rating"], "")
+        self.assertEqual(db_return[3]["trans_notes"], "")
+        self.assertEqual(db_return[3]["notes"], None)
+
+
+        print("TestMix.get_full_mix_verbose: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
