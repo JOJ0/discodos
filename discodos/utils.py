@@ -92,7 +92,7 @@ class Config():
             script_contents = '#!/bin/bash\n'
             script_contents+= '# This is the DiscoDOS cli wrapper.\n'
             script_contents+= 'source "{}"\n'.format(venv_act)
-            script_contents+= '{} "$@"\n'.format(self.discodos_root / 'cli.py')
+            script_contents+= '"{}" "$@"\n'.format(self.discodos_root / 'cli.py')
             sysinst = self.discodos_root / 'install_cli_system.sh'
             sysinst_contents = 'sudo -p "Need your users password to allow '
             sysinst_contents+= 'systemwide installation of disco cli command: " '
@@ -102,7 +102,7 @@ class Config():
             script_contents = '@echo off\n'
             script_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
             script_contents+= 'setlocal enableextensions\n'
-            script_contents+= '{} %*\n'.format(self.discodos_root / 'cli.py')
+            script_contents+= '"{}" %*\n'.format(self.discodos_root / 'cli.py')
             script_contents+= 'endlocal\n'
             discoshell = self.discodos_root / 'discoshell.bat'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
