@@ -125,7 +125,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                         self.cli._edit_track_questions)
                 for a in edit_answers.items():
                     log.info("answers: %s", str(a))
-                update_ok = self.mix.update_track_in_mix(track_details, edit_answers)
+                update_ok = self.mix.update_mix_track_and_track_ext(track_details, edit_answers)
                 if update_ok:
                     print_help("Track edit was successful.")
                 else:
