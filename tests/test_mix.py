@@ -271,12 +271,19 @@ class TestMix(unittest.TestCase):
 
         print("TestMix.get_full_mix_verbose: DONE\n")
 
-    def test_get_mix_id_error(self): # trying to get id from name, but it's an ID
-        print("\nTestMix.get_mix_id_error: BEGIN")
+    def test_get_mix_id_number(self): # trying to get id from name, but it's an ID
+        print("\nTestMix.get_mix_id_number: BEGIN")
         self.mix = Mix(False, 0, self.db_path) # initiate an empty mix
         db_return = self.mix._get_mix_id(125)
-        self.assertEqual(db_return, None) # should be None, it's not a name
-        print("TestMix.get_mix_id_error: DONE\n")
+        self.assertEqual(db_return, 125) # should be 125, it's not a name
+        print("TestMix.get_mix_id_number: DONE\n")
+
+    def test_get_mix_id_non_existent(self): # trying to get id from name, but it's unknown
+        print("\nTestMix.get_mix_id_non_existent: BEGIN")
+        self.mix = Mix(False, 0, self.db_path) # initiate an empty mix
+        db_return = self.mix._get_mix_id("unknown mix name")
+        self.assertEqual(db_return, None) # should be None, it's not a known mix name
+        print("TestMix.get_mix_id_non_existent: DONE\n")
 
     def test_get_mix_id(self): # trying to get id from name
         print("\nTestMix.get_mix_id: BEGIN")
@@ -285,6 +292,7 @@ class TestMix(unittest.TestCase):
         self.assertEqual(len(db_return), 1) # should be 1 column
         self.assertEqual(db_return["mix_id"], 125) # should be ID 125
         print("TestMix.get_mix_id: DONE\n")
+
 
     @classmethod
     def tearDownClass(self):

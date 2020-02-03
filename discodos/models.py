@@ -184,13 +184,13 @@ class Mix (Database):
                      mixname)
         if is_number(mixname):
             log.info("MODEL: mix name is a number, won't try to fetch from DB")
-            return None
+            return mixname # we were probably been given an ID already, return it.
         else:
             self.cur.execute(
                 'SELECT mix_id FROM mix WHERE name LIKE ?', ("%{}%".format(mixname), ))
             row = self.cur.fetchone()
-            log.info("MODEL: Found mix ID: {}".format(row["mix_id"]))
             if row:
+                log.info("MODEL: Found mix ID: {}".format(row["mix_id"]))
                 return row
             else:
                 log.info("MODEL: Can't fetch mix ID by name")
