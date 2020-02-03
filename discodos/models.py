@@ -93,23 +93,20 @@ class Database (object):
             rows = self.cur.fetchone()
         else:
             rows = self.cur.fetchall()
+
         if rows:
             log.debug("DB-NEW: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
                 self.cur.rowcount, self.cur.lastrowid))
-            if len(rows) == 0:
-                log.info('DB-NEW: Nothing found - rows length 0.')
-                return [] # FIXME was False before, not sure if this will break things
-            else:
-                #log.debug('DB-NEW: rows dir {}.'.format(dir(rows))) # debug rows obj
-                if fetchone: # len will return column count
-                    log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
-                else: # len will return rows count
-                    log.info('DB-NEW: Found {} rows containing {} columns.'.format(
-                        len(rows), len(rows[0])))
-                return rows
+            if fetchone: # len will return column count
+                log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
+            else: # len will return rows count
+                log.info('DB-NEW: Found {} rows containing {} columns.'.format(
+                    len(rows), len(rows[0])))
+            log.debug("DB-NEW: Returning row(s) as type: {}.".format(type(rows).__name__))
+            return rows
         else:
-            log.info('DB-NEW: Nothing found - rows NoneType.')
-            return [] # FIXME was False before, not sure if this will break things
+            log.info('DB-NEW: Nothing found - Returning type: {}.'.format(type(rows).__name__))
+            return rows # was empty list before, now it's either empty list or NoneType
 
     def close_conn(self): # manually close conn! - context manager (with) doesn't do it
         self.db_conn.close()
@@ -148,8 +145,8 @@ class Mix (Database):
             # (default value, should only show mix list)
             if not self.name == "all":
                 try:
-                    mix_id_tuple = db.get_mix_id(self.db_conn, self.name)
-                    log.info('%s', mix_id_tuple)
+                    mix_id_tuple = self._get_mix_id(self.name)
+                    log.debug('MODEL: mix_id_tuple type: %s', type(mix_id_tuple).__name__)
                     self.id = mix_id_tuple[0]
                     self.id_existing = True
                     self.name_existing = True
@@ -180,6 +177,24 @@ class Mix (Database):
     #def.name(self):
     #    return db.get_mix_info(self.db_conn, self.id)[1]
 
+    def _get_mix_id(self, mixname): # this method should only be called from __init__
+        #return self._select_simple(["mix_id"], 'mix', fetchone = True,
+        #    condition = 'name LIKE "%{}%"'.format(mix_name))
+        log.info('MODEL: Getting mix_id via mix name "%s". Only returns first match',
+                     mixname)
+        if is_number(mixname):
+            log.info("MODEL: mix name is a number, won't try to fetch from DB")
+            return None
+        else:
+            self.cur.execute(
+                'SELECT mix_id FROM mix WHERE name LIKE ?', ("%{}%".format(mixname), ))
+            row = self.cur.fetchone()
+            log.info("MODEL: Found mix ID: {}".format(row["mix_id"]))
+            if row:
+                return row
+            else:
+                log.info("MODEL: Can't fetch mix ID by name")
+                return row
 
     def delete(self):
         log.info('MODEL: Deleting mix %s and all its mix_track entries (through cascade)',
