@@ -149,10 +149,10 @@ class TestMix(unittest.TestCase):
     def test_delete_track(self):
         print("\nTestMix.delete_track: BEGIN")
         self.mix = Mix(False, 128, self.db_path)
-        db_ret_add = self.mix.delete_track(3)
-        self.assertEqual(db_ret_add, 1)
+        db_ret_del = self.mix.delete_track(3)
+        self.assertEqual(db_ret_del, 1)
         db_return = self.mix.get_one_mix_track(3) # get the track we just deleted
-        self.assertEqual(len(db_return), 0) # select should return nothing
+        self.assertEqual(db_return, None) # select should return nothing aka None
         print("TestMix.delete_track: DONE\n")
 
     def test_reorder_tracks(self):
