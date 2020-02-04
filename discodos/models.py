@@ -514,7 +514,8 @@ class Collection (Database):
         return _ONLINE
 
     def get_all_db_releases(self):
-        return db.all_releases(self.db_conn)
+        #return db.all_releases(self.db_conn)
+        return self._select_simple(['*'], 'release', orderby='discogs_title')
 
     def search_release_online(self, id_or_title):
         try:
