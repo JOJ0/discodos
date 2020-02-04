@@ -68,6 +68,9 @@ class Database (object):
         self.execute_sql(settings)
 
     def _select_simple(self, fields_list, table, condition = False, fetchone = False, orderby = False):
+        """This is a wrapper around the _select method.
+           It puts together sql select statements as strings.
+        """
         log.info("DB-NEW: _select_simple: fetchone = {}".format(fetchone))
         fields_str = ""
         for cnt,field in enumerate(fields_list):
@@ -87,6 +90,20 @@ class Database (object):
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone = False):
+        """Executes sql selects in two possible ways: fetchone or fetchall
+           It's completely string based and not aware of tuple based
+           values substitution in sqlite3 cursor objects.
+
+        @param sql_select (string): the complete sql select statement
+        @param fetchone (bool): defaults to False (return multiple rows)
+        @return (type is depending on running mode)
+            fetchone = True:
+                something found: sqlite3.Row (dict-like) object
+                nothing found: None
+            fetchone = False (fetchall, this is the default)
+                something found: a list of sqlite3.Row (dict-like) objects
+                nothing found: an empty list
+        """
         log.info("DB-NEW: _select: {}".format(sql_select))
         self.cur.execute(sql_select)
         if fetchone:
