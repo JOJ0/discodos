@@ -108,6 +108,18 @@ class TestMix(unittest.TestCase):
         self.assertEqual(self.mix.played, "2020-01-01")
         print("TestMix.get_mix_info: DONE\n")
 
+    def test_get_mix_info_error(self):
+        print("\nTestMix.get_mix_info_error: BEGIN")
+        self.mix = Mix(False, 123, self.db_path) # mix 123 is not existing
+        db_return = self.mix.get_mix_info() # actually this was called in init already
+        self.assertEqual(db_return, None) # _select returns NoneType
+        self.assertFalse(self.mix.id_existing)
+        self.assertFalse(self.mix.name_existing)
+        self.assertEqual(self.mix.name, False)
+        self.assertEqual(self.mix.venue, False)
+        self.assertEqual(self.mix.played, False)
+        print("TestMix.get_mix_info_error: DONE\n")
+
     def test_get_last_track(self):
         print("\nTestMix.get_last_track: BEGIN")
         self.mix = Mix(False, 125, self.db_path)
@@ -137,10 +149,10 @@ class TestMix(unittest.TestCase):
     def test_delete_track(self):
         print("\nTestMix.delete_track: BEGIN")
         self.mix = Mix(False, 128, self.db_path)
-        db_ret_add = self.mix.delete_track(3)
-        self.assertEqual(db_ret_add, 1)
+        db_ret_del = self.mix.delete_track(3)
+        self.assertEqual(db_ret_del, 1)
         db_return = self.mix.get_one_mix_track(3) # get the track we just deleted
-        self.assertEqual(len(db_return), 0) # select should return nothing
+        self.assertEqual(db_return, None) # select should return nothing aka None
         print("TestMix.delete_track: DONE\n")
 
     def test_reorder_tracks(self):
@@ -258,6 +270,29 @@ class TestMix(unittest.TestCase):
 
 
         print("TestMix.get_full_mix_verbose: DONE\n")
+
+    def test_get_mix_id_number(self): # trying to get id from name, but it's an ID
+        print("\nTestMix.get_mix_id_number: BEGIN")
+        self.mix = Mix(False, 0, self.db_path) # initiate an empty mix
+        db_return = self.mix._get_mix_id(125)
+        self.assertEqual(db_return, 125) # should be 125, it's not a name
+        print("TestMix.get_mix_id_number: DONE\n")
+
+    def test_get_mix_id_non_existent(self): # trying to get id from name, but it's unknown
+        print("\nTestMix.get_mix_id_non_existent: BEGIN")
+        self.mix = Mix(False, 0, self.db_path) # initiate an empty mix
+        db_return = self.mix._get_mix_id("unknown mix name")
+        self.assertEqual(db_return, None) # should be None, it's not a known mix name
+        print("TestMix.get_mix_id_non_existent: DONE\n")
+
+    def test_get_mix_id(self): # trying to get id from name
+        print("\nTestMix.get_mix_id: BEGIN")
+        self.mix = Mix(False, 0, self.db_path) # initiate an empty mix
+        db_return = self.mix._get_mix_id("test mix 125")
+        self.assertEqual(len(db_return), 1) # should be 1 column
+        self.assertEqual(db_return["mix_id"], 125) # should be ID 125
+        print("TestMix.get_mix_id: DONE\n")
+
 
     @classmethod
     def tearDownClass(self):
