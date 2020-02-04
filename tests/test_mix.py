@@ -103,7 +103,7 @@ class TestMix(unittest.TestCase):
         self.assertEqual(len(db_return), 6)
         self.assertTrue(self.mix.id_existing)
         self.assertTrue(self.mix.name_existing)
-        self.assertEqual(self.mix.name, "test mix 126")
+        self.assertEqual(self.mix.name, "test 126 mix_info")
         self.assertEqual(self.mix.venue, "test venue")
         self.assertEqual(self.mix.played, "2020-01-01")
         print("TestMix.get_mix_info: DONE\n")
@@ -288,7 +288,7 @@ class TestMix(unittest.TestCase):
     def test_get_mix_id(self): # trying to get id from name
         print("\nTestMix.get_mix_id: BEGIN")
         self.mix = Mix(False, 0, self.db_path) # initiate an empty mix
-        db_return = self.mix._get_mix_id("test mix 125")
+        db_return = self.mix._get_mix_id("test 125") # real name in db much longer (%?%)
         self.assertEqual(len(db_return), 1) # should be 1 column
         self.assertEqual(db_return["mix_id"], 125) # should be ID 125
         print("TestMix.get_mix_id: DONE\n")
