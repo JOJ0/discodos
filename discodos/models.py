@@ -570,9 +570,6 @@ class Collection (Database):
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
 
-    def get_all_releases(self):
-        return db.all_releases(self.db_conn)
-
     def create_track(self, release_id, track_no, track_name, track_artist):
         insert_tuple = (release_id, track_artist, track_no, track_name)
         update_tuple = (release_id, track_artist, track_no, track_name, release_id, track_no)
