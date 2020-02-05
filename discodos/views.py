@@ -135,6 +135,32 @@ class Cli_view_common(ABC):
             self.print_help(tab(_mix_data, tablefmt="pipe",
                 headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
 
+    def trim_table_fields(self, tuple_table):
+        """this method puts \n after a configured amount of characters
+        into _all_ fields of a sqlite row objects tuple list"""
+        cut_pos = 16
+        table_nl = []
+        # first convert list of tuples to list of lists:
+        for tuple_row in tuple_table:
+            table_nl.append(list(tuple_row))
+        # now put newlines if longer than cut_pos chars
+        for i, row in enumerate(table_nl):
+            for j, field in enumerate(row):
+                if not is_number(field) and field is not None:
+                    if len(field) > cut_pos:
+                        cut_pos_space = field.find(" ", cut_pos)
+                        log.debug("cut_pos_space index: %s", cut_pos_space)
+                        # don't edit if no space following (almost at end)
+                        if cut_pos_space == -1:
+                            edited_field = field
+                            log.debug(edited_field)
+                        else:
+                            edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
+                            log.debug(edited_field)
+                        #log.debug(field[0:cut_pos_space])
+                        #log.debug(field[cut_pos_space:])
+                        table_nl[i][j] = edited_field
+        return table_nl
 
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
