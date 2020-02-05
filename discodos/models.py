@@ -602,7 +602,9 @@ class Collection (Database):
                     return False
 
     def search_release_id(self, release_id):
-        return db.search_release_id(self.db_conn, release_id)
+        #return db.search_release_id(self.db_conn, release_id)
+        return self._select_simple(['*'], 'release',
+            'discogs_id == {}'.format(release_id), fetchone = True)
 
     def create_release(self, release_id, release_title, release_artists, d_coll = False):
         try:

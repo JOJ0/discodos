@@ -36,6 +36,18 @@ class TestCollection(unittest.TestCase):
         #self.assertEqual(db_return[1]['in_d_collection'], 1)
         print("TestMix.get_all_db_releases: DONE\n")
 
+    def test_search_release_id(self):
+        print("\nTestMix.search_release_id: BEGIN")
+        # instantiate the Collection model class
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.search_release_id('123456')
+        self.assertIsNotNone(db_return)
+        self.assertEqual(len(db_return), 5) # should be 5 columns
+        self.assertEqual(db_return['discogs_id'], 123456)
+        self.assertEqual(db_return['d_artist'], 'Märtini Brös.')
+        self.assertEqual(db_return['discogs_title'], 'Material Love')
+        print("TestMix.search_release_id: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
