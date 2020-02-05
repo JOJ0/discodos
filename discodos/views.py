@@ -153,17 +153,6 @@ class Mix_view_common(ABC):
             ["notes", "Other track notes: ({}): "]
         ]
 
-        self._edit_questions = [
-            {'db_field': 'key', 'question': "Key ({}): "},
-            {'db_field': 'bpm', 'question': "BPM ({}): "},
-            {'db_field': 'd_track_no', 'question': "Track # on record ({}): "},
-            {'db_field': 'track_pos', 'question': "Move track's position ({}): "},
-            {'db_field': 'key_notes', 'question': "Key notes/bassline/etc. ({}): "},
-            {'db_field': 'trans_rating', 'question': "Transition rating ({}): "},
-            {'db_field': 'trans_notes', 'question': "Transition notes ({}): "},
-            {'db_field': 'd_release_id', 'question': "Release ID ({}): "},
-            {'db_field': 'notes', 'question': "Other track notes: ({}): "}
-        ]
 
 # viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common, Cli_view_common):
