@@ -378,7 +378,8 @@ class Mix (Database):
 
     def reorder_tracks(self, pos):
         log.info("MODEL: Reordering tracks in mix, starting at pos {}".format(pos))
-        tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        tracks_to_shift = self.get_tracks_from_position(pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
