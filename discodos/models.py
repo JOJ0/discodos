@@ -547,9 +547,7 @@ class Collection (Database):
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
-                release = self._select_simple(['*'], 'release',
-                        'discogs_id LIKE {}'.format(
-                        id_or_title, id_or_title), fetchone = True, orderby = 'd_artist')
+                return self.search_release_id(id_or_title)
                 if release:
                     return [release]
                 else:
