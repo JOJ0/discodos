@@ -434,8 +434,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     def view_all_releases(self):
         self.cli.print_help("Showing all releases in DiscoBASE.")
-        all_releases_result = self.cli.trim_table_fields(
-            self.collection.get_all_db_releases())
+        #all_releases_result = self.cli.trim_table_fields(
+        #    self.collection.get_all_db_releases())
+        all_releases_result = self.collection.get_all_db_releases()
         self.cli.tab_all_releases(all_releases_result)
 
     def track_report(self, track_searchterm):
