@@ -26,14 +26,14 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(len(db_return), 2)
         self.assertEqual(db_return[0]['discogs_id'], 123456)
         self.assertEqual(db_return[0]['discogs_title'], 'Material Love')
-        self.assertEqual(db_return[0]['import_timestamp'], '2020-01-25 22:33:35')
+        #self.assertEqual(db_return[0]['import_timestamp'], '2020-01-25 22:33:35')
         self.assertEqual(db_return[0]['d_artist'], 'Märtini Brös.')
-        self.assertEqual(db_return[0]['in_d_collection'], 1)
+        #self.assertEqual(db_return[0]['in_d_collection'], 1)
         self.assertEqual(db_return[1]['discogs_id'], 8620643)
         self.assertEqual(db_return[1]['discogs_title'], 'The Crane')
-        self.assertEqual(db_return[1]['import_timestamp'], '2020-01-30 10:06:26')
+        #self.assertEqual(db_return[1]['import_timestamp'], '2020-01-30 10:06:26')
         self.assertEqual(db_return[1]['d_artist'], 'Source Direct')
-        self.assertEqual(db_return[1]['in_d_collection'], 1)
+        #self.assertEqual(db_return[1]['in_d_collection'], 1)
         print("TestMix.get_all_db_releases: DONE\n")
 
     @classmethod
