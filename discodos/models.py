@@ -515,7 +515,8 @@ class Collection (Database):
 
     def get_all_db_releases(self):
         #return db.all_releases(self.db_conn)
-        return self._select_simple(['*'], 'release', orderby='discogs_title')
+        return self._select_simple(['discogs_id', 'd_artist', 'discogs_title',
+            'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
 
     def search_release_online(self, id_or_title):
         try:

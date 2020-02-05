@@ -257,7 +257,7 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
 
     def tab_all_releases(self, releases_data):
         self.print_help(tab(releases_data, tablefmt="plain",
-            headers=["ID", "Release name", "Last import"]))
+            headers=["Discogs ID", "Artist", "Release Title", "Last import", "in Collection"]))
 
     def error_not_the_release(self):
         log.error("This is not the release you are looking for!")
