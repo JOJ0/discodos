@@ -515,7 +515,8 @@ class Collection (Database):
 
     def get_all_db_releases(self):
         #return db.all_releases(self.db_conn)
-        return self._select_simple(['*'], 'release', orderby='discogs_title')
+        return self._select_simple(['discogs_id', 'd_artist', 'discogs_title',
+            'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
 
     def search_release_online(self, id_or_title):
         try:
@@ -569,9 +570,6 @@ class Collection (Database):
             except Exception as Exc:
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
-
-    def get_all_releases(self):
-        return db.all_releases(self.db_conn)
 
     def create_track(self, release_id, track_no, track_name, track_artist):
         insert_tuple = (release_id, track_artist, track_no, track_name)
