@@ -126,9 +126,10 @@ class main_frame():
                     self.tracks_list.insert("", i, text=row["d_artist"] , values=(row["d_track_name"], row["d_track_no"], row["key"], row["bpm"], row["key_notes"], row["trans_rating"], row["trans_notes"], row["notes"]))
                     log.debug("GUI: Inserted Track row")
                     self.status.set("Inserted Track row")  
+
                 except:
-                    log.error("GUI: Inserting Track Row failed")
-                    self.status.set("Inserting Track Row failed") 
+                    log.error(f"GUI: Inserting Track Row failed {row['d_artist']}")
+                    self.status.set(f"GUI: Inserting Track Row failed {row['d_artist']}") 
                 
             try:
                 start_child_id_two = self.tracks_list.get_children()[0]
@@ -140,9 +141,10 @@ class main_frame():
                 self.status.set("Couldn't Set Focus on Track Item")
 
         else:
-            log.error("GUI: Mix Data is " + str(mix_data))
-            self.status.set("GUI: Mix Data is " + str(mix_data)) 
+            log.error(f"GUI: Mix Data is {str(mix_data)}")
+            self.status.set(f"GUI: Mix Data is {str(mix_data)}")
             self.tracks_list.delete(*self.tracks_list.get_children())
+        
 
 
     def open_widget(self, view):
@@ -223,7 +225,7 @@ class main_frame():
                         self.track_edit_win._quit()
 
                         try:
-                            track = models.Mix(self.conn, self.tracks_list.item(self.tracks_list.focus()," ")) # # START HERE
+                            track = models.Mix(self.conn, self.tracks_list.item(self.mix_list.focus(),"text")) # # START HERE
 
                         # Fetch Mix data with Mix ID
                         # THEN fetch get_one_mix with track Id
