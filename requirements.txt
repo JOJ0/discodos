@@ -13,6 +13,6 @@ pytest==4.1.1
 PyYAML==5.2
 requests==2.21.0
 six==1.12.0
-tabulate==0.8.3
+tabulate==0.8.6
 urllib3==1.24.1
 tkinter==8.6

@@ -2,7 +2,7 @@ from discodos.utils import * # some of this is a view thing right?
 from discodos.models import *
 from discodos.views import *
 from abc import ABC, abstractmethod
-from discodos import log, db # db should only be in model.py
+from discodos import log
 from tabulate import tabulate as tab # should be only in views.py
 import pprint as p
 from datetime import time
@@ -63,32 +63,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             if not full_mix:
                 print_help("No tracks in mix yet.")
             else:
-                # newline chars after 24 chars magic, our new row_list:
-                # FIXME this has to move to Mix_cli class or maybe also useful in Mix_gui class?
-                # in any case: move to separate method
-                cut_pos = 16
-                full_mix_nl = []
-                # first convert list of tuples to list of lists:
-                for tuple_row in full_mix:
-                    full_mix_nl.append(list(tuple_row))
-                # now put newlines if longer than cut_pos chars
-                for i, row in enumerate(full_mix_nl):
-                    for j, field in enumerate(row):
-                        if not is_number(field) and field is not None:
-                            if len(field) > cut_pos:
-                                cut_pos_space = field.find(" ", cut_pos)
-                                log.debug("cut_pos_space index: %s", cut_pos_space)
-                                # don't edit if no space following (almost at end)
-                                if cut_pos_space == -1:
-                                    edited_field = field
-                                    log.debug(edited_field)
-                                else:
-                                    edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                                    log.debug(edited_field)
-                                #log.debug(field[0:cut_pos_space])
-                                #log.debug(field[cut_pos_space:])
-                                full_mix_nl[i][j] = edited_field
-
+                full_mix_nl = self.cli.trim_table_fields(full_mix)
                 # debug only
                 for row in full_mix_nl:
                    log.debug(str(row))
@@ -459,7 +434,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     def view_all_releases(self):
         self.cli.print_help("Showing all releases in DiscoBASE.")
-        all_releases_result = self.collection.get_all_releases()
+        #all_releases_result = self.cli.trim_table_fields(
+        #    self.collection.get_all_db_releases())
+        all_releases_result = self.collection.get_all_db_releases()
         self.cli.tab_all_releases(all_releases_result)
 
     def track_report(self, track_searchterm):

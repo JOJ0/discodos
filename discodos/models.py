@@ -1,6 +1,6 @@
 from discodos.utils import * # most of this should only be in view
 from abc import ABC, abstractmethod
-from discodos import log, db
+from discodos import log
 from tabulate import tabulate as tab # should only be in view
 import pprint
 import discogs_client
@@ -68,6 +68,9 @@ class Database (object):
         self.execute_sql(settings)
 
     def _select_simple(self, fields_list, table, condition = False, fetchone = False, orderby = False):
+        """This is a wrapper around the _select method.
+           It puts together sql select statements as strings.
+        """
         log.info("DB-NEW: _select_simple: fetchone = {}".format(fetchone))
         fields_str = ""
         for cnt,field in enumerate(fields_list):
@@ -87,29 +90,40 @@ class Database (object):
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone = False):
+        """Executes sql selects in two possible ways: fetchone or fetchall
+           It's completely string based and not aware of tuple based
+           values substitution in sqlite3 cursor objects.
+
+        @param sql_select (string): the complete sql select statement
+        @param fetchone (bool): defaults to False (return multiple rows)
+        @return (type is depending on running mode)
+            fetchone = True:
+                something found: sqlite3.Row (dict-like) object
+                nothing found: None
+            fetchone = False (fetchall, this is the default)
+                something found: a list of sqlite3.Row (dict-like) objects
+                nothing found: an empty list
+        """
         log.info("DB-NEW: _select: {}".format(sql_select))
         self.cur.execute(sql_select)
         if fetchone:
             rows = self.cur.fetchone()
         else:
             rows = self.cur.fetchall()
+
         if rows:
             log.debug("DB-NEW: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
                 self.cur.rowcount, self.cur.lastrowid))
-            if len(rows) == 0:
-                log.info('DB-NEW: Nothing found - rows length 0.')
-                return [] # FIXME was False before, not sure if this will break things
-            else:
-                #log.debug('DB-NEW: rows dir {}.'.format(dir(rows))) # debug rows obj
-                if fetchone: # len will return column count
-                    log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
-                else: # len will return rows count
-                    log.info('DB-NEW: Found {} rows containing {} columns.'.format(
-                        len(rows), len(rows[0])))
-                return rows
+            if fetchone: # len will return column count
+                log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
+            else: # len will return rows count
+                log.info('DB-NEW: Found {} rows containing {} columns.'.format(
+                    len(rows), len(rows[0])))
+            log.debug("DB-NEW: Returning row(s) as type: {}.".format(type(rows).__name__))
+            return rows
         else:
-            log.info('DB-NEW: Nothing found - rows NoneType.')
-            return [] # FIXME was False before, not sure if this will break things
+            log.info('DB-NEW: Nothing found - Returning type: {}.'.format(type(rows).__name__))
+            return rows # was empty list before, now it's either empty list or NoneType
 
     def close_conn(self): # manually close conn! - context manager (with) doesn't do it
         self.db_conn.close()
@@ -148,8 +162,8 @@ class Mix (Database):
             # (default value, should only show mix list)
             if not self.name == "all":
                 try:
-                    mix_id_tuple = db.get_mix_id(self.db_conn, self.name)
-                    log.info('%s', mix_id_tuple)
+                    mix_id_tuple = self._get_mix_id(self.name)
+                    log.debug('MODEL: mix_id_tuple type: %s', type(mix_id_tuple).__name__)
                     self.id = mix_id_tuple[0]
                     self.id_existing = True
                     self.name_existing = True
@@ -180,6 +194,24 @@ class Mix (Database):
     #def.name(self):
     #    return db.get_mix_info(self.db_conn, self.id)[1]
 
+    def _get_mix_id(self, mixname): # this method should only be called from __init__
+        #return self._select_simple(["mix_id"], 'mix', fetchone = True,
+        #    condition = 'name LIKE "%{}%"'.format(mix_name))
+        log.info('MODEL: Getting mix_id via mix name "%s". Only returns first match',
+                     mixname)
+        if is_number(mixname):
+            log.info("MODEL: mix name is a number, won't try to fetch from DB")
+            return mixname # we were probably been given an ID already, return it.
+        else:
+            self.cur.execute(
+                'SELECT mix_id FROM mix WHERE name LIKE ?', ("%{}%".format(mixname), ))
+            row = self.cur.fetchone()
+            if row:
+                log.info("MODEL: Found mix ID: {}".format(row["mix_id"]))
+                return row
+            else:
+                log.info("MODEL: Can't fetch mix ID by name")
+                return row
 
     def delete(self):
         log.info('MODEL: Deleting mix %s and all its mix_track entries (through cascade)',
@@ -346,7 +378,8 @@ class Mix (Database):
 
     def reorder_tracks(self, pos):
         log.info("MODEL: Reordering tracks in mix, starting at pos {}".format(pos))
-        tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        tracks_to_shift = self.get_tracks_from_position(pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
@@ -363,7 +396,6 @@ class Mix (Database):
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
         log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
-        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
@@ -482,7 +514,10 @@ class Collection (Database):
         return _ONLINE
 
     def get_all_db_releases(self):
-        return db.all_releases(self.db_conn)
+        #return db.all_releases(self.db_conn)
+        return self._select_simple(['discogs_id', 'd_artist', 'discogs_title',
+            #'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
+            ], 'release', orderby='d_artist, discogs_title')
 
     def search_release_online(self, id_or_title):
         try:
@@ -511,9 +546,7 @@ class Collection (Database):
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
-                release = self._select_simple(['*'], 'release',
-                        'discogs_id LIKE {}'.format(
-                        id_or_title, id_or_title), fetchone = True, orderby = 'd_artist')
+                return self.search_release_id(id_or_title)
                 if release:
                     return [release]
                 else:
@@ -536,9 +569,6 @@ class Collection (Database):
             except Exception as Exc:
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
-
-    def get_all_releases(self):
-        return db.all_releases(self.db_conn)
 
     def create_track(self, release_id, track_no, track_name, track_artist):
         insert_tuple = (release_id, track_artist, track_no, track_name)
@@ -569,7 +599,9 @@ class Collection (Database):
                     return False
 
     def search_release_id(self, release_id):
-        return db.search_release_id(self.db_conn, release_id)
+        #return db.search_release_id(self.db_conn, release_id)
+        return self._select_simple(['*'], 'release',
+            'discogs_id == {}'.format(release_id), fetchone = True)
 
     def create_release(self, release_id, release_title, release_artists, d_coll = False):
         try:
