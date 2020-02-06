@@ -1,6 +1,6 @@
 from discodos.utils import * # most of this should only be in view
 from abc import ABC, abstractmethod
-from discodos import log, db
+from discodos import log
 from tabulate import tabulate as tab # should only be in view
 import pprint
 import discogs_client
@@ -396,7 +396,6 @@ class Mix (Database):
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
         log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
-        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
