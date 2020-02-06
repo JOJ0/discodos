@@ -1,6 +1,6 @@
 from discodos.utils import * # most of this should only be in view
 from abc import ABC, abstractmethod
-from discodos import log, db
+from discodos import log
 from tabulate import tabulate as tab # should only be in view
 import pprint
 import discogs_client
@@ -378,7 +378,8 @@ class Mix (Database):
 
     def reorder_tracks(self, pos):
         log.info("MODEL: Reordering tracks in mix, starting at pos {}".format(pos))
-        tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        tracks_to_shift = self.get_tracks_from_position(pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
@@ -395,7 +396,6 @@ class Mix (Database):
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
         log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
-        #tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
@@ -516,7 +516,8 @@ class Collection (Database):
     def get_all_db_releases(self):
         #return db.all_releases(self.db_conn)
         return self._select_simple(['discogs_id', 'd_artist', 'discogs_title',
-            'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
+            #'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
+            ], 'release', orderby='d_artist, discogs_title')
 
     def search_release_online(self, id_or_title):
         try:
@@ -545,9 +546,7 @@ class Collection (Database):
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
-                release = self._select_simple(['*'], 'release',
-                        'discogs_id LIKE {}'.format(
-                        id_or_title, id_or_title), fetchone = True, orderby = 'd_artist')
+                return self.search_release_id(id_or_title)
                 if release:
                     return [release]
                 else:
@@ -600,7 +599,9 @@ class Collection (Database):
                     return False
 
     def search_release_id(self, release_id):
-        return db.search_release_id(self.db_conn, release_id)
+        #return db.search_release_id(self.db_conn, release_id)
+        return self._select_simple(['*'], 'release',
+            'discogs_id == {}'.format(release_id), fetchone = True)
 
     def create_release(self, release_id, release_title, release_artists, d_coll = False):
         try:
