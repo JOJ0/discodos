@@ -48,6 +48,43 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return['discogs_title'], 'Material Love')
         print("TestMix.search_release_id: DONE\n")
 
+    def test_search_release_offline_number(self):
+        print("\nTestMix.search_release_offline_number: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.search_release_offline('123456')
+        self.assertIsNotNone(db_return)
+        self.assertEqual(len(db_return), 5) # should be 5 columns
+        self.assertEqual(db_return['discogs_id'], 123456)
+        self.assertEqual(db_return['d_artist'], 'Märtini Brös.')
+        self.assertEqual(db_return['discogs_title'], 'Material Love')
+        print("TestMix.search_release_offline_number: DONE\n")
+
+    def test_search_release_offline_number_error(self):
+        print("\nTestMix.search_release_offline_number_error: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.search_release_offline('999999')
+        self.assertIsNone(db_return)
+        print("TestMix.search_release_offline_number_error: DONE\n")
+
+    def test_search_release_offline_text(self):
+        print("\nTestMix.search_release_offline_text: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.search_release_offline('Märtini') # artist or title
+        self.assertIsNotNone(db_return)
+        self.assertEqual(len(db_return), 1) # should be a list with 1 Row
+        self.assertEqual(db_return[0]['discogs_id'], 123456)
+        self.assertEqual(db_return[0]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(db_return[0]['discogs_title'], 'Material Love')
+        print("TestMix.search_release_offline_text: DONE\n")
+
+    def test_search_release_offline_text_error(self):
+        print("\nTestMix.search_release_offline_text_error: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.search_release_offline('XXX') # artist or title
+        self.assertIsNone(db_return) # returns None if nothing found
+        #self.assertEqual(db_return, []) # FIXME should this better be empty list?
+        print("TestMix.search_release_offline_text_error: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
