@@ -194,8 +194,8 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
         super(Mix_view_cli, self).__init__()
 
     def tab_mixes_list(self, mixes_data):
-        tabulated = tab(mixes_data, tablefmt="simple",
-                headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
+        tabulated = tab(self.trim_table_fields(mixes_data), tablefmt="simple",
+          headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
         self.print_help(tabulated)
 
     def tab_mix_info_header(self, mix_info):
