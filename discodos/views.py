@@ -225,14 +225,16 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
     def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
         # only show pages count if it's a Release Title Search
         if not is_number(_searchterm):
-            self.print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
+            self.print_help("Found {} page(s) of results!".format(discogs_results.pages))
         else:
-            self.print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+            self.print_help("Release ID: {}, Title: {}".format(discogs_results[0].id,
+                    discogs_results[0].title))
+
         for result_item in discogs_results:
             self.print_help("Checking " + str(result_item.id))
             for dbr in _db_releases:
-                if result_item.id == dbr[0]:
-                    self.print_help("Good, first matching record in your collection is:")
+                if result_item.id == dbr['discogs_id']:
+                    self.print_help("Good, a matching record in your collection is:")
                     result_list=[]
                     result_list.append([])
                     result_list[0].append(result_item.id)
@@ -250,7 +252,7 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
                     self.online_search_results_tracklist(result_item.tracklist)
                     break
             try:
-                if result_item.id == dbr[0]:
+                if result_item.id == dbr['discogs_id']:
                     #return result_list[0]
                     log.info("Compiled Discogs result_list: {}".format(result_list))
                     return result_list
@@ -261,14 +263,32 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
                 raise SystemExit(1)
         return False
 
+    def show_discogs_release(self, release): # discogs_client Release object
+        rel_data_list=[]
+        rel_data_list.append([])
+        rel_data_list[0].append(release.id)
+        rel_data_list[0].append(str(release.artists[0].name))
+        rel_data_list[0].append(release.title)
+        rel_data_list[0].append(str(release.labels[0].name))
+        rel_data_list[0].append(release.country)
+        rel_data_list[0].append(str(release.year))
+        #rel_data_list[0].append(str(release.formats[0]['descriptions'][0])+
+        #           ", "+str(release.formats[0]['descriptions'][1]))
+        rel_data_list[0].append(str(release.formats[0]['descriptions'][0])+
+                   ", "+str(release.formats[0]['descriptions'][0]))
+
+        print(rel_data_list)
+        self.tab_online_search_results(rel_data_list)
+        self.online_search_results_tracklist(release.tracklist)
+
     def tab_online_search_results(self, _result_list):
         self.print_help(tab(_result_list, tablefmt="simple",
-                  headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
+          headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
 
     def online_search_results_tracklist(self, _tracklist):
         for track in _tracklist:
             print(track.position + "\t" + track.title)
-        print()
+        print('')
 
     def tab_all_releases(self, releases_data):
         #self.print_help(tab(releases_data, tablefmt="plain",
