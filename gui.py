@@ -63,74 +63,199 @@ class main_frame():
         #################################################
         # TODO: Make column widths as wide as the widest dataset of each column
 
-        # Create Dictionary for all columns
-        # Dictionary["name"] = []
+
+
+        # To set the qidth of every column correctly, we have to get all the
+        # values that will be inserted first and get the highest one
+
+        # Thus, we start by creating an empty dictionary and adding all the values to it
+
+        mix_width_vals = {}     
+        mix_width_vals["mix_id_width"] = []
+        mix_width_vals["name_width"] = []
+        mix_width_vals["played_width"] = []
+        mix_width_vals["venue_width"] = []
+        mix_width_vals["created_width"] = []
+        mix_width_vals["updated_width"] = []
 
         for i, row in enumerate(self.mixes_data):
             try:
-                # self.mix_list.column('name', width=len(row["name"]))
-                # print(len(row["name"]))
-                # Append all width numbers to the list per dictionary entry
+                # Here, the "text"-value is also set with the mix-id, so we can fetch it 
+                # later when we get the tracklist
+                # The "text"-column is not shown, it serves just as ID
+                self.mix_list.insert("" , i, text=row["mix_id"], values=(row["mix_id"], row["name"], row["played"], row["venue"], row["created"], row["updated"]))
+                
+                # Append the Char_length widths to the Dictionary.
+                # If they are zero or unreadable, append a default value.
+                # CURRENTLY: Mix Id returns Nothing for some reason
+                #FIXME
+                try:
+                    mix_width_vals["mix_id_width"].append(len(row["mix_id"]))
+                except:
+                    mix_width_vals["mix_id_width"].append(3)
+                    # log.error("GUI: Mix ID width not fetched. Set default value 3.")
+                try:
+                    mix_width_vals["name_width"].append(len(row["name"]))
+                except:
+                    log.error("GUI: Name width not fetched.")
+                    mix_width_vals["name_width"].append(3)
+                try:
+                    mix_width_vals["played_width"].append(len(row["played"]))
+                except:
+                    mix_width_vals["played_width"].append(3)
+                    log.error("GUI: Played width not fetched. Set default value 3.")
+                try:
+                    mix_width_vals["venue_width"].append(len(row["venue"]))
+                except:
+                    mix_width_vals["venue_width"].append(3)
+                    log.error("GUI: Venue width not fetched.")
+                try:
+                    mix_width_vals["created_width"].append(len(row["created"]))
+                except:
+                    mix_width_vals["created_width"].append(3)
+                    log.error("GUI: created width not fetched.")
+                try:
+                    mix_width_vals["updated_width"].append(len(row["updated"]))
+                except:
+                    mix_width_vals["updated_width"].append(3)
+                    log.error("GUI: Updated width not fetched.")
 
-                self.mix_list.insert("" , i, text=row["mix_id"], values=(row["name"], row["played"], row["venue"], row["created"], row["updated"]))
+
                 log.debug("GUI: Inserted Mix Row")
                 self.status.set("Inserted Mix Row")
+
             except:
                 log.error("GUI: Inserting Mix Row failed")
                 self.status.set("Inserting Mix Row failed")
 
-            
 
-        # Get the highest number of every column-dataset of the dictionary
-        # set every columnwdith equal to the highest number
+        self.mix_list.column("mix_id_col", width=max(mix_width_vals["mix_id_width"])*10)
+        self.mix_list.column("name", width=max(mix_width_vals["mix_id_width"])*40)
+        # print(max(mix_width_vals["mix_id_width"]))
+        self.mix_list.column("played", width=max(mix_width_vals["played_width"])*7)
+        self.mix_list.column("venue", width=max(mix_width_vals["venue_width"])*7)
+        self.mix_list.column("created", width=max(mix_width_vals["created_width"])*7)
+        self.mix_list.column("updated", width=max(mix_width_vals["updated_width"])*7)
+
+        
 
         self.mix_list.bind('<<TreeviewSelect>>', self.show_mix)
 
-        try:
-            start_child_id = self.mix_list.get_children()[0]
-            self.mix_list.selection_set(start_child_id)
-            log.debug("GUI: Set Focus on first Mix Item")
-
-        except:
-            log.error("GUI: Couldn't Set Focus on Mix Item")
-            self.status.set("Couldn't Set Focus on Mix Item")
-
         
-
+        self.focus_first_object()
+        
     
     def show_mix(self, event):
-
+        # This function gets called, when the user selects a mix in the List of Mixes
+        # Here we fetch the selected Mix in the Mix Treeview 
         curItem = self.mix_list.focus()
-
-        
-            
-
         try:
             mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
+            print(self.mix_list.item(curItem,"text"))
+            
             mix_data = mix.get_full_mix(verbose = True) 
             log.debug("GUI: Retrieved Mix data")   
             self.status.set("Retrieved Mix data") 
 
         except: 
+            mix_data = []
             log.error("GUI: Getting Mix Data failed")
             self.status.set("Getting Mix Data failed")  
         
         
         ########################################################
 
+        # Here is the same game for the track width values
+        # We create a Dictionary
+        
+        
+
+
         if mix_data is not []:
             
             self.tracks_list.delete(*self.tracks_list.get_children())
+
+            track_width_vals = {}     
+            track_width_vals["track_pos_width"] = []
+            track_width_vals["d_artist_width"] = []
+            track_width_vals["d_track_name_width"] = []
+            track_width_vals["key_width"] = []
+            track_width_vals["bpm_width"] = []
+            track_width_vals["key_notes_width"] = []
+            track_width_vals["trans_rating_width"] = []
+            track_width_vals["trans_notes_width"] = []
+            track_width_vals["notes_width"] = []
+
             for i, row in enumerate(mix_data):
+                # print('Pos: {}, Track: {}'.format(row['track_pos'], row['d_track_name']))
                 try:
-                    self.tracks_list.insert("", i, text=row["d_artist"] , values=(row["d_track_name"], row["d_track_no"], row["key"], row["bpm"], row["key_notes"], row["trans_rating"], row["trans_notes"], row["notes"]))
+                    self.tracks_list.insert("", i, text="" , values=(row["track_pos"], row[""], row["d_track_name"], row["key"], row["bpm"], row["key_notes"], row["trans_rating"], row["trans_notes"], row["notes"]))
+                   # And here we check the dictionary for the biggest width value
+                    try:
+                        track_width_vals["track_pos_width"].append(len(row["track_pos"]))
+                    except:
+                        track_width_vals["track_pos_width"].append(3)
+                        log.error("GUI: Track Position width not fetched. Set default value 3.")
+
+                    try:
+                        track_width_vals["d_artist_width"].append(len(row["d_artist"]))
+                        print(row["d_artist_width"])
+                    except:
+                        log.error("GUI: Artist width not fetched.")
+                        track_width_vals["d_artist_width"].append(3)
+                        log.error("GUI: Artist width not fetched. Set default value 3.")
+
+                    try:
+                        track_width_vals["d_track_name_width"].append(len(row["d_track_name"]))
+                    except:
+                        track_width_vals["d_track_name_width"].append(3)
+                        log.error("GUI: Track Name width not fetched. Set default value 3.")
+
+                    try:
+                        track_width_vals["key_width"].append(len(row["key"]))
+                    except:
+                        track_width_vals["key_width"].append(3)
+                        log.error("GUI: Key width not fetched.")
+
+                    try:
+                        track_width_vals["bpm_width"].append(len(row["bpm"]))
+                    except:
+                        track_width_vals["bpm_width"].append(3)
+                        log.error("GUI: BPM width not fetched.")
+
+                    try:
+                        track_width_vals["key_notes_width"].append(len(row["key_notes"]))
+                    except:
+                        track_width_vals["key_notes_width"].append(3)
+                        log.error("GUI: Key Notes width not fetched.")   
+
+                    try:
+                        track_width_vals["trans_rating_width"].append(len(row["trans_rating"]))
+                    except:
+                        track_width_vals["trans_rating_width"].append(3)
+                        log.error("GUI: Trans Rating width not fetched.")   
+
+                    try:
+                        track_width_vals["trans_notes_width"].append(len(row["trans_notes"]))
+                    except:
+                        track_width_vals["trans_notes_width"].append(3)
+                        log.error("GUI: Trans Notes width not fetched.")   
+
+                    try:
+                        track_width_vals["notes_width"].append(len(row["notes"]))
+                    except:
+                        track_width_vals["notes_width"].append(3)
+                        log.error("GUI: Notes width not fetched.")                  
+                    
                     log.debug("GUI: Inserted Track row")
-                    self.status.set("Inserted Track row")  
+                    self.status.set("Inserted Track row") 
 
                 except:
+
                     log.error(f"GUI: Inserting Track Row failed {row['d_artist']}")
                     self.status.set(f"GUI: Inserting Track Row failed {row['d_artist']}") 
-                
+                    
+
             try:
                 start_child_id_two = self.tracks_list.get_children()[0]
                 self.tracks_list.selection_set(start_child_id_two)
@@ -140,14 +265,46 @@ class main_frame():
                 log.error("GUI: Couldn't Set Focus on Track Item")
                 self.status.set("Couldn't Set Focus on Track Item")
 
+
         else:
             log.error(f"GUI: Mix Data is {str(mix_data)}")
             self.status.set(f"GUI: Mix Data is {str(mix_data)}")
             self.tracks_list.delete(*self.tracks_list.get_children())
+
+        #FIXME ValueError: max() arg is an empty sequence @ Track_Pos
+
+
+        self.tracks_list.column("track_pos", width=max(track_width_vals["track_pos_width"])*10)
+        self.tracks_list.column("d_artist", width=max(track_width_vals["d_artist_width"])*40)
+        # print(max(track_width_vals["track_id_width"]))
+        self.tracks_list.column("d_track_name", width=max(track_width_vals["d_track_name_width"])*7)
+        self.tracks_list.column("key", width=max(track_width_vals["key_width"])*7)
+        self.tracks_list.column("bpm", width=max(track_width_vals["bpm_width"])*7)
+        self.tracks_list.column("key_notes", width=max(track_width_vals["key_notes_width"])*7)
+        self.tracks_list.column("trans_rating", width=max(track_width_vals["trans_rating_width"])*7)
+        self.tracks_list.column("trans_notes", width=max(track_width_vals["key_notes_width"])*7)
+        self.tracks_list.column("notes", width=max(track_width_vals["notes_width"])*7)
+
+
+    def focus_first_object(self):
+        try:
+            start_child_id = self.mix_list.get_children()[0]
+            self.mix_list.focus(start_child_id)
+            self.mix_list.selection_set(start_child_id)
+
+            log.debug("GUI: Set Focus on first Mix Item")
+
+        except:
+            log.error("GUI: Couldn't Set Focus on Mix Item")
+            self.status.set("Couldn't Set Focus on Mix Item")
         
 
 
     def open_widget(self, view):
+
+        # This function gets called, when the user opens up a window.
+        # Depending on the Button he presses, the selector chooses wich window will be opened.
+        # They are all inherite from the same base-window class.
 
         if view == "edit_mix":
             curItem = self.mix_list.focus()
@@ -157,8 +314,8 @@ class main_frame():
                 log.debug("GUI: Retrieved Mix Info")   
                 self.status.set("Retrieved Mix Info") 
                 
-                # ############## # # # # # # # # # #
-                # TODO: Get Mix Edit Window to change info on selected list item in mix view
+                # This Query exists to check, if a window is already open. If yes,
+                # then it just focuses. Or it closes and opens up again with the current mix data.
                 try:
                     if self.mix_edit_win.win_state == "normal" and curItem is self.mix_list.focus(): 
                         log.debug("GUI: Focused Mix Edit Window") 
@@ -209,7 +366,7 @@ class main_frame():
 
             curItem = self.tracks_list.focus()
             try:
-                track = models.Mix(self.conn, self.tracks_list.item(curItem,"d_release_id")) 
+                track = models.Mix(self.conn, self.tracks_list.item(curItem,"track_pos")) 
                 track_data = track.get_one_mix_track() 
                 log.debug("GUI: Retrieved Track Info")   
                 self.status.set("Retrieved Track Info") 
@@ -247,7 +404,7 @@ class main_frame():
                     log.debug("GUI: Track Window State is " + self.track_edit_win.win_state) 
 
             except: 
-                log.error("GUI: Getting Track Data failed")
+                log.error(f"GUI: Getting Track Data failed. Position: {self.tracks_list.item(curItem)}")
                 self.status.set("Getting Track Data failed")  
 
 
@@ -265,16 +422,17 @@ class main_frame():
 
         self.mix_list = ttk.Treeview(self.mix_frame)
         self.mix_list.pack(fill="both", expand=1)
+        self.mix_list['show'] = 'headings'
 
-        self.mix_list["columns"]=("name","played", "venue", "created", "updated")
-        self.mix_list.column("#0", width=20,  minwidth=4)
-        self.mix_list.column("name", width=80, minwidth=80)
-        self.mix_list.column("played", width=20,  minwidth=20)
-        self.mix_list.column("venue", width=80, minwidth=25)
-        self.mix_list.column("created", width=80, minwidth=20)
-        self.mix_list.column("updated", width=80, minwidth=20)
+        self.mix_list["columns"]=("mix_id_col", "name", "played", "venue", "created", "updated")
+        self.mix_list.column("mix_id_col", width=2, stretch=0)
+        self.mix_list.column("name", width=2, stretch=0)
+        self.mix_list.column("played", width=2, stretch=0)
+        self.mix_list.column("venue", width=2, stretch=0)
+        self.mix_list.column("created", width=2, stretch=0)
+        self.mix_list.column("updated", width=2, stretch=0)
 
-        self.mix_list.heading("#0",text="Mix #",anchor=tk.W)
+        self.mix_list.heading("mix_id_col",text="Mix #",anchor=tk.W)
         self.mix_list.heading("name", text="Name", anchor=tk.W)
         self.mix_list.heading("played", text="Played",anchor=tk.W)
         self.mix_list.heading("venue", text="Venue",anchor=tk.W)
@@ -286,23 +444,23 @@ class main_frame():
 
         self.tracks_list = ttk.Treeview(self.tracks_frame)
         self.tracks_list.pack(fill="both", expand=1)
+        self.tracks_list['show'] = 'headings'
 
-        self.tracks_list["columns"]=("artist", "track", "trackpos", "key", "bpm", "keynotes", "transr", "transnotes", "d_release_id")
-        self.tracks_list.column("#0", width=20,  minwidth=10)
-        self.tracks_list.column("artist", width=20, minwidth=10)
-        self.tracks_list.column("track", width=20,  minwidth=10)
-        self.tracks_list.column("trackpos", width=10, minwidth=10)
-        self.tracks_list.column("key", width=8, minwidth=8)
-        self.tracks_list.column("bpm", width=8, minwidth=8)
-        self.tracks_list.column("keynotes", width=10, minwidth=5)
-        self.tracks_list.column("transr", width=10, minwidth=5)
-        self.tracks_list.column("transnotes", width=10, minwidth=5)
-        self.tracks_list.column("d_release_id", width=20, minwidth=10)
+        self.tracks_list["columns"]=("track_pos", "artist", "track", "key", "bpm", "keynotes", "transr", "transnotes", "d_release_id")
+        self.tracks_list.column("track_pos", width=2)
+        self.tracks_list.column("artist", width=2)
+        self.tracks_list.column("track", width=2)
+        self.tracks_list.column("key", width=2) 
+        self.tracks_list.column("bpm", width=2)
+        self.tracks_list.column("keynotes", width=2) 
+        self.tracks_list.column("transr", width=2)
+        self.tracks_list.column("transnotes", width=2)
+        self.tracks_list.column("d_release_id", width=2)
 
 
-        self.tracks_list.heading("#0", text="Artist", anchor=tk.W)
+        self.tracks_list.heading("track_pos", text="Track Pos",anchor=tk.W)
+        self.tracks_list.heading("artist", text="Artist", anchor=tk.W)
         self.tracks_list.heading("track", text="Track Name",anchor=tk.W)
-        self.tracks_list.heading("trackpos", text="Track Pos",anchor=tk.W)
         self.tracks_list.heading("key", text="Key",anchor=tk.W)
         self.tracks_list.heading("bpm", text="BPM",anchor=tk.W)
         self.tracks_list.heading("keynotes", text="Key Notes",anchor=tk.W)
