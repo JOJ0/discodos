@@ -381,22 +381,23 @@ class main_frame():
             
         elif view == "track_edit":
 
-            curItem = self.tracks_list.focus()
-            mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
+            cur_track = self.tracks_list.focus()
+            cur_mix = self.mix_list.focus()
+            mix = models.Mix(self.conn, self.mix_list.item(cur_mix,"text"))
             try:
-                # track = models.Mix(self.conn, self.tracks_list.item(curItem,"track_pos")) 
-                track_data = self.tracks_list.item(curItem)
+                # track = models.Mix(self.conn, self.tracks_list.item(cur_track,"track_pos")) 
+                track_data = self.tracks_list.item(cur_track)
                 # print(track_data["values"][0])
                 log.debug("GUI: Retrieved Track Info")   
                 self.status.set("Retrieved Track Info") 
                 
                 # ############## # # # # # # # # # #
                 try:
-                    if self.track_edit_win.win_state == "normal" and curItem is self.tracks_list.focus(): 
+                    if self.track_edit_win.win_state == "normal" and cur_track is self.tracks_list.focus(): 
                         log.debug("GUI: Focused Track Edit Window") 
                         self.track_edit_win.edit_win.focus()
 
-                    elif self.track_edit_win.win_state == "normal" and curItem is not self.track_list.focus():
+                    elif self.track_edit_win.win_state == "normal" and cur_track is not self.track_list.focus():
                         log.debug("GUI: Reloaded Track Edit Window") 
                         # RELOAD THE WINDOW WITH CURRENT DATA
                         self.track_edit_win._quit()
@@ -414,7 +415,7 @@ class main_frame():
                 self.status.set("Getting Track Data failed")  
             
             
-        # self.track_edit_win.edit_win.protocol("WM_DELETE_WINDOW", self.mix_starter)
+        self.track_edit_win.edit_win.protocol("WM_DELETE_WINDOW", self.show_mix)
 
     #####################################################################################    
     # CREATE WIDGETS
