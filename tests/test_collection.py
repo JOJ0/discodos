@@ -85,6 +85,27 @@ class TestCollection(unittest.TestCase):
         #self.assertEqual(db_return, []) # FIXME should this better be empty list?
         print("TestMix.search_release_offline_text_error: DONE\n")
 
+    def test_get_tracks_by_bpm(self):
+        print("\nTestMix.get_tracks_by_bpm: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.get_tracks_by_bpm(125, 6) # artist or title
+        self.assertIsNotNone(db_return)
+        for row in db_return:
+            for field in row:
+                print(field)
+            print()
+        self.assertEqual(len(db_return), 3) # should be a list with 3 Rows
+        self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
+        self.assertEqual(db_return[0]['d_track_no'], 'AA')
+        self.assertEqual(db_return[0]['bpm'], 120)
+        self.assertEqual(db_return[1]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(db_return[1]['d_track_no'], 'A1')
+        self.assertEqual(db_return[1]['bpm'], 125)
+        self.assertEqual(db_return[2]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(db_return[2]['d_track_no'], 'B2')
+        self.assertEqual(db_return[2]['bpm'], 130)
+        print("TestMix.get_tracks_by_bpm: DONE\n")
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
