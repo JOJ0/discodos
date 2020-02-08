@@ -101,10 +101,6 @@ class main_frame():
                 # The "text"-column is not shown, it serves just as ID
                 self.mix_list.insert("" , i, text=row["mix_id"], values=(row["mix_id"], row["name"], row["played"], row["venue"], row["created"], row["updated"]))
                 
-                # Append the Char_length widths to the Dictionary.
-                # If they are zero or unreadable, append a default value.
-                # CURRENTLY: Mix Id returns Nothing for some reason
-                #FIXME
                 try:
                     mix_width_vals["mix_id_width"].append(tkfont.Font().measure(row["mix_id"]))
                 except:
@@ -293,14 +289,6 @@ class main_frame():
             self.status.set(f"GUI: Mix Data is {str(mix_data)}")
             self.tracks_list.delete(*self.tracks_list.get_children())
 
-        #FIXME ValueError: max() arg is an empty sequence @ Track_Pos
-
-        # START HERE
-
-        # Change Dictionary of max_values
-        # for strings, so tkinter can measure it -> remove unnecessary step in process
-
-
 
         self.tracks_list.column("track_pos", width=max(track_width_vals["track_pos_width"]), minwidth=tkfont.Font().measure("#"), stretch=1)
         self.tracks_list.column("artist", width=max(track_width_vals["d_artist_width"]), minwidth=tkfont.Font().measure("Artist"), stretch=1)
@@ -426,7 +414,7 @@ class main_frame():
                 self.status.set("Getting Track Data failed")  
             
             
-        # self.track_edit_win.protocol("WM_DELETE_WINDOW", self.mix_starter)
+        # self.track_edit_win.edit_win.protocol("WM_DELETE_WINDOW", self.mix_starter)
 
     #####################################################################################    
     # CREATE WIDGETS
