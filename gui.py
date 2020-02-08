@@ -1,3 +1,18 @@
+###############################
+########
+# TODO #
+########
+
+########## COLUMN WIDTH ###############
+# Refactoring of Column width detectors.
+# Make List of Column headings (or dict?)
+# create columns with for loop per item in list
+# -> OR: Make Dict
+# Mix_Data{"Heading1": ["Value1", "Value2"], "Heading2": ["Value1", "Value2"]}
+
+###########
+
+
 ################################
 # IMPORTS
 from discodos import views
@@ -91,35 +106,35 @@ class main_frame():
                 # CURRENTLY: Mix Id returns Nothing for some reason
                 #FIXME
                 try:
-                    mix_width_vals["mix_id_width"].append(len(row["mix_id"]))
+                    mix_width_vals["mix_id_width"].append(tkfont.Font().measure(row["mix_id"]))
                 except:
                     mix_width_vals["mix_id_width"].append(3)
-                    # log.error("GUI: Mix ID width not fetched. Set default value 3.")
+                    log.debug("GUI: Mix ID width not fetched. Set default value 3.")
                 try:
-                    mix_width_vals["name_width"].append(len(row["name"]))
+                    mix_width_vals["name_width"].append(tkfont.Font().measure(row["name"]))
                 except:
-                    log.error("GUI: Name width not fetched.")
                     mix_width_vals["name_width"].append(3)
+                    log.debug("GUI: Name width not fetched. Set default value 3.")
                 try:
-                    mix_width_vals["played_width"].append(len(row["played"]))
+                    mix_width_vals["played_width"].append(tkfont.Font().measure(row["played"]))
                 except:
                     mix_width_vals["played_width"].append(3)
-                    log.error("GUI: Played width not fetched. Set default value 3.")
+                    log.debug("GUI: Played width not fetched. Set default value 3.")
                 try:
-                    mix_width_vals["venue_width"].append(len(row["venue"]))
+                    mix_width_vals["venue_width"].append(tkfont.Font().measure(row["venue"]))
                 except:
                     mix_width_vals["venue_width"].append(3)
-                    log.error("GUI: Venue width not fetched. Set default value 3.")
+                    log.debug("GUI: Venue width not fetched. Set default value 3.")
                 try:
-                    mix_width_vals["created_width"].append(len(row["created"]))
+                    mix_width_vals["created_width"].append(tkfont.Font().measure(row["created"]))
                 except:
                     mix_width_vals["created_width"].append(3)
-                    log.error("GUI: created width not fetched. Set default value 3.")
+                    log.debug("GUI: created width not fetched. Set default value 3.")
                 try:
-                    mix_width_vals["updated_width"].append(len(row["updated"]))
+                    mix_width_vals["updated_width"].append(tkfont.Font().measure(row["updated"]))
                 except:
                     mix_width_vals["updated_width"].append(3)
-                    log.error("GUI: Updated width not fetched. Set default value 3.")
+                    log.debug("GUI: Updated width not fetched. Set default value 3.")
 
 
                 log.debug("GUI: Inserted Mix Row")
@@ -130,13 +145,12 @@ class main_frame():
                 self.status.set("Inserting Mix Row failed")
 
 
-        self.mix_list.column("mix_id_col", width=max(mix_width_vals["mix_id_width"])*10)
-        self.mix_list.column("name", width=max(mix_width_vals["mix_id_width"])*40)
-        # print(max(mix_width_vals["mix_id_width"]))
-        self.mix_list.column("played", width=max(mix_width_vals["played_width"])*7)
-        self.mix_list.column("venue", width=max(mix_width_vals["venue_width"])*7)
-        self.mix_list.column("created", width=max(mix_width_vals["created_width"])*7)
-        self.mix_list.column("updated", width=max(mix_width_vals["updated_width"])*7)
+        self.mix_list.column("mix_id_col", width=max(mix_width_vals["mix_id_width"]), minwidth=tkfont.Font().measure("Mix #"), stretch=1)
+        self.mix_list.column("name", width=max(mix_width_vals["mix_id_width"]), minwidth=tkfont.Font().measure("Name"), stretch=1)
+        self.mix_list.column("played", width=max(mix_width_vals["played_width"]), minwidth=tkfont.Font().measure("Played"), stretch=1)
+        self.mix_list.column("venue", width=max(mix_width_vals["venue_width"]), minwidth=tkfont.Font().measure("Venue"), stretch=1)
+        self.mix_list.column("created", width=max(mix_width_vals["created_width"]), minwidth=tkfont.Font().measure("Created"), stretch=1)
+        self.mix_list.column("updated", width=max(mix_width_vals["updated_width"]), minwidth=tkfont.Font().measure("Updated"), stretch=1)
 
         
 
@@ -200,60 +214,60 @@ class main_frame():
                                                                     row["trans_notes"], 
                                                                     row["notes"]))
 
-                   # And here we check the dictionary for the biggest width value
+                   
                     try:
-                        track_width_vals["track_pos_width"].append(len(row["track_pos"]))
+                        track_width_vals["track_pos_width"].append(tkfont.Font().measure(row["track_pos"]))
                     except:
                         track_width_vals["track_pos_width"].append(5)
-                        log.error("GUI: Track Position width not fetched. Set default value 5.")
+                        log.debug("GUI: Track Position width not fetched. Set default value 5.")
 
                     try:
-                        track_width_vals["d_artist_width"].append(len(row["d_artist"]))
+                        track_width_vals["d_artist_width"].append(tkfont.Font().measure(row["d_artist"]))
                     except:
                         track_width_vals["d_artist_width"].append(5)
-                        log.error("GUI: Artist width not fetched. Set default value 5.")
+                        log.debug("GUI: Artist width not fetched. Set default value 5.")
 
                     try:
-                        track_width_vals["d_track_name_width"].append(len(row["d_track_name"]))
+                        track_width_vals["d_track_name_width"].append(tkfont.Font().measure(row["d_track_name"]))
                     except:
                         track_width_vals["d_track_name_width"].append(5)
-                        log.error("GUI: Track Name width not fetched. Set default value 5.")
+                        log.debug("GUI: Track Name width not fetched. Set default value 5.")
 
                     try:
-                        track_width_vals["key_width"].append(len(row["key"]))
+                        track_width_vals["key_width"].append(tkfont.Font().measure(row["key"]))
                     except:
                         track_width_vals["key_width"].append(5)
-                        log.error("GUI: Key width not fetched. Set default value 5.")
+                        log.debug("GUI: Key width not fetched. Set default value 5.")
 
                     try:
-                        track_width_vals["bpm_width"].append(len(row["bpm"]))
+                        track_width_vals["bpm_width"].append(tkfont.Font().measure(row["bpm"]))
                     except:
                         track_width_vals["bpm_width"].append(5)
-                        log.error("GUI: BPM width not fetched. Set default value 5.")
+                        log.debug("GUI: BPM width not fetched. Set default value 5.")
 
                     try:
-                        track_width_vals["key_notes_width"].append(len(row["key_notes"]))
+                        track_width_vals["key_notes_width"].append(tkfont.Font().measure(row["key_notes"]))
                     except:
                         track_width_vals["key_notes_width"].append(5)
-                        log.error("GUI: Key Notes width not fetched. Set default value 5.")   
+                        log.debug("GUI: Key Notes width not fetched. Set default value 5.")   
 
                     try:
-                        track_width_vals["trans_rating_width"].append(len(row["trans_rating"]))
+                        track_width_vals["trans_rating_width"].append(tkfont.Font().measure(row["trans_rating"]))
                     except:
                         track_width_vals["trans_rating_width"].append(5)
-                        log.error("GUI: Trans Rating width not fetched. Set default value 5.")   
+                        log.debug("GUI: Trans Rating width not fetched. Set default value 5.")   
 
                     try:
-                        track_width_vals["trans_notes_width"].append(len(row["trans_notes"]))
+                        track_width_vals["trans_notes_width"].append(tkfont.Font().measure(row["trans_notes"]))
                     except:
                         track_width_vals["trans_notes_width"].append(7)
-                        log.error("GUI: Trans Notes width not fetched. Set default value 7.")   
+                        log.debug("GUI: Trans Notes width not fetched. Set default value 7.")   
 
                     try:
-                        track_width_vals["notes_width"].append(len(row["notes"]))
+                        track_width_vals["notes_width"].append(tkfont.Font().measure(row["notes"]))
                     except:
                         track_width_vals["notes_width"].append(5)
-                        log.error("GUI: Notes width not fetched. Set default value 5.")                  
+                        log.debug("GUI: Notes width not fetched. Set default value 5.")                  
                     
                     log.debug("GUI: Inserted Track row")
                     self.status.set("Inserted Track row") 
@@ -286,22 +300,19 @@ class main_frame():
         # Change Dictionary of max_values
         # for strings, so tkinter can measure it -> remove unnecessary step in process
 
-        track_width_vals["track_pos_width"] = tkfont.Font().measure(max(track_width_vals["track_pos_width"])) + 20
-        print(track_width_vals["track_pos_width"])
 
 
-        self.tracks_list.column("track_pos", width=track_width_vals["track_pos_width"])
-        self.tracks_list.column("artist", width=max(track_width_vals["d_artist_width"])*5)
+        self.tracks_list.column("track_pos", width=max(track_width_vals["track_pos_width"]), minwidth=tkfont.Font().measure("#"), stretch=1)
+        self.tracks_list.column("artist", width=max(track_width_vals["d_artist_width"]), minwidth=tkfont.Font().measure("Artist"), stretch=1)
         # print(max(track_width_vals["track_id_width"]))
-        self.tracks_list.column("track", width=max(track_width_vals["d_track_name_width"])*5)
-        self.tracks_list.column("key", width=max(track_width_vals["key_width"])*7)
-        self.tracks_list.column("bpm", width=max(track_width_vals["bpm_width"])*7)
-        self.tracks_list.column("keynotes", width=max(track_width_vals["key_notes_width"])*5)
-        self.tracks_list.column("transnotes", width=max(track_width_vals["trans_notes_width"])*5)
-        self.tracks_list.column("transr", width=max(track_width_vals["trans_rating_width"])*5)
-        self.tracks_list.column("transnotes", width=max(track_width_vals["trans_notes_width"])*6)
-        self.tracks_list.column("notes", width=max(track_width_vals["notes_width"])*7)
-        self.tracks_list.column("d_release_id", width=max(track_width_vals["bpm_width"])*7)
+        self.tracks_list.column("track", width=max(track_width_vals["d_track_name_width"]), minwidth=tkfont.Font().measure("Track Name"), stretch=1)
+        self.tracks_list.column("key", width=max(track_width_vals["key_width"]), minwidth=tkfont.Font().measure("Key"), stretch=1)
+        self.tracks_list.column("bpm", width=max(track_width_vals["bpm_width"]), minwidth=tkfont.Font().measure("BPM"), stretch=1)
+        self.tracks_list.column("keynotes", width=max(track_width_vals["key_notes_width"]), minwidth=tkfont.Font().measure("Key Notes"), stretch=1)
+        self.tracks_list.column("transnotes", width=max(track_width_vals["trans_notes_width"]), minwidth=tkfont.Font().measure("Trans. Notes"), stretch=1)
+        self.tracks_list.column("transr", width=max(track_width_vals["trans_rating_width"]), minwidth=tkfont.Font().measure("Trans. Rating"), stretch=1)
+        self.tracks_list.column("notes", width=max(track_width_vals["notes_width"]), minwidth=tkfont.Font().measure("Notes"), stretch=1)
+        self.tracks_list.column("d_release_id", width=max(track_width_vals["bpm_width"]), minwidth=tkfont.Font().measure("Mix Track ID"), stretch=1)
 
 
     def focus_first_object(self):
@@ -384,8 +395,9 @@ class main_frame():
 
             curItem = self.tracks_list.focus()
             try:
-                track = models.Mix(self.conn, self.tracks_list.item(curItem,"track_pos")) 
-                track_data = track.get_one_mix_track() 
+                # track = models.Mix(self.conn, self.tracks_list.item(curItem,"track_pos")) 
+                track_data = self.tracks_list.item(curItem)
+                print(track_data)
                 log.debug("GUI: Retrieved Track Info")   
                 self.status.set("Retrieved Track Info") 
                 
@@ -397,21 +409,8 @@ class main_frame():
 
                     elif self.track_edit_win.win_state == "normal" and curItem is not self.track_list.focus():
                         log.debug("GUI: Reloaded Track Edit Window") 
+                        # RELOAD THE WINDOW WITH CURRENT DATA
                         self.track_edit_win._quit()
-
-                        try:
-                            track = models.Mix(self.conn, self.tracks_list.item(self.mix_list.focus(),"text")) # # START HERE
-
-                        # Fetch Mix data with Mix ID
-                        # THEN fetch get_one_mix with track Id
-                        # what is track_id?
-
-                            track_data = track.get_one_mix_track() 
-                            log.debug("GUI: Got Track data again") 
-
-                        except:
-                            log.error("GUI: Couldn't get Track data again")
-
                         self.track_edit_win = edit_track_info(self.main_win, track_data, self.conn)
                         self.track_edit_win.edit_win.focus()
 
@@ -465,19 +464,19 @@ class main_frame():
         self.tracks_list['show'] = 'headings'
 
         self.tracks_list["columns"]=("track_pos", "artist", "track", "key", "bpm", "keynotes", "transr", "transnotes", "notes", "d_release_id")
-        self.tracks_list.column("track_pos", width=2, stretch=0)
-        self.tracks_list.column("artist", width=2, stretch=0)
-        self.tracks_list.column("track", width=2, stretch=0)
-        self.tracks_list.column("key", width=2, stretch=0) 
-        self.tracks_list.column("bpm", width=2, stretch=0)
+        self.tracks_list.column("track_pos", width=2)
+        self.tracks_list.column("artist", width=2)
+        self.tracks_list.column("track", width=2)
+        self.tracks_list.column("key", width=2) 
+        self.tracks_list.column("bpm", width=2)
         self.tracks_list.column("keynotes", width=2) 
-        self.tracks_list.column("transr", width=2, stretch=0)
-        self.tracks_list.column("transnotes", width=2, stretch=0)
-        self.tracks_list.column("notes", width=2, stretch=0)
-        self.tracks_list.column("d_release_id", width=2, stretch=0)
+        self.tracks_list.column("transr", width=2)
+        self.tracks_list.column("transnotes", width=2)
+        self.tracks_list.column("notes", width=2)
+        self.tracks_list.column("d_release_id", width=2)
 
 
-        self.tracks_list.heading("track_pos", text="Track Pos",anchor=tk.W)
+        self.tracks_list.heading("track_pos", text="#",anchor=tk.W)
         self.tracks_list.heading("artist", text="Artist", anchor=tk.W)
         self.tracks_list.heading("track", text="Track Name",anchor=tk.W)
         self.tracks_list.heading("key", text="Key",anchor=tk.W)

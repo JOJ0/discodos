@@ -222,16 +222,17 @@ class add_mix_view(widget_frame):
 
 class edit_track_info(widget_frame):
 
-    def __init__(self, parent, conn):
+    def __init__(self, parent, track_data, conn):
         self.title = "Edit Track Info"
         super().__init__(parent, self.title)
+        self.track_data = track_data
         self.view_track_content()
         self.conn = conn
 
 
 
     def view_track_content(self):
-        self.track_info_frame = tk.LabelFrame(self.edit_win, text="Mix Info")
+        self.track_info_frame = tk.LabelFrame(self.edit_win, text="Track Info")
         self.buttons_frame = tk.Frame(self.edit_win)
 
         #############################################
@@ -242,7 +243,7 @@ class edit_track_info(widget_frame):
         self.name_entry = tk.Entry(self.track_info_frame, width=30)
         self.name_entry.grid(row=0, column=1, sticky="w")
         try:
-            self.name_entry.insert(0, self.track_data["track_pos"])
+            self.name_entry.insert(0, self.track_data["values"][1])
         except:
             log.error("Couldn't insert Data")
 
