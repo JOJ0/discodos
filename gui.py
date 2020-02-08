@@ -394,10 +394,11 @@ class main_frame():
         elif view == "track_edit":
 
             curItem = self.tracks_list.focus()
+            mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
             try:
                 # track = models.Mix(self.conn, self.tracks_list.item(curItem,"track_pos")) 
                 track_data = self.tracks_list.item(curItem)
-                print(track_data)
+                # print(track_data["values"][0])
                 log.debug("GUI: Retrieved Track Info")   
                 self.status.set("Retrieved Track Info") 
                 
@@ -411,19 +412,21 @@ class main_frame():
                         log.debug("GUI: Reloaded Track Edit Window") 
                         # RELOAD THE WINDOW WITH CURRENT DATA
                         self.track_edit_win._quit()
-                        self.track_edit_win = edit_track_info(self.main_win, track_data, self.conn)
+                        self.track_edit_win = edit_track_info(self.main_win, track_data, mix)
                         self.track_edit_win.edit_win.focus()
 
                     log.debug("GUI: Track Window State is " + self.track_edit_win.win_state)
 
                 except:
-                    self.track_edit_win = edit_track_info(self.main_win, track_data, self.conn)  
+                    self.track_edit_win = edit_track_info(self.main_win, track_data, mix)  
                     log.debug("GUI: Track Window State is " + self.track_edit_win.win_state) 
 
             except: 
-                log.error(f"GUI: Getting Track Data failed. Position: {self.tracks_list.item(curItem)}")
+                log.error("GUI: Getting Track Data failed.")
                 self.status.set("Getting Track Data failed")  
-
+            
+            
+        # self.track_edit_win.protocol("WM_DELETE_WINDOW", self.mix_starter)
 
     #####################################################################################    
     # CREATE WIDGETS
