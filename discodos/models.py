@@ -438,11 +438,7 @@ class Mix (Database):
                                    AND mix_track.d_track_no = track_ext.d_track_no
                        WHERE mix_track.mix_id == {}
                        ORDER BY mix_track.track_pos'''.format(self.id)
-        mix = self._select(sql_sel, fetchone = False)
-        if not mix:
-            return False
-        else:
-            return mix
+        return self._select(sql_sel, fetchone = False)
 
     def add_track(self, release_id, track_no, track_pos, trans_rating='', trans_notes=''):
         log.info('MODEL: Adding track to current mix.')
