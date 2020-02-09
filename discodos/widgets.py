@@ -22,15 +22,15 @@ class widget_frame():
     def _quit(self):
         self.edit_win.destroy()
         
-
+############ EDIT MIX ###########################
 
 class edit_mix_view(widget_frame):
-    def __init__(self, parent, mix_data, conn):
+    def __init__(self, parent, mix_data, mix):
         self.title = "Edit Mix"
         super().__init__(parent, self.title)
         self.mix_data = mix_data
         self.view_mix_content()
-        self.conn = conn
+        self.mix = mix
 
         self.insert_track_pool()
         
@@ -78,6 +78,8 @@ class edit_mix_view(widget_frame):
 
         self.update_mix_btn = tk.Button(self.mix_info_frame, text="Update Mix", command=update_mix)
         self.update_mix_btn.grid(row=8, column=0, sticky="s")
+        self.quit_btn = tk.Button(self.mix_info_frame, text="Cancel", command=self._quit)
+        self.quit_btn.grid(row=8, column=1, sticky="s")
 
 
         #############################################
@@ -96,6 +98,9 @@ class edit_mix_view(widget_frame):
         self.coll_list.heading("artist", text="Artist", anchor=tk.W)
         self.coll_list.heading("id", text="Discogs ID",anchor=tk.W)
 
+    
+    def update_mix(self):
+        pass
 
 
 
@@ -104,13 +109,14 @@ class edit_mix_view(widget_frame):
         # Buttons Area
 
         tk.Button(self.buttons_frame, text="<- Add Track to Mix").pack(side="left")
-        tk.Button(self.buttons_frame, text="Save Mix").pack(side="right")
+        tk.Button(self.buttons_frame, text="Save Mix", command=update_mix).pack(side="right")
 
         # Display Frames
 
         self.mix_info_frame.pack(fill="both", expand=1, side = "top")
         self.buttons_frame.pack(side="bottom", fill="x")
         self.pool_frame.pack(fill="both", expand=1, side = "bottom")
+
     
     def insert_track_pool(self):
         self.collection = models.Collection(self.conn)
@@ -119,12 +125,14 @@ class edit_mix_view(widget_frame):
             log.debug("GUI: Got all releases from Collection Model")
         except:
             log.error("GUI: Couldn't get all releases from Collection Model")
+
+        # TODO
+        # View only Values, only Headings, "text" should be empty
         
         for i, row in enumerate(self.all_releases):
-            self.coll_list.insert("" , i, text=row["discogs_title"], values=(row["d_artist"], row["discogs_id"]))
-
-    def update_mix(self):
-        pass
+            self.coll_list.insert("" , i, text=row["discogs_title"], 
+                                        values=(row["d_artist"], 
+                                                row["discogs_id"]))
 
 
 
@@ -132,7 +140,9 @@ class edit_mix_view(widget_frame):
 
         pass
 
-        
+
+####### CREATE NEW MIX #############################
+
 class add_mix_view(widget_frame):
     def __init__(self, parent, conn):
         self.title = "Add Mix"
@@ -175,8 +185,10 @@ class add_mix_view(widget_frame):
         for i in range(5,9):
             self.mix_info_frame.rowconfigure(i, weight=1)
 
-        self.update_collection_btn = tk.Button(self.mix_info_frame, text="Save new Mix", command=self.save_mix)
+        self.update_collection_btn = tk.Button(self.mix_info_frame, text="Save new Mix", command=self.create_mix)
         self.update_collection_btn.grid(row=8, column=0, sticky="s")
+        self.quit_btn = tk.Button(self.mix_info_frame, text="Cancel", command=self._quit)
+        self.quit_btn.grid(row=8, column=1, sticky="s")
 
 
        #############################################
@@ -215,11 +227,13 @@ class add_mix_view(widget_frame):
             self.coll_list.insert("" , i, text=row["discogs_title"], values=(row["d_artist"], row["discogs_id"]))
 
 
-    def save_mix(self):
-        pass
+    def create_mix(self):
+        self.mix = models.Mix(self.conn, "all")
+        self.mix.create(self.played_entry.get(), self.venue_entry.get(), self.name_entry.get())
+        self._quit()
         
 
-
+#################### EDIT TRACK INFOS ######################
 
 class edit_track_info(widget_frame):
 
