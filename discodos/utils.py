@@ -148,3 +148,17 @@ class Config():
             log.error(" trying to write %s \n\n", file)
             raise err
             raise SystemExit(3)
+
+
+def none_checker(value_to_check):
+# Universal Checking function 
+# None will be replaced by empty space, so it looks prettier in gui
+# Empty list will be replaced by Zero, so tkinter can measure something
+
+    if value_to_check == "None":
+        value_to_check = ""
+    
+    if value_to_check == []:
+        value_to_check = [0]
+        
+    return value_to_check
