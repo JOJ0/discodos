@@ -30,6 +30,7 @@ class User_int(object):
         self.WANTS_TO_DELETE_MIX = False
         self.WANTS_SUGGEST_TRACK_REPORT = False
         self.WANTS_TO_BULK_EDIT = False
+        self.WANTS_SUGGEST_BPM_REPORT = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -97,11 +98,18 @@ class User_int(object):
                 if self.args.bulk_edit:
                     self.WANTS_TO_BULK_EDIT = True
 
-        # TRACK MODE
+        # SUGGEST MODE
         if hasattr(self.args, 'suggest_search'):
             self.WANTS_TO_SUGGEST_SEARCH = True
-            self.WANTS_SUGGEST_TRACK_REPORT = True
-            log.debug("Entered Track-combination report.")
+            log.debug("Entered Track-suggestion mode.")
+            if self.args.suggest_bpm and self.args.suggest_search == "0":
+                log.debug("Entered BPM suggestion report.")
+                self.WANTS_SUGGEST_BPM_REPORT = True
+            if self.args.suggest_search == "0":
+                log.debug("Entered Track-combination report. No searchterm.")
+            else:
+                log.debug("Entered Track-combination report.")
+                self.WANTS_SUGGEST_TRACK_REPORT = True
             #log.error("track search not implemented yet.")
             #raise SystemExit(1)
 

@@ -533,3 +533,20 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 print()
             else:
                 log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
+
+    def bpm_report(self, bpm, pitch_range):
+        #track_no = self.cli.ask_user_for_track()
+        #if self.collection.ONLINE == True:
+        #    rel_id = release[0][0]
+        #    rel_name = release[0][2]
+        #else:
+        #    rel_id = release[0][0]
+        #    rel_name = release[0][1]
+        possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
+        tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
+        self.cli.print_help(tr_sugg_msg)
+        if possible_tracks:
+            for tr in possible_tracks:
+                self.cli.print_help('{}/{}\t\t{} - {} [{}]:'.format(
+                     tr['key'], tr['bpm'], tr['d_artist'], tr['d_track_name'], tr['discogs_title']))
+                #self.cli.tab_mix_table(report_snippet, _verbose = True)

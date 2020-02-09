@@ -767,5 +767,5 @@ class Collection (Database):
                                    ON track.d_release_id = track_ext.d_release_id
                                    AND track.d_track_no = track_ext.d_track_no
                        WHERE (track_ext.bpm >= "{}" AND track_ext.bpm <= "{}")
-                       ORDER BY track_ext.bpm'''.format(min_bpm, max_bpm)
+                       ORDER BY track_ext.key, track_ext.bpm'''.format(min_bpm, max_bpm)
         return self._select(sql_bpm, fetchone = False)
