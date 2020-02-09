@@ -57,21 +57,17 @@ class main_frame():
     # Instantiate the DB-Connector and load the Data
 
     def mix_starter(self):
-        self.discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
-        # conf = utils.read_yaml(discodos_root / "config.yaml")
-        self.discobase = self.discodos_root / "discobase.db"
-        # SETUP / INIT
-
-        self.db_obj = models.Database(db_file = self.discobase)
-        #Debugging DB Connection
+        # CONFIGURATOR INIT: db and config file handling, DISCOGS API conf
+        conf = utils.Config()
+        self.db_obj = models.Database(db_file = conf.discobase)
 
         try:
             self.conn = self.db_obj.db_conn
             log.info("GUI: DB Connection Success")
             self.status.set("DB Connection Success")
         except:
-            log.error("GUI: DB connection failed")
-            self.status.set("DB Connection failed")
+            log.error("GUI: DB Connection Failed")
+            self.status.set("DB Connection Failed")
 
         self.all_mix = models.Mix(self.conn, "all")
         self.mixes_data = self.all_mix.get_all_mixes()
