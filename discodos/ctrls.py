@@ -63,16 +63,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             if not full_mix:
                 print_help("No tracks in mix yet.")
             else:
-                full_mix_nl = self.cli.trim_table_fields(full_mix)
-                # debug only
-                for row in full_mix_nl:
-                   log.debug(str(row))
-                log.debug("")
-                # now really
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix_nl, _verbose = True)
+                    self.cli.tab_mix_table(full_mix, _verbose = True)
                 else:
-                    self.cli.tab_mix_table(full_mix_nl, _verbose = False)
+                    self.cli.tab_mix_table(full_mix, _verbose = False)
         else:
             print_help("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 

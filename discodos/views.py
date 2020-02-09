@@ -127,18 +127,23 @@ class Cli_view_common(ABC):
         return track_no
 
     def tab_mix_table(self, _mix_data, _verbose = False):
+        _mix_data_nl = self.trim_table_fields(_mix_data)
+        for row in _mix_data_nl: # debug only
+           log.debug(str(row))
+        log.debug("")
         if _verbose:
-            self.print_help(tab(_mix_data, tablefmt="pipe",
+            self.print_help(tab(_mix_data_nl, tablefmt="pipe",
                 headers=["#", "Release", "Track\nArtist", "Track\nName", "Track\nPos", "Key", "BPM",
                          "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
         else:
-            self.print_help(tab(_mix_data, tablefmt="pipe",
+            self.print_help(tab(_mix_data_nl, tablefmt="pipe",
                 headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
 
     def trim_table_fields(self, tuple_table):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
         cut_pos = 16
+        log.info("Trimming table field width to max {} chars".format(cut_pos))
         table_nl = []
         # first convert list of tuples to list of lists:
         for tuple_row in tuple_table:
@@ -146,20 +151,23 @@ class Cli_view_common(ABC):
         # now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for j, field in enumerate(row):
+                cut_pos_space = False # reset cut_pos_space on each field cycle
                 if not is_number(field) and field is not None:
                     if len(field) > cut_pos:
                         cut_pos_space = field.find(" ", cut_pos)
-                        log.debug("cut_pos_space index: %s", cut_pos_space)
+                        log.debug("cut_pos_space index (next space after cut_pos): %s", cut_pos_space)
                         # don't edit if no space following (almost at end)
                         if cut_pos_space == -1:
                             edited_field = field
-                            log.debug(edited_field)
                         else:
                             edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                            log.debug(edited_field)
-                        #log.debug(field[0:cut_pos_space])
-                        #log.debug(field[cut_pos_space:])
+                        log.debug("string from 0 to cut_pos_space: {}".format(field[0:cut_pos_space]))
+                        log.debug("string from cut_pos_space to end: {}".format(field[cut_pos_space:]))
+                        log.debug("the final string:")
+                        log.debug("{}".format(edited_field))
+                        log.debug("")
                         table_nl[i][j] = edited_field
+        log.debug("table_nl has {} lines".format(len(table_nl)))
         return table_nl
 
 # general stuff, useful for all UIs:
@@ -186,8 +194,8 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
         super(Mix_view_cli, self).__init__()
 
     def tab_mixes_list(self, mixes_data):
-        tabulated = tab(mixes_data, tablefmt="simple",
-                headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
+        tabulated = tab(self.trim_table_fields(mixes_data), tablefmt="simple",
+          headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
         self.print_help(tabulated)
 
     def tab_mix_info_header(self, mix_info):

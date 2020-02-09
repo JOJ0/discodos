@@ -758,3 +758,18 @@ class Collection (Database):
         log.info("MODEL: Returning tracks of a mix.")
         return self._select_simple(['*'], 'mix_track', where,
                 fetchone = False, orderby = 'track_pos')
+
+    def get_tracks_by_bpm(self, bpm, pitch_range):
+        min_bpm = bpm - (bpm / 100 * pitch_range)
+        max_bpm = bpm + (bpm / 100 * pitch_range)
+        sql_bpm = '''SELECT discogs_title, track.d_artist, d_track_name,
+                           track.d_track_no, key, bpm, key_notes, notes FROM
+                               release
+                                 LEFT OUTER JOIN track
+                                 ON release.discogs_id = track.d_release_id
+                                   INNER JOIN track_ext
+                                   ON track.d_release_id = track_ext.d_release_id
+                                   AND track.d_track_no = track_ext.d_track_no
+                       WHERE (track_ext.bpm >= "{}" AND track_ext.bpm <= "{}")
+                       ORDER BY track_ext.bpm'''.format(min_bpm, max_bpm)
+        return self._select(sql_bpm, fetchone = False)
