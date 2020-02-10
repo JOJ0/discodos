@@ -547,8 +547,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.print_help(tr_sugg_msg)
         if possible_tracks:
             for tr in possible_tracks:
-                self.cli.print_help('{}/{}\t\t{} - {} [{}]:'.format(
-                     tr['key'], tr['bpm'], tr['d_artist'], tr['d_track_name'], tr['discogs_title']))
+                self.cli.print_help('{}/{}\t\t{} - {} [{} ({})]:'.format(
+                     tr['key'], tr['bpm'], tr['d_artist'], tr['d_track_name'],
+                     tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
     def key_report(self, key):
