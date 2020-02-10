@@ -64,7 +64,7 @@ class main_frame():
         # conf = utils.read_yaml(discodos_root / "config.yaml")
         self.discobase = self.discodos_root / "discobase.db"
         # CONFIGURATOR INIT: db and config file handling, DISCOGS API conf
-        conf = utils.Config()
+        self.conf = utils.Config()
         
 
 
@@ -245,7 +245,7 @@ class main_frame():
 
     def update_mix_list(self):
 
-        self.db_obj = models.Database(db_file = conf.discobase)
+        self.db_obj = models.Database(db_file = self.conf.discobase)
 
         ################################################## DB CONN
 
@@ -356,41 +356,34 @@ class main_frame():
 
             try:
                 mix = models.Mix(self.conn, self.mix_list.item(cur_sel_mix,"text")) 
-                mix_data = mix.get_mix_info() 
                 log.debug("GUI: Retrieved Mix Info")   
-                self.status.set("Retrieved Mix Info") 
+                self.status.set("Retrieved Mix Info")
                 
-                # This Query exists to check, if a window is already open. If yes,
-                # then it just focuses. Or it closes and opens up again with the current mix data.
-                try:
-                    if self.mix_edit_win.win_state == "normal" and cur_sel_mix is self.mix_list.focus(): 
-                        log.debug("GUI: Focused Mix Edit Window") 
-                        self.mix_edit_win.edit_win.focus()
-
-                    elif self.mix_edit_win.win_state == "normal" and cur_sel_mix is not self.mix_list.focus():
-                        log.debug("GUI: Reloaded Mix Edit Window") 
-                        self.mix_edit_win._quit()
-
-                        try:
-                            mix = models.Mix(self.conn, self.mix_list.item(self.mix_list.focus(),"text"))
-                            mix_data = mix.get_mix_info() 
-                            log.debug("GUI: Got Mix data again") 
-
-                        except:
-                            log.error("GUI: Couldn't get mix data again")
-
-                        self.mix_edit_win = edit_mix_view(self.main_win, mix_data, mix)
-                        self.mix_edit_win.edit_win.focus()
-
-                    log.debug("GUI: Mix Window State is " + self.mix_edit_win.win_state)
-
-                except:
-                    self.mix_edit_win = edit_mix_view(self.main_win, mix_data, self.conn)  
-                    log.debug("GUI: Mix Window State is " + self.mix_edit_win.win_state) 
-
             except: 
                 log.error("GUI: Getting Mix Data failed")
                 self.status.set("Getting Mix Data failed")  
+                
+            # This Query exists to check, if a window is already open. If yes,
+            # then it just focuses. Or it closes and opens up again with the current mix data.
+
+            if self.mix_edit_win.win_state != "normal": 
+                self.mix_edit_win = edit_mix_view(self.main_win, mix) 
+
+            elif self.mix_edit_win.win_state == "normal" and cur_sel_mix is cur_sel_mix: 
+                log.debug("GUI: Focused Mix Edit Window") 
+                self.mix_edit_win.edit_win.focus()
+
+            elif self.mix_edit_win.win_state == "normal" and cur_sel_mix is not cur_sel_mix:
+                log.debug("GUI: Reloaded Mix Edit Window") 
+                self.mix_edit_win._quit()
+
+                self.mix_edit_win = edit_mix_view(self.main_win, mix)
+                self.mix_edit_win.edit_win.focus()
+
+            log.debug("GUI: Mix Window State is " + self.mix_edit_win.win_state)
+
+
+            
 
         
 # OPEN CREATE NEW MIX WINDOW

@@ -25,14 +25,26 @@ class widget_frame():
 ############ EDIT MIX ###########################
 
 class edit_mix_view(widget_frame):
-    def __init__(self, parent, mix_data, mix):
+    def __init__(self, parent, mix):
         self.title = "Edit Mix"
         super().__init__(parent, self.title)
-        self.mix_data = mix_data
-        self.view_mix_content()
+        self.parent = parent
         self.mix = mix
 
-        self.insert_track_pool()
+        try:
+            self.mix_data = mix.get_mix_info() 
+            log.debug("GUI: Got Mix data for widget Window") 
+
+        except:
+            log.error("GUI: Couldn't get mix data for Widget Window")
+
+        try:
+            self.view_mix_content()
+            log.debug("GUI: Loaded Mix Edit Content")
+        except:
+            log.error("GUI: Mix Edit Content failed loading.")
+
+        # self.insert_track_pool()
         
 
         # log.debug(mix_data["venue"])
