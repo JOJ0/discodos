@@ -97,12 +97,8 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.get_tracks_by_bpm(125, 6) # artist or title
+        db_return = self.collection.get_tracks_by_bpm(125, 6)
         self.assertIsNotNone(db_return)
-        #for row in db_return:
-        #    for field in row:
-        #        print(field)
-        #    print()
         self.assertEqual(len(db_return), 3) # should be a list with 3 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
         self.assertEqual(db_return[0]['d_track_no'], 'AA')
@@ -113,6 +109,25 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[2]['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return[2]['d_track_no'], 'B2')
         self.assertEqual(db_return[2]['bpm'], 130)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_get_tracks_by_key(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.get_tracks_by_key("Am")
+        self.assertIsNotNone(db_return)
+        #for row in db_return:
+        #    for field in row:
+        #        print(field)
+        #    print()
+        self.assertEqual(len(db_return), 2) # should be a list with 2 Rows
+        self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
+        self.assertEqual(db_return[0]['d_track_no'], 'AA')
+        self.assertEqual(db_return[0]['bpm'], 120)
+        self.assertEqual(db_return[1]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(db_return[1]['d_track_no'], 'A1')
+        self.assertEqual(db_return[1]['bpm'], 125)
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod

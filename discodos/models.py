@@ -760,12 +760,25 @@ class Collection (Database):
         max_bpm = bpm + (bpm / 100 * pitch_range)
         sql_bpm = '''SELECT discogs_title, track.d_artist, d_track_name,
                            track.d_track_no, key, bpm, key_notes, notes FROM
-                               release
-                                 LEFT OUTER JOIN track
-                                 ON release.discogs_id = track.d_release_id
+                               release LEFT OUTER JOIN track
+                               ON release.discogs_id = track.d_release_id
                                    INNER JOIN track_ext
                                    ON track.d_release_id = track_ext.d_release_id
                                    AND track.d_track_no = track_ext.d_track_no
                        WHERE (track_ext.bpm >= "{}" AND track_ext.bpm <= "{}")
                        ORDER BY track_ext.key, track_ext.bpm'''.format(min_bpm, max_bpm)
         return self._select(sql_bpm, fetchone = False)
+
+    def get_tracks_by_key(self, key):
+        prev_key = ""
+        next_key = ""
+        sql_key = '''SELECT discogs_title, track.d_artist, d_track_name,
+                           track.d_track_no, key, bpm, key_notes, notes FROM
+                               release LEFT OUTER JOIN track
+                               ON release.discogs_id = track.d_release_id
+                                   INNER JOIN track_ext
+                                   ON track.d_release_id = track_ext.d_release_id
+                                   AND track.d_track_no = track_ext.d_track_no
+                       WHERE (track_ext.key == "{}")
+                       ORDER BY track_ext.key, track_ext.bpm'''.format(key)
+        return self._select(sql_key, fetchone = False)
