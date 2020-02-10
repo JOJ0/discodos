@@ -122,6 +122,10 @@ def argparser(argv):
         "-b", "--bpm", type=int,
         dest='suggest_bpm', metavar="BPM",
         help='suggests tracks based on BPM value, within a configurable pitch-range (default: +/-6 percent)')
+    suggest_subparser.add_argument(
+        "-k", "--key", type=str,
+        dest='suggest_key', metavar="KEY",
+        help='suggests tracks based on musical key')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default".format(
@@ -260,6 +264,8 @@ def main():
         coll_ctrl.track_report(args.suggest_search)
     if user.WANTS_SUGGEST_BPM_REPORT:
         coll_ctrl.bpm_report(args.suggest_bpm, 6)
+    if user.WANTS_SUGGEST_KEY_REPORT:
+        coll_ctrl.key_report(args.suggest_key)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":

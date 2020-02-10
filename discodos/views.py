@@ -105,6 +105,9 @@ class User_int(object):
             if self.args.suggest_bpm and self.args.suggest_search == "0":
                 log.debug("Entered BPM suggestion report.")
                 self.WANTS_SUGGEST_BPM_REPORT = True
+            if self.args.suggest_key and self.args.suggest_search == "0":
+                log.debug("Entered musical key suggestion report.")
+                self.WANTS_SUGGEST_KEY_REPORT = True
             if self.args.suggest_search == "0":
                 log.debug("Entered Track-combination report. No searchterm.")
             else:
