@@ -31,6 +31,7 @@ class User_int(object):
         self.WANTS_SUGGEST_TRACK_REPORT = False
         self.WANTS_TO_BULK_EDIT = False
         self.WANTS_SUGGEST_BPM_REPORT = False
+        self.WANTS_SUGGEST_KEY_REPORT = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
