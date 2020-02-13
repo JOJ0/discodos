@@ -251,6 +251,41 @@ class Collection_view_common(ABC):
             if tr.position == track_number:
                 return tr.title
 
+    def get_max_width(self, rows_list, keys_list, extra_space):
+        '''gets max width of sqlite list of rows for given fields (keys_list)
+           and add some space. FIXME: Only supports exactly 2 keys.'''
+        max_width = 0
+        for row in rows_list:
+            row_mutable = dict(row)
+            width = 0
+            if row_mutable[keys_list[0]] is None:
+                row_mutable[keys_list[0]] = "-"
+            if row_mutable[keys_list[1]] is None:
+                row_mutable[keys_list[1]] = "-"
+            width = (len(row_mutable[keys_list[0]]) + len('/')
+                + len(str(row_mutable[keys_list[1]])))
+            #log.debug("This rows width: {}.".format(width))
+            if max_width < width:
+                max_width = width
+        log.debug("Found a max width of {}, adding extra_space of {}.".format(
+              max_width, extra_space))
+        return max_width + extra_space
+
+    def combine_fields_to_width(self, row, keys_list, set_width):
+        '''takes sqlite row and keys_list, combines and fills with
+           spaces up to set_width. FIXME: Only supports exactly 2 keys.'''
+        row_mut = dict(row) # make sqlite row tuple mutable
+        if row_mut[keys_list[0]] is None:
+            row_mut[keys_list[0]] = "-"
+        if row_mut[keys_list[1]] is None:
+            row_mut[keys_list[1]] = "-"
+        combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
+              str(row_mut[keys_list[1]]))
+        combined_with_space = combined_key_bpm.ljust(set_width)
+        #log.warning("Combined string: {}".format(combined_str))
+        return combined_with_space
+
+
 # viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, Cli_view_common):
     def __init__(self):

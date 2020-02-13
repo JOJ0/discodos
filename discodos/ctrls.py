@@ -546,9 +546,13 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
         self.cli.print_help(tr_sugg_msg)
         if possible_tracks:
+            max_width = self.cli.get_max_width(possible_tracks,
+              ['key', 'bpm'], 3)
             for tr in possible_tracks:
-                self.cli.print_help('{}/{}\t\t{} - {} [{} ({})]:'.format(
-                     tr['key'], tr['bpm'], tr['d_artist'], tr['d_track_name'],
+                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
+                  ['key', 'bpm'], max_width)
+                self.cli.print_help('{}{} - {} [{} ({})]:'.format(
+                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
@@ -563,8 +567,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         tr_sugg_msg = '\nShowing tracks with key {}'.format(key)
         self.cli.print_help(tr_sugg_msg)
         if possible_tracks:
+            max_width = self.cli.get_max_width(possible_tracks,
+              ['key', 'bpm'], 3)
             for tr in possible_tracks:
-                self.cli.print_help('{}/{}\t\t{} - {} [{} ({})]:'.format(
-                     tr['key'], tr['bpm'], tr['d_artist'], tr['d_track_name'],
+                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
+                  ['key', 'bpm'], max_width)
+                self.cli.print_help('{}{} - {} [{} ({})]:'.format(
+                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
