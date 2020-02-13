@@ -30,6 +30,9 @@ class User_int(object):
         self.WANTS_TO_DELETE_MIX = False
         self.WANTS_SUGGEST_TRACK_REPORT = False
         self.WANTS_TO_BULK_EDIT = False
+        self.WANTS_SUGGEST_BPM_REPORT = False
+        self.WANTS_SUGGEST_KEY_REPORT = False
+        self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -97,11 +100,35 @@ class User_int(object):
                 if self.args.bulk_edit:
                     self.WANTS_TO_BULK_EDIT = True
 
-        # TRACK MODE
+        # SUGGEST MODE
         if hasattr(self.args, 'suggest_search'):
             self.WANTS_TO_SUGGEST_SEARCH = True
-            self.WANTS_SUGGEST_TRACK_REPORT = True
-            log.debug("Entered Track-combination report.")
+            log.debug("Entered suggestion mode.")
+            if (self.args.suggest_bpm and self.args.suggest_search == "0"
+                  and self.args.suggest_key):
+                log.debug("Entered BPM and key suggestion report.")
+                self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = True
+            elif (self.args.suggest_bpm and self.args.suggest_search is not "0"
+                  and self.args.suggest_key):
+                log.error("You can't combine BPM and key with Track-combination report.")
+                raise SystemExit(1)
+            elif self.args.suggest_bpm and self.args.suggest_search is not "0":
+                log.error("You can't combine BPM with Track-combination report.")
+                raise SystemExit(1)
+            elif self.args.suggest_key and self.args.suggest_search is not "0":
+                log.error("You can't combine key with Track-combination report.")
+                raise SystemExit(1)
+            elif self.args.suggest_bpm and self.args.suggest_search == "0":
+                log.debug("Entered BPM suggestion report.")
+                self.WANTS_SUGGEST_BPM_REPORT = True
+            elif self.args.suggest_key and self.args.suggest_search == "0":
+                log.debug("Entered musical key suggestion report.")
+                self.WANTS_SUGGEST_KEY_REPORT = True
+            elif self.args.suggest_search == "0":
+                log.debug("Entered Track-combination report. No searchterm.")
+            else:
+                log.debug("Entered Track-combination report.")
+                self.WANTS_SUGGEST_TRACK_REPORT = True
             #log.error("track search not implemented yet.")
             #raise SystemExit(1)
 
@@ -127,18 +154,23 @@ class Cli_view_common(ABC):
         return track_no
 
     def tab_mix_table(self, _mix_data, _verbose = False):
+        _mix_data_nl = self.trim_table_fields(_mix_data)
+        for row in _mix_data_nl: # debug only
+           log.debug(str(row))
+        log.debug("")
         if _verbose:
-            self.print_help(tab(_mix_data, tablefmt="pipe",
+            self.print_help(tab(_mix_data_nl, tablefmt="pipe",
                 headers=["#", "Release", "Track\nArtist", "Track\nName", "Track\nPos", "Key", "BPM",
                          "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
         else:
-            self.print_help(tab(_mix_data, tablefmt="pipe",
+            self.print_help(tab(_mix_data_nl, tablefmt="pipe",
                 headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
 
     def trim_table_fields(self, tuple_table):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
         cut_pos = 16
+        log.info("Trimming table field width to max {} chars".format(cut_pos))
         table_nl = []
         # first convert list of tuples to list of lists:
         for tuple_row in tuple_table:
@@ -146,20 +178,23 @@ class Cli_view_common(ABC):
         # now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for j, field in enumerate(row):
+                cut_pos_space = False # reset cut_pos_space on each field cycle
                 if not is_number(field) and field is not None:
                     if len(field) > cut_pos:
                         cut_pos_space = field.find(" ", cut_pos)
-                        log.debug("cut_pos_space index: %s", cut_pos_space)
+                        log.debug("cut_pos_space index (next space after cut_pos): %s", cut_pos_space)
                         # don't edit if no space following (almost at end)
                         if cut_pos_space == -1:
                             edited_field = field
-                            log.debug(edited_field)
                         else:
                             edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                            log.debug(edited_field)
-                        #log.debug(field[0:cut_pos_space])
-                        #log.debug(field[cut_pos_space:])
+                        log.debug("string from 0 to cut_pos_space: {}".format(field[0:cut_pos_space]))
+                        log.debug("string from cut_pos_space to end: {}".format(field[cut_pos_space:]))
+                        log.debug("the final string:")
+                        log.debug("{}".format(edited_field))
+                        log.debug("")
                         table_nl[i][j] = edited_field
+        log.debug("table_nl has {} lines".format(len(table_nl)))
         return table_nl
 
 # general stuff, useful for all UIs:
@@ -186,8 +221,8 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
         super(Mix_view_cli, self).__init__()
 
     def tab_mixes_list(self, mixes_data):
-        tabulated = tab(mixes_data, tablefmt="simple",
-                headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
+        tabulated = tab(self.trim_table_fields(mixes_data), tablefmt="simple",
+          headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
         self.print_help(tabulated)
 
     def tab_mix_info_header(self, mix_info):
@@ -215,6 +250,41 @@ class Collection_view_common(ABC):
             #log.info("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
             if tr.position == track_number:
                 return tr.title
+
+    def get_max_width(self, rows_list, keys_list, extra_space):
+        '''gets max width of sqlite list of rows for given fields (keys_list)
+           and add some space. FIXME: Only supports exactly 2 keys.'''
+        max_width = 0
+        for row in rows_list:
+            row_mutable = dict(row)
+            width = 0
+            if row_mutable[keys_list[0]] is None:
+                row_mutable[keys_list[0]] = "-"
+            if row_mutable[keys_list[1]] is None:
+                row_mutable[keys_list[1]] = "-"
+            width = (len(row_mutable[keys_list[0]]) + len('/')
+                + len(str(row_mutable[keys_list[1]])))
+            #log.debug("This rows width: {}.".format(width))
+            if max_width < width:
+                max_width = width
+        log.debug("Found a max width of {}, adding extra_space of {}.".format(
+              max_width, extra_space))
+        return max_width + extra_space
+
+    def combine_fields_to_width(self, row, keys_list, set_width):
+        '''takes sqlite row and keys_list, combines and fills with
+           spaces up to set_width. FIXME: Only supports exactly 2 keys.'''
+        row_mut = dict(row) # make sqlite row tuple mutable
+        if row_mut[keys_list[0]] is None:
+            row_mut[keys_list[0]] = "-"
+        if row_mut[keys_list[1]] is None:
+            row_mut[keys_list[1]] = "-"
+        combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
+              str(row_mut[keys_list[1]]))
+        combined_with_space = combined_key_bpm.ljust(set_width)
+        #log.warning("Combined string: {}".format(combined_str))
+        return combined_with_space
+
 
 # viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, Cli_view_common):

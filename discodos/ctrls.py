@@ -63,16 +63,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             if not full_mix:
                 print_help("No tracks in mix yet.")
             else:
-                full_mix_nl = self.cli.trim_table_fields(full_mix)
-                # debug only
-                for row in full_mix_nl:
-                   log.debug(str(row))
-                log.debug("")
-                # now really
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix_nl, _verbose = True)
+                    self.cli.tab_mix_table(full_mix, _verbose = True)
                 else:
-                    self.cli.tab_mix_table(full_mix_nl, _verbose = False)
+                    self.cli.tab_mix_table(full_mix, _verbose = False)
         else:
             print_help("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 
@@ -564,3 +558,46 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 print()
             else:
                 log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
+
+    def bpm_report(self, bpm, pitch_range):
+        #track_no = self.cli.ask_user_for_track()
+        #if self.collection.ONLINE == True:
+        #    rel_id = release[0][0]
+        #    rel_name = release[0][2]
+        #else:
+        #    rel_id = release[0][0]
+        #    rel_name = release[0][1]
+        possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
+        tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
+        self.cli.print_help(tr_sugg_msg)
+        if possible_tracks:
+            max_width = self.cli.get_max_width(possible_tracks,
+              ['key', 'bpm'], 3)
+            for tr in possible_tracks:
+                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
+                  ['key', 'bpm'], max_width)
+                self.cli.print_help('{}{} - {} [{} ({})]:'.format(
+                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
+                     tr['discogs_title'], tr['d_track_no']))
+                #self.cli.tab_mix_table(report_snippet, _verbose = True)
+
+    def key_report(self, key):
+        #if self.collection.ONLINE == True:
+        #    rel_id = release[0][0]
+        #    rel_name = release[0][2]
+        #else:
+        #    rel_id = release[0][0]
+        #    rel_name = release[0][1]
+        possible_tracks = self.collection.get_tracks_by_key(key)
+        tr_sugg_msg = '\nShowing tracks with key {}'.format(key)
+        self.cli.print_help(tr_sugg_msg)
+        if possible_tracks:
+            max_width = self.cli.get_max_width(possible_tracks,
+              ['key', 'bpm'], 3)
+            for tr in possible_tracks:
+                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
+                  ['key', 'bpm'], max_width)
+                self.cli.print_help('{}{} - {} [{} ({})]:'.format(
+                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
+                     tr['discogs_title'], tr['d_track_no']))
+                #self.cli.tab_mix_table(report_snippet, _verbose = True)
