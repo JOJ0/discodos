@@ -99,7 +99,7 @@ class Mix_view_common(ABC):
             ["d_release_id", "Release ID ({}): "],
             ["notes", "Other track notes: ({}): "]
         ]
-
+ 
 # Collection view utils, usable in CLI and GUI, related to Collection only
 class Collection_view_common(ABC):
     def __init__(self):
@@ -287,6 +287,26 @@ class Collection_view_cli(Collection_view_common, Cli_view_common, view_common):
         if not online:
             log.error("Need to be ONLINE to do that!")
             raise SystemExit(3)
+
+    def show_discogs_release(self, release): # discogs_client Release object
+        rel_data_list=[]
+        rel_data_list.append([])
+        rel_data_list[0].append(release.id)
+        rel_data_list[0].append(str(release.artists[0].name))
+        rel_data_list[0].append(release.title)
+        rel_data_list[0].append(str(release.labels[0].name))
+        rel_data_list[0].append(release.country)
+        rel_data_list[0].append(str(release.year))
+        #rel_data_list[0].append(str(release.formats[0]['descriptions'][0])+
+        #           ", "+str(release.formats[0]['descriptions'][1]))
+        rel_data_list[0].append(str(release.formats[0]['descriptions'][0])+
+                   ", "+str(release.formats[0]['descriptions'][0]))
+
+        log.info("rel_data_list in show_discogs_release: {}".format(
+            rel_data_list))
+        self.tab_online_search_results(rel_data_list)
+        self.online_search_results_tracklist(release.tracklist)
+
 
 # CLI user interaction class - holds info about what user wants to do
 # analyzes argparser args and puts it to nicely human readable properties
