@@ -779,6 +779,6 @@ class Collection (Database):
                                    INNER JOIN track_ext
                                    ON track.d_release_id = track_ext.d_release_id
                                    AND track.d_track_no = track_ext.d_track_no
-                       WHERE (track_ext.key == "{}")
+                       WHERE (track_ext.key LIKE "%{}%")
                        ORDER BY track_ext.key, track_ext.bpm'''.format(key)
         return self._select(sql_key, fetchone = False)
