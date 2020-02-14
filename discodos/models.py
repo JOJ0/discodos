@@ -11,6 +11,7 @@ from sqlite3 import Error as sqlerr
 import sqlite3
 import time
 from datetime import datetime
+import musicbrainzngs as m
 
 class Database (object):
 
@@ -782,3 +783,25 @@ class Collection (Database):
                        WHERE (track_ext.key LIKE "%{}%")
                        ORDER BY track_ext.key, track_ext.bpm'''.format(key)
         return self._select(sql_key, fetchone = False)
+
+
+class Brainz (Database):
+
+    def __init__(self, db_conn, db_file = False):
+        super(Brainz, self).__init__(db_conn, db_file)
+        # discogs api objects are online set when discogs_connect method is called
+        #self.me = False
+        self.ONLINE = False
+
+    # musicbrainz connect try,except wrapper
+    def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):
+        # If you plan to submit data, authenticate
+        #m.auth(mb_user, mb_pass)
+        m.set_useragent(mb_appid, "0.0.2", "https://github.com/JOJ0")
+        # If you are connecting to a different server
+        #m.set_hostname("beta.musicbrainz.org")
+        try: # test request
+            m.get_artist_by_id("952a4205-023d-4235-897c-6fdb6f58dfaa", [])
+            return True
+        except: # FIXME this is a catch all!
+            return False
