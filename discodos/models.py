@@ -12,6 +12,7 @@ import sqlite3
 import time
 from datetime import datetime
 import musicbrainzngs as m
+from musicbrainzngs import WebServiceError
 
 class Database (object):
 
@@ -802,6 +803,16 @@ class Brainz (Database):
         #m.set_hostname("beta.musicbrainz.org")
         try: # test request
             m.get_artist_by_id("952a4205-023d-4235-897c-6fdb6f58dfaa", [])
+            self.ONLINE = True
             return True
-        except: # FIXME this is a catch all!
+        except WebServiceError as exc:
+            log.error("Something went wrong with the request: %s" % exc)
+            self.ONLINE = False
+            return False
+
+    def get_mb_artist_by_id(self, mb_id):
+        try:
+            return m.get_artist_by_id(mb_id, [])
+        except WebServiceError as exc:
+            log.error("Something went wrong with the request: %s" % exc)
             return False

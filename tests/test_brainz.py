@@ -4,7 +4,7 @@ from shutil import copy2
 from os import remove
 from discodos.models import *
 from discodos.utils import *
-#import inspect
+import inspect
 
 
 class TestBrainz(unittest.TestCase):
@@ -23,23 +23,24 @@ class TestBrainz(unittest.TestCase):
         print("TestBrainz.setUpClass: done\n")
 
 
-    def test_search_release_online_number(self):
-        print("\nTestBrainz.search_release_online_number: BEGIN")
+    def test_get_mb_artist_by_id(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
         self.brainz = Brainz(False, self.db_path)
         if self.brainz.musicbrainz_connect(self.mb_user, self.mb_pass,
                   self.mb_appid):
             print('We are ONLINE')
-            #d_return = self.brainz.search_release_online('69092') # artist or title
-            ##print(dir(d_return))
-            #self.assertEqual(len(d_return), 1) # should be single release in a list!
-            #self.assertEqual(int(d_return[0].id), 69092) # we get it as a string!
-            #self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            #self.assertEqual(d_return[0].title, 'Out From Out Where')
+            mb_return = self.brainz.get_mb_artist_by_id('952a4205-023d-4235-897c-6fdb6f58dfaa')
+            #print(dir(mb_return))
+            #print(mb_return)
+            self.assertEqual(len(mb_return), 1) # should be single release in a list!
+            self.assertEqual(mb_return['artist']['name'], 'Dynamo Go')
+            self.assertEqual(mb_return['artist']['country'], 'NZ')
         else:
             print('We are OFFLINE, testing if we properly fail!')
-            #db_return = self.brainz.search_release_online('Amon Tobin') # artist or title
-            #self.assertFalse(db_return)
-        print("TestBrainz.search_release_online_number: DONE\n")
+            mb_return = self.brainz.get_mb_artist_by_id('952a4205-023d-4235-897c-6fdb6f58dfaa')
+            self.assertFalse(mb_return)
+        print("{} - {} - END".format(self.clname, name))
 
     @classmethod
     def tearDownClass(self):
