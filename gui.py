@@ -49,6 +49,7 @@ class main_frame():
         # Create all Widgets, outsourced to its own function
         self.create_widgets()
         self.mix_starter()
+        self.update_track_list()
 
                     
     # Exit GUI cleanly
@@ -65,8 +66,6 @@ class main_frame():
         self.discobase = self.discodos_root / "discobase.db"
         # CONFIGURATOR INIT: db and config file handling, DISCOGS API conf
         self.conf = utils.Config()
-        
-
 
 
         self.update_mix_list()
@@ -117,10 +116,6 @@ class main_frame():
 
         # Here is the same game for the track width values
         # We create a Dictionary
-
-
-        
-
         
         self.tracks_list.delete(*self.tracks_list.get_children())
 
@@ -137,10 +132,7 @@ class main_frame():
 
         for i, row in enumerate(mix_data):
 
-            # print(dir(row["track_pos"]))
-
             try:
-
                 self.tracks_list.insert("", i, text="", values=(utils.none_checker(row["track_pos"]), 
                                                                 utils.none_checker(row["d_artist"]), 
                                                                 utils.none_checker(row["d_track_name"]), 
@@ -224,11 +216,9 @@ class main_frame():
             log.error("GUI: Couldn't Set Focus on Track Item")
             self.status.set("Couldn't Set Focus on Track Item")
         
-        # print(track_width_vals["track_pos_width"])
 
         self.tracks_list.column("track_pos", width=max(utils.none_checker(track_width_vals["track_pos_width"])), minwidth=tkfont.Font().measure("#"), stretch=1)
         self.tracks_list.column("artist", width=max(utils.none_checker(track_width_vals["d_artist_width"])), minwidth=tkfont.Font().measure("Artist"), stretch=1)
-        # print(max(utils.none_checker(track_width_vals["track_id_width"])))
         self.tracks_list.column("track", width=max(utils.none_checker(track_width_vals["d_track_name_width"])), minwidth=tkfont.Font().measure("Track Name"), stretch=1)
         self.tracks_list.column("key", width=max(utils.none_checker(track_width_vals["key_width"])), minwidth=tkfont.Font().measure("Key"), stretch=1)
         self.tracks_list.column("bpm", width=max(utils.none_checker(track_width_vals["bpm_width"])), minwidth=tkfont.Font().measure("BPM"), stretch=1)
@@ -239,11 +229,14 @@ class main_frame():
         self.tracks_list.column("d_release_id", width=max(utils.none_checker(track_width_vals["bpm_width"])), minwidth=tkfont.Font().measure("Mix Track ID"), stretch=1)
 
 
-
-
 # UPDATE THE MIX LIST 
 
     def update_mix_list(self):
+
+        try:
+            self.mix_edit_win._quit()
+        except:
+            pass
 
         self.db_obj = models.Database(db_file = self.conf.discobase)
 
@@ -334,8 +327,7 @@ class main_frame():
         self.mix_list.column("created", width=max(self.mix_width_vals["created_width"]), minwidth=tkfont.Font().measure("Created"), stretch=1)
         self.mix_list.column("updated", width=max(self.mix_width_vals["updated_width"]), minwidth=tkfont.Font().measure("Updated"), stretch=1)
 
-
-
+        
 
 #################################################
 ############## WIDGET WINDOW SWITCH #############
@@ -343,6 +335,7 @@ class main_frame():
 
 
     def open_widget(self, view):
+
 
         # This function gets called, when the user opens up a window.
         # Depending on the Button he presses, the selector chooses wich window will be opened.
@@ -363,27 +356,32 @@ class main_frame():
                 log.error("GUI: Getting Mix Data failed")
                 self.status.set("Getting Mix Data failed")  
                 
-            # This Query exists to check, if a window is already open. If yes,
-            # then it just focuses. Or it closes and opens up again with the current mix data.
+            try:
+                if self.mix_edit_win.win_state == "normal" and cur_sel_mix is self.mix_list.focus(): 
+                    log.debug("GUI: Focused Mix Edit Window") 
+                    self.mix_edit_win.edit_win.focus()
 
-            if self.mix_edit_win.win_state != "normal": 
+                elif self.mix_edit_win.win_state == "normal" and cur_sel_mix is not self.mix_list.focus():
+                    log.debug("GUI: Reloaded Mix Edit Window") 
+                    
+                    self.mix_edit_win._quit()
+                    self.mix_edit_win = edit_mix_view(self.main_win, mix)
+                    self.mix_edit_win.edit_win.focus()
+                
+                else:
+                    self.mix_edit_win = edit_mix_view(self.main_win, mix) 
+            
+            except:
                 self.mix_edit_win = edit_mix_view(self.main_win, mix) 
-
-            elif self.mix_edit_win.win_state == "normal" and cur_sel_mix is cur_sel_mix: 
-                log.debug("GUI: Focused Mix Edit Window") 
-                self.mix_edit_win.edit_win.focus()
-
-            elif self.mix_edit_win.win_state == "normal" and cur_sel_mix is not cur_sel_mix:
-                log.debug("GUI: Reloaded Mix Edit Window") 
-                self.mix_edit_win._quit()
-
-                self.mix_edit_win = edit_mix_view(self.main_win, mix)
                 self.mix_edit_win.edit_win.focus()
 
             log.debug("GUI: Mix Window State is " + self.mix_edit_win.win_state)
 
-
+            self.mix_edit_win.edit_win.protocol("WM_DELETE_WINDOW", self.update_mix_list)
             
+            
+            # if self.mix_edit_win.edit_win.winfo_exists() == 0:
+            # self.mix_edit_win = edit_mix_view(self.main_win, mix)
 
         
 # OPEN CREATE NEW MIX WINDOW
@@ -402,7 +400,7 @@ class main_frame():
                 self.add_mix_win = add_mix_view(self.main_win, self.conn)
                 self.add_mix_win.edit_win.focus()
             
-            self.add_mix_win.edit_win.protocol("WM_DELETE_WINDOW", self.update_mix_list)
+            # self.add_mix_win.edit_win.protocol("WM_DELETE_WINDOW", self.update_mix_list)
         
 # OPEN TRACK EDIT WINDOW
             
@@ -442,7 +440,7 @@ class main_frame():
                 self.status.set("Getting Track Data failed")  
             
             
-            self.track_edit_win.edit_win.protocol("WM_DELETE_WINDOW", self.update_track_list)
+            # self.track_edit_win.edit_win.protocol("WM_DELETE_WINDOW", self.update_track_list)
 
 
 ####################################################################
@@ -460,8 +458,6 @@ class main_frame():
             self.status.set("Failed to delete Mix!")
 
         self.update_mix_list()
-
-
 
 
 
@@ -516,16 +512,16 @@ class main_frame():
         self.tracks_list['show'] = 'headings'
 
         self.tracks_list["columns"]=("track_pos", "artist", "track", "key", "bpm", "keynotes", "transr", "transnotes", "notes", "d_release_id")
-        self.tracks_list.column("track_pos", width=2)
-        self.tracks_list.column("artist", width=2)
-        self.tracks_list.column("track", width=2)
-        self.tracks_list.column("key", width=2) 
-        self.tracks_list.column("bpm", width=2)
-        self.tracks_list.column("keynotes", width=2) 
-        self.tracks_list.column("transr", width=2)
-        self.tracks_list.column("transnotes", width=2)
-        self.tracks_list.column("notes", width=2)
-        self.tracks_list.column("d_release_id", width=2)
+        self.tracks_list.column("track_pos", width=2, stretch=1)
+        self.tracks_list.column("artist", width=2, stretch=1)
+        self.tracks_list.column("track", width=2, stretch=1)
+        self.tracks_list.column("key", width=2, stretch=1) 
+        self.tracks_list.column("bpm", width=2, stretch=1)
+        self.tracks_list.column("keynotes", width=2, stretch=1) 
+        self.tracks_list.column("transr", width=2, stretch=1)
+        self.tracks_list.column("transnotes", width=2, stretch=1)
+        self.tracks_list.column("notes", width=2, stretch=1)
+        self.tracks_list.column("d_release_id", width=2, stretch=1)
 
 
         self.tracks_list.heading("track_pos", text="#",anchor=tk.W)
@@ -577,8 +573,6 @@ class main_frame():
         self.mix_frame.pack(fill="both", expand=1, side = "top")
         self.tracks_frame.pack(fill="both", expand=1, side = "bottom")
 
-
-        
 
 
 main_gui = main_frame()

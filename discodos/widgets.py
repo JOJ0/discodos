@@ -3,8 +3,11 @@ from tkinter import ttk
 from discodos import log
 from discodos import models
 
+
 class widget_frame():
     def __init__(self, parent, title):
+        global widget_window_exists, root
+        widget_window_exists = True
         self.edit_win = tk.Toplevel(parent)
         # log.debug("Window State is " + self.edit_win.state())
         global win_state 
@@ -21,6 +24,7 @@ class widget_frame():
 
     def _quit(self):
         self.edit_win.destroy()
+        self.edit_win.update()
         
 ############ EDIT MIX ###########################
 
@@ -37,12 +41,14 @@ class edit_mix_view(widget_frame):
 
         except:
             log.error("GUI: Couldn't get mix data for Widget Window")
+        
+        self.view_mix_content()
 
-        try:
-            self.view_mix_content()
-            log.debug("GUI: Loaded Mix Edit Content")
-        except:
-            log.error("GUI: Mix Edit Content failed loading.")
+        # try:
+        #     self.view_mix_content()
+        #     log.debug("GUI: Loaded Mix Edit Content")
+        # except:
+        #     log.error("GUI: Mix Edit Content failed loading.")
 
         # self.insert_track_pool()
         
@@ -88,7 +94,7 @@ class edit_mix_view(widget_frame):
         for i in range(5,9):
             self.mix_info_frame.rowconfigure(i, weight=1)
 
-        self.update_mix_btn = tk.Button(self.mix_info_frame, text="Update Mix", command=update_mix)
+        self.update_mix_btn = tk.Button(self.mix_info_frame, text="Update Mix", command=self.update_mix)
         self.update_mix_btn.grid(row=8, column=0, sticky="s")
         self.quit_btn = tk.Button(self.mix_info_frame, text="Cancel", command=self._quit)
         self.quit_btn.grid(row=8, column=1, sticky="s")
@@ -110,24 +116,27 @@ class edit_mix_view(widget_frame):
         self.coll_list.heading("artist", text="Artist", anchor=tk.W)
         self.coll_list.heading("id", text="Discogs ID",anchor=tk.W)
 
-    
-    def update_mix(self):
-        pass
+        # Display Frames
 
-
+        self.mix_info_frame.pack(fill="both", expand=1, side = "top")
+        self.buttons_frame.pack(side="bottom", fill="x")
+        self.pool_frame.pack(fill="both", expand=1, side = "bottom")
 
         ###############################################
 
         # Buttons Area
 
         tk.Button(self.buttons_frame, text="<- Add Track to Mix").pack(side="left")
-        tk.Button(self.buttons_frame, text="Save Mix", command=update_mix).pack(side="right")
 
         # Display Frames
 
         self.mix_info_frame.pack(fill="both", expand=1, side = "top")
         self.buttons_frame.pack(side="bottom", fill="x")
         self.pool_frame.pack(fill="both", expand=1, side = "bottom")
+
+    
+    def update_mix(self):
+        self._quit()
 
     
     def insert_track_pool(self):
