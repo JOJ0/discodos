@@ -576,3 +576,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
+
+
+class gui_ctrl(Mix_ctrl_common):
+
+    def __init__(self, db_conn, db_file = False):
+        self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
