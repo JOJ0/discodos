@@ -669,4 +669,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
             log.error("GUI; Failed to delete Mix!")
 
         self.display_all_mixes()
+
+
+
         

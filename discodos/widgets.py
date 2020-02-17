@@ -21,6 +21,7 @@ class widget_frame():
         x = parent.winfo_x()
         y = parent.winfo_y()
         self.edit_win.geometry("+%d+%d" % (x + 800, y))
+        
 
     def _quit(self):
         self.edit_win.destroy()

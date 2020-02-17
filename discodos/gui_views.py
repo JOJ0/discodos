@@ -75,32 +75,25 @@ class main_frame():
 # EVENT TRIGGER UNCTION - UPDATE TRACK LIST            
         
     def show_tracklist(self):
-        sel_mix = self.mix_list.focus()
-        self.gui_ctrl.display_tracklist(self.mix_list.item(sel_mix,"text"))
-
-        try:
-            start_child_id_two = self.tracks_list.get_children()[0]
-            self.tracks_list.selection_set(start_child_id_two)
-            log.debug("GUI: Set Focus on first Track Item")
-
-        except:
-            log.error("GUI: Couldn't Set Focus on Track Item")
-            self.status.set("Couldn't Set Focus on Track Item")
+        self.gui_ctrl.display_tracklist(self.mix_list.item(self.mix_list.focus(),"text"))
+        # self.focus_first_object(self.tracks_list)
+        self.spawn_editor(self.mix_list)
 
 
 
     def focus_first_object(self, tree_view):
         try:
-            start_child_id = self.mix_list.get_children()[0]
-            self.mix_list.focus(start_child_id)
-            self.mix_list.selection_set(start_child_id)
+            start_child_id = tree_view.get_children()[0]
+            tree_view.focus(start_child_id)
+            tree_view.selection_set(start_child_id)
 
-            log.debug("GUI: Set Focus on first Mix Item")
+            log.debug("GUI: Set Focus on first Item")
 
         except:
-            log.error("GUI: Couldn't Set Focus on Mix Item")
-            self.status.set("Couldn't Set Focus on Mix Item")
+            log.error("GUI: Couldn't Set Focus on first Item")
+            self.status.set("Couldn't Set Focus on first Item")
 
+        self.spawn_editor(tree_view)
 
 
 
@@ -299,6 +292,23 @@ class main_frame():
             self.tracks_list.heading(col_id, text=heading,anchor=tk.W)
 
         self.mix_list.bind('<<TreeviewSelect>>', lambda a : self.show_tracklist())
+        self.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.spawn_editor(self.tracks_list))
+
+
+    def spawn_editor(self, tree_view):
+        data = tree_view.item(tree_view.focus())
+
+        self.editor_entries = []
+
+        try:
+            
+
+        for i, val  in enumerate(data["values"]):
+            lab = tk.Label(self.editor_frame, text="Label").grid(row=i, column=0, sticky="w")
+            en = tk.Entry(self.editor_frame)
+            en.grid(row=i, column=1, sticky="w")
+            en.insert(0, data["values"][i])
+            self.editor_entries.append(en)
 
     
     def create_toolbars(self):
@@ -327,29 +337,23 @@ class main_frame():
         
 
         self.new_mix_btn.grid(row=0, column=0, sticky="W")
-        self.edit_mix_btn.grid(row=0, column=1, sticky="W")
-        self.del_mix_btn.grid(row=1, column=0, sticky="W")
-        self.edit_track_btn.grid(row=0, column=1, sticky="W")
-        self.rmv_track_btn.grid(row=2, column=0, sticky="W")
+        self.edit_mix_btn.grid(row=1, column=0, sticky="W")
+        self.del_mix_btn.grid(row=2, column=0, sticky="W")
+        self.edit_track_btn.grid(row=3, column=0, sticky="W")
+        self.rmv_track_btn.grid(row=4, column=0, sticky="W")
+
 
         ###########################
         # EDITOR
         ########################
 
         self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
-        for i in range(5):
-            for j in range(2):
-                tk.Entry(self.editor_frame, width=30).grid(row=i, column=j, sticky="w")
-
 
 
         #########
         # SEARCH TOGGLE BUTTON
         self.search_toggle = tk.Button(self.main_win, text = ">") 
         
-   
-
-
 
         # DISPLAY
            
