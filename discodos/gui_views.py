@@ -57,11 +57,18 @@ class main_frame():
                                             self.mix_list, 
                                             self.tracks_list)
 
+        self.save_funcs =   [ 
+                            self.gui_ctrl.save_track_data,
+                            self.gui_ctrl.save_mix_data
+                            ]
+
+
         self.create_toolbars()
         self.focus_first_object(self.mix_list)
         self.gui_ctrl.display_all_mixes()
         self.show_tracklist()
 
+        
                     
     # Exit GUI cleanly
     def _quit(self):
@@ -298,17 +305,48 @@ class main_frame():
     def spawn_editor(self, tree_view):
         data = tree_view.item(tree_view.focus())
 
-        self.editor_entries = []
+        ######################################
+        # TODO: Refcator these two lists to Dict
 
         try:
-            
+            for en in self.editor_entries:
+                en.destroy()
+        except:
+            pass
+
+        try:
+            for lab in self.editor_labels:
+                lab.destroy()
+        except:
+            pass
+
+        try:
+            self.save_btn.destroy()
+        except:
+            pass
+
+        if tree_view == self.mix_list:
+            headings = list(self.mix_cols)
+            self.save_btn = tk.Button(self.editor_frame, text="Save Mix", command=self.save_funcs[1])
+        else:
+            headings = list(self.track_cols)
+            self.save_btn = tk.Button(self.editor_frame, text="Save Track", command=self.save_funcs[0])
+
+
+        self.editor_entries = []
+        self.editor_labels = []
+        
 
         for i, val  in enumerate(data["values"]):
-            lab = tk.Label(self.editor_frame, text="Label").grid(row=i, column=0, sticky="w")
+            lab = tk.Label(self.editor_frame, text=headings[i])
+            lab.grid(row=i, column=0, sticky="w")
+            self.editor_labels.append(lab)
             en = tk.Entry(self.editor_frame)
             en.grid(row=i, column=1, sticky="w")
             en.insert(0, data["values"][i])
             self.editor_entries.append(en)
+        
+        self.save_btn.grid(row=len(self.editor_entries)+1, column=0, sticky="w")
 
     
     def create_toolbars(self):

@@ -600,6 +600,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.mix_list.delete(*self.mix_list.get_children())
 
         for i, row in enumerate(self.mixes_data):
+
+            # TODO: Refactor this, so that it works witha variable number of headers
+            # so that the dict with the headings controlls everything
+            # Maybe to choose which columns are shown?
             
             self.mix_list.insert("" , i, text=row["mix_id"], 
                                         values=(none_checker(row["mix_id"]), 
@@ -669,6 +673,29 @@ class mix_ctrl_gui(Mix_ctrl_common):
             log.error("GUI; Failed to delete Mix!")
 
         self.display_all_mixes()
+
+    
+    def save_track_data(self):
+        # mix = Mix(self.db_conn, selected)
+        # track_details = self.mix.get_one_mix_track(self.track_data["values"][0])
+
+        # edit_answers = {}
+        # edit_answers["key"] = self.key_entry.get()
+        # edit_answers["bpm"] = self.bpm_entry.get()
+        # edit_answers["key_notes"] = self.keynotes_entry.get()
+        # edit_answers["trans_rating"] = self.transr_entry.get()
+        # edit_answers["trans_notes"] = self.transnotes_entry.get()
+        # edit_answers["notes"] = self.notes_entry.get()
+
+
+        # mix.update_mix_track_and_track_ext(track_details, edit_answers)
+
+        # log.debug("GUI: Saving Track Data: DONE")
+        pass
+
+    def save_mix_data(self):
+        pass
+
 
 
 
