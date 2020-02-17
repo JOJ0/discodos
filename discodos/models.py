@@ -24,6 +24,7 @@ class Database (object):
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file)
+            
         self.db_conn.row_factory = sqlite3.Row # also this was in each db.function before
         self.cur = self.db_conn.cursor() # we had this in each db function before
         self.configure_db() # set PRAGMA options

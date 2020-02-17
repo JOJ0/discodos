@@ -15,16 +15,15 @@
 
 ################################
 # IMPORTS
-from discodos import views
-from discodos import ctrls
-from discodos import models
-from discodos import utils
-from discodos import log
+import discodos.views as views
+import discodos.ctrls as ctrls
+import discodos.models as models
+import discodos.utils as utils
+import discodos.log as log
 from discodos.widgets import edit_mix_view
 from discodos.widgets import add_mix_view
 from discodos.widgets import edit_track_info
-import os
-from pathlib import Path
+
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
@@ -34,22 +33,34 @@ from tabulate import tabulate as tab
 #################################
 
 class main_frame():
-    def __init__(self):
-
+    def __init__(self, conn=False):
         log.debug("############################################################")
         log.debug("###########DISCODOS#LOG#START##############################")
         log.debug("############################################################")
 
         self.main_win = tk.Tk()                           
         self.main_win.geometry("800x600")     
-        # self.main_win.resizable(False, False) 
+        self.main_win.minsize(800, 600)
 
-        self.main_win.title("Discodos") # EDIT: Add relevant Information to title, like Titles in Mix etc
+        self.main_win.title("Discodos") # TODO: Add relevant Information to title, like Titles in Mix etc
+        self.conn = conn
+
+        ########################################## GUI CONTROLLER
+        
+        
 
         # Create all Widgets, outsourced to its own function
-        self.create_widgets()
-        self.mix_starter()
-        self.update_track_list()
+        self.create_lists()
+        self.gui_ctrl = ctrls.mix_ctrl_gui( self.conn, 
+                                            self.mix_cols, 
+                                            self.track_cols, 
+                                            self.mix_list, 
+                                            self.tracks_list)
+
+        self.create_toolbars()
+        self.focus_first_object(self.mix_list)
+        self.gui_ctrl.display_all_mixes()
+        self.show_tracklist()
 
                     
     # Exit GUI cleanly
@@ -60,27 +71,25 @@ class main_frame():
 
     # Instantiate the DB-Connector and load the Data
 
-    def mix_starter(self):
-        self.discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
-        # conf = utils.read_yaml(discodos_root / "config.yaml")
-        self.discobase = self.discodos_root / "discobase.db"
-        # CONFIGURATOR INIT: db and config file handling, DISCOGS API conf
-        self.conf = utils.Config()
-
-
-        self.update_mix_list()
-        self.mix_list.bind('<<TreeviewSelect>>', self.show_mix)
-        self.focus_first_object()
-
 
 # EVENT TRIGGER UNCTION - UPDATE TRACK LIST            
         
-    def show_mix(self, event):
-        self.update_track_list()
+    def show_tracklist(self):
+        sel_mix = self.mix_list.focus()
+        self.gui_ctrl.display_tracklist(self.mix_list.item(sel_mix,"text"))
+
+        try:
+            start_child_id_two = self.tracks_list.get_children()[0]
+            self.tracks_list.selection_set(start_child_id_two)
+            log.debug("GUI: Set Focus on first Track Item")
+
+        except:
+            log.error("GUI: Couldn't Set Focus on Track Item")
+            self.status.set("Couldn't Set Focus on Track Item")
 
 
 
-    def focus_first_object(self):
+    def focus_first_object(self, tree_view):
         try:
             start_child_id = self.mix_list.get_children()[0]
             self.mix_list.focus(start_child_id)
@@ -92,242 +101,8 @@ class main_frame():
             log.error("GUI: Couldn't Set Focus on Mix Item")
             self.status.set("Couldn't Set Focus on Mix Item")
 
-# UPDATE THE TRACK LIST WITHOUT EVENT
-
-    def update_track_list(self):
-        # This function gets called, when the user selects a mix in the List of Mixes
-        # Here we fetch the selected Mix in the Mix Treeview 
-        curItem = self.mix_list.focus()
-        try:
-            mix = models.Mix(self.conn, self.mix_list.item(curItem,"text"))
-            # print(self.mix_list.item(curItem,"text"))
-            
-            mix_data = mix.get_full_mix(verbose = True) 
-            log.debug("GUI: Retrieved Mix data")   
-            self.status.set("Retrieved Mix data") 
-
-        except: 
-            mix_data = []
-            log.error("GUI: Getting Mix Data failed")
-            self.status.set("Getting Mix Data failed")  
-        
-        
-        ########################################################
-
-        # Here is the same game for the track width values
-        # We create a Dictionary
-        
-        self.tracks_list.delete(*self.tracks_list.get_children())
-
-        track_width_vals = {}     
-        track_width_vals["track_pos_width"] = []
-        track_width_vals["d_artist_width"] = []
-        track_width_vals["d_track_name_width"] = []
-        track_width_vals["key_width"] = []
-        track_width_vals["bpm_width"] = []
-        track_width_vals["key_notes_width"] = []
-        track_width_vals["trans_rating_width"] = []
-        track_width_vals["trans_notes_width"] = []
-        track_width_vals["notes_width"] = []
-
-        for i, row in enumerate(mix_data):
-
-            try:
-                self.tracks_list.insert("", i, text="", values=(utils.none_checker(row["track_pos"]), 
-                                                                utils.none_checker(row["d_artist"]), 
-                                                                utils.none_checker(row["d_track_name"]), 
-                                                                utils.none_checker(row["key"]), 
-                                                                utils.none_checker(row["bpm"]), 
-                                                                utils.none_checker(row["key_notes"]), 
-                                                                utils.none_checker(row["trans_rating"]), 
-                                                                utils.none_checker(row["trans_notes"]), 
-                                                                utils.none_checker(row["notes"])))
-
-            
-                try:
-                    track_width_vals["track_pos_width"].append(tkfont.Font().measure(row["track_pos"]))
-                except:
-                    track_width_vals["track_pos_width"].append(5)
-                    log.debug("GUI: Track Position width not fetched. Set default value 5.")
-
-                try:
-                    track_width_vals["d_artist_width"].append(tkfont.Font().measure(row["d_artist"]))
-                except:
-                    track_width_vals["d_artist_width"].append(5)
-                    log.debug("GUI: Artist width not fetched. Set default value 5.")
-
-                try:
-                    track_width_vals["d_track_name_width"].append(tkfont.Font().measure(row["d_track_name"]))
-                except:
-                    track_width_vals["d_track_name_width"].append(5)
-                    log.debug("GUI: Track Name width not fetched. Set default value 5.")
-
-                try:
-                    track_width_vals["key_width"].append(tkfont.Font().measure(row["key"]))
-                except:
-                    track_width_vals["key_width"].append(5)
-                    log.debug("GUI: Key width not fetched. Set default value 5.")
-
-                try:
-                    track_width_vals["bpm_width"].append(tkfont.Font().measure(row["bpm"]))
-                except:
-                    track_width_vals["bpm_width"].append(5)
-                    log.debug("GUI: BPM width not fetched. Set default value 5.")
-
-                try:
-                    track_width_vals["key_notes_width"].append(tkfont.Font().measure(row["key_notes"]))
-                except:
-                    track_width_vals["key_notes_width"].append(5)
-                    log.debug("GUI: Key Notes width not fetched. Set default value 5.")   
-
-                try:
-                    track_width_vals["trans_rating_width"].append(tkfont.Font().measure(row["trans_rating"]))
-                except:
-                    track_width_vals["trans_rating_width"].append(5)
-                    log.debug("GUI: Trans Rating width not fetched. Set default value 5.")   
-
-                try:
-                    track_width_vals["trans_notes_width"].append(tkfont.Font().measure(row["trans_notes"]))
-                except:
-                    track_width_vals["trans_notes_width"].append(7)
-                    log.debug("GUI: Trans Notes width not fetched. Set default value 7.")   
-
-                try:
-                    track_width_vals["notes_width"].append(tkfont.Font().measure(row["notes"]))
-                except:
-                    track_width_vals["notes_width"].append(5)
-                    log.debug("GUI: Notes width not fetched. Set default value 5.")                  
-                
-                log.debug("GUI: Inserted Track row")
-                self.status.set("Inserted Track row") 
-
-            except:
-
-                log.error(f"GUI: Inserting Track Row failed {row['d_artist']}")
-                self.status.set(f"GUI: Inserting Track Row failed {row['d_artist']}") 
-                
-
-        try:
-            start_child_id_two = self.tracks_list.get_children()[0]
-            self.tracks_list.selection_set(start_child_id_two)
-            log.debug("GUI: Set Focus on first Track Item")
-
-        except:
-            log.error("GUI: Couldn't Set Focus on Track Item")
-            self.status.set("Couldn't Set Focus on Track Item")
-        
-
-        self.tracks_list.column("track_pos", width=max(utils.none_checker(track_width_vals["track_pos_width"])), minwidth=tkfont.Font().measure("#"), stretch=1)
-        self.tracks_list.column("artist", width=max(utils.none_checker(track_width_vals["d_artist_width"])), minwidth=tkfont.Font().measure("Artist"), stretch=1)
-        self.tracks_list.column("track", width=max(utils.none_checker(track_width_vals["d_track_name_width"])), minwidth=tkfont.Font().measure("Track Name"), stretch=1)
-        self.tracks_list.column("key", width=max(utils.none_checker(track_width_vals["key_width"])), minwidth=tkfont.Font().measure("Key"), stretch=1)
-        self.tracks_list.column("bpm", width=max(utils.none_checker(track_width_vals["bpm_width"])), minwidth=tkfont.Font().measure("BPM"), stretch=1)
-        self.tracks_list.column("keynotes", width=max(utils.none_checker(track_width_vals["key_notes_width"])), minwidth=tkfont.Font().measure("Key Notes"), stretch=1)
-        self.tracks_list.column("transnotes", width=max(utils.none_checker(track_width_vals["trans_notes_width"])), minwidth=tkfont.Font().measure("Trans. Notes"), stretch=1)
-        self.tracks_list.column("transr", width=max(utils.none_checker(track_width_vals["trans_rating_width"])), minwidth=tkfont.Font().measure("Trans. Rating"), stretch=1)
-        self.tracks_list.column("notes", width=max(utils.none_checker(track_width_vals["notes_width"])), minwidth=tkfont.Font().measure("Notes"), stretch=1)
-        self.tracks_list.column("d_release_id", width=max(utils.none_checker(track_width_vals["bpm_width"])), minwidth=tkfont.Font().measure("Mix Track ID"), stretch=1)
 
 
-# UPDATE THE MIX LIST 
-
-    def update_mix_list(self):
-
-        try:
-            self.mix_edit_win._quit()
-        except:
-            pass
-
-        self.db_obj = models.Database(db_file = self.conf.discobase)
-
-        ################################################## DB CONN
-
-        try:
-            self.conn = self.db_obj.db_conn
-            log.info("GUI: DB Connection Success")
-            self.status.set("DB Connection Success")
-        except:
-            log.error("GUI: DB Connection Failed")
-            self.status.set("DB Connection Failed")
-
-        #################################################
-
-
-        self.db_obj = models.Database(db_file = self.discobase)
-
-        self.all_mix = models.Mix(self.conn, "all")
-        self.mixes_data = self.all_mix.get_all_mixes()
-
-        self.mix_list.delete(*self.mix_list.get_children())
-
-        self.mix_width_vals = {}     
-        self.mix_width_vals["mix_id_width"] = []
-        self.mix_width_vals["name_width"] = []
-        self.mix_width_vals["played_width"] = []
-        self.mix_width_vals["venue_width"] = []
-        self.mix_width_vals["created_width"] = []
-        self.mix_width_vals["updated_width"] = []
-
-        for i, row in enumerate(self.mixes_data):
-            try:
-                # Here, the "text"-value is also set with the mix-id, so we can fetch it 
-                # later when we get the tracklist
-                # The "text"-column is not shown, it serves just as ID
-                self.mix_list.insert("" , i, text=row["mix_id"], 
-                                            values=(utils.none_checker(row["mix_id"]), 
-                                                    utils.none_checker(row["name"]), 
-                                                    utils.none_checker(row["played"]), 
-                                                    utils.none_checker(row["venue"]), 
-                                                    utils.none_checker(row["created"]), 
-                                                    utils.none_checker(row["updated"])))
-                
-                try:
-                    self.mix_width_vals["mix_id_width"].append(tkfont.Font().measure(row["mix_id"]))
-                except:
-                    self.mix_width_vals["mix_id_width"].append(3)
-                    log.debug("GUI: Mix ID width not fetched. Set default value 3.")
-                try:
-                    self.mix_width_vals["name_width"].append(tkfont.Font().measure(row["name"]))
-                except:
-                    self.mix_width_vals["name_width"].append(3)
-                    log.debug("GUI: Name width not fetched. Set default value 3.")
-                try:
-                    self.mix_width_vals["played_width"].append(tkfont.Font().measure(row["played"]))
-                except:
-                    self.mix_width_vals["played_width"].append(3)
-                    log.debug("GUI: Played width not fetched. Set default value 3.")
-                try:
-                    self.mix_width_vals["venue_width"].append(tkfont.Font().measure(row["venue"]))
-                except:
-                    self.mix_width_vals["venue_width"].append(3)
-                    log.debug("GUI: Venue width not fetched. Set default value 3.")
-                try:
-                    self.mix_width_vals["created_width"].append(tkfont.Font().measure(row["created"]))
-                except:
-                    self.mix_width_vals["created_width"].append(3)
-                    log.debug("GUI: created width not fetched. Set default value 3.")
-                try:
-                    self.mix_width_vals["updated_width"].append(tkfont.Font().measure(row["updated"]))
-                except:
-                    self.mix_width_vals["updated_width"].append(3)
-                    log.debug("GUI: Updated width not fetched. Set default value 3.")
-
-
-                log.debug("GUI: Inserted Mix Row")
-                self.status.set("Inserted Mix Row")
-
-            except:
-                log.error("GUI: Inserting Mix Row failed")
-                self.status.set("Inserting Mix Row failed")
-        
-        self.mix_list.column("mix_id_col", width=max(self.mix_width_vals["mix_id_width"]), minwidth=tkfont.Font().measure("Mix #"), stretch=1)
-        self.mix_list.column("name", width=max(self.mix_width_vals["mix_id_width"]), minwidth=tkfont.Font().measure("Name"), stretch=1)
-        self.mix_list.column("played", width=max(self.mix_width_vals["played_width"]), minwidth=tkfont.Font().measure("Played"), stretch=1)
-        self.mix_list.column("venue", width=max(self.mix_width_vals["venue_width"]), minwidth=tkfont.Font().measure("Venue"), stretch=1)
-        self.mix_list.column("created", width=max(self.mix_width_vals["created_width"]), minwidth=tkfont.Font().measure("Created"), stretch=1)
-        self.mix_list.column("updated", width=max(self.mix_width_vals["updated_width"]), minwidth=tkfont.Font().measure("Updated"), stretch=1)
-
-        
 
 #################################################
 ############## WIDGET WINDOW SWITCH #############
@@ -447,16 +222,7 @@ class main_frame():
     ########## DELETE MIX ##########################################
 
     def delete_mix(self):
-        cur_mix = self.mix_list.focus()
-        mix = models.Mix(self.conn, self.mix_list.item(cur_mix,"text"))
-        try:
-            mix.delete()
-            log.info("GUI: Deleted Mix from list")
-            self.status.set("Deleted Mix!")
-        except:
-            log.error("GUI; Failed to delete Mix!")
-            self.status.set("Failed to delete Mix!")
-
+        self.gui_ctrl.delete_selected_mix(self.mix_list.item(self.mix_list.focus(),"text"))
         self.update_mix_list()
 
 
@@ -476,7 +242,7 @@ class main_frame():
     #####################################################################################    
     # CREATE WIDGETS
 
-    def create_widgets(self):
+    def create_lists(self):
 
         self.mix_frame = tk.LabelFrame(self.main_win, text="Mixes")
         self.tracks_frame = tk.LabelFrame(self.main_win, text="Tracks in Mix")
@@ -489,51 +255,53 @@ class main_frame():
         self.mix_list.pack(fill="both", expand=1)
         self.mix_list['show'] = 'headings'
 
-        self.mix_list["columns"]=("mix_id_col", "name", "played", "venue", "created", "updated")
-        self.mix_list.column("mix_id_col", width=2, stretch=1)
-        self.mix_list.column("name", width=2, stretch=1)
-        self.mix_list.column("played", width=2, stretch=1)
-        self.mix_list.column("venue", width=2, stretch=1)
-        self.mix_list.column("created", width=2, stretch=1)
-        self.mix_list.column("updated", width=2, stretch=1)
-
-        self.mix_list.heading("mix_id_col",text="Mix #", anchor=tk.W, command=lambda _col="mix_id_col": self.treeview_sort_column(self.mix_list, _col, False))
-        self.mix_list.heading("name", text="Name", anchor=tk.W, command=lambda _col="name": self.treeview_sort_column(self.mix_list, _col, False))
-        self.mix_list.heading("played", text="Played",anchor=tk.W, command=lambda _col="played": self.treeview_sort_column(self.mix_list, _col, False))
-        self.mix_list.heading("venue", text="Venue",anchor=tk.W, command=lambda _col="venue": self.treeview_sort_column(self.mix_list, _col, False))
-        self.mix_list.heading("created", text="Created",anchor=tk.W, command=lambda _col="created": self.treeview_sort_column(self.mix_list, _col, False))
-        self.mix_list.heading("updated", text="Updated",anchor=tk.W, command=lambda _col="updated": self.treeview_sort_column(self.mix_list, _col, False))
-
-
         # TRACKS LISTVIEW
 
         self.tracks_list = ttk.Treeview(self.tracks_frame)
         self.tracks_list.pack(fill="both", expand=1)
         self.tracks_list['show'] = 'headings'
 
-        self.tracks_list["columns"]=("track_pos", "artist", "track", "key", "bpm", "keynotes", "transr", "transnotes", "notes", "d_release_id")
-        self.tracks_list.column("track_pos", width=2, stretch=1)
-        self.tracks_list.column("artist", width=2, stretch=1)
-        self.tracks_list.column("track", width=2, stretch=1)
-        self.tracks_list.column("key", width=2, stretch=1) 
-        self.tracks_list.column("bpm", width=2, stretch=1)
-        self.tracks_list.column("keynotes", width=2, stretch=1) 
-        self.tracks_list.column("transr", width=2, stretch=1)
-        self.tracks_list.column("transnotes", width=2, stretch=1)
-        self.tracks_list.column("notes", width=2, stretch=1)
-        self.tracks_list.column("d_release_id", width=2, stretch=1)
+        # CREATING ALL COLUMNS
+
+        self.mix_cols = {
+                        "mix_id" : "Mix #", 
+                        "name" : "Name", 
+                        "played" : "Played", 
+                        "venue" : "Venue", 
+                        "created" : "Created", 
+                        "updated" : "Updated"
+                        }
+
+        self.track_cols = {
+                            "track_pos" : "#", 
+                            "artist" : "Artist", 
+                            "track" : "Track Name", 
+                            "key" : "Key", 
+                            "bpm" : "Bpm", 
+                            "keynotes" : "Key Notes", 
+                            "transr" : "Trans. Rating", 
+                            "transnotes" : "Trans. Notes", 
+                            "notes" : "Notes"
+                            }
 
 
-        self.tracks_list.heading("track_pos", text="#",anchor=tk.W)
-        self.tracks_list.heading("artist", text="Artist", anchor=tk.W)
-        self.tracks_list.heading("track", text="Track Name",anchor=tk.W)
-        self.tracks_list.heading("key", text="Key",anchor=tk.W)
-        self.tracks_list.heading("bpm", text="BPM",anchor=tk.W)
-        self.tracks_list.heading("keynotes", text="Key Notes",anchor=tk.W)
-        self.tracks_list.heading("transr", text="Trans. Rating",anchor=tk.W)
-        self.tracks_list.heading("transnotes", text="Trans. Notes",anchor=tk.W)
-        self.tracks_list.heading("notes", text="Notes",anchor=tk.W)
-        self.tracks_list.heading("d_release_id", text="Mix Track ID",anchor=tk.W) 
+        self.mix_list["columns"] = tuple(self.mix_cols)
+        self.tracks_list["columns"] = tuple(self.track_cols)
+
+
+        for col_id, heading in self.mix_cols.items():
+            self.mix_list.column(col_id, width=2, stretch=1)
+            self.mix_list.heading(col_id,text=heading, anchor=tk.W, command=lambda _col=col_id: self.treeview_sort_column(self.mix_list, _col, False))
+
+
+        for col_id, heading in self.track_cols.items():
+            self.tracks_list.column(col_id, width=2, stretch=1)
+            self.tracks_list.heading(col_id, text=heading,anchor=tk.W)
+
+        self.mix_list.bind('<<TreeviewSelect>>', lambda a : self.show_tracklist())
+
+    
+    def create_toolbars(self):
 
         #########################################################################
 
@@ -541,7 +309,7 @@ class main_frame():
 
         self.status=tk.StringVar()  
         self.status_bar = tk.Label(self.main_win, textvariable=self.status, anchor=tk.W, bd=1, relief=tk.SUNKEN)
-        self.status_bar.pack(side=tk.BOTTOM, anchor="s", fill=tk.X, expand=tk.YES)
+        
 
         self.status.set("Ready...")
 
@@ -549,26 +317,51 @@ class main_frame():
         # BUTTON AREA
         #########################################################################
 
-        self.btn_frame = tk.Frame(self.main_win)
+        self.toolbox = tk.LabelFrame(self.main_win, text="Toolbox")
         
-        self.new_mix_btn = tk.Button(self.btn_frame, text="New Mix", command=lambda: self.open_widget("add_mix"))
-        self.edit_mix_btn = tk.Button(self.btn_frame, text="Edit Mix", command=lambda: self.open_widget("edit_mix"))
-        self.del_mix_btn = tk.Button(self.btn_frame, text="Delete Mix", command=self.delete_mix)
-        self.edit_track_btn = tk.Button(self.btn_frame, text="Edit Track Info", command=lambda: self.open_widget("track_edit"))
-        self.rmv_track_btn = tk.Button(self.btn_frame, text="Remove Track")
-        
-
-        self.new_mix_btn.pack(side="left")
-        self.edit_mix_btn.pack(side="left")
-        self.del_mix_btn.pack(side="left")
-        self.edit_track_btn.pack(side="right")
-        self.rmv_track_btn.pack(side="right")
-        
+        self.new_mix_btn = tk.Button(self.toolbox, text="New Mix", command=lambda: self.open_widget("add_mix"))
+        self.edit_mix_btn = tk.Button(self.toolbox, text="Edit Mix", command=lambda: self.open_widget("edit_mix"))
+        self.del_mix_btn = tk.Button(self.toolbox, text="Delete Mix", command=self.delete_mix)
+        self.edit_track_btn = tk.Button(self.toolbox, text="Edit Track Info", command=lambda: self.open_widget("track_edit"))
+        self.rmv_track_btn = tk.Button(self.toolbox, text="Remove Track")
         
 
-        self.btn_frame.pack(side="bottom", fill="x", expand=1, padx=5)
+        self.new_mix_btn.grid(row=0, column=0, sticky="W")
+        self.edit_mix_btn.grid(row=0, column=1, sticky="W")
+        self.del_mix_btn.grid(row=1, column=0, sticky="W")
+        self.edit_track_btn.grid(row=0, column=1, sticky="W")
+        self.rmv_track_btn.grid(row=2, column=0, sticky="W")
 
-        # Display Both Lists
+        ###########################
+        # EDITOR
+        ########################
 
-        self.mix_frame.pack(fill="both", expand=1, side = "top")
-        self.tracks_frame.pack(fill="both", expand=1, side = "bottom")
+        self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
+        for i in range(5):
+            for j in range(2):
+                tk.Entry(self.editor_frame, width=30).grid(row=i, column=j, sticky="w")
+
+
+
+        #########
+        # SEARCH TOGGLE BUTTON
+        self.search_toggle = tk.Button(self.main_win, text = ">") 
+        
+   
+
+
+
+        # DISPLAY
+           
+        self.status_bar.grid(row=10, column=0, columnspan=10, rowspan=1, sticky="we")
+        self.mix_frame.grid(row=0, column=0, columnspan=5, rowspan=5, sticky="nwes")
+        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
+        self.tracks_frame.grid(row=5, column=0, columnspan=7, rowspan=4, sticky="swen")
+        self.toolbox.grid(row=5, column=7, columnspan=3,rowspan=4, sticky="sewn")
+        self.search_toggle.grid(row=0, column=11, columnspan=1,rowspan=11, sticky="sn")
+        
+        # WEIGHTS
+
+        for i in range(11):
+            self.main_win.columnconfigure(i, weight=1)
+            self.main_win.rowconfigure(i, weight=1)

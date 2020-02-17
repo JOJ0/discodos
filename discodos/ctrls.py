@@ -6,6 +6,9 @@ from discodos import log
 from tabulate import tabulate as tab # should be only in views.py
 import pprint as p
 from datetime import time
+import tkinter as tk
+from tkinter import ttk
+import tkinter.font as tkfont
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
@@ -578,7 +581,92 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
 
-class gui_ctrl(Mix_ctrl_common):
 
-    def __init__(self, db_conn, db_file = False):
-        self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
+class mix_ctrl_gui(Mix_ctrl_common):
+
+    def __init__(self, db_conn, mix_cols, track_cols, mix_list, tracks_list):
+        self.db_conn = db_conn
+        self.mix_cols = mix_cols
+        self.track_cols = track_cols
+        self.mix_list = mix_list
+        self.tracks_list = tracks_list
+
+
+
+    def display_all_mixes(self):
+        all_mix = Mix(self.db_conn, "all")
+        self.mixes_data = all_mix.get_all_mixes()
+
+        self.mix_list.delete(*self.mix_list.get_children())
+
+        for i, row in enumerate(self.mixes_data):
+            
+            self.mix_list.insert("" , i, text=row["mix_id"], 
+                                        values=(none_checker(row["mix_id"]), 
+                                                none_checker(row["name"]), 
+                                                none_checker(row["played"]), 
+                                                none_checker(row["venue"]), 
+                                                none_checker(row["created"]), 
+                                                none_checker(row["updated"])))
+                
+
+            self.col_widths(self.mix_list, self.mix_cols)
+
+
+    
+    def display_tracklist(self, selected_mix_id):
+        self.tracks_list.delete(*self.tracks_list.get_children())
+
+        mix = Mix(self.db_conn, selected_mix_id)
+        mix_data = mix.get_full_mix(verbose = True) 
+        # log.debug("GUI: Retrieved Mix data") 
+        # status.set("Retrieved Mix data") 
+
+        # log.error("GUI: Getting Mix Data failed")
+        # status.set("Getting Mix Data failed")  
+
+        for i, row in enumerate(mix_data):
+            self.tracks_list.insert("", i, text="", values=( none_checker(row["track_pos"]), 
+                                                        none_checker(row["d_artist"]), 
+                                                        none_checker(row["d_track_name"]), 
+                                                        none_checker(row["key"]), 
+                                                        none_checker(row["bpm"]), 
+                                                        none_checker(row["key_notes"]), 
+                                                        none_checker(row["trans_rating"]), 
+                                                        none_checker(row["trans_notes"]), 
+                                                        none_checker(row["notes"])))
+ 
+        self.col_widths(self.tracks_list, self.track_cols)
+
+
+
+    def col_widths(self, tree_view, headings):
+
+        width_vals = {}     
+
+        for col_id, heading in headings.items():
+            width_vals[col_id] = []
+        
+
+        for i, row in enumerate(self.mixes_data):
+            for col_id, heading in headings.items():
+                try:
+                    width_vals[col_id].append(tkfont.Font().measure(none_checker(row[col_id])))
+                except:
+                    width_vals[col_id].append(10)
+
+        for col_id, heading in headings.items():
+            tree_view.column(col_id, width=max(width_vals[col_id]), minwidth=tkfont.Font().measure(heading), stretch=1)
+        
+
+
+    def delete_selected_mix(self, selected):
+        mix = Mix(self.db_conn, selected)
+        try:
+            mix.delete()
+            log.info("GUI: Deleted Mix from list")
+        except:
+            log.error("GUI; Failed to delete Mix!")
+
+        self.display_all_mixes()
+        
