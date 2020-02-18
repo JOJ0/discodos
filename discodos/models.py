@@ -13,6 +13,8 @@ import time
 from datetime import datetime
 import musicbrainzngs as m
 from musicbrainzngs import WebServiceError
+import requests
+import json
 
 class Database (object):
 
@@ -842,3 +844,21 @@ class Brainz (Database):
         except WebServiceError as exc:
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False
+
+    def _get_accousticbrainz(self, urlpart):
+        headers={'Accept': 'application/json' }
+        url="https://acousticbrainz.org/api/v1/{}".format(urlpart)
+        resp = requests.get(url, headers=headers, timeout=7)
+        if resp.ok:
+            _json = json.loads(resp.content)
+            return _json
+        else:
+            log.debug("Bad response: %s", resp.status_code)
+            resp.raise_for_status()
+            return False
+
+    def _get_accbr_low_level(self, mb_id):
+        return self._get_accousticbrainz("{}/low-level".format(mb_id))
+
+    def _get_accbr_high_level(self, mb_id):
+        return self._get_accousticbrainz("{}/high-level".format(mb_id))

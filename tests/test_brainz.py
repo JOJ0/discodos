@@ -127,6 +127,55 @@ class TestBrainz(unittest.TestCase):
             self.assertFalse(mb_return)
         print("{} - {} - END".format(self.clname, name))
 
+    def test_get_accbr_low_level(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.brainz = Brainz(False, self.db_path)
+        if self.brainz.musicbrainz_connect(self.mb_user,self.mb_pass,self.mb_appid):
+            print('We are ONLINE')
+            ab_return = self.brainz._get_accbr_low_level(
+                'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
+            #pprint(ab_return)
+            self.assertEqual(ab_return['rhythm']['beats_count'], 836)
+            self.assertEqual(int(ab_return['rhythm']['bpm']), 108)
+            self.assertEqual(ab_return['rhythm']['danceability'], '1.06401479244')
+            self.assertEqual(ab_return['tonal']['chords_key'], 'A#')
+            self.assertEqual(ab_return['tonal']['chords_scale'], 'minor')
+            self.assertEqual(ab_return['tonal']['key_key'], 'A#')
+            self.assertEqual(ab_return['tonal']['key_scale'], 'minor')
+
+        else:
+            print('We are OFFLINE, testing if we properly fail!')
+            ab_return = self.brainz._get_accbr_low_level(
+                'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
+            self.assertFalse(mb_return)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_get_accbr_high_level(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.brainz = Brainz(False, self.db_path)
+        if self.brainz.musicbrainz_connect(self.mb_user,self.mb_pass,self.mb_appid):
+            print('We are ONLINE')
+            ab_return = self.brainz._get_accbr_high_level(
+                'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
+            #pprint(ab_return)
+            self.assertEqual(
+                ab_return['highlevel']['danceability']['all']['danceable'],
+                0.999491930008)
+            self.assertEqual(
+                ab_return['highlevel']['danceability']['all']['not_danceable'],
+                0.000508077442646)
+            self.assertEqual(
+                ab_return['highlevel']['danceability']['probability'],
+                0.999491930008)
+        else:
+            print('We are OFFLINE, testing if we properly fail!')
+            ab_return = self.brainz._get_accbr_high_level(
+                'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
+            self.assertFalse(mb_return)
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
