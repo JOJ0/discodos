@@ -675,26 +675,38 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.display_all_mixes()
 
     
-    def save_track_data(self):
-        # mix = Mix(self.db_conn, selected)
-        # track_details = self.mix.get_one_mix_track(self.track_data["values"][0])
+    def save_track_data(self, editor_entries, selected_id):
+        mix = Mix(self.db_conn, selected_id)
+        track_details = mix.get_one_mix_track(editor_entries[0].get())
 
-        # edit_answers = {}
-        # edit_answers["key"] = self.key_entry.get()
-        # edit_answers["bpm"] = self.bpm_entry.get()
-        # edit_answers["key_notes"] = self.keynotes_entry.get()
-        # edit_answers["trans_rating"] = self.transr_entry.get()
-        # edit_answers["trans_notes"] = self.transnotes_entry.get()
-        # edit_answers["notes"] = self.notes_entry.get()
+        edit_answers = {}
+        edit_answers["key"] = editor_entries[3].get()
+        edit_answers["bpm"] = editor_entries[4].get()
+        edit_answers["key_notes"] = editor_entries[5].get()
+        edit_answers["trans_rating"] = editor_entries[6].get()
+        edit_answers["trans_notes"] = editor_entries[7].get()
+        edit_answers["notes"] = editor_entries[8].get()
+        
+
+        mix.update_mix_track_and_track_ext(track_details, edit_answers)
+
+        log.debug("GUI: Saving Track Data: DONE")
+
+        self.display_tracklist(selected_id)
 
 
-        # mix.update_mix_track_and_track_ext(track_details, edit_answers)
-
-        # log.debug("GUI: Saving Track Data: DONE")
+    def save_mix_data(self, editor_entries, selected_id):
         pass
 
-    def save_mix_data(self):
+
+    def remove_track_from_mix(self, selected_mix_id, selected_track_id):
+        mix = Mix(self.db_conn, selected_mix_id)
+        mix.delete_track(selected_track_id)
+        self.display_tracklist(selected_mix_id)
+
+    def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         pass
+
 
 
 

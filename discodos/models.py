@@ -394,6 +394,7 @@ class Mix (Database):
                 return False
             pos = pos + 1
         return True
+        
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
         log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
