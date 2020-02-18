@@ -806,7 +806,7 @@ class Brainz (Database):
             self.ONLINE = True
             return True
         except WebServiceError as exc:
-            log.error("Something went wrong with the request: %s" % exc)
+            log.error("connecting to MusicBrainz: %s" % exc)
             self.ONLINE = False
             return False
 
@@ -814,5 +814,31 @@ class Brainz (Database):
         try:
             return m.get_artist_by_id(mb_id, [])
         except WebServiceError as exc:
-            log.error("Something went wrong with the request: %s" % exc)
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def search_mb_releases(self, artist, album, cat_no):
+        try:
+            return m.search_releases(artist=artist, release=album,
+                catno = cat_no, limit=5)
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def get_mb_release_by_id(self, mb_id):
+        try:
+            return m.get_release_by_id(mb_id, includes=["release-groups",
+            "artists", "labels", "url-rels", "recordings",
+            "recording-rels", "recording-level-rels" ])
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def get_mb_recording_by_id(self, mb_id):
+        try:
+            return m.get_recording_by_id(mb_id, includes=[
+             "url-rels"
+            ])
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
             return False
