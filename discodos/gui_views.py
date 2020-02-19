@@ -8,9 +8,8 @@
 
 # After track deletion set focus on track one below
 
-# Remove all dates but "Played" from Mix_List
+# Buttons for psition shift up/down
 
-# Make toggle button work not only one time
 
 
 
@@ -38,10 +37,21 @@ class main_frame():
         log.debug("############################################################")
         log.debug("###########DISCODOS#LOG#START##############################")
         log.debug("############################################################")
+        self.search_open = False
+        self.main_win = tk.Tk()  
 
-        self.main_win = tk.Tk()                           
+        try:
+            self.background_image = tk.PhotoImage("..\assets\editor.png")
+        except:
+            log.error("GUI: Couldn't Load Image")
+
+        # self.background_label = tk.Label(self.main_win, image=self.background_image)
+        # self.background_label.image = self.background_image
+        # self.background_label.place(x=0, y=0, relwidth=1, relheight=1)   
+
         self.main_win.geometry("800x600")     
         self.main_win.minsize(800, 600)
+        
 
         self.main_win.title("Discodos") # TODO: Add relevant Information to title, like Titles in Mix etc
         self.conn = conn
@@ -150,10 +160,10 @@ class main_frame():
         self.mix_cols = {
                         "mix_id" : "Mix #", 
                         "name" : "Name", 
-                        "played" : "Played", 
                         "venue" : "Venue", 
-                        "created" : "Created", 
-                        "updated" : "Updated"
+                        "played" : "Played"                        
+                        # "created" : "Created", 
+                        # "updated" : "Updated"
                         }
 
         self.track_cols = {
@@ -191,10 +201,12 @@ class main_frame():
 
     def spawn_editor(self, tree_view):
         self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
+        # self.bg_frame = tk.Label(self.main_win, image=self.editor_image)
+        
         if tree_view != False:
             data = tree_view.item(tree_view.focus())
         else:
-            data = tree_view.item(tree_view.focus())
+            data = self.mix_list.item(self.mix_list.focus())
 
         self.move_frame = tk.Frame(self.editor_frame)
 
@@ -244,7 +256,8 @@ class main_frame():
                                                                                                                 "down"))
         elif tree_view == False:
             headings = list(self.mix_cols)
-            self.save_btn = tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.save_funcs[1](self.editor_entries))
+            self.save_btn = tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.save_funcs[1](self.editor_entries,
+                                                                                                                    self.mix_list.item(self.mix_list.focus(),"text")))
 
 
         ######################################
@@ -263,6 +276,8 @@ class main_frame():
                 
                 en.insert(0, data["values"][i])
                 self.editor_entries.append(en)
+                self.editor_entries[0].config(state='disabled')
+                
         else:
             for i, heading  in enumerate(self.mix_cols):
                 lab = tk.Label(self.editor_frame, text=heading)
@@ -271,6 +286,9 @@ class main_frame():
                 en = tk.Entry(self.editor_frame)
                 en.grid(row=i, column=1, sticky="w")
                 self.editor_entries.append(en)
+                self.editor_entries[0].config(state='disabled')
+
+            
 
 
         if tree_view == self.tracks_list:
@@ -279,12 +297,18 @@ class main_frame():
             self.move_label = tk.Label(self.editor_frame, text="Move Track")
             self.move_label.grid(row=len(self.editor_entries)+1, column=0, sticky="w")
             self.move_frame.grid(row=len(self.editor_entries)+1, column=1, sticky="w")
+
+        if tree_view == False:
+            self.save_btn.grid(row=len(self.editor_entries)+2, column=0, sticky="w")
         
 
         if data["values"] != "":
-            self.save_btn.grid(row=len(self.editor_entries)+2, column=0, sticky="w")
-            self.del_btn.grid(row=len(self.editor_entries)+2, column=1, sticky="w")
+            if tree_view != False:
+                self.save_btn.grid(row=len(self.editor_entries)+2, column=0, sticky="w")
+                self.del_btn.grid(row=len(self.editor_entries)+2, column=1, sticky="w")
         
+        
+        # self.bg_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
         
         self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
 
@@ -307,7 +331,7 @@ class main_frame():
 
         self.toolbox = tk.LabelFrame(self.main_win, text="Toolbox")
         
-        self.new_mix_btn = tk.Button(self.toolbox, text="New Mix", command=lambda: self.spawn_editor(self.mix_list))
+        self.new_mix_btn = tk.Button(self.toolbox, text="New Mix", command=lambda: self.spawn_editor(False))
         self.new_mix_btn.grid(row=0, column=0, sticky="w")
 
 
@@ -326,7 +350,6 @@ class main_frame():
            
         self.status_bar.grid(row=10, column=0, columnspan=10, rowspan=1, sticky="we")
         self.mix_frame.grid(row=0, column=0, columnspan=5, rowspan=5, sticky="nwes")
-        
         self.tracks_frame.grid(row=5, column=0, columnspan=7, rowspan=4, sticky="swen")
         self.toolbox.grid(row=5, column=7, columnspan=3,rowspan=4, sticky="sewn")
         self.search_toggle.grid(row=0, column=11, columnspan=1,rowspan=11, sticky="sn")
@@ -339,11 +362,15 @@ class main_frame():
 
     
     def toggle_search_window(self):
-        try:
+        if self.search_open == False:
+                self.search_window = search_gui(self.main_win, "Search Releases...", self.gui_ctrl) 
+                self.search_window.dock_win.focus()
+                self.search_open = True
+        else:
             self.search_window._quit()
-        except:
-            self.search_window = search_gui(self.main_win, "Search Releases...", self.gui_ctrl) 
-            self.search_window.dock_win.focus()
+            self.search_open = False
+
+            
 
     
         

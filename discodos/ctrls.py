@@ -613,10 +613,8 @@ class mix_ctrl_gui(Mix_ctrl_common):
             self.mix_list.insert("" , i, text=row["mix_id"], 
                                         values=(none_checker(row["mix_id"]), 
                                                 none_checker(row["name"]), 
-                                                none_checker(row["played"]), 
                                                 none_checker(row["venue"]), 
-                                                none_checker(row["created"]), 
-                                                none_checker(row["updated"])))
+                                                none_checker(row["played"])))
                 
 
             self.col_widths(self.mix_list, self.mix_cols)
@@ -700,13 +698,13 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.display_tracklist(selected_id)
 
 
-    def save_mix_data(self, editor_entries):
-        mix = Mix(self.db_conn)
+    def save_mix_data(self, editor_entries, selected_id):
+        mix = Mix(self.db_conn, selected_id)
         mix.create( editor_entries[2].get(),
-                    editor_entries[3].get(),
-                    editor_entries[1].get(),)
+                    editor_entries[1].get(),
+                    editor_entries[3].get(),)
                     
-        self.display_all_mixes
+        self.display_all_mixes()
 
 
     def remove_track_from_mix(self, selected_mix_id, selected_track_id):
@@ -715,7 +713,8 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.display_tracklist(selected_mix_id)
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
-        pass
+        mix = Mix(self.db_conn, selected_mix_id)
+        mix.reorder_tracks
 
     def display_searched_releases(self, search_term, search_tv, online):
         # print(online)
