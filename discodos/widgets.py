@@ -51,7 +51,7 @@ class search_gui(widget_frame):
         self.search_bar.bind("<Return>", lambda srch=self.search_bar.get(): 
                                                             self.gui_ctrl.display_searched_releases(srch, 
                                                                                                     self.search_tv,
-                                                                                                    self.online.get()))
+                                                                                                    self.online.get())) 
 
         self.search_button.grid(row=0, column=0, columnspan=2, sticky="we")
         
@@ -69,19 +69,24 @@ class search_gui(widget_frame):
     def search_tv_config(self):
         # self.search_tv['show'] = 'headings'
         self.search_cols = {
-                        "#0" : "Name", 
+                        "name" : "Name", 
                         "artist" : "Artist", 
                         "id" : "ID", 
                         }
+
         self.search_tv["columns"] = tuple(self.search_cols)
+
+        self.search_tv.column('#0', width=20, stretch=0)
         
         for col_id, heading in self.search_cols.items():
-            self.search_tv.column(col_id, width=2, stretch=1)
+            self.search_tv.column(col_id, width=5, stretch=1)
             self.search_tv.heading(col_id,text=heading, anchor="w")
-
 
 
     def progress(self, currentValue):
         pg_bar["value"]=currentValue
+
+    
+
 
 

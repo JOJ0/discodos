@@ -700,8 +700,13 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.display_tracklist(selected_id)
 
 
-    def save_mix_data(self, editor_entries, selected_id):
-        pass
+    def save_mix_data(self, editor_entries):
+        mix = Mix(self.db_conn)
+        mix.create( editor_entries[2].get(),
+                    editor_entries[3].get(),
+                    editor_entries[1].get(),)
+                    
+        self.display_all_mixes
 
 
     def remove_track_from_mix(self, selected_mix_id, selected_track_id):
@@ -712,18 +717,20 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         pass
 
-    def display_searched_releases(self, search_term, search_tv, online = False):
-        if online == False:
+    def display_searched_releases(self, search_term, search_tv, online):
+        # print(online)
+        if online == 0:
             coll = Collection(self.db_conn)
             found_releases = coll.search_release_offline(search_term)
 
             release_levels = {}
-
-            for i, release in enumerate(found_releases):
-                release_levels[i] = search_tv.insert("", i, text=release["discogs_title"], values=(release["d_artist"], release["discogs_id"]))
-                for j in range(2):
-                    search_tv.insert(release_levels[i],j, text="Test Track", values="")
-
+            if found_releases is not None:
+                for i, release in enumerate(found_releases):
+                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
+                    for j in range(2):
+                       search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
+            else:
+                log.error("GUI: No Releases Found")
         else:
             pass
         
