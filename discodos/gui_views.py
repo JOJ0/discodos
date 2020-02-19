@@ -319,11 +319,11 @@ class main_frame():
     def toggle_search_window(self):
         try:
             if not self.search_window:
-                self.search_window = search_gui(self.main_win, "Search Tracks...") 
+                self.search_window = search_gui(self.main_win, "Search Releases...", self.gui_ctrl) 
                 self.search_window.dock_win.focus()
             else:
                 self.search_window._quit()
         except:
-            self.search_window = search_gui(self.main_win, "Search Tracks...") 
+            self.search_window = search_gui(self.main_win, "Search Releases...", self.gui_ctrl) 
 
                 

@@ -2,10 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 from discodos import log
 from discodos import models
+from discodos import ctrls
 
 
 class widget_frame():
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, gui_ctrl):
         self.dock_win = tk.Toplevel(parent)
         log.debug("Window State is " + self.dock_win.state())
         self.win_state = self.dock_win.state()
@@ -26,17 +27,34 @@ class widget_frame():
 ############ EDIT MIX ###########################
 
 class search_gui(widget_frame):
-    def __init__(self, parent, title):
-        super().__init__(parent, title)
-
+    def __init__(self, parent, title, gui_ctrl):
+        super().__init__(parent, title, gui_ctrl)
+        self.gui_ctrl = gui_ctrl
         self.build_search_frame()
         self.search_tv_config()
     
 
     def build_search_frame(self):
-        self.search_bar = tk.Entry(self.dock_win)
-        self.search_bar.grid(row=0, column=0, columnspan=10, rowspan=1, sticky="we")
 
+        self.search_bar = tk.Entry(self.dock_win)
+        self.search_bar.grid(row=0, column=2, columnspan=6, rowspan=1, sticky="we")
+
+        self.online = tk.IntVar()
+        tk.Checkbutton(self.dock_win, text="online", variable=self.online).grid(row=0, column=8, columnspan=2, rowspan=1, sticky="w")
+
+        self.search_button = tk.Button(self.dock_win, 
+                                        text="Search...", 
+                                        command=lambda srch=self.search_bar.get(): 
+                                                            self.gui_ctrl.display_searched_releases(srch, 
+                                                                                                    self.search_tv,
+                                                                                                    self.online.get()))
+        self.search_bar.bind("<Return>", lambda srch=self.search_bar.get(): 
+                                                            self.gui_ctrl.display_searched_releases(srch, 
+                                                                                                    self.search_tv,
+                                                                                                    self.online.get()))
+
+        self.search_button.grid(row=0, column=0, columnspan=2, sticky="we")
+        
         self.search_tv = ttk.Treeview(self.dock_win)
         self.search_tv.grid(row=1, column=0, columnspan=10, rowspan=8, sticky="nsew")
 
@@ -49,7 +67,17 @@ class search_gui(widget_frame):
 
 
     def search_tv_config(self):
-        pass
+        # self.search_tv['show'] = 'headings'
+        self.search_cols = {
+                        "#0" : "Name", 
+                        "artist" : "Artist", 
+                        "id" : "ID", 
+                        }
+        self.search_tv["columns"] = tuple(self.search_cols)
+        
+        for col_id, heading in self.search_cols.items():
+            self.search_tv.column(col_id, width=2, stretch=1)
+            self.search_tv.heading(col_id,text=heading, anchor="w")
 
 
 

@@ -584,7 +584,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
 class mix_ctrl_gui(Mix_ctrl_common):
 
-    def __init__(self, db_conn, mix_cols, track_cols, mix_list, tracks_list):
+    def __init__(self, db_conn, 
+                        mix_cols, 
+                        track_cols, 
+                        mix_list, 
+                        tracks_list):
+
         self.db_conn = db_conn
         self.mix_cols = mix_cols
         self.track_cols = track_cols
@@ -707,8 +712,21 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         pass
 
+    def display_searched_releases(self, search_term, search_tv, online = False):
+        if online == False:
+            coll = Collection(self.db_conn)
+            found_releases = coll.search_release_offline(search_term)
 
+            release_levels = {}
 
+            for i, release in enumerate(found_releases):
+                release_levels[i] = search_tv.insert("", i, text=release["discogs_title"], values=(release["d_artist"], release["discogs_id"]))
+                for j in range(2):
+                    search_tv.insert(release_levels[i],j, text="Test Track", values="")
+
+        else:
+            pass
+        
 
 
         
