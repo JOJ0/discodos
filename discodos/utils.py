@@ -156,10 +156,10 @@ def none_checker(value_to_check):
 # Empty list will be replaced by Zero, so tkinter can measure something
 
     if value_to_check == "None":
-        value_to_check = "X"
+        value_to_check = ""
 
-    elif value_to_check == "":
-        value_to_check = "X"
+    elif value_to_check == " ":
+        value_to_check = ""
     
     elif value_to_check == []:
         value_to_check = [X]

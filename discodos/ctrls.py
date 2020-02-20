@@ -717,10 +717,11 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix.reorder_tracks
 
     def display_searched_releases(self, search_term, search_tv, online):
-        # print(online)
+        coll = Collection(self.db_conn)
         if online == 0:
-            coll = Collection(self.db_conn)
             found_releases = coll.search_release_offline(search_term)
+
+            print(search_term, found_releases)
 
             release_levels = {}
             if found_releases is not None:
@@ -729,10 +730,31 @@ class mix_ctrl_gui(Mix_ctrl_common):
                     for j in range(2):
                        search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
             else:
-                log.error("GUI: No Releases Found")
-        else:
-            pass
-        
+                log.error("GUI: No offline Releases Found")
+
+        elif online == 1:
+            found_releases = coll.search_release_online(search_term)
+            print(search_term, found_releases)
+            release_levels = {}
+            if found_releases is not None:
+                for i, release in enumerate(found_releases):
+                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
+                    for j in range(2):
+                       search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
+            else:
+                log.error("GUI: No online Releases Found")
+    
+
+class setup_controller():
+    def __init__(self, conn=False):
+        pass
+
+    def write_yaml_file(self, setup_entries):
+        pass
+
+    def initiate_setup(self, setup_entries):
+        self.write_yaml_file(setup_entries)
+        pass
 
 
         

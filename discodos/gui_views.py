@@ -3,12 +3,11 @@
 # TODO #
 ########
 
-# Make Track Pos, Artist etc greyed out, not editable
-# With item.configure after creation of editor_entries
-
 # After track deletion set focus on track one below
 
-# Buttons for psition shift up/down
+# Make Buttons for position shift up/down working
+
+# Refactor whole editor_spawn section
 
 
 
@@ -213,10 +212,6 @@ class main_frame():
         try:
             for en in self.editor_entries:
                 en.destroy()
-        except:
-            pass
-
-        try:
             for lab in self.editor_labels:
                 lab.destroy()
         except:
@@ -276,7 +271,14 @@ class main_frame():
                 
                 en.insert(0, data["values"][i])
                 self.editor_entries.append(en)
-                self.editor_entries[0].config(state='disabled')
+
+                if tree_view == self.mix_list:
+                    self.editor_entries[0].config(state='disabled')
+
+                if tree_view == self.tracks_list:    
+                    for i, en in enumerate(self.editor_entries):
+                        if i == 0 or i == 1 or i == 2:
+                            self.editor_entries[i].config(state='disabled')
                 
         else:
             for i, heading  in enumerate(self.mix_cols):
@@ -287,6 +289,8 @@ class main_frame():
                 en.grid(row=i, column=1, sticky="w")
                 self.editor_entries.append(en)
                 self.editor_entries[0].config(state='disabled')
+        
+                
 
             
 
@@ -372,7 +376,48 @@ class main_frame():
 
             
 
+class setup_frame():
+    def __init__(self, conn=False):
+
+        self.setup_win = tk.Tk()  
+
+        # self.setup_win.geometry("300x200")     
+        # self.setup_win.minsize(300, 200)
+        self.setup_win.resizable(False, False)  
+
+        self.setup_win.title("Discodos Setup GUI") 
+        self.conn = conn
+        self.setup_ctrl = ctrls.setup_controller(self.conn)
+
+        self.create_interface()
     
+    
+    def create_interface(self):
+        labels = ["Discogs Token", "Discogs AppID", "Log Level"]
+        self.entries = {key: None for key in labels}
+        i = 0
+        for label, entry in self.entries.items():
+            self.entries[label] = tk.Entry(self.setup_win)
+            self.entries[label].grid(row=i, column=1, sticky="we")
+            tk.Label(self.setup_win, text=label).grid(row=i, column =0, sticky="we")
+            i += 1
+        
+        self.btn_frame = tk.Frame(self.setup_win)
+
+        self.start_setup_btn = tk.Button(self.btn_frame, text="Start Setup")
+        self.start_setup_btn.grid(row=0, column=0, sticky="w")
+        # When Done, change this Button text to "Done!"
+        tk.Button(self.btn_frame, text="Cancel").grid(row=0, column=1, sticky="w")
+
+        
+
+        self.btn_frame.grid(row=len(self.entries)+1, column=1, sticky="w")
+
+        self.log_window = tk.Text(self.setup_win, width=40, height=5)
+        self.log_window.grid(row=len(self.entries)+2, column=0, columnspan=2, sticky="wens")
+
+        self.log_window.insert(tk.END,"Logging...")
+
         
 
                 
