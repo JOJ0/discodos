@@ -304,6 +304,120 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             self.cli.print_help("Not online, can't pull from Discogs...")
 
+    def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
+        if coll_ctrl.ONLINE:
+            if self.mix.id_existing:
+                self.cli.print_help("Let's update current mixes tracks with info from AcousticBrainz...")
+                #mixed_tracks = self.mix.get_tracks_of_one_mix(start_pos)
+                mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
+            else:
+                self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
+                mixed_tracks = self.mix.get_all_tracks_in_mixes()
+
+            for mix_track in mixed_tracks:
+                mbid_release, mbid_recording, key, chords_key, bpm = '', '', '', '', ''
+                log.info('CTRL: Trying to match Discogs release {}...'.format(
+                    mix_track['d_release_id']))
+                d_rel = coll_ctrl.collection.get_d_release(
+                    mix_track['d_release_id']) # 404 is handled here, we don't
+                if d_rel:                      # continue without discogs release
+                    mb_releases = coll_ctrl.brainz.search_mb_releases(mix_track['d_artist'],
+                        mix_track['discogs_title'])
+                    #pprint.pprint(mb_releases) # human readable json
+                    #print(len(d_rel.labels))
+                    #for i in d_rel.labels:
+                        #print(dir(i))
+                        #print(i.data['catno'])
+                    for release in mb_releases['release-list']:
+                        log.info('CTRL: ...with MusicBrainz release {}.'.format(release['id']))
+                        full_rel = coll_ctrl.brainz.get_mb_release_by_id(release['id'])
+                        urls = coll_ctrl.brainz.get_urls_from_mb_release(full_rel)
+                        for url in urls:
+                            if url['type'] == 'discogs':
+                                log.info('CTRL: ...via URL match: ...{}'.format(
+                                    url['target'].replace('https://www.', '')))
+                                if str(mix_track['d_release_id']) in url['target']:
+                                    log.info(
+                                      'CTRL: Found MusicBrainz match (URL). Discogs ID: {}'.format(
+                                      mix_track['d_release_id']))
+                                    # mbid save somewhere
+                                    mbid_release = release['id']
+                                    break
+                        if not mbid_release: # # try to match catalog numbers
+                            d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
+                            log.info('CTRL: ...via catalog number match:')
+                            log.info('CTRL: ...DC CatNo: {}'.format(d_catno))
+                            for mb_label_item in full_rel['release']['label-info-list']:
+                                mb_catno = mb_label_item['catalog-number'].replace(' ', '')
+                                log.info('CTRL: ...MB CatNo: {}'.format(mb_catno))
+                                if mb_catno == d_catno:
+                                    log.info(
+                                      'CTRL: Found MusicBrainz release match (CatNo). Discogs ID: {}'.format(
+                                      mix_track['d_release_id']))
+                                    mbid_release = release['id']
+                                    break
+                        if mbid_release: # found release match, quit loop
+                            break
+
+                    if not mbid_release: # still no matching release? give up
+                        log.info('CTRL: No MusicBrainz release matches. Sorry dude!')
+                    else:
+                        rec_id, rec_title = '', '' # that's what we search for
+                        matched_rel = coll_ctrl.brainz.get_mb_release_by_id(
+                            mbid_release)
+                        #pprint.pprint(matched_rel) # human readable json
+                        # get track position as a number from discogs release
+                        #print(d_rel.tracklist[index])
+                        #d_track_position = d_rel.tracklist[index]
+                        for medium in matched_rel['release']['medium-list']:
+                            for pos, track in enumerate(medium['track-list']):
+                                rec_title = track['recording']['title']
+                                rec_id = track['recording']['id']
+                                track_name_match = False
+                                if rec_title == mix_track['d_track_name']:
+                                    track_name_match = True
+                                    log.info('CTRL: Track name matches: {}'.format(
+                                        rec_title))
+                                    log.info('CTRL: Recording MBID: {}'.format(
+                                        rec_id)) # finally we have a rec MBID
+                                    break
+                        if not track_name_match:
+                            log.info(
+                              'CTRL: No track name match: {} vs. {}'.format(
+                              mix_track['d_track_name'], rec_title))
+                        if rec_id: # we where lucky...
+                            # get accousticbrainz info
+                            key = coll_ctrl.brainz.get_accbr_key(rec_id)
+                            chords_key = coll_ctrl.brainz.get_accbr_key(rec_id)
+                            bpm = coll_ctrl.brainz.get_accbr_bpm(rec_id)
+                            log.info('CTRL: AccousticBrainz info: {} {} {}'.format(
+                                key, chords_key, bpm))
+                        else:
+                            log.info('CTRL: No MusicBrainz Recording ID found.')
+                            log.info('CTRL: Try to find one yourself :-P')
+
+                else:
+                    print("") # space for readability
+
+                if mbid_release:
+                    print("Adding Brainz info: {} {}: {} - {} - {}".format(
+                        mix_track['d_release_id'], mix_track['d_track_no'],
+                        mix_track['discogs_title'], mix_track['d_artist'],
+                        mix_track['d_track_name']))
+                    print("Release MBID: {}, Recording MBID: {}".format(
+                        mbid_release, rec_id))
+                    print("Key: {}, Chords Key: {}, BPM: {}".format(
+                        key, chords_key, bpm))
+                    #coll_ctrl.collection.create_track(mix_track['d_release_id'],
+                    #                                  mix_track['d_track_no'], name, artist)
+                else:
+                    print("Adding Brainz info: {} {}".format(
+                        mix_track['d_release_id'], mix_track['d_track_no']))
+                    log.error("No MusicBrainz Release ID found for Tr.Pos %s",
+                            mix_track['d_track_no'])
+        else:
+            self.cli.print_help("Not online, can't pull from AcousticBrainz...")
+
     def copy_mix(self):
         self.cli.print_help("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
         copy_tr = self.mix.get_tracks_of_one_mix()
@@ -348,7 +462,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     """
 
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
-            _db_file = False):
+            _db_file = False, _musicbrainz_user = False, _musicbrainz_pass = False):
         self.user = _user_int # take an instance of the User_int class and set as attribute
         self.user = _user_int
         self.collection = Collection(_db_conn, _db_file)
@@ -356,8 +470,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
-        # just set this for compatibilty reasons, currently used in cli.py, will prob. removed
-        #self.ONLINE = self.collection.ONLINE
+        self.brainz = Brainz(_musicbrainz_user, _musicbrainz_pass, _appIdentifier)
         log.info("CTRL: Initial ONLINE status is %s", self.ONLINE)
 
     @property

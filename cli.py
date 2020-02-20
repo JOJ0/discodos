@@ -157,7 +157,7 @@ def main():
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
     coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
-            conf.discobase)
+            conf.discobase, conf.musicbrainz_user, conf.musicbrainz_password)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -243,7 +243,9 @@ def main():
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl, start_pos = args.mix_mode_add_at_pos)
+            #mix_ctrl.pull_track_info_from_discogs(coll_ctrl, start_pos = args.mix_mode_add_at_pos)
+            mix_ctrl.update_track_info_from_brainz(coll_ctrl,
+                start_pos = args.mix_mode_add_at_pos)
 
         #### BULK EDIT MIX COLUMNS
         elif user.WANTS_TO_BULK_EDIT:

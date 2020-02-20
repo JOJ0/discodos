@@ -484,6 +484,26 @@ class Mix (Database):
         mix_info = self._select_simple(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
         return mix_info
 
+    def get_mix_tracks_for_brainz_update(self, start_pos = False):
+        log.info("MODEL: Getting tracks of a mix. Preparing for AcousticBrainz update.")
+        if not start_pos:
+            where = "mix_id == {}".format(self.id)
+        else:
+            where = "mix_id == {} and track_pos >= {}".format(
+                self.id, start_pos)
+        tables = '''mix_track
+                      INNER JOIN release
+                      ON mix_track.d_release_id = release.discogs_id
+                        LEFT OUTER JOIN track
+                        ON mix_track.d_release_id = track.d_release_id
+                        AND mix_track.d_track_no = track.d_track_no
+                          LEFT OUTER JOIN track_ext
+                          ON mix_track.d_release_id = track_ext.d_release_id
+                          AND mix_track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track_pos', 'mix_track.d_release_id',
+          'discogs_title', 'track.d_artist', 'd_track_name', 'mix_track.d_track_no', 'key', 'bpm'], tables, where,
+           fetchone = False, orderby = 'mix_track.track_pos')
+
 # record collection class
 class Collection (Database):
 
@@ -788,13 +808,13 @@ class Collection (Database):
         return self._select(sql_key, fetchone = False)
 
 
-class Brainz (Database):
+class Brainz (object):
 
-    def __init__(self, db_conn, db_file = False):
-        super(Brainz, self).__init__(db_conn, db_file)
-        # discogs api objects are online set when discogs_connect method is called
-        #self.me = False
+    def __init__(self, musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
         self.ONLINE = False
+        if self.musicbrainz_connect(musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
+            self.ONLINE = True
+            log.info("Brainz class is ONLINE.")
 
     # musicbrainz connect try,except wrapper
     def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):
@@ -803,6 +823,7 @@ class Brainz (Database):
         m.set_useragent(mb_appid, "0.0.2", "https://github.com/JOJ0")
         # If you are connecting to a different server
         #m.set_hostname("beta.musicbrainz.org")
+        #m.set_rate_limit(limit_or_interval=1.0, new_requests=1)
         try: # test request
             m.get_artist_by_id("952a4205-023d-4235-897c-6fdb6f58dfaa", [])
             self.ONLINE = True
@@ -819,10 +840,13 @@ class Brainz (Database):
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False
 
-    def search_mb_releases(self, artist, album, cat_no):
+    def search_mb_releases(self, artist, album, cat_no = False):
         try:
-            return m.search_releases(artist=artist, release=album,
-                catno = cat_no, limit=5)
+            if cat_no:
+                return m.search_releases(artist=artist, release=album,
+                    catno = cat_no, limit=5)
+            else:
+                return m.search_releases(artist=artist, release=album, limit=5)
         except WebServiceError as exc:
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False
@@ -845,6 +869,13 @@ class Brainz (Database):
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False
 
+    def get_urls_from_mb_release(self, full_rel): # takes what get_mb_release_by_id returned
+        #log.debug(full_rel['release'].keys())
+        if 'url-relation-list' in full_rel['release']:
+            return full_rel['release']['url-relation-list']
+        else:
+            return []
+
     def _get_accousticbrainz(self, urlpart):
         headers={'Accept': 'application/json' }
         url="https://acousticbrainz.org/api/v1/{}".format(urlpart)
@@ -862,3 +893,27 @@ class Brainz (Database):
 
     def _get_accbr_high_level(self, mb_id):
         return self._get_accousticbrainz("{}/high-level".format(mb_id))
+
+    #def _get_accbr_url_rels(self, )
+
+    def get_accbr_bpm(self, mb_id):
+        ab_return = self._get_accbr_low_level(mb_id)
+        return ab_return['rhythm']['bpm']
+
+    def get_accbr_key(self, mb_id):
+        ab_return = self._get_accbr_low_level(mb_id)
+        if ab_return['tonal']['key_scale'] == 'minor':
+            majmin = 'm'
+        else:
+            majmin = ''
+        key_key = '{}{}'.format(ab_return['tonal']['key_key'], majmin)
+        return key_key
+
+    def get_accbr_chords_key(self, mb_id):
+        ab_return = self._get_accbr_low_level(mb_id)
+        if ab_return['tonal']['chords_scale'] == 'minor':
+            majmin = 'm'
+        else:
+            majmin = ''
+        chords_key = '{}{}'.format(ab_return['tonal']['chords_key'], majmin)
+        return chords_key
