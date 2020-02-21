@@ -305,7 +305,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.print_help("Not online, can't pull from Discogs...")
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
-        if coll_ctrl.ONLINE:
+        if not coll_ctrl.ONLINE:
+            self.cli.print_help("Not online, can't pull from AcousticBrainz...")
+        else:
             if self.mix.id_existing:
                 self.cli.print_help("Let's update current mixes tracks with info from AcousticBrainz...")
                 #mixed_tracks = self.mix.get_tracks_of_one_mix(start_pos)
@@ -415,8 +417,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                         mix_track['d_release_id'], mix_track['d_track_no']))
                     log.error("No MusicBrainz Release ID found for Tr.Pos %s",
                             mix_track['d_track_no'])
-        else:
-            self.cli.print_help("Not online, can't pull from AcousticBrainz...")
 
     def copy_mix(self):
         self.cli.print_help("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
