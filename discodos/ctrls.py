@@ -341,6 +341,23 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                         return _mb_rel_id # found release match
             return False
 
+        def _track_name_match(_d_track_name, _mb_release):
+            #pprint.pprint(_mb_release) # human readable json
+            for medium in _mb_release['release']['medium-list']:
+                for pos, track in enumerate(medium['track-list']):
+                    _rec_title = track['recording']['title']
+
+                    if _rec_title.lower() == d_track_name.lower(): # ignore case diffs
+                        _rec_id = track['recording']['id']
+                        log.info('CTRL: Track name matches: {}'.format(
+                            _rec_title))
+                        log.info('CTRL: Recording MBID: {}'.format(
+                            _rec_id)) # finally we have a rec MBID
+                        return _rec_id
+            log.info('CTRL: No track name match: {} vs. {}'.format(
+                _d_track_name, _rec_title))
+            return False
+
         if not coll_ctrl.ONLINE:
             self.cli.print_help("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
@@ -354,102 +371,94 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             mixed_tracks = self.mix.get_all_tracks_in_mixes()
 
         for mix_track in mixed_tracks:
-            mbid_release, key, chords_key, bpm = '', '', '', ''
+            release_mbid, rec_mbid, rec_match_method = '', '', '' # get in this order
+            key, chords_key, bpm = '', '', '' # searched later, in this order
             d_release_id = mix_track['d_release_id']
             log.info('CTRL: Trying to match Discogs release {}...'.format(
                 mix_track['d_release_id']))
-            if not mix_track['d_track_name']: # no track name in db -> ask discogs
-                d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
-                d_track_name = coll_ctrl.cli.d_tracklist_parse(d_rel.tracklist,
-                    mix_track['d_track_no'])
-                if not d_track_name:
-                    log.warning(
-                      'Skipping. Track number {} not existing on release "{}"\n'.format(
-                       mix_track['d_track_no'], mix_track['discogs_title']))
-                    continue # jump to next track. space for readability ^^
+            d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
+            if not d_rel:
+                log.warning("Skipping. Cant't fetch Discogs release.".format(d_rel))
+                print('')
+                continue
             else:
-                d_track_name = mix_track['d_track_name'] # trackname in db, good
+                if not mix_track['d_track_name']: # no track name in db -> ask discogs
+                    d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
+                    d_track_name = coll_ctrl.cli.d_tracklist_parse(d_rel.tracklist,
+                        mix_track['d_track_no'])
+                    if not d_track_name:
+                        log.warning(
+                          'Skipping. Track number {} not existing on release "{}"\n'.format(
+                           mix_track['d_track_no'], mix_track['discogs_title']))
+                        continue # jump to next track. space for readability ^^
+                else:
+                    d_track_name = mix_track['d_track_name'] # trackname in db, good
 
-            if not mix_track['d_catno']: # no label name in db -> ask discogs
-                d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
-                d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
-            else:
-                d_catno = mix_track['d_track_name']
+                if not mix_track['d_catno']: # no label name in db -> ask discogs
+                    d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
+                else:
+                    d_catno = mix_track['d_track_name']
 
             # MBID Release search
             # try most likely match first: search artist title catno
             mb_releases = coll_ctrl.brainz.search_mb_releases(
                 mix_track['d_artist'], mix_track['discogs_title'], d_catno, 5)
             # first url-match
-            mbid_release = _url_match(d_release_id, mb_releases)
+            release_mbid = _url_match(d_release_id, mb_releases)
 
-            if not mbid_release:
+            if not release_mbid:
                 # and then catno-match
-                mbid_release = _catno_match(d_catno, mb_releases)
+                release_mbid = _catno_match(d_catno, mb_releases)
 
         # leave out broader search for now
-            #if not mbid_release: # if nothing yet, try broader search
+            #if not release_mbid: # if nothing yet, try broader search
             #    mb_releases_coarse = coll_ctrl.brainz.search_mb_releases(
             #        mix_track['d_artist'], mix_track['discogs_title'], 10)
             #    # and again, first url-match
-            #    mbid_release = _url_match(d_release_id,
+            #    release_mbid = _url_match(d_release_id,
             #        mb_releases_coarse)
-            #if not mbid_release: # try to match catno
+            #if not release_mbid: # try to match catno
             #    # then catno-match
-            #    mbid_release = _catno_match(d_catno, mb_releases_coarse)
+            #    release_mbid = _catno_match(d_catno, mb_releases_coarse)
         # leave out broader search for now END
 
-            if not mbid_release: # still no matching release? give up
+            if not release_mbid: # still no matching release? give up
                 log.info('CTRL: No MusicBrainz release matches. Sorry dude!')
             else: # Recording MBID search
-                rec_id, rec_title = '', '' # that's what we search for
                 matched_rel = coll_ctrl.brainz.get_mb_release_by_id(
-                    mbid_release)
+                    release_mbid)
                 #pprint.pprint(matched_rel) # human readable json
                 # get track position as a number from discogs release
                 #print(d_rel.tracklist[index])
                 #d_track_position = d_rel.tracklist[index]
-                for medium in matched_rel['release']['medium-list']:
-                    for pos, track in enumerate(medium['track-list']):
-                        rec_title = track['recording']['title']
-                        rec_match_method = ''
+                rec_mbid = _track_name_match(d_track_name, matched_rel)
+                if rec_mbid:
+                    rec_match_method = 'by track name'
 
-                        if rec_title.lower() == d_track_name.lower(): # ignore case diffs
-                            rec_match_method = 'by track name'
-                            rec_id = track['recording']['id']
-                            log.info('CTRL: Track name matches: {}'.format(
-                                rec_title))
-                            log.info('CTRL: Recording MBID: {}'.format(
-                                rec_id)) # finally we have a rec MBID
-                            break
-                if rec_match_method != 'by track name':
-                    log.info(
-                      'CTRL: No track name match: {} vs. {}'.format(
-                      d_track_name, rec_title))
-                if rec_id: # we where lucky...
+                if rec_mbid: # we where lucky...
                     # get accousticbrainz info
-                    key = coll_ctrl.brainz.get_accbr_key(rec_id)
-                    chords_key = coll_ctrl.brainz.get_accbr_key(rec_id)
-                    bpm = coll_ctrl.brainz.get_accbr_bpm(rec_id)
+                    key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
+                    chords_key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
+                    bpm = coll_ctrl.brainz.get_accbr_bpm(rec_mbid)
                     log.info('CTRL: AccousticBrainz info: {} {} {}'.format(
                         key, chords_key, bpm))
                 else:
                     log.info('CTRL: No MusicBrainz Recording ID found.')
 
-            if mbid_release: # summary and save only when we have Release MBID
+            if release_mbid: # summary and save only when we have Release MBID
                 print("Adding Brainz info for track {} on {} ({})".format(
                     mix_track['d_track_no'],  mix_track['discogs_title'],
                     d_release_id))
                 print("{} - {}".format(mix_track['d_artist'], d_track_name))
-                print("Release MBID: {}".format(mbid_release))
-                if not rec_id:
+                print("Release MBID: {}".format(release_mbid))
+                if not rec_mbid:
                     log.warning("No Recording MBID found!!!")
                 else:
-                    print("Recording MBID: {}".format(rec_id))
+                    print("Recording MBID: {}".format(rec_mbid))
                 print("Key: {}, Chords Key: {}, BPM: {}".format(
                     key, chords_key, bpm))
                 ret = coll_ctrl.collection.upsert_track_brainz(d_release_id,
-                    mix_track['d_track_no'], rec_id, rec_match_method,
+                    mix_track['d_track_no'], rec_mbid, rec_match_method,
                     key, chords_key, bpm)
                 if ret:
                     print('Track tables updated successfully')
