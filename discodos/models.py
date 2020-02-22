@@ -921,12 +921,14 @@ class Brainz (object):
             _json = json.loads(resp.content)
             return _json
         else:
-            log.debug("Bad response: %s", resp.status_code)
+            log.info("MBID not in AccousticBrainz: %s", resp.status_code)
             resp.raise_for_status()
-            return False
+            #return False
 
     def _get_accbr_low_level(self, mb_id):
-        return self._get_accousticbrainz("{}/low-level".format(mb_id))
+        low_level = self._get_accousticbrainz("{}/low-level".format(mb_id))
+        #pprint.pprint(low_level)
+        return low_level
 
     def _get_accbr_high_level(self, mb_id):
         return self._get_accousticbrainz("{}/high-level".format(mb_id))
@@ -934,17 +936,23 @@ class Brainz (object):
     #def _get_accbr_url_rels(self, )
 
     def get_accbr_bpm(self, mb_id):
-        ab_return = self._get_accbr_low_level(mb_id)
-        return ab_return['rhythm']['bpm']
+        try:
+            ab_return = self._get_accbr_low_level(mb_id)
+            return ab_return['rhythm']['bpm']
+        except:
+            return None
 
     def get_accbr_key(self, mb_id):
-        ab_return = self._get_accbr_low_level(mb_id)
-        if ab_return['tonal']['key_scale'] == 'minor':
-            majmin = 'm'
-        else:
-            majmin = ''
-        key_key = '{}{}'.format(ab_return['tonal']['key_key'], majmin)
-        return key_key
+        try:
+            ab_return = self._get_accbr_low_level(mb_id)
+            if ab_return['tonal']['key_scale'] == 'minor':
+                majmin = 'm'
+            else:
+                majmin = ''
+            key_key = '{}{}'.format(ab_return['tonal']['key_key'], majmin)
+            return key_key
+        except:
+            return None
 
     def get_accbr_chords_key(self, mb_id):
         ab_return = self._get_accbr_low_level(mb_id)
