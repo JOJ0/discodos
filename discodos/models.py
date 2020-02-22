@@ -501,7 +501,8 @@ class Mix (Database):
                           ON mix_track.d_release_id = track_ext.d_release_id
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
-          'discogs_title', 'track.d_artist', 'd_track_name', 'mix_track.d_track_no', 'key', 'bpm'], tables, where,
+          'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
+          'mix_track.d_track_no', 'key', 'bpm'], tables, where,
            fetchone = False, orderby = 'mix_track.track_pos')
 
 # record collection class
@@ -807,6 +808,35 @@ class Collection (Database):
                        ORDER BY track_ext.key, track_ext.bpm'''.format(key)
         return self._select(sql_key, fetchone = False)
 
+    def upsert_track_brainz(self, release_id, track_no, rec_id,
+          match_method, key, chords_key, bpm):
+        sql_track = '''INSERT INTO track(d_release_id, d_track_no,
+                         m_rec_id, m_match_method, m_match_time)
+                         VALUES(?, ?, ?, ?, datetime('now', 'localtime'))
+                         ON CONFLICT (d_release_id, d_track_no)
+                         DO UPDATE SET
+                         d_release_id=?, d_track_no=?, m_rec_id=?,
+                         m_match_method=?,
+                         m_match_time=datetime('now', 'localtime');'''
+        tuple_track = (release_id, track_no, rec_id, match_method,
+                       release_id, track_no, rec_id, match_method)
+        ok_track = self.execute_sql(sql_track, tuple_track)
+
+        sql_ext = '''INSERT INTO track_ext(d_release_id, d_track_no,
+                         a_key, a_chords_key, a_bpm)
+                         VALUES(?, ?, ?, ?, ?)
+                         ON CONFLICT (d_release_id, d_track_no)
+                         DO UPDATE SET
+                         d_release_id=?, d_track_no=?, a_key=?,
+                         a_chords_key=?, a_bpm=?;'''
+        tuple_ext = (release_id, track_no, key, chords_key, bpm,
+                     release_id, track_no, key, chords_key, bpm)
+        ok_ext = self.execute_sql(sql_ext, tuple_ext)
+
+        if ok_track and ok_ext:
+            return True
+        return False
+
 
 class Brainz (object):
 
@@ -840,11 +870,11 @@ class Brainz (object):
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False
 
-    def search_mb_releases(self, artist, album, cat_no = False):
+    def search_mb_releases(self, artist, album, cat_no = False, limit = 10):
         try:
             if cat_no:
                 return m.search_releases(artist=artist, release=album,
-                    catno = cat_no, limit=5)
+                    catno = cat_no, limit=limit)
             else:
                 return m.search_releases(artist=artist, release=album, limit=5)
         except WebServiceError as exc:
@@ -875,6 +905,13 @@ class Brainz (object):
             return full_rel['release']['url-relation-list']
         else:
             return []
+
+    def get_catno_from_mb_label(self, mb_label): # label-info-list item
+        #log.debug(mb_label)
+        if 'catalog-number' in mb_label:
+            return mb_label['catalog-number']
+        else:
+            return ''
 
     def _get_accousticbrainz(self, urlpart):
         headers={'Accept': 'application/json' }

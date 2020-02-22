@@ -250,6 +250,7 @@ class Collection_view_common(ABC):
             #log.info("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
             if tr.position == track_number:
                 return tr.title
+        return False # we didn't find the tracknumber
 
     def get_max_width(self, rows_list, keys_list, extra_space):
         '''gets max width of sqlite list of rows for given fields (keys_list)
