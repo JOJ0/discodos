@@ -61,6 +61,9 @@ class Config():
         self.discobase = self.discodos_root / "discobase.db"
         log.info("Config.discobase: {}".format(self.discobase))
         self.conf = read_yaml( self.discodos_root / "config.yaml")
+        self.dropbox_token = ''
+        self.discogs_token = ''
+        self.discogs_appid = ''
         try: # essential settings
             self.discogs_token = self.conf["discogs_token"]
             self.discogs_appid = self.conf["discogs_appid"]
