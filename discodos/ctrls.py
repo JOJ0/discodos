@@ -371,8 +371,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             mixed_tracks = self.mix.get_all_tracks_in_mixes()
 
         for mix_track in mixed_tracks:
-            release_mbid, rec_mbid, rec_match_method = '', '', '' # get in this order
-            key, chords_key, bpm = '', '', '' # searched later, in this order
+            release_mbid, rec_mbid, rec_match_method = None, None, None # get in this order
+            key, chords_key, bpm = None, None, None# searched later, in this order
             d_release_id = mix_track['d_release_id']
             log.info('CTRL: Trying to match Discogs release {}...'.format(
                 mix_track['d_release_id']))
@@ -440,10 +440,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
                     chords_key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
                     bpm = coll_ctrl.brainz.get_accbr_bpm(rec_mbid)
-                    log.info('CTRL: AccousticBrainz info: {} {} {}'.format(
-                        key, chords_key, bpm))
-                else:
-                    log.info('CTRL: No MusicBrainz Recording ID found.')
+                    #log.info('CTRL: AccousticBrainz info: {} {} {}'.format(
+                    #    key, chords_key, bpm))
+                #else:
+                #    log.info('CTRL: No MusicBrainz Recording ID found.')
 
             if release_mbid: # summary and save only when we have Release MBID
                 print("Adding Brainz info for track {} on {} ({})".format(
