@@ -375,7 +375,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
-            mixed_tracks = self.mix.get_all_tracks_in_mixes()
+            mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
         for mix_track in mixed_tracks:
             release_mbid, release_match_method = None, None # we are filling these

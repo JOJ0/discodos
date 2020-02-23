@@ -188,7 +188,8 @@ def main():
         # we instantiate a mix controller object
         mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+            #mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+            mix_ctrl.update_track_info_from_brainz(coll_ctrl)
         else:
             mix_ctrl.view_mixes_list()
 

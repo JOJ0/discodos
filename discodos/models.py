@@ -505,6 +505,22 @@ class Mix (Database):
           'mix_track.d_track_no', 'key', 'bpm'], tables, where,
            fetchone = False, orderby = 'mix_track.track_pos')
 
+    def get_all_mix_tracks_for_brainz_update(self):
+        log.info("MODEL: Getting all tracks of all mix. Preparing for AcousticBrainz update.")
+        tables = '''mix_track
+                      INNER JOIN release
+                      ON mix_track.d_release_id = release.discogs_id
+                        LEFT OUTER JOIN track
+                        ON mix_track.d_release_id = track.d_release_id
+                        AND mix_track.d_track_no = track.d_track_no
+                          LEFT OUTER JOIN track_ext
+                          ON mix_track.d_release_id = track_ext.d_release_id
+                          AND mix_track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track_pos', 'mix_track.d_release_id',
+          'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
+          'mix_track.d_track_no', 'key', 'bpm'], tables,
+           fetchone = False, orderby = 'mix_track.mix_id, mix_track.track_pos')
+
 # record collection class
 class Collection (Database):
 
