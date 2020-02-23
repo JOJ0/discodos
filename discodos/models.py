@@ -837,6 +837,12 @@ class Collection (Database):
             return True
         return False
 
+    def update_release_brainz(self, release_id, mbid, match_method):
+        sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
+                       m_match_time) = (?, ?, datetime('now', 'localtime'))
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (mbid, match_method, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)
 
 class Brainz (object):
 
