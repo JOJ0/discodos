@@ -524,8 +524,9 @@ class Mix (Database):
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
           'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
-          'mix_track.d_track_no', 'key', 'bpm'], tables,
-           fetchone = False, orderby = 'mix_track.mix_id, mix_track.track_pos')
+          'mix_track.d_track_no', 'key', 'bpm'], tables, fetchone = False,
+           orderby = 'mix_track.mix_id, mix_track.track_pos',
+           distinct = True)
 
 # record collection class
 class Collection (Database):
