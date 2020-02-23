@@ -67,7 +67,8 @@ class Database (object):
         settings = "PRAGMA foreign_keys = ON;"
         self.execute_sql(settings)
 
-    def _select_simple(self, fields_list, table, condition = False, fetchone = False, orderby = False):
+    def _select_simple(self, fields_list, table, condition = False,
+      fetchone = False, orderby = False, distinct = False):
         """This is a wrapper around the _select method.
            It puts together sql select statements as strings.
         """
@@ -86,7 +87,12 @@ class Database (object):
             orderby_or_not = "ORDER BY {}".format(orderby)
         else:
             orderby_or_not = ""
-        select_str = "SELECT {} FROM {} {} {};".format(fields_str, table, where_or_not, orderby_or_not)
+        if distinct:
+            select = 'SELECT DISTINCT'
+        else:
+            select = 'SELECT'
+        select_str = "{} {} FROM {} {} {};".format(select, fields_str, table,
+          where_or_not, orderby_or_not)
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone = False):
