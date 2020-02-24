@@ -466,7 +466,7 @@ class Mix (Database):
             condition = "mix_id = {}".format(self.id), fetchone = True)
 
     def get_tracks_of_one_mix(self, start_pos = False):
-        log.info("MODEL: Getting tracks of a mix.")
+        log.info("MODEL: Getting tracks of a mix, from mix_track_table only)")
         if not start_pos:
             where = "mix_id == {}".format(self.id)
         else:
@@ -475,7 +475,7 @@ class Mix (Database):
                 fetchone = False, orderby = 'track_pos')
 
     def get_all_tracks_in_mixes(self):
-        log.info('MODEL: Getting all tracks from mix_track table.')
+        log.info('MODEL: Getting all tracks from mix_track table (only).')
         return self._select_simple(['*'], 'mix_track', fetchone = False)
 
     def get_mix_info(self):

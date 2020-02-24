@@ -267,42 +267,46 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             return False
 
     def pull_track_info_from_discogs(self, coll_ctrl, start_pos = False):
-        if coll_ctrl.ONLINE:
-            if self.mix.id_existing:
-                self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
-                mixed_tracks = self.mix.get_tracks_of_one_mix(start_pos)
-            else:
-                self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
-                mixed_tracks = self.mix.get_all_tracks_in_mixes()
-            for mix_track in mixed_tracks:
-                name, artist = "", ""
-                coll_ctrl.collection.rate_limit_slow_downer(remaining=20, sleep=3)
-                #try: # handle error 404 when release is not on discogs
-                # quick and dirty: 404 is handled in this method:
-                if coll_ctrl.collection.get_d_release(mix_track[2]):
-                    name = coll_ctrl.cli.d_tracklist_parse(
-                            coll_ctrl.d.release(mix_track[2]).tracklist, mix_track[3])
-                    artist = coll_ctrl.collection.d_artists_parse(
-                               coll_ctrl.d.release(mix_track[2]).tracklist,
-                               mix_track[3],
-                               coll_ctrl.d.release(mix_track[2]).artists)
-                else:
-                    print("") # space for readability
-
-                if name:
-                    print("Adding track info: {} {} - {} - {}".format(
-                        mix_track[2], mix_track[3], artist, name))
-                    coll_ctrl.collection.create_track(mix_track[2], mix_track[3], name, artist)
-                else:
-                    #print("Adding track info: "+ str(mix_track[2])+" "+
-                    #        mix_track[3])
-                    print("Adding track info: {} {}".format(
-                        mix_track[2], mix_track[3]))
-                    log.error("No trackname found for Tr.Pos %s",
-                            mix_track[3])
-                    log.error("Probably you misspelled? (eg A vs. A1)\n")
-        else:
+        if not coll_ctrl.ONLINE:
             self.cli.print_help("Not online, can't pull from Discogs...")
+            return False # exit method we are offline
+
+        if self.mix.id_existing:
+            self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
+            mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
+        else:
+            self.cli.print_help("Let's update every track contained in any mix with info from Discogs...")
+            mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
+        discogs = coll_ctrl.d # get discogs_client instance (one time only!)
+        for mix_track in mixed_tracks:
+            name, artist = "", ""
+            d_track_no = mix_track['d_track_no']
+            d_release_id = mix_track['d_release_id']
+            coll_ctrl.collection.rate_limit_slow_downer(remaining=20, sleep=3)
+            #try: # handle error 404 when release is not on discogs
+            # quick and dirty: 404 is handled in this method:
+            if coll_ctrl.collection.get_d_release(d_release_id):
+                d_tracklist = discogs.release(d_release_id).tracklist
+                name = coll_ctrl.cli.d_tracklist_parse(d_tracklist, d_track_no)
+                artist = coll_ctrl.collection.d_artists_parse(
+                      d_tracklist, d_track_no,
+                      discogs.release(d_release_id).artists)
+            else:
+                print("") # space for readability
+
+            if name:
+                print("Adding track info: {} {} - {} - {}".format(
+                    mix_track['d_release_id'], mix_track['d_track_no'], artist, name))
+                coll_ctrl.collection.create_track(mix_track['d_release_id'],
+                    mix_track['d_track_no'], name, artist)
+            else:
+                #print("Adding track info: "+ str(mix_track[2])+" "+
+                #        mix_track[3])
+                print("Adding track info: {} {}".format(
+                    mix_track['d_release_id'], mix_track['d_track_no']))
+                log.error("No trackname found for Tr.Pos %s",
+                        mix_track['d_track_no'])
+                log.error("Probably you misspelled? (eg A vs. A1)\n")
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
         def _url_match(_d_release_id, _mb_releases):
