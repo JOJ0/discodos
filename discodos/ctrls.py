@@ -589,55 +589,30 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     def search_release(self, _searchterm): # online or offline search is decided in this method
         if self.collection.ONLINE:
             if is_number(_searchterm):
-                print_help('Searchterm is a number, trying to add release ID to collection...')
+                print_help('Searchterm is a number, trying to add Release ID to collection...')
                 self.add_release(int(_searchterm))
 
-            all_db_releases = self.collection.get_all_db_releases()
-            db_results = self.collection.search_release_offline(_searchterm)
-            if not db_results:
-                print("Release not in your local DiscoBASE, continue search?")
-            else:
-                compiled_results_list =[] # initialize our list of releases
-                for cnt, db_rel in enumerate(db_results):
-                    #print(db_rel['discogs_id'])
-                    onl_rel = self.collection.search_release_online(db_rel['discogs_id'])
-                    if onl_rel:
-                        # hand over id, not _searchterm, so print_found... can handle it
-                        #compiled_results_list.append(self.cli.print_discogs_release(
-                        #    onl_rel, db_rel['discogs_id'], db_results))
-                        print("")
-                        print("({})".format(cnt))
-                        print(self.cli.show_discogs_release(onl_rel[0]))
-                    else:
-                        print("Found in local DiscoBASE, but not in Discogs Collection.")
-                        raise SystemExit(3)
-                #print(compiled_results_list)
-                #return compiled_results_list # return the list when matching is through
+            db_releases = self.collection.get_all_db_releases()
+            print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
+            search_results = self.collection.search_release_online(_searchterm)
 
-                    #else:
-                    #    print("Release not in your local DiscoBASE, continue search?")
-                    #    raise SystemExit(0)
-
-                    #    print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
-                    #    search_results = self.collection.search_release_online(_searchterm)
-
-                    #    # SEARCH RESULTS OUTPUT HAPPENS HERE
-                    #    compiled_results_list = self.cli.print_found_discogs_release(
-                    #                                search_results, _searchterm, db_releases)
-                    #    return compiled_results_list
-                    #    #if compiled_results_list:
-                    #    #    if len(compiled_results_list) == 1:
-                    #    #        print_help('Found release: {}'.format(compiled_results_list[0][1]))
-                    #    #        return compiled_results_list
-                    #    #    else:
-                    #    #        print_help('Found several releases:')
-                    #    #        for cnt,release in enumerate(compiled_results_list):
-                    #    #            print_help('{} - {}'.format(cnt, release[1]))
-                    #    #        answ = int(self.cli.ask_user('Which release? '))
-                    #    #        return [compiled_results_list[answ]]
+            # SEARCH RESULTS OUTPUT HAPPENS HERE
+            compiled_results_list = self.cli.print_found_discogs_release(
+                                        search_results, _searchterm, db_releases)
+            return compiled_results_list
+            #if compiled_results_list:
+            #    if len(compiled_results_list) == 1:
+            #        print_help('Found release: {}'.format(compiled_results_list[0][1]))
+            #        return compiled_results_list
+            #    else:
+            #        print_help('Found several releases:')
+            #        for cnt,release in enumerate(compiled_results_list):
+            #            print_help('{} - {}'.format(cnt, release[1]))
+            #        answ = int(self.cli.ask_user('Which release? '))
+            #        return [compiled_results_list[answ]]
 
         else:
-            print_help('Searching local DiscoBase for ID or Title: {}'.format(_searchterm))
+            print_help('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
             if search_results:
                 if len(search_results) == 1:
