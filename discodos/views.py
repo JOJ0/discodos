@@ -33,6 +33,8 @@ class User_int(object):
         self.WANTS_SUGGEST_BPM_REPORT = False
         self.WANTS_SUGGEST_KEY_REPORT = False
         self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = False
+        self.WANTS_TO_PULL_BRAINZ_INFO = False
+        self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -63,6 +65,9 @@ class User_int(object):
                     raise SystemExit(1)
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
+                    self.WANTS_ONLINE = True
+                if self.args.brainz_update:
+                    self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
             else:
                 self.WANTS_TO_SHOW_MIX_TRACKLIST = True
@@ -99,6 +104,9 @@ class User_int(object):
                     self.WANTS_ONLINE = False
                 if self.args.bulk_edit:
                     self.WANTS_TO_BULK_EDIT = True
+                if self.args.brainz_update:
+                    self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
+                    self.WANTS_ONLINE = True
 
         # SUGGEST MODE
         if hasattr(self.args, 'suggest_search'):
