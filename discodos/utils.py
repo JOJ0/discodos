@@ -85,6 +85,22 @@ class Config():
                 log.info("Config.dropbox_token is set.")
         except KeyError:
             log.info("Config.dropbox_token is not set.")
+        try: # optional setting musicbrainz_user
+            if self.conf["musicbrainz_user"] == "":
+                log.info("Config.musicbrainz_user is empty.")
+            else:
+                self.musicbrainz_user = self.conf["musicbrainz_user"]
+                log.info("Config.musicbrainz_user is set.")
+        except KeyError:
+            log.info("Config.musicbrainz_user is not set.")
+        try: # optional setting musicbrainz_password
+            if self.conf["musicbrainz_password"] == "":
+                log.info("Config.musicbrainz_password is empty.")
+            else:
+                self.musicbrainz_password = self.conf["musicbrainz_password"]
+                log.info("Config.musicbrainz_password is set.")
+        except KeyError:
+            log.info("Config.musicbrainz_password is not set.")
 
     # install cli command (disco) into discodos_root
     def install_cli(self):

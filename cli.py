@@ -104,6 +104,11 @@ def argparser(argv):
         "-u", "--discogs-update", action='store_true',
         dest='discogs_update',
         help='updates tracks in current mix with additional info from Discogs')
+    mix_subp_excl_group.add_argument(
+        "-z", "--brainz-update", action='store_true',
+        dest='brainz_update',
+        help='''updates tracks in current mix with additional info from MusicBrainz and AcousticBrainz.
+        Leave out mix ID to update every track contained in a mix.''')
     # mutually exclusive group ends here
     mix_subparser.add_argument(
         "-p", "--pos", type=int,
@@ -157,7 +162,7 @@ def main():
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
     coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
-            conf.discobase)
+            conf.discobase, conf.musicbrainz_user, conf.musicbrainz_password)
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
@@ -189,6 +194,8 @@ def main():
         mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+        elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
+            mix_ctrl.update_track_info_from_brainz(coll_ctrl)
         else:
             mix_ctrl.view_mixes_list()
 
@@ -244,6 +251,9 @@ def main():
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl, start_pos = args.mix_mode_add_at_pos)
+        elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
+            mix_ctrl.update_track_info_from_brainz(coll_ctrl,
+                start_pos = args.mix_mode_add_at_pos)
 
         #### BULK EDIT MIX COLUMNS
         elif user.WANTS_TO_BULK_EDIT:
