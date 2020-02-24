@@ -359,8 +359,7 @@ class Collection_view_cli(Collection_view_common, Cli_view_common):
         rel_data_list[0].append(str(release.formats[0]['descriptions'][0])+
                    ", "+str(release.formats[0]['descriptions'][0]))
 
-        log.info("rel_data_list in show_discogs_release: {}".format(
-            rel_data_list))
+        print(rel_data_list)
         self.tab_online_search_results(rel_data_list)
         self.online_search_results_tracklist(release.tracklist)
 

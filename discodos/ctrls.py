@@ -199,13 +199,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
 
     def add_discogs_track(self, rel_list, track_no, pos):
+        log.info("discogs rel_list: {}".format(rel_list))
         if rel_list:
-            log.info("add_discogs_track rel_list: {}".format(rel_list))
-            log.info("add_discogs_track rel_list length: {}".format(
-                len(rel_list)))
-            #self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
-            #print(dir(rel_list[0]))
-            self._add_track(rel_list[0].id, rel_list[0].title, track_no, pos)
+            self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
         else:
             log.error("No release to add.")
 
@@ -606,24 +602,39 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     #print(db_rel['discogs_id'])
                     onl_rel = self.collection.search_release_online(db_rel['discogs_id'])
                     if onl_rel:
-                        compiled_results_list.append(onl_rel)
                         # hand over id, not _searchterm, so print_found... can handle it
                         #compiled_results_list.append(self.cli.print_discogs_release(
                         #    onl_rel, db_rel['discogs_id'], db_results))
-                        print("") # pretty print one release
+                        print("")
                         print("({})".format(cnt))
-                        self.cli.show_discogs_release(onl_rel[0])
+                        print(self.cli.show_discogs_release(onl_rel[0]))
                     else:
                         print("Found in local DiscoBASE, but not in Discogs Collection.")
                         raise SystemExit(3)
-                answ = self.cli.ask_user('Which release? (0) ')
-                if answ == '':
-                    answ = 0
-                else:
-                    answ = int(answ)
-                log.info("compiled_results_list in search_release: {}".format(
-                    compiled_results_list))
-                return compiled_results_list[answ]
+                #print(compiled_results_list)
+                #return compiled_results_list # return the list when matching is through
+
+                    #else:
+                    #    print("Release not in your local DiscoBASE, continue search?")
+                    #    raise SystemExit(0)
+
+                    #    print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
+                    #    search_results = self.collection.search_release_online(_searchterm)
+
+                    #    # SEARCH RESULTS OUTPUT HAPPENS HERE
+                    #    compiled_results_list = self.cli.print_found_discogs_release(
+                    #                                search_results, _searchterm, db_releases)
+                    #    return compiled_results_list
+                    #    #if compiled_results_list:
+                    #    #    if len(compiled_results_list) == 1:
+                    #    #        print_help('Found release: {}'.format(compiled_results_list[0][1]))
+                    #    #        return compiled_results_list
+                    #    #    else:
+                    #    #        print_help('Found several releases:')
+                    #    #        for cnt,release in enumerate(compiled_results_list):
+                    #    #            print_help('{} - {}'.format(cnt, release[1]))
+                    #    #        answ = int(self.cli.ask_user('Which release? '))
+                    #    #        return [compiled_results_list[answ]]
 
         else:
             print_help('Searching local DiscoBase for ID or Title: {}'.format(_searchterm))
