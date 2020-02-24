@@ -282,31 +282,27 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             name, artist = "", ""
             d_track_no = mix_track['d_track_no']
             d_release_id = mix_track['d_release_id']
+            discogs_title = mix_track['discogs_title']
             coll_ctrl.collection.rate_limit_slow_downer(remaining=20, sleep=3)
-            #try: # handle error 404 when release is not on discogs
-            # quick and dirty: 404 is handled in this method:
-            if coll_ctrl.collection.get_d_release(d_release_id):
+            try: # we catch 404 here, and not via get_d_release, to save one request
                 d_tracklist = discogs.release(d_release_id).tracklist
                 name = coll_ctrl.cli.d_tracklist_parse(d_tracklist, d_track_no)
                 artist = coll_ctrl.collection.d_artists_parse(
                       d_tracklist, d_track_no,
                       discogs.release(d_release_id).artists)
-            else:
+            except errors.HTTPError as HtErr:
+                log.error('Track {} on "{}" ({}) not existing on Discogs ({})'.format(
+                      d_track_no, discogs_title, d_release_id, HtErr))
                 print("") # space for readability
+                continue # jump to next iteration, nothing more to do here
 
-            if name:
-                print("Adding track info: {} {} - {} - {}".format(
-                    mix_track['d_release_id'], mix_track['d_track_no'], artist, name))
-                coll_ctrl.collection.create_track(mix_track['d_release_id'],
-                    mix_track['d_track_no'], name, artist)
-            else:
-                #print("Adding track info: "+ str(mix_track[2])+" "+
-                #        mix_track[3])
-                print("Adding track info: {} {}".format(
-                    mix_track['d_release_id'], mix_track['d_track_no']))
-                log.error("No trackname found for Tr.Pos %s",
-                        mix_track['d_track_no'])
-                log.error("Probably you misspelled? (eg A vs. A1)\n")
+            print('Adding Track {} on "{}" ({})'.format(
+                  d_track_no, discogs_title, d_release_id))
+            print('{} - {}'.format(artist, name))
+            coll_ctrl.collection.create_track(mix_track['d_release_id'],
+                mix_track['d_track_no'], name, artist)
+            print("") # space for readability
+        return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
         def _url_match(_d_release_id, _mb_releases):
