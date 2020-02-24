@@ -404,7 +404,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 mix_track['d_release_id']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
             if not d_rel:
-                errors_not_found += 1
                 log.warning("Skipping. Cant't fetch Discogs release.".format(d_rel))
                 print('')
                 continue
@@ -414,6 +413,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_track_name = coll_ctrl.cli.d_tracklist_parse(d_rel.tracklist,
                         mix_track['d_track_no'])
                     if not d_track_name:
+                        errors_not_found += 1
                         log.warning(
                           'Skipping. Track number {} not existing on release "{}"\n'.format(
                            mix_track['d_track_no'], mix_track['discogs_title']))
