@@ -273,6 +273,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             self.cli.print_help("Let's update every track contained in any mix with info from Discogs...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
+        processed = len(mixed_tracks)
+        added = 0
+        db_errors = 0
+        not_found_errors = 0
         discogs = coll_ctrl.d # get discogs_client instance (one time only!)
         for mix_track in mixed_tracks:
             name, artist = "", ""
@@ -296,14 +300,23 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 print('Adding Track {} on "{}" ({})'.format(
                       d_track_no, discogs_title, d_release_id))
                 print('{} - {}'.format(artist, name))
-                coll_ctrl.collection.upsert_track(d_release_id,
-                    d_track_no, name, artist)
+                if coll_ctrl.collection.upsert_track(d_release_id,
+                      d_track_no, name, artist):
+                    added += 1
+                else:
+                    db_errors += 1
                 print("") # space for readability
             else:
                 print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
                       discogs_title, d_release_id, d_track_no))
+                not_found_errors += 1
                 print("") # space for readability
 
+        print('Processed: {}. Added Artist/Track info to DiscoBASE: {}.'.format(
+            processed, added))
+        print('Database errors: {}. Not found on Discogs errors: {}.'.format(
+            db_errors, not_found_errors))
+        print("") # space for readability
         return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
