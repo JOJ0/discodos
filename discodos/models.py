@@ -614,33 +614,17 @@ class Collection (Database):
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
 
-    def create_track(self, release_id, track_no, track_name, track_artist):
-        insert_tuple = (release_id, track_artist, track_no, track_name)
-        update_tuple = (release_id, track_artist, track_no, track_name, release_id, track_no)
-        c = self.db_conn.cursor()
-        with self.db_conn:
-            try:
-                c.execute('''INSERT INTO track(d_release_id, d_artist, d_track_no,
-                                                             d_track_name, import_timestamp)
-                                               VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
-                                        insert_tuple)
-                return c.rowcount
-            except sqlerr as e:
-                if "UNIQUE constraint failed" in e.args[0]:
-                    log.warning("Track details already in DiscoBASE, updating ...")
-                    try:
-                        c.execute('''UPDATE track SET (d_release_id, d_artist, d_track_no,
-                                                       d_track_name, import_timestamp)
-                                       = (?, ?, ?, ?, datetime('now', 'localtime'))
-                                          WHERE d_release_id == ? AND d_track_no == ?''', update_tuple)
-                        log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
-                        return c.rowcount
-                    except sqlerr as e:
-                        log.error("MODEL: %s", e.args[0])
-                        return False
-                else:
-                    log.error("MODEL: %s", e.args[0])
-                    return False
+    def upsert_track(self, release_id, track_no, track_name, track_artist):
+        tuple_tr = (release_id, track_no, track_artist, track_name,
+                                          track_artist, track_name)
+        sql_tr='''INSERT INTO track(d_release_id, d_track_no, d_artist,
+                    d_track_name, import_timestamp)
+                    VALUES(?, ?, ?, ?, datetime('now', 'localtime'))
+                    ON CONFLICT (d_release_id, d_track_no)
+                    DO UPDATE SET
+                    d_artist = ?, d_track_name = ?,
+                    import_timestamp=datetime('now', 'localtime');'''
+        return self.execute_sql(sql_tr, tuple_tr)
 
     def search_release_id(self, release_id):
         #return db.search_release_id(self.db_conn, release_id)

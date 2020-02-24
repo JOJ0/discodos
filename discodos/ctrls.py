@@ -296,8 +296,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 print('Adding Track {} on "{}" ({})'.format(
                       d_track_no, discogs_title, d_release_id))
                 print('{} - {}'.format(artist, name))
-                coll_ctrl.collection.create_track(mix_track['d_release_id'],
-                    mix_track['d_track_no'], name, artist)
+                coll_ctrl.collection.upsert_track(d_release_id,
+                    d_track_no, name, artist)
                 print("") # space for readability
             else:
                 print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
