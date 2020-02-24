@@ -392,15 +392,19 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
+        processed = len(mixed_tracks)
+        errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
+        added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
         for mix_track in mixed_tracks:
             release_mbid, release_match_method = None, None # we are filling these
             rec_mbid, rec_match_method = None, None         # in this order
-            key, chords_key, bpm = None, None, None# searched later, also in this order
+            key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
             log.info('CTRL: Trying to match Discogs release {}...'.format(
                 mix_track['d_release_id']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
             if not d_rel:
+                errors_not_found += 1
                 log.warning("Skipping. Cant't fetch Discogs release.".format(d_rel))
                 print('')
                 continue
@@ -478,6 +482,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
                     chords_key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
                     bpm = coll_ctrl.brainz.get_accbr_bpm(rec_mbid)
+                else:
+                    errors_no_rec += 1
 
             if release_mbid: # summary and save only when we have Release MBID
                 print("Adding Brainz info for track {} on {} ({})".format(
@@ -498,23 +504,44 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 if ok_release:
                     print('Release table updated successfully.')
                     log.info('Release table updated successfully.')
+                    added_release += 1
                 else:
                     log.error('while updating release table. Continuing anyway.')
+                    errors_db += 1
 
                 # update track and track_ext tables
                 ok_rec = coll_ctrl.collection.upsert_track_brainz(d_release_id,
                     mix_track['d_track_no'], rec_mbid, rec_match_method,
                     key, chords_key, bpm)
+
                 if ok_rec:
+                    if rec_mbid: added_rec += 1
                     print('Track tables updated successfully.')
                     log.info('Track tables updated successfully.')
+                    if key: added_key += 1
+                    if chords_key: added_chords_key += 1
+                    if bpm: added_bpm += 1
                 else:
                     log.error('while updating track tables. Continuing anyway.')
+                    errors_db += 1
 
             else:
+                errors_no_release += 1
                 log.warning("No Release MBID found for track {} on Discogs release {}".format(
                         mix_track['d_track_no'], mix_track['discogs_title']))
             print("") # space for readability
+
+        msg_mb = 'Processed: {}.\nAdded MusicBrainz info to DiscoBASE: '.format(processed)
+        msg_mb+= 'Release MBIDs: {}, Recording MBIDs: {}\n'.format(
+            added_release, added_rec)
+        msg_mb+= 'Added AccousticBrainz info: Key: {}, Chords Key: {}, BPM: {}'.format(
+            added_key, added_chords_key, added_bpm)
+        msg_err = 'Database errors: {}. Not found on Discogs errors: {}.'.format(
+            errors_db, errors_not_found)
+        print(msg_mb+'\n'+msg_err)
+        log.info(msg_mb)
+        log.info(msg_err)
+        print("") # space for readability
 
         msg1 = "If DiscoDOS didn't find many Release MBIDs or Recording MBIDs "
         msg1+= "and hence no key and BPM data, "
