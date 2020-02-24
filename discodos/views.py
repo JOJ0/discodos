@@ -255,9 +255,12 @@ class Collection_view_common(ABC):
     def d_tracklist_parse(self, d_tracklist, track_number):
         '''gets Track name from discogs tracklist object via track_number, eg. A1'''
         for tr in d_tracklist:
-            #log.info("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
             if tr.position == track_number:
                 return tr.title
+        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
+            track_number))
         return False # we didn't find the tracknumber
 
     def get_max_width(self, rows_list, keys_list, extra_space):

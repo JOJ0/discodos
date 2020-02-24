@@ -296,12 +296,18 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 print("") # space for readability
                 continue # jump to next iteration, nothing more to do here
 
-            print('Adding Track {} on "{}" ({})'.format(
-                  d_track_no, discogs_title, d_release_id))
-            print('{} - {}'.format(artist, name))
-            coll_ctrl.collection.create_track(mix_track['d_release_id'],
-                mix_track['d_track_no'], name, artist)
-            print("") # space for readability
+            if name or artist:
+                print('Adding Track {} on "{}" ({})'.format(
+                      d_track_no, discogs_title, d_release_id))
+                print('{} - {}'.format(artist, name))
+                coll_ctrl.collection.create_track(mix_track['d_release_id'],
+                    mix_track['d_track_no'], name, artist)
+                print("") # space for readability
+            else:
+                print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
+                      discogs_title, d_release_id, d_track_no))
+                print("") # space for readability
+
         return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):

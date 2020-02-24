@@ -769,7 +769,8 @@ class Collection (Database):
     def d_artists_parse(self, d_tracklist, track_number, d_artists):
         '''gets Artist name from discogs release (child)objects via track_number, eg. A1'''
         for tr in d_tracklist:
-            #log.info("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_artists_parse: this is the tr object: {}".format(tr))
             if tr.position == track_number:
                 #log.info("d_tracklist_parse: found by track number.")
                 if len(tr.artists) == 1:
@@ -793,6 +794,8 @@ class Collection (Database):
                       "MODEL: d_artists_parse: several artists, returning combined named {}".format(
                         combined_name))
                     return combined_name
+        log.debug('d_artists_parse: Track {} not existing on release.'.format(
+            track_number))
 
     def get_releases_of_one_mix(self, start_pos = False):
         if not start_pos:
