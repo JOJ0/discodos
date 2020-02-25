@@ -539,8 +539,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         msg_err = 'Database errors: {}. Not found on Discogs errors: {}.'.format(
             errors_db, errors_not_found)
         print(msg_mb+'\n'+msg_err)
-        log.info(msg_mb)
-        log.info(msg_err)
+        log.info(msg_mb+'\n'+msg_err)
         print("") # space for readability
 
         msg1 = "If DiscoDOS didn't find many Release MBIDs or Recording MBIDs "
