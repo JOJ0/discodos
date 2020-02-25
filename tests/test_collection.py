@@ -185,6 +185,29 @@ class TestCollection(unittest.TestCase):
             self.assertFalse(db_return)
         print("TestMix.search_release_online_number: DONE\n")
 
+    def test_search_release_track_offline_text(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        #dbr = self.collection.search_release_track_offline('Märtini')
+        dbr = self.collection.search_release_track_offline(
+            artist='Amon', release='', track='')
+        self.assertIsNotNone(dbr)
+        #self.assertEqual(len(dbr), 1) # should be a list with 1 Row
+        #self.assertEqual(dbr[0]['discogs_id'], 123456)
+        #self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
+        #self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
+        #print(dbr.keys())
+        print()
+        for i in dbr:
+            #print(i.keys())
+            stringed = ''
+            for j in i:
+                stringed+='{}, '.format(j)
+            print(stringed)
+            print()
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)

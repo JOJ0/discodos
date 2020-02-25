@@ -614,6 +614,25 @@ class Collection (Database):
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
 
+    def search_release_track_offline(self, artist='', release='', track=''):
+        fields = ['track.d_artist', 'track.d_release_id', 'discogs_title',
+                 'track.d_track_no', 'd_track_name',
+                 'key', 'bpm', 'key_notes', 'notes']
+        from_tables='''
+                    track INNER JOIN release
+                    ON track.d_release_id = release.discogs_id
+                      INNER JOIN track_ext
+                      ON track.d_release_id = track_ext.d_release_id
+                      AND track.d_track_no = track_ext.d_track_no'''
+        where = '''(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "{}")
+                      AND discogs_title LIKE "%{}%"
+                      AND d_track_name LIKE "%{}%"'''.format(
+                          artist, artist, release, track)
+        order_by = 'track.d_artist, discogs_title, d_track_name'
+        tracks = self._select_simple(fields, from_tables, where,
+                                   fetchone = False, orderby = order_by)
+        return tracks
+
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         tuple_tr = (release_id, track_no, track_artist, track_name,
                                           track_artist, track_name)
