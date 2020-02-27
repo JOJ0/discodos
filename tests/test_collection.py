@@ -84,6 +84,20 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[0]['discogs_title'], 'Material Love')
         print("{} - {} - END".format(self.clname, name))
 
+    def test_search_release_offline_text_multiple(self):
+        print("\nTestMix.search_release_offline_text_multiple: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.search_release_offline('Amon') # artist or title
+        self.assertIsNotNone(db_return)
+        self.assertEqual(len(db_return), 2) # should be a list with 2 Rows
+        self.assertEqual(db_return[0]['discogs_id'], 69092)
+        self.assertEqual(db_return[0]['d_artist'], 'Amon Tobin')
+        self.assertEqual(db_return[0]['discogs_title'], 'Out From Out Where')
+        self.assertEqual(db_return[1]['discogs_id'], 919698)
+        self.assertEqual(db_return[1]['d_artist'], 'Amon Tobin')
+        self.assertEqual(db_return[1]['discogs_title'], 'Foley Room')
+        print("TestMix.search_release_offline_text_multiple: DONE\n")
+
     def test_search_release_offline_text_error(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
@@ -128,6 +142,70 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[1]['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return[1]['d_track_no'], 'A1')
         self.assertEqual(db_return[1]['bpm'], 125)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_search_release_online_text_multiple(self):
+        print("\nTestMix.search_release_online_text_multiple: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        if self.collection.discogs_connect(self.conf.discogs_token,
+            self.conf.discogs_appid):
+            print('We are ONLINE')
+            d_return = self.collection.search_release_online('Amon Tobin') # artist or title
+            self.assertEqual(len(d_return), 770) # _currently_ list with 770 Release objects
+            self.assertEqual(d_return.pages, 16) # _currently_ 16 pages
+            self.assertEqual(d_return.per_page, 50) # 50 per_page
+            self.assertEqual(d_return[0].id, 3618346)
+            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
+            self.assertEqual(d_return[0].title, 'Amon Tobin') # yes, really!
+            self.assertEqual(d_return[1].id, 3620565)
+            self.assertEqual(d_return[1].artists[0].name, 'Amon Tobin')
+            self.assertEqual(d_return[1].title, 'Amon Tobin') # yes, really!
+            self.assertEqual(d_return[1].tracklist[0].title, 'ISAM Live')
+        else:
+            print('We are OFFLINE, testing if we properly fail!')
+            db_return = self.collection.search_release_online('Amon Tobin') # artist or title
+            self.assertFalse(db_return)
+        print("TestMix.search_release_online_text_multiple: DONE\n")
+
+    def test_search_release_online_number(self):
+        print("\nTestMix.search_release_online_number: BEGIN")
+        self.collection = Collection(False, self.db_path)
+        if self.collection.discogs_connect(self.conf.discogs_token,
+            self.conf.discogs_appid):
+            print('We are ONLINE')
+            d_return = self.collection.search_release_online('69092') # artist or title
+            #print(dir(d_return))
+            self.assertEqual(len(d_return), 1) # should be single release in a list!
+            self.assertEqual(int(d_return[0].id), 69092) # we get it as a string!
+            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
+            self.assertEqual(d_return[0].title, 'Out From Out Where')
+        else:
+            print('We are OFFLINE, testing if we properly fail!')
+            db_return = self.collection.search_release_online('Amon Tobin') # artist or title
+            self.assertFalse(db_return)
+        print("TestMix.search_release_online_number: DONE\n")
+
+    def test_search_release_track_offline_text(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        #dbr = self.collection.search_release_track_offline('Märtini')
+        dbr = self.collection.search_release_track_offline(
+            artist='Amon', release='', track='')
+        self.assertIsNotNone(dbr)
+        #self.assertEqual(len(dbr), 1) # should be a list with 1 Row
+        #self.assertEqual(dbr[0]['discogs_id'], 123456)
+        #self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
+        #self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
+        #print(dbr.keys())
+        print()
+        for i in dbr:
+            #print(i.keys())
+            stringed = ''
+            for j in i:
+                stringed+='{}, '.format(j)
+            print(stringed)
+            print()
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod

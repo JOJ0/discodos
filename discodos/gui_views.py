@@ -1,19 +1,3 @@
-###############################
-########
-# TODO #
-########
-
-# After track deletion set focus on track one below
-
-# Make Buttons for position shift up/down working
-
-# Refactor whole editor_spawn section
-
-
-
-
-
-
 ################################
 # IMPORTS
 import discodos.views as views
@@ -290,9 +274,6 @@ class main_frame():
                 self.editor_entries.append(en)
                 self.editor_entries[0].config(state='disabled')
         
-                
-
-            
 
 
         if tree_view == self.tracks_list:

@@ -29,9 +29,9 @@ def argparser(argv):
         type=int, default=False, nargs="*",
         help="import release ID from Discogs, default is _all_ releases")
     parser_group1.add_argument(
-		"-u", "--update-db", dest="update_db",
-        action="store_true",
-        help="update database schema - experimental feature, don't use yet!")
+		"--update-db-schema", dest="update_db_schema",
+        action='store_true',
+        help="update database schema - be careful! Checkout README.md")
     parser_group1.add_argument(
 		"-a", "--add_to_collection", dest="add_release_id",
         type=int,
@@ -156,27 +156,64 @@ def main():
     conf.install_cli()
 
     # INFORM USER what this script does
-    print_help(
-      "This script sets up the DiscoBASE and/or imports data from Discogs.")
-    if args.release_id == False and not args.add_release_id:
+    if len(sys.argv) <= 1:
+        print_help(
+          "This script sets up the DiscoBASE and/or imports data from Discogs.")
         print("Run setup.py -i to import your whole Discogs collection.")
         print("Run setup.py -i <ID> to import only one release.")
-        print("Run setup.py -a <ID> to add a release to your collection.")
+        print("Run setup.py -a <ID> to add a release to your collection.\n")
     log.info(vars(args))
 
     # DB setup
     db_obj = Database(db_file = conf.discobase)
 
-    if args.update_db:
-        print("Updating DB schema - EXPERIMENTAL")
-        sql_settings = "PRAGMA foreign_keys = OFF;"
-        db_obj.execute(sql_settings)
-        sql_alter_something = """ALTER TABLE track ADD
-                                        d_artist; """
-        db_obj.execute(sql_alter_something)
-        sql_settings = "PRAGMA foreign_keys = ON;"
-        db_obj.execute(sql_settings)
-        print("DB schema update DONE - EXPERIMENTAL")
+    if args.update_db_schema:
+        update_vers = 0
+        curr_vers_row = db_obj._select('PRAGMA user_version', fetchone = True)
+        curr_vers = int(curr_vers_row['user_version'])
+        print('Current schema version: {}'.format(curr_vers))
+        log.info('Current schema version: {}'.format(curr_vers))
+        if curr_vers == 0 or curr_vers == 1: # update to v2
+            upd_vers = 2
+            alter_table = ['ALTER TABLE track ADD m_rec_id TEXT;',
+                           'ALTER TABLE track ADD m_rec_id_override TEXT;',
+                           'ALTER TABLE track ADD m_match_method TEXT;',
+                           'ALTER TABLE track ADD m_match_time TEXT;',
+                           'ALTER TABLE track_ext ADD a_key TEXT;',
+                           'ALTER TABLE track_ext ADD a_chords_key TEXT;',
+                           'ALTER TABLE track_ext ADD a_bpm TEXT;',
+                           'ALTER TABLE release ADD m_rel_id TEXT;',
+                           'ALTER TABLE release ADD m_rel_id_override TEXT;',
+                           'ALTER TABLE release ADD m_match_method TEXT;',
+                           'ALTER TABLE release ADD m_match_time TEXT;',
+                           'ALTER TABLE release ADD d_catno TEXT;']
+        elif curr_vers == 2: # we are up2date
+            print('DiscoBASE schema already up to date!')
+            log.info('DiscoBASE schema already up to date!')
+            raise SystemExit(0)
+        else:
+            log.error('Unknown DiscoBASE schema version!')
+            raise SystemExit(0)
+
+        a = ask_user('Update DiscoBASE schema to version {}? (n) '.format(upd_vers))
+        if a.lower() == 'y':
+            fkeys_off = 'PRAGMA foreign_keys = OFF;'
+            fkeys_on = 'PRAGMA foreign_keys = ON;'
+            all_done = False
+            db_obj.execute_sql(fkeys_off)
+            for cmd in alter_table:
+                success = db_obj.execute_sql(cmd)
+                if not success:
+                    log.error('Schema update command unsuccessful.')
+                    break
+                all_done = True
+
+            if all_done:
+                db_obj.execute_sql('PRAGMA user_version = {}'.format(upd_vers))
+                print('DiscoBASE schema update done!')
+                log.info('DiscoBASE schema update done!')
+            db_obj.execute_sql(fkeys_on)
+            #print('DiscoBASE schema update done.')
         raise SystemExit(0)
 
     # create DB tables if not existing already
