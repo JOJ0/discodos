@@ -6,10 +6,260 @@ import pprint
 from datetime import datetime
 from datetime import date
 
-# user interaction class - holds info about what user wants to do
-# currently this only analyzes argparser args and puts it to nicely human readable properties
-class User_int(object):
 
+# common view utils, usable in CLI and GUI
+class view_common(ABC):
+    def shorten_timestamp(self, sqlite_date, text = False):
+        ''' remove time from timestamps we get out of the db, just leave date'''
+        date = datetime.fromisoformat(sqlite_date).date()
+        if text == True:
+            return str(date)
+        return date
+
+    def get_max_width(self, rows_list, keys_list, extra_space):
+        '''gets max width of sqlite list of rows for given fields (keys_list)
+           and add some space. FIXME: Only supports exactly 2 keys.'''
+        max_width = 0
+        for row in rows_list:
+            row_mutable = dict(row)
+            width = 0
+            if row_mutable[keys_list[0]] is None:
+                row_mutable[keys_list[0]] = "-"
+            if row_mutable[keys_list[1]] is None:
+                row_mutable[keys_list[1]] = "-"
+            width = (len(row_mutable[keys_list[0]]) + len('/')
+                + len(str(row_mutable[keys_list[1]])))
+            #log.debug("This rows width: {}.".format(width))
+            if max_width < width:
+                max_width = width
+        log.debug("Found a max width of {}, adding extra_space of {}.".format(
+              max_width, extra_space))
+        return max_width + extra_space
+
+    def combine_fields_to_width(self, row, keys_list, set_width):
+        '''takes sqlite row and keys_list, combines and fills with
+           spaces up to set_width. FIXME: Only supports exactly 2 keys.'''
+        row_mut = dict(row) # make sqlite row tuple mutable
+        if row_mut[keys_list[0]] is None:
+            row_mut[keys_list[0]] = "-"
+        if row_mut[keys_list[1]] is None:
+            row_mut[keys_list[1]] = "-"
+        combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
+              str(row_mut[keys_list[1]]))
+        combined_with_space = combined_key_bpm.ljust(set_width)
+        #log.warning("Combined string: {}".format(combined_str))
+        return combined_with_space
+
+# Mix view utils and data, usable in CLI and GUI, related to mixes only
+class Mix_view_common(ABC):
+    def __init__(self):
+        # list of questions a user is asked when editing a mix-track
+        # first list item is the related db-field, second is the question
+        self._edit_track_questions = [
+            ["key", "Key ({}): "],
+            ["bpm", "BPM ({}): "],
+            ["d_track_no", "Track # on record ({}): "],
+            ["track_pos", "Move track's position ({}): "],
+            ["key_notes", "Key notes/bassline/etc. ({}): "],
+            ["trans_rating", "Transition rating ({}): "],
+            ["trans_notes", "Transition notes ({}): "],
+            ["d_release_id", "Release ID ({}): "],
+            ["notes", "Other track notes: ({}): "]
+        ]
+
+# Collection view utils, usable in CLI and GUI, related to Collection only
+class Collection_view_common(ABC):
+    def __init__(self):
+        #super(Collection_view_cli, self).__init__()
+        pass
+
+    def d_tracklist_parse(self, d_tracklist, track_number):
+        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
+        for tr in d_tracklist:
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
+            if tr.position == track_number:
+                return tr.title
+        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
+            track_number))
+        return False # we didn't find the tracknumber
+
+# common view utils, usable in CLI only
+class Cli_view_common(ABC):
+    def print_help(self, message):
+        print(''+str(message)+'\n')
+
+    def ask_user(self, text=""):
+        ''' ask user for something and return answer '''
+        return input(text)
+
+    def ask_user_for_track(self):
+        track_no = self.ask_user("Which track? (A1) ")
+        # FIXME a sanity checker, at least for online search, would be nice here.
+        # also the default value is not checked, eg it could be A in reality!
+        if track_no == '':
+            track_no = 'A1'
+        return track_no
+
+    def tab_mix_table(self, _mix_data, _verbose = False):
+        _mix_data_nl = self.trim_table_fields(_mix_data)
+        for row in _mix_data_nl: # debug only
+           log.debug(str(row))
+        log.debug("")
+        if _verbose:
+            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
+                       'd_track_no': 'Track\nPos', 'key': 'Key', 'bpm': 'BPM',
+                       'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
+                       'trans_notes': 'Trans.\nR. Notes', 'notes': 'Track\nNotes'}))
+        else:
+            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_track_no': 'Tr\nPos', 'trans_rating': 'Trns\nRat',
+                       'key': 'Key', 'bpm': 'BPM'}))
+
+    def trim_table_fields(self, tuple_table):
+        """this method puts \n after a configured amount of characters
+        into _all_ fields of a sqlite row objects tuple list"""
+        cut_pos = 16
+        log.info("Trimming table field width to max {} chars".format(cut_pos))
+        table_nl = []
+        # first convert list of tuples to list of lists:
+        #for tuple_row in tuple_table:
+        #    table_nl.append(list(tuple_row))
+        for tuple_row in tuple_table:
+            table_nl.append(dict(tuple_row))
+        # now put newlines if longer than cut_pos chars
+        for i, row in enumerate(table_nl):
+            for j, field in enumerate(row):
+                cut_pos_space = False # reset cut_pos_space on each field cycle
+                if not is_number(field) and field is not None:
+                    if len(field) > cut_pos:
+                        cut_pos_space = field.find(" ", cut_pos)
+                        log.debug("cut_pos_space index (next space after cut_pos): %s", cut_pos_space)
+                        # don't edit if no space following (almost at end)
+                        if cut_pos_space == -1:
+                            edited_field = field
+                        else:
+                            edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
+                        log.debug("string from 0 to cut_pos_space: {}".format(field[0:cut_pos_space]))
+                        log.debug("string from cut_pos_space to end: {}".format(field[cut_pos_space:]))
+                        log.debug("the final string:")
+                        log.debug("{}".format(edited_field))
+                        log.debug("")
+                        table_nl[i][j] = edited_field
+        log.debug("table_nl has {} lines".format(len(table_nl)))
+        return table_nl
+
+# viewing mixes in CLI mode:
+class Mix_view_cli(Mix_view_common, Cli_view_common, view_common):
+    def __init__(self):
+        super(Mix_view_cli, self).__init__()
+
+    def tab_mixes_list(self, mixes_data):
+        # make list of dicts out of the sqlite tuples list
+        mixes = [dict(row) for row in mixes_data]
+        for i, mix in enumerate(mixes): # shorten all created timestamp fields
+            mixes[i]['created'] = self.shorten_timestamp(mix['created'],
+                  text = True)
+        tabulated = tab(self.trim_table_fields(mixes),
+          tablefmt="simple", # headers has to be dict too!
+          headers={'mix_id': 'Mix #', 'name': 'Name', 'played':'Played',
+                   'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'})
+        self.print_help(tabulated)
+
+    def tab_mix_info_header(self, mix_info):
+        self.print_help(tab([mix_info], tablefmt="plain",
+                headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
+
+    def really_add_track(self, track_to_add, release_name, mix_id, pos):
+        quest=(
+        #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
+        'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
+            .format(track_to_add, release_name, int(mix_id), pos))
+        _answ = self.ask_user(quest)
+        if _answ.lower() == "y" or _answ.lower() == "":
+            return True
+
+# viewing collection (search) outputs in CLI mode:
+class Collection_view_cli(Collection_view_common, Cli_view_common, view_common):
+    def __init__(self):
+        super(Collection_view_cli, self).__init__()
+
+    def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
+        ''' formatted output _and return of Discogs release search results'''
+        # only show pages count if it's a Release Title Search
+        if not is_number(_searchterm):
+            self.print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
+        else:
+            self.print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+        for result_item in discogs_results:
+            self.print_help("Checking " + str(result_item.id))
+            for dbr in _db_releases:
+                if result_item.id == dbr[0]:
+                    self.print_help("Good, first matching record in your collection is:")
+                    result_list=[]
+                    result_list.append([])
+                    result_list[0].append(result_item.id)
+                    result_list[0].append(str(result_item.artists[0].name))
+                    result_list[0].append(result_item.title)
+                    result_list[0].append(str(result_item.labels[0].name))
+                    result_list[0].append(result_item.country)
+                    result_list[0].append(str(result_item.year))
+                    #result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                    #           ", "+str(result_item.formats[0]['descriptions'][1]))
+                    result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
+                               ", "+str(result_item.formats[0]['descriptions'][0]))
+
+                    self.tab_online_search_results(result_list)
+                    self.online_search_results_tracklist(result_item.tracklist)
+                    break
+            try:
+                if result_item.id == dbr[0]:
+                    #return result_list[0]
+                    log.info("Compiled Discogs result_list: {}".format(result_list))
+                    return result_list
+                    break
+            except UnboundLocalError as unb:
+                log.error("Discogs collection was not imported to DiscoBASE properly!")
+                #raise unb
+                raise SystemExit(1)
+        return False
+
+    def tab_online_search_results(self, _result_list):
+        self.print_help(tab(_result_list, tablefmt="simple",
+                  headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
+
+    def online_search_results_tracklist(self, _tracklist):
+        for track in _tracklist:
+            print(track.position + "\t" + track.title)
+        print()
+
+    def tab_all_releases(self, releases_data):
+        #self.print_help(tab(releases_data, tablefmt="plain",
+        print(tab(releases_data, tablefmt="plain",
+            #headers=["Discogs ID", "Artist", "Release Title", "Last import", "in Collection"]))
+            headers=["Discogs ID", "Artist", "Release Title"]))
+
+    def error_not_the_release(self):
+        log.error("This is not the release you are looking for!")
+        print(r'''
+                                     .=.
+                                    '==c|
+                                    [)-+|
+                                    //'_|
+                               snd /]==;\
+              ''')
+
+    def exit_if_offline(self, online):
+        if not online:
+            log.error("Need to be ONLINE to do that!")
+            raise SystemExit(3)
+
+# CLI user interaction class - holds info about what user wants to do
+# analyzes argparser args and puts it to nicely human readable properties
+class User_int(object):
     def __init__(self, _args):
         self.args = _args
         self.WANTS_ONLINE = True
@@ -144,257 +394,3 @@ class User_int(object):
 
         if self.args.offline_mode == True:
             self.WANTS_ONLINE = False
-### End User_int class ##########################################
-
-class Cli_view_common(ABC):
-    # cli util: print a UI message
-    def print_help(self, message):
-        print(''+str(message)+'\n')
-
-    # util: ask user for some string
-    def ask_user(self, text=""):
-        return input(text)
-
-    def ask_user_for_track(self):
-        track_no = self.ask_user("Which track? (A1) ")
-        # FIXME a sanity checker, at least for online search, would be nice here.
-        # also the default value is not checked, eg it could be A in reality!
-        if track_no == '':
-            track_no = 'A1'
-        return track_no
-
-    def tab_mix_table(self, _mix_data, _verbose = False):
-        _mix_data_nl = self.trim_table_fields(_mix_data)
-        for row in _mix_data_nl: # debug only
-           log.debug(str(row))
-        log.debug("")
-        if _verbose:
-            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                       'd_track_no': 'Track\nPos', 'key': 'Key', 'bpm': 'BPM',
-                       'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
-                       'trans_notes': 'Trans.\nR. Notes', 'notes': 'Track\nNotes'}))
-        else:
-            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_track_no': 'Tr\nPos', 'trans_rating': 'Trns\nRat',
-                       'key': 'Key', 'bpm': 'BPM'}))
-
-    def trim_table_fields(self, tuple_table):
-        """this method puts \n after a configured amount of characters
-        into _all_ fields of a sqlite row objects tuple list"""
-        cut_pos = 16
-        log.info("Trimming table field width to max {} chars".format(cut_pos))
-        table_nl = []
-        # first convert list of tuples to list of lists:
-        #for tuple_row in tuple_table:
-        #    table_nl.append(list(tuple_row))
-        for tuple_row in tuple_table:
-            table_nl.append(dict(tuple_row))
-        # now put newlines if longer than cut_pos chars
-        for i, row in enumerate(table_nl):
-            for j, field in enumerate(row):
-                cut_pos_space = False # reset cut_pos_space on each field cycle
-                if not is_number(field) and field is not None:
-                    if len(field) > cut_pos:
-                        cut_pos_space = field.find(" ", cut_pos)
-                        log.debug("cut_pos_space index (next space after cut_pos): %s", cut_pos_space)
-                        # don't edit if no space following (almost at end)
-                        if cut_pos_space == -1:
-                            edited_field = field
-                        else:
-                            edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                        log.debug("string from 0 to cut_pos_space: {}".format(field[0:cut_pos_space]))
-                        log.debug("string from cut_pos_space to end: {}".format(field[cut_pos_space:]))
-                        log.debug("the final string:")
-                        log.debug("{}".format(edited_field))
-                        log.debug("")
-                        table_nl[i][j] = edited_field
-        log.debug("table_nl has {} lines".format(len(table_nl)))
-        return table_nl
-
-    def shorten_timestamp(self, sqlite_date, text = False):
-        date = datetime.fromisoformat(sqlite_date).date()
-        if text == True:
-            return str(date)
-        return date
-
-
-# general stuff, useful for all UIs:
-class Mix_view_common(ABC):
-    def __init__(self):
-        # list of edit_track_questions is defined here once (for all child classes):
-        # dbfield, question
-        self._edit_track_questions = [
-            ["key", "Key ({}): "],
-            ["bpm", "BPM ({}): "],
-            ["d_track_no", "Track # on record ({}): "],
-            ["track_pos", "Move track's position ({}): "],
-            ["key_notes", "Key notes/bassline/etc. ({}): "],
-            ["trans_rating", "Transition rating ({}): "],
-            ["trans_notes", "Transition notes ({}): "],
-            ["d_release_id", "Release ID ({}): "],
-            ["notes", "Other track notes: ({}): "]
-        ]
-
-
-# viewing mixes in CLI mode:
-class Mix_view_cli(Mix_view_common, Cli_view_common):
-    def __init__(self):
-        super(Mix_view_cli, self).__init__()
-
-    def tab_mixes_list(self, mixes_data):
-        # make list of dicts out of the sqlite tuples list
-        mixes = [dict(row) for row in mixes_data]
-        for i, mix in enumerate(mixes): # shorten all created timestamp fields
-            mixes[i]['created'] = self.shorten_timestamp(mix['created'],
-                  text = True)
-        tabulated = tab(self.trim_table_fields(mixes),
-          tablefmt="simple", # headers has to be dict too!
-          headers={'mix_id': 'Mix #', 'name': 'Name', 'played':'Played',
-                   'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'})
-        self.print_help(tabulated)
-
-    def tab_mix_info_header(self, mix_info):
-        self.print_help(tab([mix_info], tablefmt="plain",
-                headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
-
-    def really_add_track(self, track_to_add, release_name, mix_id, pos):
-        quest=(
-        #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
-        'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
-            .format(track_to_add, release_name, int(mix_id), pos))
-        _answ = self.ask_user(quest)
-        if _answ.lower() == "y" or _answ.lower() == "":
-            return True
-
-
-# collection view - common things for cli and gui
-class Collection_view_common(ABC):
-    def __init__(self):
-        #super(Collection_view_cli, self).__init__()
-        pass
-
-    def d_tracklist_parse(self, d_tracklist, track_number):
-        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
-        for tr in d_tracklist:
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if tr.position == track_number:
-                return tr.title
-        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
-            track_number))
-        return False # we didn't find the tracknumber
-
-    def get_max_width(self, rows_list, keys_list, extra_space):
-        '''gets max width of sqlite list of rows for given fields (keys_list)
-           and add some space. FIXME: Only supports exactly 2 keys.'''
-        max_width = 0
-        for row in rows_list:
-            row_mutable = dict(row)
-            width = 0
-            if row_mutable[keys_list[0]] is None:
-                row_mutable[keys_list[0]] = "-"
-            if row_mutable[keys_list[1]] is None:
-                row_mutable[keys_list[1]] = "-"
-            width = (len(row_mutable[keys_list[0]]) + len('/')
-                + len(str(row_mutable[keys_list[1]])))
-            #log.debug("This rows width: {}.".format(width))
-            if max_width < width:
-                max_width = width
-        log.debug("Found a max width of {}, adding extra_space of {}.".format(
-              max_width, extra_space))
-        return max_width + extra_space
-
-    def combine_fields_to_width(self, row, keys_list, set_width):
-        '''takes sqlite row and keys_list, combines and fills with
-           spaces up to set_width. FIXME: Only supports exactly 2 keys.'''
-        row_mut = dict(row) # make sqlite row tuple mutable
-        if row_mut[keys_list[0]] is None:
-            row_mut[keys_list[0]] = "-"
-        if row_mut[keys_list[1]] is None:
-            row_mut[keys_list[1]] = "-"
-        combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
-              str(row_mut[keys_list[1]]))
-        combined_with_space = combined_key_bpm.ljust(set_width)
-        #log.warning("Combined string: {}".format(combined_str))
-        return combined_with_space
-
-
-# viewing collection (search) outputs in CLI mode:
-class Collection_view_cli(Collection_view_common, Cli_view_common):
-    def __init__(self):
-        super(Collection_view_cli, self).__init__()
-
-    # Discogs: formatted output of release search results
-    def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
-        # only show pages count if it's a Release Title Search
-        if not is_number(_searchterm):
-            self.print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
-        else:
-            self.print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
-        for result_item in discogs_results:
-            self.print_help("Checking " + str(result_item.id))
-            for dbr in _db_releases:
-                if result_item.id == dbr[0]:
-                    self.print_help("Good, first matching record in your collection is:")
-                    result_list=[]
-                    result_list.append([])
-                    result_list[0].append(result_item.id)
-                    result_list[0].append(str(result_item.artists[0].name))
-                    result_list[0].append(result_item.title)
-                    result_list[0].append(str(result_item.labels[0].name))
-                    result_list[0].append(result_item.country)
-                    result_list[0].append(str(result_item.year))
-                    #result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                    #           ", "+str(result_item.formats[0]['descriptions'][1]))
-                    result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                               ", "+str(result_item.formats[0]['descriptions'][0]))
-
-                    self.tab_online_search_results(result_list)
-                    self.online_search_results_tracklist(result_item.tracklist)
-                    break
-            try:
-                if result_item.id == dbr[0]:
-                    #return result_list[0]
-                    log.info("Compiled Discogs result_list: {}".format(result_list))
-                    return result_list
-                    break
-            except UnboundLocalError as unb:
-                log.error("Discogs collection was not imported to DiscoBASE properly!")
-                #raise unb
-                raise SystemExit(1)
-        return False
-
-    def tab_online_search_results(self, _result_list):
-        self.print_help(tab(_result_list, tablefmt="simple",
-                  headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
-
-    def online_search_results_tracklist(self, _tracklist):
-        for track in _tracklist:
-            print(track.position + "\t" + track.title)
-        print()
-
-    def tab_all_releases(self, releases_data):
-        #self.print_help(tab(releases_data, tablefmt="plain",
-        print(tab(releases_data, tablefmt="plain",
-            #headers=["Discogs ID", "Artist", "Release Title", "Last import", "in Collection"]))
-            headers=["Discogs ID", "Artist", "Release Title"]))
-
-    def error_not_the_release(self):
-        log.error("This is not the release you are looking for!")
-        print(r'''
-                                     .=.
-                                    '==c|
-                                    [)-+|
-                                    //'_|
-                               snd /]==;\
-              ''')
-
-    def exit_if_offline(self, online):
-        if not online:
-            log.error("Need to be ONLINE to do that!")
-            raise SystemExit(3)
-
-
