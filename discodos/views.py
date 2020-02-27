@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from discodos import log
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
+from datetime import datetime
+from datetime import date
 
 # user interaction class - holds info about what user wants to do
 # currently this only analyzes argparser args and puts it to nicely human readable properties
@@ -167,12 +169,17 @@ class Cli_view_common(ABC):
            log.debug(str(row))
         log.debug("")
         if _verbose:
-            self.print_help(tab(_mix_data_nl, tablefmt="pipe",
-                headers=["#", "Release", "Track\nArtist", "Track\nName", "Track\nPos", "Key", "BPM",
-                         "Key\nNotes", "Trans.\nRating", "Trans.\nR. Notes", "Track\nNotes"]))
+            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
+                       'd_track_no': 'Track\nPos', 'key': 'Key', 'bpm': 'BPM',
+                       'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
+                       'trans_notes': 'Trans.\nR. Notes', 'notes': 'Track\nNotes'}))
         else:
-            self.print_help(tab(_mix_data_nl, tablefmt="pipe",
-                headers=["#", "Release", "Tr\nPos", "Trns\nRat", "Key", "BPM"]))
+            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_track_no': 'Tr\nPos', 'trans_rating': 'Trns\nRat',
+                       'key': 'Key', 'bpm': 'BPM'}))
 
     def trim_table_fields(self, tuple_table):
         """this method puts \n after a configured amount of characters
@@ -181,8 +188,10 @@ class Cli_view_common(ABC):
         log.info("Trimming table field width to max {} chars".format(cut_pos))
         table_nl = []
         # first convert list of tuples to list of lists:
+        #for tuple_row in tuple_table:
+        #    table_nl.append(list(tuple_row))
         for tuple_row in tuple_table:
-            table_nl.append(list(tuple_row))
+            table_nl.append(dict(tuple_row))
         # now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for j, field in enumerate(row):
@@ -204,6 +213,13 @@ class Cli_view_common(ABC):
                         table_nl[i][j] = edited_field
         log.debug("table_nl has {} lines".format(len(table_nl)))
         return table_nl
+
+    def shorten_timestamp(self, sqlite_date, text = False):
+        date = datetime.fromisoformat(sqlite_date).date()
+        if text == True:
+            return str(date)
+        return date
+
 
 # general stuff, useful for all UIs:
 class Mix_view_common(ABC):
@@ -229,8 +245,15 @@ class Mix_view_cli(Mix_view_common, Cli_view_common):
         super(Mix_view_cli, self).__init__()
 
     def tab_mixes_list(self, mixes_data):
-        tabulated = tab(self.trim_table_fields(mixes_data), tablefmt="simple",
-          headers=["Mix #", "Name", "Played", "Venue", "Created", "Updated"])
+        # make list of dicts out of the sqlite tuples list
+        mixes = [dict(row) for row in mixes_data]
+        for i, mix in enumerate(mixes): # shorten all created timestamp fields
+            mixes[i]['created'] = self.shorten_timestamp(mix['created'],
+                  text = True)
+        tabulated = tab(self.trim_table_fields(mixes),
+          tablefmt="simple", # headers has to be dict too!
+          headers={'mix_id': 'Mix #', 'name': 'Name', 'played':'Played',
+                   'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'})
         self.print_help(tabulated)
 
     def tab_mix_info_header(self, mix_info):
