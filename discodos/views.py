@@ -50,6 +50,24 @@ class view_common(ABC):
         #log.warning("Combined string: {}".format(combined_str))
         return combined_with_space
 
+    def none_replace(self, value_to_check):
+        '''replaces string "None" by empty string
+           (eg. we use this to pretty empty db-fields in tkinter gui)
+           empty list will be replaced by zero, so tkinter can measure something
+           spaces (" ") will be replaced by empty string as well
+        '''
+
+        if value_to_check == "None":
+            value_to_check = ""
+
+        elif value_to_check == " ":
+            value_to_check = ""
+
+        elif value_to_check == []:
+            value_to_check = [X]
+
+        return value_to_check
+
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
 class Mix_view_common(ABC):
     def __init__(self):
