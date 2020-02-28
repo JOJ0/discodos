@@ -11,10 +11,22 @@ from datetime import date
 class view_common(ABC):
     def shorten_timestamp(self, sqlite_date, text = False):
         ''' remove time from timestamps we get out of the db, just leave date'''
-        date = datetime.fromisoformat(sqlite_date).date()
+        date_only = datetime.fromisoformat(sqlite_date).date()
         if text == True:
-            return str(date)
-        return date
+            return str(date_only)
+        return date_only
+
+    def format_date_month(self, sqlite_date, text = False):
+        ''' format a date string to eg "May 2020" '''
+        try:
+            date_year_month = date.fromisoformat(
+                self.none_replace(sqlite_date)).strftime("%b %Y")
+        except ValueError:
+            date_year_month = "-"
+
+        if text == True:
+            return str(date_year_month)
+        return date_year_month
 
     def get_max_width(self, rows_list, keys_list, extra_space):
         '''gets max width of sqlite list of rows for given fields (keys_list)
@@ -65,6 +77,9 @@ class view_common(ABC):
 
         elif value_to_check == []:
             value_to_check = [X]
+
+        if value_to_check == None:
+            value_to_check = ""
 
         return value_to_check
 
@@ -181,9 +196,11 @@ class Mix_view_cli(Mix_view_common, Cli_view_common, view_common):
         for i, mix in enumerate(mixes): # shorten all created timestamp fields
             mixes[i]['created'] = self.shorten_timestamp(mix['created'],
                   text = True)
+            mixes[i]['played'] = self.format_date_month(mix['played'],
+                  text = True)
         tabulated = tab(self.trim_table_fields(mixes),
           tablefmt="simple", # headers has to be dict too!
-          headers={'mix_id': 'Mix #', 'name': 'Name', 'played':'Played',
+          headers={'mix_id': '#', 'name': 'Name', 'played':'Played',
                    'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'})
         self.print_help(tabulated)
 

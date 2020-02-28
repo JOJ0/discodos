@@ -41,15 +41,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         return {'played': played, 'venue': venue}
 
     def view_mixes_list(self):
-        """
-        view a list of all mixes
-
-
-        @param
-        @return
-        @author
-        """
-        mixes_data = self.mix.get_all_mixes()
+        ''' view a list of all mixes '''
+        mixes_data = self.mix.get_all_mixes(order_by='played DESC')
+        #mixes_data = self.mix.get_all_mixes(order_by='venue, played DESC')
         self.cli.tab_mixes_list(mixes_data)
 
     def view(self):
