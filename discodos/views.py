@@ -157,15 +157,11 @@ class Cli_view_common(ABC):
         into _all_ fields of a sqlite row objects tuple list"""
         cut_pos = 16
         log.info("Trimming table field width to max {} chars".format(cut_pos))
-        table_nl = []
         # first convert list of tuples to list of lists:
-        #for tuple_row in tuple_table:
-        #    table_nl.append(list(tuple_row))
-        for tuple_row in tuple_table:
-            table_nl.append(dict(tuple_row))
+        table_nl = [dict(row) for row in tuple_table]
         # now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
-            for j, field in enumerate(row):
+            for key, field in row.items():
                 cut_pos_space = False # reset cut_pos_space on each field cycle
                 if not is_number(field) and field is not None:
                     if len(field) > cut_pos:
@@ -181,7 +177,7 @@ class Cli_view_common(ABC):
                         log.debug("the final string:")
                         log.debug("{}".format(edited_field))
                         log.debug("")
-                        table_nl[i][j] = edited_field
+                        table_nl[i][key] = edited_field
         log.debug("table_nl has {} lines".format(len(table_nl)))
         return table_nl
 
