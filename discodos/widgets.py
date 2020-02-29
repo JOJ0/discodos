@@ -36,6 +36,10 @@ class search_gui(widget_frame):
 
     def build_search_frame(self):
 
+        #artist
+        #release
+        #track
+
         self.search_bar = tk.Entry(self.dock_win)
         self.search_bar.grid(row=0, column=2, columnspan=6, rowspan=1, sticky="we")
 

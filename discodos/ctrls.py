@@ -967,19 +967,20 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix = Mix(self.db_conn, selected_mix_id)
         mix.reorder_tracks
 
-    def display_searched_releases(self, search_term, search_tv, online):
+    def display_searched_releases(self, search_terms, search_tv, online):
         coll = Collection(self.db_conn)
         if online == 0:
-            found_releases = coll.search_release_offline(search_term)
+            found_releases = coll.search_release_track_offline(search_terms[0], search_terms[1], search_terms[2])
 
-            print(search_term, found_releases)
+            # print(search_term, found_releases)
 
             release_levels = {}
             if found_releases is not None:
                 for i, release in enumerate(found_releases):
-                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
-                    for j in range(2):
-                       search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
+                    print(rel)
+                    # release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
+                    # for j in range(2):
+                    #    search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
             else:
                 log.error("GUI: No offline Releases Found")
 
