@@ -629,7 +629,10 @@ class Collection (Database):
                       AND d_track_name LIKE "%{}%"'''.format(
                           artist, artist, release, track)
         order_by = 'track.d_artist, discogs_title, d_track_name'
-        tracks = self._select_simple(fields, from_tables, where,
+        if artist == '' and release =='' and track == '':
+            tracks = []
+        else:
+            tracks = self._select_simple(fields, from_tables, where,
                                    fetchone = False, orderby = order_by)
         return tracks
 

@@ -185,18 +185,17 @@ class TestCollection(unittest.TestCase):
             self.assertFalse(db_return)
         print("TestMix.search_release_online_number: DONE\n")
 
-    def test_search_release_track_offline_text(self):
+    def test_search_release_track_offline_artist(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        #dbr = self.collection.search_release_track_offline('Märtini')
         dbr = self.collection.search_release_track_offline(
-            artist='Amon', release='', track='')
+            artist='Märtini', release='', track='')
         self.assertIsNotNone(dbr)
-        #self.assertEqual(len(dbr), 1) # should be a list with 1 Row
-        #self.assertEqual(dbr[0]['discogs_id'], 123456)
-        #self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
-        #self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
+        self.assertEqual(len(dbr), 3) # should be a list with 1 Row
+        self.assertEqual(dbr[2]['d_release_id'], 123456)
+        self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(dbr[1]['discogs_title'], 'Material Love')
         #print(dbr.keys())
         print()
         for i in dbr:
@@ -206,6 +205,16 @@ class TestCollection(unittest.TestCase):
                 stringed+='{}, '.format(j)
             print(stringed)
             print()
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_search_release_track_offline_nothing(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        dbr = self.collection.search_release_track_offline(
+            artist='', release='', track='')
+        self.assertIsNotNone(dbr)
+        self.assertEqual(len(dbr), 0) # should be a list with 0 Rows
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod
