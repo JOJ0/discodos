@@ -182,6 +182,24 @@ class main_frame():
     # EDITOR
     ###################################
 
+    # def spawn_editor(self, editor_view):
+
+    #     if editor_view == 0:
+    #         tree_view = self.mix_list
+    #         headings = self.mix_cols
+    #         data = tree_view.item(tree_view.focus())
+
+    #         self.editor_entries = {}
+        
+
+    #     if editor_view == 1:
+    #         tree_view = self.mix_list
+    #         headings = self.mix_cols
+    #         data = tree_view.item(tree_view.focus())
+
+    #         self.editor_entries = {}
+
+
     def spawn_editor(self, tree_view):
         self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
         # self.bg_frame = tk.Label(self.main_win, image=self.editor_image)

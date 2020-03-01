@@ -634,6 +634,7 @@ class Collection (Database):
         tracks = self._select_simple(fields, from_tables, where,
                                    fetchone = False, orderby = order_by)
         return tracks
+        
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         tuple_tr = (release_id, track_no, track_artist, track_name,

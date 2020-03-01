@@ -36,31 +36,39 @@ class search_gui(widget_frame):
 
     def build_search_frame(self):
 
-        #artist
-        #release
-        #track
+        self.bar_grid = tk.Frame(self.dock_win)
 
-        self.search_bar = tk.Entry(self.dock_win)
-        self.search_bar.grid(row=0, column=2, columnspan=6, rowspan=1, sticky="we")
+        self.artist_bar = tk.Entry(self.bar_grid)
+        self.artist_bar.grid(row=0, column=0, columnspan=6, rowspan=1, sticky="we")
+
+        self.release_bar = tk.Entry(self.bar_grid)
+        self.release_bar.grid(row=1, column=0, columnspan=6, rowspan=1, sticky="we")
+
+        self.track_bar = tk.Entry(self.bar_grid)
+        self.track_bar.grid(row=2, column=0, columnspan=6, rowspan=1, sticky="we")
+
+        self.bar_grid.grid(row=0, column=0, sticky="we")
 
         self.online = tk.IntVar()
         tk.Checkbutton(self.dock_win, text="online", variable=self.online).grid(row=0, column=8, columnspan=2, rowspan=1, sticky="w")
 
         self.search_button = tk.Button(self.dock_win, 
                                         text="Search...", 
-                                        command=lambda srch=self.search_bar.get(): 
-                                                            self.gui_ctrl.display_searched_releases(srch, 
+                                        command=lambda : 
+                                                            self.gui_ctrl.display_searched_releases((self.artist_bar.get(), 
+                                                                                                    self.release_bar.get(),
+                                                                                                    self.track_bar.get()),
                                                                                                     self.search_tv,
                                                                                                     self.online.get()))
-        self.search_bar.bind("<Return>", lambda srch=self.search_bar.get(): 
-                                                            self.gui_ctrl.display_searched_releases(srch, 
-                                                                                                    self.search_tv,
-                                                                                                    self.online.get())) 
+        # self.search_bar.bind("<Return>", lambda srch=self.search_bar.get(): 
+        #                                                     self.gui_ctrl.display_searched_releases(srch, 
+        #                                                                                             self.search_tv,
+        #                                                                                             self.online.get())) 
 
-        self.search_button.grid(row=0, column=0, columnspan=2, sticky="we")
+        self.search_button.grid(row=0, column=1, columnspan=2, sticky="we")
         
         self.search_tv = ttk.Treeview(self.dock_win)
-        self.search_tv.grid(row=1, column=0, columnspan=10, rowspan=8, sticky="nsew")
+        self.search_tv.grid(row=3, column=0, columnspan=10, rowspan=6, sticky="nsew")
 
         self.pg_bar = ttk.Progressbar(self.dock_win, orient="horizontal",mode='indeterminate')
         self.pg_bar.grid(row=10, column=0, columnspan=10, rowspan=1, sticky="we")
