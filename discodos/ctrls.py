@@ -956,6 +956,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix = Mix(self.db_conn, selected_mix_id)
         mix.delete_track(selected_track_id)
         self.display_tracklist(selected_mix_id)
+        self.focus_object(self.tracks_list, selected_track_id-1)
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         mix = Mix(self.db_conn, selected_mix_id)
@@ -991,6 +992,13 @@ class mix_ctrl_gui(Mix_ctrl_common):
                        search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
             else:
                 log.error("GUI: No online Releases Found")
+    
+
+    def focus_object(self, tree_view, pos):
+        child_id = tree_view.get_children()[pos]
+        print(pos)
+        tree_view.focus(child_id)
+        tree_view.selection_set(child_id)
     
 
 class setup_controller():
