@@ -11,7 +11,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
 from tabulate import tabulate as tab
-# from PIL import Image, ImageTk
+from PIL import Image, ImageTk
 
 
 
@@ -19,22 +19,24 @@ from tabulate import tabulate as tab
 
 class main_frame():
     def __init__(self, conn=False):
+
+        
+
         log.debug("############################################################")
         log.debug("###########DISCODOS#LOG#START##############################")
         log.debug("############################################################")
         self.search_open = False
         self.main_win = tk.Tk()  
 
+        image = Image.open("assets/editor.png")
+        self.background_image = ImageTk.PhotoImage(image)
         
-        # image = Image.open("assets/editor.png")
-        # self.background_image = ImageTk.PhotoImage(image)
         
 
         self.main_win.geometry("800x600")     
         self.main_win.minsize(800, 600)
 
-        # editor_image = tk.Label(self.main_win, image=self.background_image)
-        # editor_image.grid(row=0, column=5, sticky="nsew")
+        
         
 
         self.main_win.title("Discodos") # TODO: Add relevant Information to title, like Titles in Mix etc
@@ -65,6 +67,7 @@ class main_frame():
         # self.focus_first_object(self.mix_list)
         self.gui_ctrl.display_all_mixes()
         self.show_tracklist()
+        self.spawn_editor("start")
 
         
                     
@@ -225,7 +228,6 @@ class main_frame():
                                                                                                                 "down"))
             ])
             
-
         elif editor_view == 2:
             show_entries = True
             headings = list(self.mix_cols.values())
@@ -238,6 +240,14 @@ class main_frame():
                 tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.save_funcs[1](self.editor_entries["entries"],
                                                                                                                     self.mix_list.item(self.mix_list.focus(),"text")))
             ])
+        
+        elif editor_view == "start":
+            editor_image = tk.Label(self.editor_frame, image=self.background_image)
+            editor_image.grid(row=0, column=0, sticky="nsew")
+            headings = []
+            data = {}
+            data["values"] = []
+
 
             
         
