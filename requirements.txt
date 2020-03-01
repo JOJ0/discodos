@@ -17,3 +17,4 @@ tabulate>=0.8.6
 urllib3>=1.24.1
 dropbox>=9.4.0
 musicbrainzngs>=0.7.1
+pillow>=7.0.0
