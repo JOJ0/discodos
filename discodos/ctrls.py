@@ -665,8 +665,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         if release:
             track_no = self.cli.ask_user_for_track()
             if self.collection.ONLINE == True:
-                rel_id = release[0][0]
-                rel_name = release[0][2]
+                rel_id = release[0].id
+                rel_name = release[0].title
             else:
                 rel_id = release[0][0]
                 rel_name = release[0][1]
