@@ -634,7 +634,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             if not search_results:
                 print_help('Nothing found.')
                 return False
-            else
+            else:
                 if len(search_results) == 1:
                     print_help('Found release: {} - {}'.format(search_results[0][3],
                                                           search_results[0][1]))
