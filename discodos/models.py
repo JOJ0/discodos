@@ -649,7 +649,6 @@ class Collection (Database):
         return self.execute_sql(sql_tr, tuple_tr)
 
     def search_release_id(self, release_id):
-        #return db.search_release_id(self.db_conn, release_id)
         return self._select_simple(['*'], 'release',
             'discogs_id == {}'.format(release_id), fetchone = True)
 
@@ -707,11 +706,8 @@ class Collection (Database):
         for r in self.me.collection_folders[0].releases:
             #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
             if r.release.id == release_id:
-                #log.info(dir(r.release))
                 return r
         return False
-        #if not successful:
-        #    return False
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''

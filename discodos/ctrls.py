@@ -197,7 +197,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if rel_list:
             self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
         else:
-            log.error("No release to add.")
+            log.error("No release to add to mix.")
 
 
     # _add_track should only be called from add_offline_track() and add_discogs_track()
@@ -581,13 +581,7 @@ class Coll_ctrl_common (ABC):
 
 # Collection controller class
 class Coll_ctrl_cli (Coll_ctrl_common):
-    """
-    manages the record collection, offline and with help of discogs data
-
-    @param
-    @return
-    @author
-    """
+    '''manages the record collection, offline and with help of discogs data'''
 
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
             _db_file = False, _musicbrainz_user = False, _musicbrainz_pass = False):
@@ -623,31 +617,24 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         if self.collection.ONLINE:
             if is_number(_searchterm):
                 print_help('Searchterm is a number, trying to add Release ID to collection...')
-                self.add_release(int(_searchterm))
+                if not self.add_release(int(_searchterm)):
+                    log.warning("Release wasn't added to Collection, continuing anyway.")
 
             db_releases = self.collection.get_all_db_releases()
             print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_online(_searchterm)
-
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.cli.print_found_discogs_release(
-                                        search_results, _searchterm, db_releases)
+                  search_results, _searchterm, db_releases)
             return compiled_results_list
-            #if compiled_results_list:
-            #    if len(compiled_results_list) == 1:
-            #        print_help('Found release: {}'.format(compiled_results_list[0][1]))
-            #        return compiled_results_list
-            #    else:
-            #        print_help('Found several releases:')
-            #        for cnt,release in enumerate(compiled_results_list):
-            #            print_help('{} - {}'.format(cnt, release[1]))
-            #        answ = int(self.cli.ask_user('Which release? '))
-            #        return [compiled_results_list[answ]]
 
         else:
             print_help('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
-            if search_results:
+            if not search_results:
+                print_help('Nothing found.')
+                return False
+            else
                 if len(search_results) == 1:
                     print_help('Found release: {} - {}'.format(search_results[0][3],
                                                           search_results[0][1]))
@@ -656,8 +643,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     print_help('Found several releases:')
                     for cnt,release in enumerate(search_results):
                         print_help('({}) {} - {}'.format(cnt, release[3], release[1]))
-                        #for col in release:
-                        #    print(col)
                     #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
                     #print(num_search_results)
                     answ = self.cli.ask_user('Which release? (0) ')
@@ -667,9 +652,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                         answ = int(answ)
                     return [search_results[answ]]
                     #return num_search_results[answ][0]
-            else:
-                print_help('Nothing found.')
-                return False
 
     def view_all_releases(self):
         self.cli.print_help("Showing all releases in DiscoBASE.")
@@ -705,32 +687,35 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     # ADD RELEASE TO COLLECTION
     def add_release(self, release_id):
         self.cli.exit_if_offline(self.collection.ONLINE)
-        #if args.add_release_id:
-        if is_number(release_id):
-            # setup.py argparser only allows integer, this is for calls from somewhere else
-            #if db.search_release_id(conn, args.add_release_id):
+        if not is_number(release_id):
+            log.error('Not a number')
+            return False
+        else:
+            # setup.py argparser catches non-int, this is for calls from elsewhere
             if self.collection.search_release_id(release_id):
-                self.cli.print_help(
-                  "Release ID is already existing in DiscoBASE, won't add it to your Discogs collection."
-                   )
+                msg = "Release ID is already existing in DiscoBASE, "
+                msg+= "won't add it to your Discogs collection. We don't want dups!"
+                self.cli.print_help(msg)
             else:
                 self.cli.print_help("Asking Discogs if release ID {:d} is valid.".format(
                        release_id))
-                result = self.collection.d.release(release_id)
-                artists = self.collection.d_artists_to_str(result.artists)
+                result = self.collection.get_d_release(release_id)
                 if result:
+                    artists = self.collection.d_artists_to_str(result.artists)
                     log.debug(dir(result))
                     self.cli.print_help("Adding \"{}\" to collection".format(result.title))
                     for folder in self.collection.me.collection_folders:
                         if folder.id == 1:
                             folder.add_release(release_id)
-                            #import_release(conn, d, me, args.add_release_id)
-                            #last_row_id = db.create_release(conn, result, collection_item = False)
                             last_row_id = self.collection.create_release(result.id,
                                     result.title, artists, d_coll = True)
                     if not last_row_id:
-                        #self.cli.print_help("This is not the release you are looking for!")
                         self.cli.error_not_the_release()
+                    log.debug("Discogs release was maybe added to Collection")
+                    return True
+                else:
+                    log.debug("No Discogs release. Returning False")
+                    return False
 
     # import specific release ID into DB
     def import_release(self, _release_id):
