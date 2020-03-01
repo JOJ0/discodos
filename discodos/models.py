@@ -11,6 +11,10 @@ from sqlite3 import Error as sqlerr
 import sqlite3
 import time
 from datetime import datetime
+import musicbrainzngs as m
+from musicbrainzngs import WebServiceError
+import requests
+import json
 
 class Database (object):
 
@@ -254,7 +258,7 @@ class Mix (Database):
         self.venue = self.info[5]
         return db_rowcount
 
-    def get_all_mixes(self):
+    def get_all_mixes(self, order_by = 'played ASC'):
         """
         get metadata of all mixes from db
 
@@ -265,7 +269,7 @@ class Mix (Database):
         # we want to select * but in a different order:
         log.info("MODEL: Getting mixes table.")
         mixes_data = self._select_simple(['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
-                'mix', condition=False, orderby='played')
+                'mix', condition=False, orderby=order_by)
         return mixes_data
 
     def get_one_mix_track(self, track_id):
@@ -462,7 +466,7 @@ class Mix (Database):
             condition = "mix_id = {}".format(self.id), fetchone = True)
 
     def get_tracks_of_one_mix(self, start_pos = False):
-        log.info("MODEL: Getting tracks of a mix.")
+        log.info("MODEL: Getting tracks of a mix, from mix_track_table only)")
         if not start_pos:
             where = "mix_id == {}".format(self.id)
         else:
@@ -471,7 +475,7 @@ class Mix (Database):
                 fetchone = False, orderby = 'track_pos')
 
     def get_all_tracks_in_mixes(self):
-        log.info('MODEL: Getting all tracks from mix_track table.')
+        log.info('MODEL: Getting all tracks from mix_track table (only).')
         return self._select_simple(['*'], 'mix_track', fetchone = False)
 
     def get_mix_info(self):
@@ -485,6 +489,44 @@ class Mix (Database):
         """
         mix_info = self._select_simple(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
         return mix_info
+
+    def get_mix_tracks_for_brainz_update(self, start_pos = False):
+        log.info("MODEL: Getting tracks of a mix. Preparing for AcousticBrainz update.")
+        if not start_pos:
+            where = "mix_id == {}".format(self.id)
+        else:
+            where = "mix_id == {} and track_pos >= {}".format(
+                self.id, start_pos)
+        tables = '''mix_track
+                      INNER JOIN release
+                      ON mix_track.d_release_id = release.discogs_id
+                        LEFT OUTER JOIN track
+                        ON mix_track.d_release_id = track.d_release_id
+                        AND mix_track.d_track_no = track.d_track_no
+                          LEFT OUTER JOIN track_ext
+                          ON mix_track.d_release_id = track_ext.d_release_id
+                          AND mix_track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track_pos', 'mix_track.d_release_id',
+          'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
+          'mix_track.d_track_no', 'key', 'bpm'], tables, where,
+           fetchone = False, orderby = 'mix_track.track_pos')
+
+    def get_all_mix_tracks_for_brainz_update(self):
+        log.info("MODEL: Getting all tracks of all mix. Preparing for AcousticBrainz update.")
+        tables = '''mix_track
+                      INNER JOIN release
+                      ON mix_track.d_release_id = release.discogs_id
+                        LEFT OUTER JOIN track
+                        ON mix_track.d_release_id = track.d_release_id
+                        AND mix_track.d_track_no = track.d_track_no
+                          LEFT OUTER JOIN track_ext
+                          ON mix_track.d_release_id = track_ext.d_release_id
+                          AND mix_track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track_pos', 'mix_track.d_release_id',
+          'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
+          'mix_track.d_track_no', 'key', 'bpm'], tables, fetchone = False,
+           orderby = 'mix_track.mix_id, mix_track.track_pos',
+           distinct = True)
 
 # record collection class
 class Collection (Database):
@@ -572,36 +614,41 @@ class Collection (Database):
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
 
-    def create_track(self, release_id, track_no, track_name, track_artist):
-        insert_tuple = (release_id, track_artist, track_no, track_name)
-        update_tuple = (release_id, track_artist, track_no, track_name, release_id, track_no)
-        c = self.db_conn.cursor()
-        with self.db_conn:
-            try:
-                c.execute('''INSERT INTO track(d_release_id, d_artist, d_track_no,
-                                                             d_track_name, import_timestamp)
-                                               VALUES(?, ?, ?, ?, datetime('now', 'localtime'))''',
-                                        insert_tuple)
-                return c.rowcount
-            except sqlerr as e:
-                if "UNIQUE constraint failed" in e.args[0]:
-                    log.warning("Track details already in DiscoBASE, updating ...")
-                    try:
-                        c.execute('''UPDATE track SET (d_release_id, d_artist, d_track_no,
-                                                       d_track_name, import_timestamp)
-                                       = (?, ?, ?, ?, datetime('now', 'localtime'))
-                                          WHERE d_release_id == ? AND d_track_no == ?''', update_tuple)
-                        log.info("MODEL: rowcount: %d, lastrowid: %d", c.rowcount, c.lastrowid)
-                        return c.rowcount
-                    except sqlerr as e:
-                        log.error("MODEL: %s", e.args[0])
-                        return False
-                else:
-                    log.error("MODEL: %s", e.args[0])
-                    return False
+    def search_release_track_offline(self, artist='', release='', track=''):
+        fields = ['track.d_artist', 'track.d_release_id', 'discogs_title',
+                 'track.d_track_no', 'd_track_name',
+                 'key', 'bpm', 'key_notes', 'notes']
+        from_tables='''
+                    track INNER JOIN release
+                    ON track.d_release_id = release.discogs_id
+                      INNER JOIN track_ext
+                      ON track.d_release_id = track_ext.d_release_id
+                      AND track.d_track_no = track_ext.d_track_no'''
+        where = '''(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "{}")
+                      AND discogs_title LIKE "%{}%"
+                      AND d_track_name LIKE "%{}%"'''.format(
+                          artist, artist, release, track)
+        order_by = 'track.d_artist, discogs_title, d_track_name'
+        if artist == '' and release =='' and track == '':
+            tracks = []
+        else:
+            tracks = self._select_simple(fields, from_tables, where,
+                                   fetchone = False, orderby = order_by)
+        return tracks
+
+    def upsert_track(self, release_id, track_no, track_name, track_artist):
+        tuple_tr = (release_id, track_no, track_artist, track_name,
+                                          track_artist, track_name)
+        sql_tr='''INSERT INTO track(d_release_id, d_track_no, d_artist,
+                    d_track_name, import_timestamp)
+                    VALUES(?, ?, ?, ?, datetime('now', 'localtime'))
+                    ON CONFLICT (d_release_id, d_track_no)
+                    DO UPDATE SET
+                    d_artist = ?, d_track_name = ?,
+                    import_timestamp=datetime('now', 'localtime');'''
+        return self.execute_sql(sql_tr, tuple_tr)
 
     def search_release_id(self, release_id):
-        #return db.search_release_id(self.db_conn, release_id)
         return self._select_simple(['*'], 'release',
             'discogs_id == {}'.format(release_id), fetchone = True)
 
@@ -659,11 +706,8 @@ class Collection (Database):
         for r in self.me.collection_folders[0].releases:
             #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
             if r.release.id == release_id:
-                #log.info(dir(r.release))
                 return r
         return False
-        #if not successful:
-        #    return False
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
@@ -727,7 +771,8 @@ class Collection (Database):
     def d_artists_parse(self, d_tracklist, track_number, d_artists):
         '''gets Artist name from discogs release (child)objects via track_number, eg. A1'''
         for tr in d_tracklist:
-            #log.info("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_artists_parse: this is the tr object: {}".format(tr))
             if tr.position == track_number:
                 #log.info("d_tracklist_parse: found by track number.")
                 if len(tr.artists) == 1:
@@ -751,6 +796,8 @@ class Collection (Database):
                       "MODEL: d_artists_parse: several artists, returning combined named {}".format(
                         combined_name))
                     return combined_name
+        log.debug('d_artists_parse: Track {} not existing on release.'.format(
+            track_number))
 
     def get_releases_of_one_mix(self, start_pos = False):
         if not start_pos:
@@ -788,3 +835,164 @@ class Collection (Database):
                        WHERE (track_ext.key LIKE "%{}%")
                        ORDER BY track_ext.key, track_ext.bpm'''.format(key)
         return self._select(sql_key, fetchone = False)
+
+    def upsert_track_brainz(self, release_id, track_no, rec_id,
+          match_method, key, chords_key, bpm):
+        sql_track = '''INSERT INTO track(d_release_id, d_track_no,
+                         m_rec_id, m_match_method, m_match_time)
+                         VALUES(?, ?, ?, ?, datetime('now', 'localtime'))
+                         ON CONFLICT (d_release_id, d_track_no)
+                         DO UPDATE SET
+                         d_release_id=?, d_track_no=?, m_rec_id=?,
+                         m_match_method=?,
+                         m_match_time=datetime('now', 'localtime');'''
+        tuple_track = (release_id, track_no, rec_id, match_method,
+                       release_id, track_no, rec_id, match_method)
+        ok_track = self.execute_sql(sql_track, tuple_track)
+
+        sql_ext = '''INSERT INTO track_ext(d_release_id, d_track_no,
+                         a_key, a_chords_key, a_bpm)
+                         VALUES(?, ?, ?, ?, ?)
+                         ON CONFLICT (d_release_id, d_track_no)
+                         DO UPDATE SET
+                         d_release_id=?, d_track_no=?, a_key=?,
+                         a_chords_key=?, a_bpm=?;'''
+        tuple_ext = (release_id, track_no, key, chords_key, bpm,
+                     release_id, track_no, key, chords_key, bpm)
+        ok_ext = self.execute_sql(sql_ext, tuple_ext)
+
+        if ok_track and ok_ext:
+            return True
+        return False
+
+    def update_release_brainz(self, release_id, mbid, match_method):
+        sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
+                       m_match_time) = (?, ?, datetime('now', 'localtime'))
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (mbid, match_method, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)
+
+class Brainz (object):
+
+    def __init__(self, musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
+        self.ONLINE = False
+        if self.musicbrainz_connect(musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
+            self.ONLINE = True
+            log.info("Brainz class is ONLINE.")
+
+    # musicbrainz connect try,except wrapper
+    def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):
+        # If you plan to submit data, authenticate
+        #m.auth(mb_user, mb_pass)
+        m.set_useragent(mb_appid, "0.0.2", "https://github.com/JOJ0")
+        # If you are connecting to a different server
+        #m.set_hostname("beta.musicbrainz.org")
+        #m.set_rate_limit(limit_or_interval=1.0, new_requests=1)
+        try: # test request
+            m.get_artist_by_id("952a4205-023d-4235-897c-6fdb6f58dfaa", [])
+            self.ONLINE = True
+            return True
+        except WebServiceError as exc:
+            log.error("connecting to MusicBrainz: %s" % exc)
+            self.ONLINE = False
+            return False
+
+    def get_mb_artist_by_id(self, mb_id):
+        try:
+            return m.get_artist_by_id(mb_id, [])
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def search_mb_releases(self, artist, album, cat_no = False, limit = 10):
+        try:
+            if cat_no:
+                return m.search_releases(artist=artist, release=album,
+                    catno = cat_no, limit=limit)
+            else:
+                return m.search_releases(artist=artist, release=album, limit=5)
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def get_mb_release_by_id(self, mb_id):
+        try:
+            return m.get_release_by_id(mb_id, includes=["release-groups",
+            "artists", "labels", "url-rels", "recordings",
+            "recording-rels", "recording-level-rels" ])
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def get_mb_recording_by_id(self, mb_id):
+        try:
+            return m.get_recording_by_id(mb_id, includes=[
+             "url-rels"
+            ])
+        except WebServiceError as exc:
+            log.error("requesting data from MusicBrainz: %s" % exc)
+            return False
+
+    def get_urls_from_mb_release(self, full_rel): # takes what get_mb_release_by_id returned
+        #log.debug(full_rel['release'].keys())
+        if 'url-relation-list' in full_rel['release']:
+            return full_rel['release']['url-relation-list']
+        else:
+            return []
+
+    def get_catno_from_mb_label(self, mb_label): # label-info-list item
+        #log.debug(mb_label)
+        if 'catalog-number' in mb_label:
+            return mb_label['catalog-number']
+        else:
+            return ''
+
+    def _get_accousticbrainz(self, urlpart):
+        headers={'Accept': 'application/json' }
+        url="https://acousticbrainz.org/api/v1/{}".format(urlpart)
+        resp = requests.get(url, headers=headers, timeout=7)
+        if resp.ok:
+            _json = json.loads(resp.content)
+            return _json
+        else:
+            log.info("MBID not in AccousticBrainz: %s", resp.status_code)
+            resp.raise_for_status()
+            #return False
+
+    def _get_accbr_low_level(self, mb_id):
+        low_level = self._get_accousticbrainz("{}/low-level".format(mb_id))
+        #pprint.pprint(low_level)
+        return low_level
+
+    def _get_accbr_high_level(self, mb_id):
+        return self._get_accousticbrainz("{}/high-level".format(mb_id))
+
+    #def _get_accbr_url_rels(self, )
+
+    def get_accbr_bpm(self, mb_id):
+        try:
+            ab_return = self._get_accbr_low_level(mb_id)
+            return ab_return['rhythm']['bpm']
+        except:
+            return None
+
+    def get_accbr_key(self, mb_id):
+        try:
+            ab_return = self._get_accbr_low_level(mb_id)
+            if ab_return['tonal']['key_scale'] == 'minor':
+                majmin = 'm'
+            else:
+                majmin = ''
+            key_key = '{}{}'.format(ab_return['tonal']['key_key'], majmin)
+            return key_key
+        except:
+            return None
+
+    def get_accbr_chords_key(self, mb_id):
+        ab_return = self._get_accbr_low_level(mb_id)
+        if ab_return['tonal']['chords_scale'] == 'minor':
+            majmin = 'm'
+        else:
+            majmin = ''
+        chords_key = '{}{}'.format(ab_return['tonal']['chords_key'], majmin)
+        return chords_key
