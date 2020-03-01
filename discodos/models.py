@@ -259,7 +259,7 @@ class Mix (Database):
         self.venue = self.info[5]
         return db_rowcount
 
-    def get_all_mixes(self):
+    def get_all_mixes(self, order_by = 'played ASC'):
         """
         get metadata of all mixes from db
 
@@ -270,7 +270,7 @@ class Mix (Database):
         # we want to select * but in a different order:
         log.info("MODEL: Getting mixes table.")
         mixes_data = self._select_simple(['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
-                'mix', condition=False, orderby='played')
+                'mix', condition=False, orderby=order_by)
         return mixes_data
 
     def get_one_mix_track(self, track_id):
@@ -631,7 +631,10 @@ class Collection (Database):
                       AND d_track_name LIKE "%{}%"'''.format(
                           artist, artist, release, track)
         order_by = 'track.d_artist, discogs_title, d_track_name'
-        tracks = self._select_simple(fields, from_tables, where,
+        if artist == '' and release =='' and track == '':
+            tracks = []
+        else:
+            tracks = self._select_simple(fields, from_tables, where,
                                    fetchone = False, orderby = order_by)
         return tracks
         
