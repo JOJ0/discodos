@@ -1,0 +1,13 @@
+certifi==2019.11.28
+chardet==3.0.4
+discogs-client==2.2.2
+dropbox==9.4.0
+idna==2.8
+musicbrainzngs==0.7.1
+oauthlib==3.1.0
+Pillow==7.0.0
+PyYAML==5.3
+requests==2.22.0
+six==1.14.0
+tabulate==0.8.6
+urllib3==1.25.8
