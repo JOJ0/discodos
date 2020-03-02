@@ -20,7 +20,7 @@ from PIL import Image, ImageTk
 class main_frame():
     def __init__(self, conn=False):
 
-        
+        self.start_up = True
 
         log.debug("############################################################")
         log.debug("###########DISCODOS#LOG#START##############################")
@@ -52,7 +52,8 @@ class main_frame():
                                             self.mix_cols, 
                                             self.track_cols, 
                                             self.mix_list, 
-                                            self.tracks_list)
+                                            self.tracks_list,
+                                            self.start_up)
 
         self.save_funcs =   {
                             "save_track" : self.gui_ctrl.save_track_data,

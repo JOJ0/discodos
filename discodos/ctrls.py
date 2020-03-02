@@ -833,8 +833,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
                         mix_cols, 
                         track_cols, 
                         mix_list, 
-                        tracks_list):
+                        tracks_list,
+                        start_up):
 
+        self.start_up = start_up
         self.db_conn = db_conn
         self.mix_cols = mix_cols
         self.track_cols = track_cols
@@ -887,8 +889,9 @@ class mix_ctrl_gui(Mix_ctrl_common):
                                                         none_checker(row["trans_rating"]), 
                                                         none_checker(row["trans_notes"]), 
                                                         none_checker(row["notes"])))
- 
-        self.col_widths(self.tracks_list, self.track_cols)
+        if self.start_up == True:
+            self.col_widths(self.tracks_list, self.track_cols)
+            self.start_up = False
 
 
 
@@ -906,6 +909,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
                     width_vals[col_id].append(tkfont.Font().measure(none_checker(row[col_id])))
                 except:
                     width_vals[col_id].append(10)
+                    
 
         for col_id, heading in headings.items():
             tree_view.column(col_id, width=max(width_vals[col_id]), minwidth=tkfont.Font().measure(heading), stretch=1)
@@ -955,6 +959,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def remove_track_from_mix(self, selected_mix_id, selected_track_id):
         mix = Mix(self.db_conn, selected_mix_id)
         mix.delete_track(selected_track_id)
+        mix.reorder_tracks(selected_track_id)
         self.display_tracklist(selected_mix_id)
         self.focus_object(self.tracks_list, selected_track_id-1)
 
@@ -975,7 +980,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
             if found_releases is not None:
                 for i, release in enumerate(found_releases):
                     # print(release)
-                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["d_track_name"]))
+                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["d_track_no"]))
                     for j in range(2):
                        search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
             else:
@@ -983,15 +988,30 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
         elif online == 1:
             found_releases = coll.search_release_online(search_term)
-            print(search_term, found_releases)
+            # print(search_term, found_releases)
             release_levels = {}
             if found_releases is not None:
                 for i, release in enumerate(found_releases):
-                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
+                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["d_track_no"]))
                     for j in range(2):
                        search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
             else:
                 log.error("GUI: No online Releases Found")
+    
+    def group_releases(self, found_releases):
+        # make a dict for all single releases
+        # make a temp list for all releases
+        # from this temp list make all elements unique
+        # for all unique releases create empty lists in the dict
+        # then iterate through the original releases and sort everything 
+        # in the corresponding lists of lists (every track is a list in the list)
+        # create first level with the keys of the dict
+        # second levels are for every track list
+        # every column is filled with an element from the list of lists of the dict
+        for i, release in enumerate(found_releases):
+                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["d_track_no"]))
+                    for j in range(2):
+        pass
     
 
     def focus_object(self, tree_view, pos):
@@ -999,6 +1019,14 @@ class mix_ctrl_gui(Mix_ctrl_common):
         print(pos)
         tree_view.focus(child_id)
         tree_view.selection_set(child_id)
+
+
+    def add_track_to_mix(self, pos="1"):
+        # make mix object
+        # first select tracks_list object
+        # give the data to the model function
+        # refresh tracks_list
+        pass
     
 
 class setup_controller():
