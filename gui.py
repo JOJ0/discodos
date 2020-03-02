@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 from discodos.gui_views import main_frame
 from discodos import utils
 from discodos import models
