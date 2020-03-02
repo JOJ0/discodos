@@ -81,7 +81,8 @@ class search_gui(widget_frame):
         
 
         self.search_tools = tk.Frame(self.dock_win)
-        self.add_btn = tk.Button(self.search_tools, text="Add Track to Mix", state="disabled")  # Add Command
+        self.add_btn = tk.Button(self.search_tools, text="Add Track to Mix", state="disabled", 
+                                                    command = lambda : self.gui_ctrl.add_track_to_mix(self.pos_entry.get(),self.search_tv)) 
         self.add_btn.grid(row=0, column=0, sticky="ws")
         tk.Label(self.search_tools, text="@ Position #").grid(row=0, column=1, sticky="wn")
         self.pos_entry = tk.Entry(self.search_tools, state="disabled", width=5)
@@ -100,9 +101,10 @@ class search_gui(widget_frame):
     def search_tv_config(self):
         # self.search_tv['show'] = 'headings'
         self.search_cols = {
-                        "name" : "Name", 
-                        "artist" : "Artist", 
-                        "id" : "ID", 
+                        "1" : "", 
+                        "2" : "", 
+                        "3" : "", 
+                        "4" : "" 
                         }
 
         self.search_tv["columns"] = tuple(self.search_cols)
