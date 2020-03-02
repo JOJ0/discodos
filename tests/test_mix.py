@@ -311,6 +311,40 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_return["mix_id"], 125) # should be ID 125
         print("{} - {} - END".format(self.clname, name))
 
+    def test_shift_track_up(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.mix = Mix(False, 134, self.db_path)
+        shift_return = self.mix.shift_track(4, 'up')
+        self.assertTrue(shift_return) # should be True
+        get_3_return = self.mix.get_one_mix_track(3)
+        get_4_return = self.mix.get_one_mix_track(4)
+        get_5_return = self.mix.get_one_mix_track(5) # should stay the same
+        self.assertEqual(get_3_return["discogs_title"], 'The Crane') # Release
+        self.assertEqual(get_3_return["d_track_no"], 'AA') # should be AA
+        self.assertEqual(get_4_return["discogs_title"], 'Material Love') # Release
+        self.assertEqual(get_4_return["d_track_no"], 'B1') # should be AA
+        self.assertEqual(get_5_return["discogs_title"], 'Material Love') # Release
+        self.assertEqual(get_5_return["d_track_no"], 'B1') # should be AA
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_shift_track_down(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.mix = Mix(False, 134, self.db_path)
+        shift_return = self.mix.shift_track(4, 'down')
+        self.assertTrue(shift_return) # should be True
+        get_3_return = self.mix.get_one_mix_track(3) # should stay the same
+        get_4_return = self.mix.get_one_mix_track(4)
+        get_5_return = self.mix.get_one_mix_track(5)
+        self.assertEqual(get_3_return["discogs_title"], 'Material Love')
+        self.assertEqual(get_3_return["d_track_no"], 'B1')
+        self.assertEqual(get_4_return["discogs_title"], 'Material Love')
+        self.assertEqual(get_4_return["d_track_no"], 'B1')
+        self.assertEqual(get_5_return["discogs_title"], 'The Crane')
+        self.assertEqual(get_5_return["d_track_no"], 'AA')
+        print("{} - {} - END".format(self.clname, name))
+
 
     @classmethod
     def tearDownClass(self):
