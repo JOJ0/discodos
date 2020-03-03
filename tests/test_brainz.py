@@ -134,7 +134,7 @@ class TestBrainz(unittest.TestCase):
             #pprint(ab_return)
             self.assertEqual(ab_return['rhythm']['beats_count'], 836)
             self.assertEqual(int(ab_return['rhythm']['bpm']), 108)
-            self.assertEqual(ab_return['rhythm']['danceability'], '1.06401479244')
+            self.assertEqual(ab_return['rhythm']['danceability'], 1.06401479244)
             self.assertEqual(ab_return['tonal']['chords_key'], 'A#')
             self.assertEqual(ab_return['tonal']['chords_scale'], 'minor')
             self.assertEqual(ab_return['tonal']['key_key'], 'A#')
