@@ -12,9 +12,9 @@ class TestCollection(unittest.TestCase):
     def setUpClass(self):
         log.handlers[0].setLevel("INFO") # handler 0 is the console handler
         log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
-        conf = Config() # doesn't get path of test-db, so...
-        empty_db_path = conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
-        self.db_path = conf.discodos_root / 'tests' / 'discobase.db'
+        self.conf = Config() # doesn't get path of test-db, so...
+        empty_db_path = self.conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
+        self.db_path = self.conf.discodos_root / 'tests' / 'discobase.db'
         self.clname = self.__name__ # just handy a shortcut, used in test output
         print('TestMix.setUpClass: test-db: {}'.format(copy2(empty_db_path, self.db_path)))
         print("TestMix.setUpClass: done\n")
