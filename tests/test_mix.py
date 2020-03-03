@@ -331,7 +331,7 @@ class TestMix(unittest.TestCase):
     def test_shift_track_down(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.mix = Mix(False, 134, self.db_path)
+        self.mix = Mix(False, 135, self.db_path)
         shift_return = self.mix.shift_track(4, 'down')
         self.assertTrue(shift_return) # should be True
         get_3_return = self.mix.get_one_mix_track(3) # should stay the same
