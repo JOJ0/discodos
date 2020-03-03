@@ -3,9 +3,7 @@ from discodos.models import *
 from discodos.views import *
 from abc import ABC, abstractmethod
 from discodos import log
-from tabulate import tabulate as tab # should be only in views.py
 import pprint as p
-from datetime import time
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
