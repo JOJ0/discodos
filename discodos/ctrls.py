@@ -1029,17 +1029,19 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def add_track_to_mix(self, pos, search_tv):
-        print(pos)
         if pos == "":
             pos = 1
         sel_mix_id = self.mix_list.item(self.mix_list.focus(),"text")
         mix = Mix(self.db_conn, sel_mix_id)
         cur_item = search_tv.item(search_tv.focus())
         mix.add_track(cur_item["values"][3], cur_item["values"][0], pos)
-        tracks_to_shift = mix.get_tracks_from_position(pos)
-        mix.reorder_tracks_squeeze_in(pos, tracks_to_shift)
+        mix.reorder_tracks
+        # tracks_to_shift = mix.get_tracks_from_position(0)
+        # mix.reorder_tracks_squeeze_in(0, tracks_to_shift)
         self.display_tracklist(sel_mix_id)
-        self.focus_object(self.tracks_list, pos)
+        self.focus_object(self.tracks_list, int(pos)+1)
+
+        # TODO: make track position numbering okay
 
     
 
