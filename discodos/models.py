@@ -1,7 +1,6 @@
 from discodos.utils import * # most of this should only be in view
 from abc import ABC, abstractmethod
 from discodos import log
-from tabulate import tabulate as tab # should only be in view
 import pprint
 import discogs_client
 import discogs_client.exceptions as errors
@@ -259,7 +258,7 @@ class Mix (Database):
         self.venue = self.info[5]
         return db_rowcount
 
-    def get_all_mixes(self):
+    def get_all_mixes(self, order_by = 'played ASC'):
         """
         get metadata of all mixes from db
 
@@ -270,7 +269,7 @@ class Mix (Database):
         # we want to select * but in a different order:
         log.info("MODEL: Getting mixes table.")
         mixes_data = self._select_simple(['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
-                'mix', condition=False, orderby='played')
+                'mix', condition=False, orderby=order_by)
         return mixes_data
 
     def get_one_mix_track(self, track_id):
@@ -422,6 +421,55 @@ class Mix (Database):
                 return False
         return True
 
+    def shift_track(self, pos, direction):
+        if direction != 'up' and direction != 'down':
+            log.error('MODEL: shift_track: wrong usage.')
+            return False
+        # get mix_track_id of track to shift, the one before and the one after
+        tr_before = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
+            condition = "mix_id = {} AND track_pos == {}".format(self.id, pos-1))
+        tr = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
+            condition = "mix_id = {} AND track_pos == {}".format(self.id, pos))
+        tr_after = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
+            condition = "mix_id = {} AND track_pos == {}".format(self.id, pos+1))
+        log.debug('before: {}, shift_track: {}, after: {}'.format(
+          tr_before['mix_track_id'], tr['mix_track_id'], tr_after['mix_track_id']))
+
+        if direction == 'up':
+            tr_before_pos = pos     # is now the same as the orig track
+            tr_pos        = pos -1  # is now one less than before
+            tr_after_pos  = pos +1  # stays the same
+
+            sql_upd_tr_bef = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
+            ids_tr_bef = (tr_before_pos, tr_before['mix_track_id'])
+            sql_upd_tr = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
+            ids_tr = (tr_pos, tr['mix_track_id'])
+
+            ret_tr = self.execute_sql(sql_upd_tr, ids_tr)
+            ret_tr_bef = self.execute_sql(sql_upd_tr_bef, ids_tr_bef)
+            ret_tr_aft = True
+
+        elif direction == 'down':
+            tr_before_pos = pos -1  # stays the same
+            tr_pos        = pos +1  # is now one more than before
+            tr_after_pos  = pos     # is now the same as the orig track
+
+            sql_upd_tr = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
+            ids_tr = (tr_pos, tr['mix_track_id'])
+            sql_upd_tr_aft = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
+            ids_tr_aft = (tr_after_pos, tr_after['mix_track_id'])
+
+            ret_tr_bef = True
+            ret_tr = self.execute_sql(sql_upd_tr, ids_tr)
+            ret_tr_aft = self.execute_sql(sql_upd_tr_aft, ids_tr_aft)
+
+        if not ret_tr and ret_tr_bef and ret_tr_aft:
+            log.error ('MODEL: shift_track: one or more track updates failed.')
+            return False
+        log.error ('MODEL: shift_track: shift correctly done.')
+        return True
+
+
     def delete_track(self, pos):
         log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
         sql_del = 'DELETE FROM mix_track WHERE mix_id == ? AND track_pos == ?'
@@ -431,12 +479,13 @@ class Mix (Database):
     def get_full_mix(self, verbose = False):
         log.info('MODEL: Getting full mix.')
         if verbose:
-            sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
-                               mix_track.d_track_no,
-                               key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
+            sql_sel = '''SELECT track_pos, discogs_title, track.d_artist,
+                          d_track_name, mix_track.d_track_no,
+                          key, bpm, key_notes, trans_rating, trans_notes, notes,
+                          a_key, a_chords_key, a_bpm FROM'''
         else:
             sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
-                               trans_rating, key, bpm FROM'''
+                          trans_rating, key, bpm, a_key, a_chords_key, a_bpm FROM'''
         sql_sel+=''' 
                            mix_track INNER JOIN mix
                              ON mix.mix_id = mix_track.mix_id
@@ -631,7 +680,10 @@ class Collection (Database):
                       AND d_track_name LIKE "%{}%"'''.format(
                           artist, artist, release, track)
         order_by = 'track.d_artist, discogs_title, d_track_name'
-        tracks = self._select_simple(fields, from_tables, where,
+        if artist == '' and release =='' and track == '':
+            tracks = []
+        else:
+            tracks = self._select_simple(fields, from_tables, where,
                                    fetchone = False, orderby = order_by)
         return tracks
 
@@ -648,7 +700,6 @@ class Collection (Database):
         return self.execute_sql(sql_tr, tuple_tr)
 
     def search_release_id(self, release_id):
-        #return db.search_release_id(self.db_conn, release_id)
         return self._select_simple(['*'], 'release',
             'discogs_id == {}'.format(release_id), fetchone = True)
 
@@ -706,11 +757,8 @@ class Collection (Database):
         for r in self.me.collection_folders[0].releases:
             #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
             if r.release.id == release_id:
-                #log.info(dir(r.release))
                 return r
         return False
-        #if not successful:
-        #    return False
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
