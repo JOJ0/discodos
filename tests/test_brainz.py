@@ -26,9 +26,8 @@ class TestBrainz(unittest.TestCase):
     def test_get_mb_artist_by_id(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.brainz = Brainz(False, self.db_path)
-        if self.brainz.musicbrainz_connect(self.mb_user, self.mb_pass,
-                    self.mb_appid):
+        self.brainz = Brainz(self.mb_user,self.mb_pass,self.mb_appid)
+        if self.brainz.ONLINE:
             print('We are ONLINE')
             mb_return = self.brainz.get_mb_artist_by_id('952a4205-023d-4235-897c-6fdb6f58dfaa')
             #print(dir(mb_return))
@@ -45,9 +44,8 @@ class TestBrainz(unittest.TestCase):
     def test_search_mb_releases(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.brainz = Brainz(False, self.db_path)
-        if self.brainz.musicbrainz_connect(self.mb_user, self.mb_pass,
-                    self.mb_appid):
+        self.brainz = Brainz(self.mb_user,self.mb_pass,self.mb_appid)
+        if self.brainz.ONLINE:
             print('We are ONLINE')
             mb_return = self.brainz.search_mb_releases("Source Direct",
                 "The Crane", "NONPLUS034")
@@ -72,9 +70,8 @@ class TestBrainz(unittest.TestCase):
     def test_get_mb_release_by_id(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.brainz = Brainz(False, self.db_path)
-        if self.brainz.musicbrainz_connect(self.mb_user, self.mb_pass,
-                    self.mb_appid):
+        self.brainz = Brainz(self.mb_user,self.mb_pass,self.mb_appid)
+        if self.brainz.ONLINE:
             print('We are ONLINE')
             mb_return = self.brainz.get_mb_release_by_id(
                 'c4b619f1-5ae2-45e5-b848-71290e97eb69')
@@ -106,9 +103,8 @@ class TestBrainz(unittest.TestCase):
     def test_get_mb_recording_by_id(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.brainz = Brainz(False, self.db_path)
-        if self.brainz.musicbrainz_connect(self.mb_user, self.mb_pass,
-                    self.mb_appid):
+        self.brainz = Brainz(self.mb_user,self.mb_pass,self.mb_appid)
+        if self.brainz.ONLINE:
             print('We are ONLINE')
             mb_return = self.brainz.get_mb_recording_by_id(
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
@@ -130,15 +126,15 @@ class TestBrainz(unittest.TestCase):
     def test_get_accbr_low_level(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.brainz = Brainz(False, self.db_path)
-        if self.brainz.musicbrainz_connect(self.mb_user,self.mb_pass,self.mb_appid):
+        self.brainz = Brainz(self.mb_user,self.mb_pass,self.mb_appid)
+        if self.brainz.ONLINE:
             print('We are ONLINE')
             ab_return = self.brainz._get_accbr_low_level(
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
             #pprint(ab_return)
             self.assertEqual(ab_return['rhythm']['beats_count'], 836)
             self.assertEqual(int(ab_return['rhythm']['bpm']), 108)
-            self.assertEqual(ab_return['rhythm']['danceability'], '1.06401479244')
+            self.assertEqual(ab_return['rhythm']['danceability'], 1.06401479244)
             self.assertEqual(ab_return['tonal']['chords_key'], 'A#')
             self.assertEqual(ab_return['tonal']['chords_scale'], 'minor')
             self.assertEqual(ab_return['tonal']['key_key'], 'A#')
@@ -154,8 +150,8 @@ class TestBrainz(unittest.TestCase):
     def test_get_accbr_high_level(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.brainz = Brainz(False, self.db_path)
-        if self.brainz.musicbrainz_connect(self.mb_user,self.mb_pass,self.mb_appid):
+        self.brainz = Brainz(self.mb_user,self.mb_pass,self.mb_appid)
+        if self.brainz.ONLINE:
             print('We are ONLINE')
             ab_return = self.brainz._get_accbr_high_level(
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')

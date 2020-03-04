@@ -1,7 +1,6 @@
 from discodos.utils import * # most of this should only be in view
 from abc import ABC, abstractmethod
 from discodos import log
-from tabulate import tabulate as tab # should only be in view
 import pprint
 import discogs_client
 import discogs_client.exceptions as errors
@@ -480,12 +479,13 @@ class Mix (Database):
     def get_full_mix(self, verbose = False):
         log.info('MODEL: Getting full mix.')
         if verbose:
-            sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
-                               mix_track.d_track_no,
-                               key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
+            sql_sel = '''SELECT track_pos, discogs_title, track.d_artist,
+                          d_track_name, mix_track.d_track_no,
+                          key, bpm, key_notes, trans_rating, trans_notes, notes,
+                          a_key, a_chords_key, a_bpm FROM'''
         else:
             sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
-                               trans_rating, key, bpm FROM'''
+                          trans_rating, key, bpm, a_key, a_chords_key, a_bpm FROM'''
         sql_sel+=''' 
                            mix_track INNER JOIN mix
                              ON mix.mix_id = mix_track.mix_id

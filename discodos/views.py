@@ -135,7 +135,8 @@ class Cli_view_common(ABC):
         return track_no
 
     def tab_mix_table(self, _mix_data, _verbose = False):
-        _mix_data_nl = self.trim_table_fields(_mix_data)
+        _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
+        _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
         for row in _mix_data_nl: # debug only
            log.debug(str(row))
         log.debug("")
@@ -156,7 +157,7 @@ class Cli_view_common(ABC):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
         cut_pos = 16
-        log.info("Trimming table field width to max {} chars".format(cut_pos))
+        log.info('VIEW: Trimming table field width to max {} chars'.format(cut_pos))
         # first convert list of tuples to list of lists:
         table_nl = [dict(row) for row in tuple_table]
         # now put newlines if longer than cut_pos chars
@@ -180,6 +181,28 @@ class Cli_view_common(ABC):
                         table_nl[i][key] = edited_field
         log.debug("table_nl has {} lines".format(len(table_nl)))
         return table_nl
+
+    def replace_key_bpm(self, list_of_rows):
+        '''show key,bpm from accousticbrainz but override with user-defined
+           values if present'''
+        log.info('VIEW: replace key, bpm data with AccousticBrainz data')
+        # first convert list of rows to list of dicts:
+        table = [dict(row) for row in list_of_rows]
+        # now look for acousticbrainz values and replace if necessary
+        for i, row in enumerate(table):
+            if row['a_key'] and not row['key']:
+                if row['a_chords_key'] != row['a_key']:
+                    table[i]['key'] = '{}/{}*'.format((row['a_key'],
+                                                       row['a_chords_key']))
+                else:
+                    table[i]['key'] = '{}*'.format((row['a_key']))
+            if row['a_bpm'] and not row['bpm']:
+                table[i]['bpm'] = '{}*'.format(round(float(row['a_bpm']), 1))
+            # in any case remove acousticbrainz fields
+            del(table[i]['a_key'])
+            del(table[i]['a_chords_key'])
+            del(table[i]['a_bpm'])
+        return table
 
 # viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common, Cli_view_common, view_common):

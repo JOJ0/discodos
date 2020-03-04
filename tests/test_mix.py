@@ -181,11 +181,14 @@ class TestMix(unittest.TestCase):
         print("{} - {} - END".format(self.clname, name))
 
     def test_reorder_tracks_squeeze_in(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
         self.mix = Mix(False, 130, self.db_path) # mix 130 has contains 6 tracks
         # get tracks to shift
         tracks_to_shift = self.mix.get_tracks_from_position(3) # track 3 is Material Love
         # add new track
         rowcount = self.mix.add_track(8620643, "A", track_pos = 3) # add "The Crane"
+        self.assertEqual(rowcount, 1) # 1 row was added?
         # now shift previously found tracks, shifting starts at pos 3
         db_ret_reord = self.mix.reorder_tracks_squeeze_in(3, tracks_to_shift)
         self.assertEqual(db_ret_reord, 1)
@@ -336,7 +339,7 @@ class TestMix(unittest.TestCase):
     def test_shift_track_down(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.mix = Mix(False, 134, self.db_path)
+        self.mix = Mix(False, 135, self.db_path)
         shift_return = self.mix.shift_track(4, 'down')
         self.assertTrue(shift_return) # should be True
         get_3_return = self.mix.get_one_mix_track(3) # should stay the same
