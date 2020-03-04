@@ -55,7 +55,7 @@ class main_frame():
                                             self.tracks_list,
                                             self.start_up)
 
-        self.save_funcs =   {
+        self.editor_funcs=   {
                             "save_track" : self.gui_ctrl.save_track_data,
                             "save_mix" : self.gui_ctrl.save_mix_data,
                             "delete_mix" : self.gui_ctrl.delete_selected_mix,
@@ -205,9 +205,9 @@ class main_frame():
 
 
             self.editor_entries["buttons"].append([
-                tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.save_funcs["save_mix"]( self.editor_entries["entries"],
+                tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.editor_funcs["save_mix"]( self.editor_entries["entries"],
                                                                                                                  self.mix_list.item(self.mix_list.focus(),"text"))),
-                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.save_funcs["delete_mix"](self.mix_list.item(self.mix_list.focus(),"text")))
+                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.mix_list.item(self.mix_list.focus(),"text")))
             ])
 
 
@@ -217,14 +217,14 @@ class main_frame():
             data = self.tracks_list.item(self.tracks_list.focus())
 
             self.editor_entries["buttons"].append([
-                tk.Button(self.editor_frame, text="Save Track", command=lambda : self.save_funcs["save_track"](  self.editor_entries["entries"],
+                tk.Button(self.editor_frame, text="Save Track", command=lambda : self.editor_funcs["save_track"](  self.editor_entries["entries"],
                                                                                                                     self.mix_list.item(self.mix_list.focus(),"text"))),
-                tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.save_funcs["remove_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
+                tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.editor_funcs["remove_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
                                                                                                                 data["values"][0])),
-                tk.Button(self.move_frame, text="^", command=lambda : self.save_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
+                tk.Button(self.move_frame, text="^", command=lambda : self.editor_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
                                                                                                                 data["values"][0],
                                                                                                                 "up")),
-                tk.Button(self.move_frame, text="V", command=lambda : self.save_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
+                tk.Button(self.move_frame, text="V", command=lambda : self.editor_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
                                                                                                                 data["values"][0],
                                                                                                                 "down"))
             ])
@@ -238,7 +238,7 @@ class main_frame():
                 data["values"].append("")
 
             self.editor_entries["buttons"].append([
-                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.save_funcs[1](self.editor_entries["entries"],
+                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs[1](self.editor_entries["entries"],
                                                                                                                     self.mix_list.item(self.mix_list.focus(),"text")))
             ])
         
@@ -250,8 +250,6 @@ class main_frame():
             data["values"] = []
 
 
-            
-        
 
         ######### DESTILLERY ###########
 

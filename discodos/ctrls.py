@@ -5,6 +5,10 @@ from abc import ABC, abstractmethod
 from discodos import log
 import pprint as p
 
+import tkinter as tk
+from tkinter import ttk
+import tkinter.font as tkfont
+
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
     def __init__():
@@ -960,7 +964,12 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         mix = Mix(self.db_conn, selected_mix_id)
-        mix.reorder_tracks
+        mix.shift_track(selected_track_id, direction)
+        self.display_tracklist
+        if direction == 'down':
+            self.focus_object(self.tracks_list, selected_track_id-1)
+        elif direction == 'up':
+            self.focus_object(self.tracks_list, selected_track_id+1)
 
     def display_searched_releases(self, search_terms, search_tv, online):
         grouped_releases = []
