@@ -82,7 +82,7 @@ class search_gui(widget_frame):
 
         self.search_tools = tk.Frame(self.dock_win)
         self.add_btn = tk.Button(self.search_tools, text="Add Track to Mix", state="disabled", 
-                                                    command = lambda : self.gui_ctrl.add_track_to_mix(self.pos_entry.get(),self.search_tv)) 
+                                                    command = lambda : self.gui_ctrl.add_track_to_mix(self.search_tv)) 
         self.add_btn.grid(row=0, column=0, sticky="ws")
         tk.Label(self.search_tools, text="@ Position #").grid(row=0, column=1, sticky="wn")
         self.pos_entry = tk.Entry(self.search_tools, state="disabled", width=5)

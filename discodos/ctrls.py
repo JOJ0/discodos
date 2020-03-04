@@ -965,11 +965,11 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         mix = Mix(self.db_conn, selected_mix_id)
         mix.shift_track(selected_track_id, direction)
-        self.display_tracklist
-        if direction == 'down':
-            self.focus_object(self.tracks_list, selected_track_id-1)
-        elif direction == 'up':
-            self.focus_object(self.tracks_list, selected_track_id+1)
+        self.display_tracklist(selected_mix_id)
+        # if direction == 'down':
+        #     self.focus_object(self.tracks_list, selected_track_id-1)
+        # elif direction == 'up':
+        #     self.focus_object(self.tracks_list, selected_track_id+1)
 
     def display_searched_releases(self, search_terms, search_tv, online):
         grouped_releases = []
@@ -1025,25 +1025,29 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def focus_object(self, tree_view, pos):
-        print(pos)
+        # print(pos)
         child_id = tree_view.get_children()[int(pos)]
-        print(pos)
+        # print(pos)
         tree_view.focus(child_id)
         tree_view.selection_set(child_id)
 
 
-    def add_track_to_mix(self, pos, search_tv):
-        if pos == "":
-            pos = 1
+    def add_track_to_mix(self, search_tv):
+        pos = self.tracks_list.item(self.tracks_list.focus(), "text")
+        print(pos)
+        # if pos == "":
+        #     pos = 0
+        # else:
+        #     pos = int(pos) - 1
         sel_mix_id = self.mix_list.item(self.mix_list.focus(),"text")
         mix = Mix(self.db_conn, sel_mix_id)
         cur_item = search_tv.item(search_tv.focus())
         mix.add_track(cur_item["values"][3], cur_item["values"][0], pos)
         mix.reorder_tracks
-        # tracks_to_shift = mix.get_tracks_from_position(0)
-        # mix.reorder_tracks_squeeze_in(0, tracks_to_shift)
+        tracks_to_shift = mix.get_tracks_from_position(pos)
+        mix.reorder_tracks_squeeze_in(pos, tracks_to_shift)
         self.display_tracklist(sel_mix_id)
-        self.focus_object(self.tracks_list, int(pos)+1)
+        # self.focus_object(self.tracks_list, int(pos)+1)
 
         # TODO: make track position numbering okay
 
