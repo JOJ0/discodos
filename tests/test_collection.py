@@ -222,6 +222,51 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(len(dbr), 0) # should be a list with 0 Rows
         print("{} - {} - END".format(self.clname, name))
 
+    def test_track_report_snippet(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.track_report_snippet(4, 133)
+        self.assertEqual(len(db_return), 3) # a snippet is always 3 tracks
+        # track 3
+        self.assertEqual(db_return[0]["track_pos"], 3)
+        self.assertEqual(db_return[0]["discogs_title"], "Material Love")
+        self.assertEqual(db_return[0]["d_track_no"], "B1")
+        self.assertEqual(db_return[0]["trans_rating"], "")
+        self.assertEqual(db_return[0]["key"], None)
+        self.assertEqual(db_return[0]["bpm"], 140)
+        self.assertEqual(db_return[0]["a_key"], None)
+        self.assertEqual(db_return[0]["a_bpm"], None)
+        # track 4
+        self.assertEqual(db_return[1]["track_pos"], 4)
+        self.assertEqual(db_return[1]["discogs_title"], "The Crane")
+        self.assertEqual(db_return[1]["d_track_no"], "AA")
+        self.assertEqual(db_return[1]["trans_rating"], "")
+        self.assertEqual(db_return[1]["key"], "Am")
+        self.assertEqual(db_return[1]["bpm"], 120)
+        self.assertEqual(db_return[1]["a_key"], None)
+        self.assertEqual(db_return[1]["a_bpm"], None)
+        # track 5
+        self.assertEqual(db_return[2]["track_pos"], 5)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_track_report_occurences(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.track_report_occurences(123456, 'B2')
+        self.assertEqual(len(db_return), 11) # track was used 11 times
+        # check some occurences
+        self.assertEqual(db_return[0]["mix_id"], 125) # first occurence
+        self.assertEqual(db_return[0]["track_pos"], 2) # used at pos 2
+        self.assertEqual(db_return[0]["name"],
+                                      'test 125 last_tr, tr_of_one_mix, one_mix')
+        self.assertEqual(db_return[7]["mix_id"], 132) # 8th occurence
+        self.assertEqual(db_return[7]["track_pos"], 2) # used at pos 2
+        self.assertEqual(db_return[10]["mix_id"], 135) # 11th occurence
+        self.assertEqual(db_return[10]["track_pos"], 2) # used at pos 2
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)

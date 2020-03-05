@@ -774,7 +774,8 @@ class Collection (Database):
         track_pos_after = track_pos + 1
         sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
                            mix_track.d_track_no,
-                           key, bpm, key_notes, trans_rating, trans_notes, notes FROM'''
+                           key, bpm, key_notes, trans_rating, trans_notes, notes,
+                           a_key, a_chords_key, a_bpm FROM'''
         sql_sel+='''
                            mix_track INNER JOIN mix
                              ON mix.mix_id = mix_track.mix_id
