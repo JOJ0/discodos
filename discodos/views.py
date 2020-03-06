@@ -8,7 +8,7 @@ from datetime import date
 
 
 # common view utils, usable in CLI and GUI
-class view_common(ABC):
+class View_common(ABC):
     def shorten_timestamp(self, sqlite_date, text = False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         date_only = datetime.fromisoformat(sqlite_date).date()
@@ -83,76 +83,6 @@ class view_common(ABC):
 
         return value_to_check
 
-# Mix view utils and data, usable in CLI and GUI, related to mixes only
-class Mix_view_common(ABC):
-    def __init__(self):
-        # list of questions a user is asked when editing a mix-track
-        # first list item is the related db-field, second is the question
-        self._edit_track_questions = [
-            ["key", "Key ({}): "],
-            ["bpm", "BPM ({}): "],
-            ["d_track_no", "Track # on record ({}): "],
-            ["track_pos", "Move track's position ({}): "],
-            ["key_notes", "Key notes/bassline/etc. ({}): "],
-            ["trans_rating", "Transition rating ({}): "],
-            ["trans_notes", "Transition notes ({}): "],
-            ["d_release_id", "Release ID ({}): "],
-            ["notes", "Other track notes: ({}): "]
-        ]
-
-# Collection view utils, usable in CLI and GUI, related to Collection only
-class Collection_view_common(ABC):
-    def __init__(self):
-        #super(Collection_view_cli, self).__init__()
-        pass
-
-    def d_tracklist_parse(self, d_tracklist, track_number):
-        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
-        for tr in d_tracklist:
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if tr.position == track_number:
-                return tr.title
-        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
-            track_number))
-        return False # we didn't find the tracknumber
-
-# common view utils, usable in CLI only
-class Cli_view_common(ABC):
-    def print_help(self, message):
-        print(''+str(message)+'\n')
-
-    def ask_user(self, text=""):
-        ''' ask user for something and return answer '''
-        return input(text)
-
-    def ask_user_for_track(self):
-        track_no = self.ask_user("Which track? (A1) ")
-        # FIXME a sanity checker, at least for online search, would be nice here.
-        # also the default value is not checked, eg it could be A in reality!
-        if track_no == '':
-            track_no = 'A1'
-        return track_no
-
-    def tab_mix_table(self, _mix_data, _verbose = False):
-        _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
-        _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
-        for row in _mix_data_nl: # debug only
-           log.debug(str(row))
-        log.debug("")
-        if _verbose:
-            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                       'd_track_no': 'Track\nPos', 'key': 'Key', 'bpm': 'BPM',
-                       'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
-                       'trans_notes': 'Trans.\nR. Notes', 'notes': 'Track\nNotes'}))
-        else:
-            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_track_no': 'Tr\nPos', 'trans_rating': 'Trns\nRat',
-                       'key': 'Key', 'bpm': 'BPM'}))
-
     def trim_table_fields(self, tuple_table):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
@@ -204,8 +134,78 @@ class Cli_view_common(ABC):
             del(table[i]['a_bpm'])
         return table
 
+# Mix view utils and data, usable in CLI and GUI, related to mixes only
+class Mix_view_common(ABC):
+    def __init__(self):
+        # list of questions a user is asked when editing a mix-track
+        # first list item is the related db-field, second is the question
+        self._edit_track_questions = [
+            ["key", "Key ({}): "],
+            ["bpm", "BPM ({}): "],
+            ["d_track_no", "Track # on record ({}): "],
+            ["track_pos", "Move track's position ({}): "],
+            ["key_notes", "Key notes/bassline/etc. ({}): "],
+            ["trans_rating", "Transition rating ({}): "],
+            ["trans_notes", "Transition notes ({}): "],
+            ["d_release_id", "Release ID ({}): "],
+            ["notes", "Other track notes: ({}): "]
+        ]
+
+# Collection view utils, usable in CLI and GUI, related to Collection only
+class Collection_view_common(ABC):
+    def __init__(self):
+        #super(Collection_view_cli, self).__init__()
+        pass
+
+    def d_tracklist_parse(self, d_tracklist, track_number):
+        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
+        for tr in d_tracklist:
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
+            if tr.position == track_number:
+                return tr.title
+        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
+            track_number))
+        return False # we didn't find the tracknumber
+
+# common view utils, usable in CLI only
+class View_common_cli(ABC):
+    def print_help(self, message):
+        print(''+str(message)+'\n')
+
+    def ask_user(self, text=""):
+        ''' ask user for something and return answer '''
+        return input(text)
+
+    def ask_user_for_track(self):
+        track_no = self.ask_user("Which track? (A1) ")
+        # FIXME a sanity checker, at least for online search, would be nice here.
+        # also the default value is not checked, eg it could be A in reality!
+        if track_no == '':
+            track_no = 'A1'
+        return track_no
+
+    def tab_mix_table(self, _mix_data, _verbose = False):
+        _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
+        _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
+        for row in _mix_data_nl: # debug only
+           log.debug(str(row))
+        log.debug("")
+        if _verbose:
+            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
+                       'd_track_no': 'Track\nPos', 'key': 'Key', 'bpm': 'BPM',
+                       'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
+                       'trans_notes': 'Trans.\nR. Notes', 'notes': 'Track\nNotes'}))
+        else:
+            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_track_no': 'Tr\nPos', 'trans_rating': 'Trns\nRat',
+                       'key': 'Key', 'bpm': 'BPM'}))
+
 # viewing mixes in CLI mode:
-class Mix_view_cli(Mix_view_common, Cli_view_common, view_common):
+class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
     def __init__(self):
         super(Mix_view_cli, self).__init__()
 
@@ -237,7 +237,7 @@ class Mix_view_cli(Mix_view_common, Cli_view_common, view_common):
             return True
 
 # viewing collection (search) outputs in CLI mode:
-class Collection_view_cli(Collection_view_common, Cli_view_common, view_common):
+class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
     def __init__(self):
         super(Collection_view_cli, self).__init__()
 
