@@ -1033,8 +1033,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def add_track_to_mix(self, search_tv):
-        pos = self.tracks_list.item(self.tracks_list.focus(), "text")
-        print(pos)
+        element = self.tracks_list.focus()
+        print(element)
+        pos = self.tracks_list.get_children().index(element)
+        print("position", pos)
         # if pos == "":
         #     pos = 0
         # else:
