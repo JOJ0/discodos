@@ -32,37 +32,65 @@ class search_gui(widget_frame):
         self.gui_ctrl = gui_ctrl
         self.build_search_frame()
         self.search_tv_config()
+
+        
     
 
     def build_search_frame(self):
 
-        #artist
-        #release
-        #track
+        self.search_funcs = [
+                '''self.gui_ctrl.display_searched_releases((self.artist_bar.get(), 
+                                                        self.release_bar.get(),
+                                                        self.track_bar.get()),
+                                                        self.search_tv,
+                                                        self.online.get())'''
+                                    ]
 
-        self.search_bar = tk.Entry(self.dock_win)
-        self.search_bar.grid(row=0, column=2, columnspan=6, rowspan=1, sticky="we")
+        self.bar_grid = tk.Frame(self.dock_win)
+
+        tk.Label(self.bar_grid, text="Artist").grid(row=0, column=0, sticky="e")
+        self.artist_bar = tk.Entry(self.bar_grid)
+        self.artist_bar.grid(row=0, column=1, columnspan=6, rowspan=1, sticky="we")
+
+        tk.Label(self.bar_grid, text="Release").grid(row=1, column=0, sticky="e")
+        self.release_bar = tk.Entry(self.bar_grid)
+        self.release_bar.grid(row=1, column=1, columnspan=6, rowspan=1, sticky="we")
+
+        tk.Label(self.bar_grid, text="Track").grid(row=2, column=0, sticky="e")
+        self.track_bar = tk.Entry(self.bar_grid)
+        self.track_bar.grid(row=2, column=1, columnspan=6, rowspan=1, sticky="we")
+
+        self.bar_grid.grid(row=0, column=0, sticky="we")
 
         self.online = tk.IntVar()
         tk.Checkbutton(self.dock_win, text="online", variable=self.online).grid(row=0, column=8, columnspan=2, rowspan=1, sticky="w")
 
+        self.search_tv = ttk.Treeview(self.dock_win)
+        self.search_tv.grid(row=1, column=0, columnspan=10, rowspan=6, sticky="nsew")
+
         self.search_button = tk.Button(self.dock_win, 
                                         text="Search...", 
-                                        command=lambda srch=self.search_bar.get(): 
-                                                            self.gui_ctrl.display_searched_releases(srch, 
-                                                                                                    self.search_tv,
-                                                                                                    self.online.get()))
-        self.search_bar.bind("<Return>", lambda srch=self.search_bar.get(): 
-                                                            self.gui_ctrl.display_searched_releases(srch, 
-                                                                                                    self.search_tv,
-                                                                                                    self.online.get())) 
+                                        command=lambda:eval(self.search_funcs[0]))
 
-        self.search_button.grid(row=0, column=0, columnspan=2, sticky="we")
+        self.artist_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+        self.release_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+        self.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+
+        self.search_button.grid(row=0, column=1, columnspan=2, sticky="we")
         
-        self.search_tv = ttk.Treeview(self.dock_win)
-        self.search_tv.grid(row=1, column=0, columnspan=10, rowspan=8, sticky="nsew")
+        
 
-        self.pg_bar = ttk.Progressbar(self.dock_win, orient="horizontal",mode='indeterminate')
+        self.search_tools = tk.Frame(self.dock_win)
+        self.add_btn = tk.Button(self.search_tools, text="Add Track to Mix", state="disabled", 
+                                                    command = lambda : self.gui_ctrl.add_track_to_mix(self.search_tv)) 
+        self.add_btn.grid(row=0, column=0, sticky="ws")
+        tk.Label(self.search_tools, text="@ Position #").grid(row=0, column=1, sticky="wn")
+        self.pos_entry = tk.Entry(self.search_tools, state="disabled", width=5)
+        self.pos_entry.grid(row=0, column=3, sticky="ws")
+
+        self.search_tools.grid(row=7, column=0, sticky="nsew")
+
+        self.pg_bar = ttk.Progressbar(self.dock_win, orient="horizontal", mode='indeterminate')
         self.pg_bar.grid(row=10, column=0, columnspan=10, rowspan=1, sticky="we")
 
         for i in range(10):
@@ -73,9 +101,10 @@ class search_gui(widget_frame):
     def search_tv_config(self):
         # self.search_tv['show'] = 'headings'
         self.search_cols = {
-                        "name" : "Name", 
-                        "artist" : "Artist", 
-                        "id" : "ID", 
+                        "1" : "", 
+                        "2" : "", 
+                        "3" : "", 
+                        "4" : "" 
                         }
 
         self.search_tv["columns"] = tuple(self.search_cols)
@@ -85,10 +114,19 @@ class search_gui(widget_frame):
         for col_id, heading in self.search_cols.items():
             self.search_tv.column(col_id, width=5, stretch=1)
             self.search_tv.heading(col_id,text=heading, anchor="w")
+        
+        self.search_tv.bind('<<TreeviewSelect>>', lambda a : self.search_tools_config())
 
 
     def progress(self, currentValue):
         pg_bar["value"]=currentValue
+
+
+    def search_tools_config(self):
+        if self.add_btn['state'] == "disabled":
+            self.add_btn.config(state='normal')
+            self.pos_entry.config(state='normal')
+        
 
     
 

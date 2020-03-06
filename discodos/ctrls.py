@@ -5,6 +5,10 @@ from abc import ABC, abstractmethod
 from discodos import log
 import pprint as p
 
+import tkinter as tk
+from tkinter import ttk
+import tkinter.font as tkfont
+
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
     def __init__():
@@ -195,7 +199,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if rel_list:
             self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
         else:
-            log.error("No release to add to mix.")
+            log.error("No release to add.")
 
 
     # _add_track should only be called from add_offline_track() and add_discogs_track()
@@ -579,7 +583,13 @@ class Coll_ctrl_common (ABC):
 
 # Collection controller class
 class Coll_ctrl_cli (Coll_ctrl_common):
-    '''manages the record collection, offline and with help of discogs data'''
+    """
+    manages the record collection, offline and with help of discogs data
+
+    @param
+    @return
+    @author
+    """
 
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
             _db_file = False, _musicbrainz_user = False, _musicbrainz_pass = False):
@@ -615,24 +625,31 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         if self.collection.ONLINE:
             if is_number(_searchterm):
                 print_help('Searchterm is a number, trying to add Release ID to collection...')
-                if not self.add_release(int(_searchterm)):
-                    log.warning("Release wasn't added to Collection, continuing anyway.")
+                self.add_release(int(_searchterm))
 
             db_releases = self.collection.get_all_db_releases()
             print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_online(_searchterm)
+
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.cli.print_found_discogs_release(
-                  search_results, _searchterm, db_releases)
+                                        search_results, _searchterm, db_releases)
             return compiled_results_list
+            #if compiled_results_list:
+            #    if len(compiled_results_list) == 1:
+            #        print_help('Found release: {}'.format(compiled_results_list[0][1]))
+            #        return compiled_results_list
+            #    else:
+            #        print_help('Found several releases:')
+            #        for cnt,release in enumerate(compiled_results_list):
+            #            print_help('{} - {}'.format(cnt, release[1]))
+            #        answ = int(self.cli.ask_user('Which release? '))
+            #        return [compiled_results_list[answ]]
 
         else:
             print_help('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
-            if not search_results:
-                print_help('Nothing found.')
-                return False
-            else:
+            if search_results:
                 if len(search_results) == 1:
                     print_help('Found release: {} - {}'.format(search_results[0][3],
                                                           search_results[0][1]))
@@ -641,6 +658,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     print_help('Found several releases:')
                     for cnt,release in enumerate(search_results):
                         print_help('({}) {} - {}'.format(cnt, release[3], release[1]))
+                        #for col in release:
+                        #    print(col)
                     #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
                     #print(num_search_results)
                     answ = self.cli.ask_user('Which release? (0) ')
@@ -650,6 +669,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                         answ = int(answ)
                     return [search_results[answ]]
                     #return num_search_results[answ][0]
+            else:
+                print_help('Nothing found.')
+                return False
 
     def view_all_releases(self):
         self.cli.print_help("Showing all releases in DiscoBASE.")
@@ -685,35 +707,32 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     # ADD RELEASE TO COLLECTION
     def add_release(self, release_id):
         self.cli.exit_if_offline(self.collection.ONLINE)
-        if not is_number(release_id):
-            log.error('Not a number')
-            return False
-        else:
-            # setup.py argparser catches non-int, this is for calls from elsewhere
+        #if args.add_release_id:
+        if is_number(release_id):
+            # setup.py argparser only allows integer, this is for calls from somewhere else
+            #if db.search_release_id(conn, args.add_release_id):
             if self.collection.search_release_id(release_id):
-                msg = "Release ID is already existing in DiscoBASE, "
-                msg+= "won't add it to your Discogs collection. We don't want dups!"
-                self.cli.print_help(msg)
+                self.cli.print_help(
+                  "Release ID is already existing in DiscoBASE, won't add it to your Discogs collection."
+                   )
             else:
                 self.cli.print_help("Asking Discogs if release ID {:d} is valid.".format(
                        release_id))
-                result = self.collection.get_d_release(release_id)
+                result = self.collection.d.release(release_id)
+                artists = self.collection.d_artists_to_str(result.artists)
                 if result:
-                    artists = self.collection.d_artists_to_str(result.artists)
                     log.debug(dir(result))
                     self.cli.print_help("Adding \"{}\" to collection".format(result.title))
                     for folder in self.collection.me.collection_folders:
                         if folder.id == 1:
                             folder.add_release(release_id)
+                            #import_release(conn, d, me, args.add_release_id)
+                            #last_row_id = db.create_release(conn, result, collection_item = False)
                             last_row_id = self.collection.create_release(result.id,
                                     result.title, artists, d_coll = True)
                     if not last_row_id:
+                        #self.cli.print_help("This is not the release you are looking for!")
                         self.cli.error_not_the_release()
-                    log.debug("Discogs release was maybe added to Collection")
-                    return True
-                else:
-                    log.debug("No Discogs release. Returning False")
-                    return False
 
     # import specific release ID into DB
     def import_release(self, _release_id):
@@ -813,8 +832,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
                         mix_cols, 
                         track_cols, 
                         mix_list, 
-                        tracks_list):
+                        tracks_list,
+                        start_up):
 
+        self.start_up = start_up
         self.db_conn = db_conn
         self.mix_cols = mix_cols
         self.track_cols = track_cols
@@ -867,8 +888,9 @@ class mix_ctrl_gui(Mix_ctrl_common):
                                                         none_checker(row["trans_rating"]), 
                                                         none_checker(row["trans_notes"]), 
                                                         none_checker(row["notes"])))
- 
-        self.col_widths(self.tracks_list, self.track_cols)
+        if self.start_up == True:
+            self.col_widths(self.tracks_list, self.track_cols)
+            self.start_up = False
 
 
 
@@ -886,6 +908,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
                     width_vals[col_id].append(tkfont.Font().measure(none_checker(row[col_id])))
                 except:
                     width_vals[col_id].append(10)
+                    
 
         for col_id, heading in headings.items():
             tree_view.column(col_id, width=max(width_vals[col_id]), minwidth=tkfont.Font().measure(heading), stretch=1)
@@ -935,40 +958,99 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def remove_track_from_mix(self, selected_mix_id, selected_track_id):
         mix = Mix(self.db_conn, selected_mix_id)
         mix.delete_track(selected_track_id)
+        mix.reorder_tracks(selected_track_id)
         self.display_tracklist(selected_mix_id)
+        self.focus_object(self.tracks_list, selected_track_id-1)
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         mix = Mix(self.db_conn, selected_mix_id)
-        mix.reorder_tracks
+        mix.shift_track(selected_track_id, direction)
+        self.display_tracklist(selected_mix_id)
+        # if direction == 'down':
+        #     self.focus_object(self.tracks_list, selected_track_id-1)
+        # elif direction == 'up':
+        #     self.focus_object(self.tracks_list, selected_track_id+1)
 
     def display_searched_releases(self, search_terms, search_tv, online):
+        grouped_releases = []
+        search_tv.delete(*search_tv.get_children())
         coll = Collection(self.db_conn)
+        # print(search_terms)
+
         if online == 0:
             found_releases = coll.search_release_track_offline(search_terms[0], search_terms[1], search_terms[2])
-
+            grouped_releases = self.group_releases(found_releases)
+            # print(grouped_releases)
             # print(search_term, found_releases)
 
             release_levels = {}
-            if found_releases is not None:
-                for i, release in enumerate(found_releases):
-                    print(rel)
-                    # release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
-                    # for j in range(2):
-                    #    search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
-            else:
-                log.error("GUI: No offline Releases Found")
+            i = 0
+            for release, details in grouped_releases.items():
+                release_levels[i] = search_tv.insert("", i, text="", values=([release]))
+                for j, track_detail in enumerate(details):
+                       search_tv.insert(release_levels[i],j, text="", values=(track_detail[0], track_detail[1], track_detail[2], track_detail[3]))
+                i += 1
 
         elif online == 1:
             found_releases = coll.search_release_online(search_term)
-            print(search_term, found_releases)
+            grouped_releases = self.group_releases(found_releases)
+            print(grouped_releases)
+            # print(search_term, found_releases)
             release_levels = {}
             if found_releases is not None:
                 for i, release in enumerate(found_releases):
-                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["discogs_id"]))
+                    release_levels[i] = search_tv.insert("", i, text="", values=(release["discogs_title"],release["d_artist"], release["d_track_no"]))
                     for j in range(2):
                        search_tv.insert(release_levels[i],j, text="", values=("Test Track"))
             else:
                 log.error("GUI: No online Releases Found")
+
+    
+    def group_releases(self, found_releases):
+        all_releases = {}
+        temp = []
+
+        for release in found_releases:
+            temp.append(release["discogs_title"])
+        
+        unique_releases = list(set(temp))
+
+        for uni_rel in unique_releases:
+            all_releases[uni_rel] = []
+            for release in found_releases:
+                if release["discogs_title"] == uni_rel:
+                    all_releases[uni_rel].append([release["d_track_no"], release["discogs_title"], release["d_artist"], release["d_release_id"] ])
+
+        return all_releases
+
+
+    def focus_object(self, tree_view, pos):
+        # print(pos)
+        child_id = tree_view.get_children()[int(pos)]
+        # print(pos)
+        tree_view.focus(child_id)
+        tree_view.selection_set(child_id)
+
+
+    def add_track_to_mix(self, search_tv):
+        pos = self.tracks_list.item(self.tracks_list.focus(), "text")
+        print(pos)
+        # if pos == "":
+        #     pos = 0
+        # else:
+        #     pos = int(pos) - 1
+        sel_mix_id = self.mix_list.item(self.mix_list.focus(),"text")
+        mix = Mix(self.db_conn, sel_mix_id)
+        cur_item = search_tv.item(search_tv.focus())
+        mix.add_track(cur_item["values"][3], cur_item["values"][0], pos)
+        mix.reorder_tracks
+        tracks_to_shift = mix.get_tracks_from_position(pos)
+        mix.reorder_tracks_squeeze_in(pos, tracks_to_shift)
+        self.display_tracklist(sel_mix_id)
+        # self.focus_object(self.tracks_list, int(pos)+1)
+
+        # TODO: make track position numbering okay
+
     
 
 class setup_controller():

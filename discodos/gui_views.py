@@ -11,29 +11,32 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
 from tabulate import tabulate as tab
+from PIL import Image, ImageTk
+
 
 
 #################################
 
 class main_frame():
     def __init__(self, conn=False):
+
+        self.start_up = True
+
         log.debug("############################################################")
         log.debug("###########DISCODOS#LOG#START##############################")
         log.debug("############################################################")
         self.search_open = False
         self.main_win = tk.Tk()  
 
-        try:
-            self.background_image = tk.PhotoImage("..\assets\editor.png")
-        except:
-            log.error("GUI: Couldn't Load Image")
-
-        # self.background_label = tk.Label(self.main_win, image=self.background_image)
-        # self.background_label.image = self.background_image
-        # self.background_label.place(x=0, y=0, relwidth=1, relheight=1)   
+        image = Image.open("assets/editor.png")
+        self.background_image = ImageTk.PhotoImage(image)
+        
+        
 
         self.main_win.geometry("800x600")     
         self.main_win.minsize(800, 600)
+
+        
         
 
         self.main_win.title("Discodos") # TODO: Add relevant Information to title, like Titles in Mix etc
@@ -49,21 +52,23 @@ class main_frame():
                                             self.mix_cols, 
                                             self.track_cols, 
                                             self.mix_list, 
-                                            self.tracks_list)
+                                            self.tracks_list,
+                                            self.start_up)
 
-        self.save_funcs =   [ 
-                            self.gui_ctrl.save_track_data,
-                            self.gui_ctrl.save_mix_data,
-                            self.gui_ctrl.delete_selected_mix,
-                            self.gui_ctrl.remove_track_from_mix,
-                            self.gui_ctrl.move_track_pos
-                            ]
+        self.editor_funcs=   {
+                            "save_track" : self.gui_ctrl.save_track_data,
+                            "save_mix" : self.gui_ctrl.save_mix_data,
+                            "delete_mix" : self.gui_ctrl.delete_selected_mix,
+                            "remove_track" : self.gui_ctrl.remove_track_from_mix,
+                            "move_track" : self.gui_ctrl.move_track_pos
+                            }
 
 
         self.create_toolbars()
-        self.focus_first_object(self.mix_list)
+        # self.focus_first_object(self.mix_list)
         self.gui_ctrl.display_all_mixes()
         self.show_tracklist()
+        self.spawn_editor("start")
 
         
                     
@@ -80,25 +85,10 @@ class main_frame():
         
     def show_tracklist(self):
         self.gui_ctrl.display_tracklist(self.mix_list.item(self.mix_list.focus(),"text"))
-        # self.focus_first_object(self.tracks_list)
-        self.spawn_editor(self.mix_list)
+        self.spawn_editor(0)
 
 
-
-    def focus_first_object(self, tree_view):
-        try:
-            start_child_id = tree_view.get_children()[0]
-            tree_view.focus(start_child_id)
-            tree_view.selection_set(start_child_id)
-
-            log.debug("GUI: Set Focus on first Item")
-
-        except:
-            log.error("GUI: Couldn't Set Focus on first Item")
-            self.status.set("Couldn't Set Focus on first Item")
-
-        self.spawn_editor(tree_view)
-
+    
     #############################################################
     # COLUMN SORTING FUNCTION
     ############################################################
@@ -176,128 +166,140 @@ class main_frame():
             self.tracks_list.heading(col_id, text=heading,anchor=tk.W)
 
         self.mix_list.bind('<<TreeviewSelect>>', lambda a : self.show_tracklist())
-        self.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.spawn_editor(self.tracks_list))
+        self.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.spawn_editor(1))
+
 
     ####################################
     # EDITOR
     ###################################
 
-    def spawn_editor(self, tree_view):
-        self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
-        # self.bg_frame = tk.Label(self.main_win, image=self.editor_image)
-        
-        if tree_view != False:
-            data = tree_view.item(tree_view.focus())
-        else:
-            data = self.mix_list.item(self.mix_list.focus())
+    def spawn_editor(self, editor_view):
 
+        ########### PREPARATION ###############
+
+        self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
         self.move_frame = tk.Frame(self.editor_frame)
 
-        try:
-            for en in self.editor_entries:
-                en.destroy()
-            for lab in self.editor_labels:
-                lab.destroy()
+        try: 
+            for name, lst in self.editor_entries.items():
+                for elem in lst:
+                        elem.destroy()
         except:
             pass
-
-        try:
-            self.save_btn.destroy()
-            self.del_btn.destroy()
-            self.up_btn.destroy()
-            self.down_btn.destroy()
-            self.move_label.destroy()
-        except:
-            pass
-
-
-        if tree_view == self.mix_list:
-            headings = list(self.mix_cols)
-            self.save_btn = tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.save_funcs[1]( self.editor_entries,
-                                                                                                                 self.mix_list.item(self.mix_list.focus(),"text")))
-
-            self.del_btn = tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.save_funcs[2](self.mix_list.item(self.mix_list.focus(),"text")))
+           
         
-        elif tree_view == self.tracks_list:
-            headings = list(self.track_cols)
-            self.save_btn = tk.Button(self.editor_frame, text="Save Track", command=lambda : self.save_funcs[0](  self.editor_entries,
-                                                                                                                    self.mix_list.item(self.mix_list.focus(),"text")))
 
-            self.del_btn = tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.save_funcs[3]( self.mix_list.item(self.mix_list.focus(),"text"), 
-                                                                                                                data["values"][0]))
 
-            self.up_btn = tk.Button(self.move_frame, text="^", command=lambda : self.save_funcs[4]( self.mix_list.item(self.mix_list.focus(),"text"), 
+        ############### SWITCH ###################
+
+        self.editor_entries = {
+            "labels" : [],
+            "entries": [],
+            "buttons": []
+        }
+
+        if editor_view == 0:
+            show_entries = True
+            headings = list(self.mix_cols.values())
+            data = self.mix_list.item(self.mix_list.focus())
+
+
+            self.editor_entries["buttons"].append([
+                tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.editor_funcs["save_mix"]( self.editor_entries["entries"],
+                                                                                                                 self.mix_list.item(self.mix_list.focus(),"text"))),
+                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.mix_list.item(self.mix_list.focus(),"text")))
+            ])
+
+
+        elif editor_view == 1:
+            show_entries = True
+            headings = list(self.track_cols.values()) 
+            data = self.tracks_list.item(self.tracks_list.focus())
+
+            self.editor_entries["buttons"].append([
+                tk.Button(self.editor_frame, text="Save Track", command=lambda : self.editor_funcs["save_track"](  self.editor_entries["entries"],
+                                                                                                                    self.mix_list.item(self.mix_list.focus(),"text"))),
+                tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.editor_funcs["remove_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
+                                                                                                                data["values"][0])),
+                tk.Button(self.move_frame, text="^", command=lambda : self.editor_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
                                                                                                                 data["values"][0],
-                                                                                                                "up"))
-                
-            self.down_btn = tk.Button(self.move_frame, text="V", command=lambda : self.save_funcs[4]( self.mix_list.item(self.mix_list.focus(),"text"), 
+                                                                                                                "up")),
+                tk.Button(self.move_frame, text="V", command=lambda : self.editor_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
                                                                                                                 data["values"][0],
                                                                                                                 "down"))
-        elif tree_view == False:
-            headings = list(self.mix_cols)
-            self.save_btn = tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.save_funcs[1](self.editor_entries,
+            ])
+            
+        elif editor_view == 2:
+            show_entries = True
+            headings = list(self.mix_cols.values())
+            data = {}
+            data["values"] = []
+            for elem in headings:  
+                data["values"].append("")
+
+            self.editor_entries["buttons"].append([
+                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs[1](self.editor_entries["entries"],
                                                                                                                     self.mix_list.item(self.mix_list.focus(),"text")))
-
-
-        ######################################
-        # TODO: Refcator these two lists to Dict
+            ])
         
-        self.editor_entries = []
-        self.editor_labels = []
+        elif editor_view == "start":
+            editor_image = tk.Label(self.editor_frame, image=self.background_image)
+            editor_image.grid(row=0, column=0, sticky="nsew")
+            headings = []
+            data = {}
+            data["values"] = []
 
-        if tree_view != False:
+
+
+        ######### DESTILLERY ###########
+
+        try:
             for i, val  in enumerate(data["values"]):
                 lab = tk.Label(self.editor_frame, text=headings[i])
                 lab.grid(row=i, column=0, sticky="w")
-                self.editor_labels.append(lab)
+                self.editor_entries["labels"].append(lab)
                 en = tk.Entry(self.editor_frame)
                 en.grid(row=i, column=1, sticky="w")
                 
                 en.insert(0, data["values"][i])
-                self.editor_entries.append(en)
+                self.editor_entries["entries"].append(en)
 
-                if tree_view == self.mix_list:
-                    self.editor_entries[0].config(state='disabled')
-
-                if tree_view == self.tracks_list:    
-                    for i, en in enumerate(self.editor_entries):
-                        if i == 0 or i == 1 or i == 2:
-                            self.editor_entries[i].config(state='disabled')
                 
-        else:
-            for i, heading  in enumerate(self.mix_cols):
-                lab = tk.Label(self.editor_frame, text=heading)
-                lab.grid(row=i, column=0, sticky="w")
-                self.editor_labels.append(lab)
-                en = tk.Entry(self.editor_frame)
-                en.grid(row=i, column=1, sticky="w")
-                self.editor_entries.append(en)
-                self.editor_entries[0].config(state='disabled')
+        except:
+            pass
+
+        ######## WHICH ENTRIES ARE DISABLED ###########
         
+        for i, en in enumerate(self.editor_entries["entries"]):
+            if editor_view == 0:
+                self.editor_entries["entries"][0].config(state='disabled')
+            elif editor_view == 1:  
+                if i == 0 or i == 1 or i == 2:
+                    self.editor_entries["entries"][i].config(state='disabled')
 
-
-        if tree_view == self.tracks_list:
-            self.up_btn.grid(row=0, column=0, sticky="w")
-            self.down_btn.grid(row=0, column=1, sticky="w")
-            self.move_label = tk.Label(self.editor_frame, text="Move Track")
-            self.move_label.grid(row=len(self.editor_entries)+1, column=0, sticky="w")
-            self.move_frame.grid(row=len(self.editor_entries)+1, column=1, sticky="w")
-
-        if tree_view == False:
-            self.save_btn.grid(row=len(self.editor_entries)+2, column=0, sticky="w")
+        ########### BUTTONS ###########
         
-
         if data["values"] != "":
-            if tree_view != False:
-                self.save_btn.grid(row=len(self.editor_entries)+2, column=0, sticky="w")
-                self.del_btn.grid(row=len(self.editor_entries)+2, column=1, sticky="w")
-        
-        
-        # self.bg_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
-        
-        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
+            col_count = 0
+            row_count = 2
+            for lst in self.editor_entries["buttons"]:
+                for obj in lst:
+                    if col_count == 1:
+                        count = 0
+                    obj.grid(row=len(self.editor_entries["entries"])+row_count, column=col_count, sticky="w")
+                    if col_count == 1:
+                        row_count += 1
+                    col_count += 1
 
-    
+
+        ########### SHOW ##############
+
+        if editor_view == 1:
+            self.move_frame.grid(row=len(self.editor_entries["entries"])+1, column=1, sticky="w")
+
+        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
+            
+
     def create_toolbars(self):
 
         #########################################################################
@@ -316,13 +318,9 @@ class main_frame():
 
         self.toolbox = tk.LabelFrame(self.main_win, text="Toolbox")
         
-        self.new_mix_btn = tk.Button(self.toolbox, text="New Mix", command=lambda: self.spawn_editor(False))
+        self.new_mix_btn = tk.Button(self.toolbox, text="New Mix", command=lambda: self.spawn_editor(2))
         self.new_mix_btn.grid(row=0, column=0, sticky="w")
 
-
-        ###########################
-        # EDITOR
-        ########################
 
 
 
