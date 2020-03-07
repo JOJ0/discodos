@@ -8,14 +8,62 @@ from discodos import log
 from discodos.utils import *
 import asyncio
 #from codetiming import Timer
+import argparse
+from sys import argv
+
+
+def argparser(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+		"-v", "--verbose", dest="verbose_count",
+        action="count", default=0,
+        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
+    parser_group1 = parser.add_mutually_exclusive_group()
+    #parser_group1.add_argument(
+	#	"-x", "--xxx", dest="xxx",
+    #    type=int, default=False, nargs="*",
+    #    help="")
+    parser_group1.add_argument(
+		"--backup",
+        action='store_true',
+        help="")
+    parser_group1.add_argument(
+		"--restore",
+        action='store_true',
+        help="")
+    parser_group1.add_argument(
+		"--show",
+        action='store_true',
+        help="")
+    arguments = parser.parse_args(argv[1:])
+    log.info("Console log_level currently set to {} via config.yaml or default.".format(
+        log.handlers[0].level))
+    # Sets log level to WARN going more verbose for each new -v.
+    cli_level = max(3 - arguments.verbose_count, 0) * 10
+    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
+        log.handlers[0].setLevel(cli_level)
+        log.warning("Console log_level override via cli (sync.py). Now set to {}.".format(
+            log.handlers[0].level))
+    return arguments
 
 async def main():
     conf=Config()
     log.handlers[0].setLevel("INFO") # handler 0 is the console handler
     sync = Sync(conf.dropbox_token, conf.discobase.name)
-    await sync._async_init()
-    await sync.backup()
-    await sync.select_revision()
+    args = argparser(argv)
+    if args.backup:
+        await sync._async_init()
+        await sync.backup()
+    elif args.restore:
+        await sync._async_init()
+        await sync.print_revisions()
+        rev = ask_user('Which revision do you want to restore? ')
+        await sync.restore(rev)
+    elif args.show:
+        await sync._async_init()
+        await sync.print_revisions()
+    else:
+        log.error("Missing arguments.")
 
 class Sync(object):
     def __init__(self, token, db_file):
@@ -86,7 +134,7 @@ class Sync(object):
         self.dbx.files_download_to_file(self.discobase, self.backuppath, rev)
 
     # Look at all of the available revisions on Dropbox, and return the oldest one
-    async def select_revision(self):
+    async def print_revisions(self):
         # Get the revisions for a file (and sort by the datetime object, "server_modified")
         print("Finding available revisions on Dropbox...")
         entries = self.dbx.files_list_revisions(self.backuppath, limit=30).entries
