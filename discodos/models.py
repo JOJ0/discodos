@@ -410,7 +410,11 @@ class Mix (Database):
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
-            new_pos = t['track_pos'] + 1
+            if t['track_pos'] != "":
+                new_pos = t['track_pos'] + 1
+            else:
+                new_pos = 1
+
             log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
                      t['track_pos'], new_pos)
             #if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):

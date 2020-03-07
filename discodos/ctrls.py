@@ -1035,7 +1035,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def add_track_to_mix(self, search_tv):
         element = self.tracks_list.focus()
         print(element)
-        pos = self.tracks_list.get_children().index(element)
+        pos = self.tracks_list.get_children().index(element)+1
         print("position", pos)
         # if pos == "":
         #     pos = 0
@@ -1044,9 +1044,8 @@ class mix_ctrl_gui(Mix_ctrl_common):
         sel_mix_id = self.mix_list.item(self.mix_list.focus(),"text")
         mix = Mix(self.db_conn, sel_mix_id)
         cur_item = search_tv.item(search_tv.focus())
-        mix.add_track(cur_item["values"][3], cur_item["values"][0], pos)
-        mix.reorder_tracks
         tracks_to_shift = mix.get_tracks_from_position(pos)
+        mix.add_track(cur_item["values"][3], cur_item["values"][0], pos)
         mix.reorder_tracks_squeeze_in(pos, tracks_to_shift)
         self.display_tracklist(sel_mix_id)
         # self.focus_object(self.tracks_list, int(pos)+1)

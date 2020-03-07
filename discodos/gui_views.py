@@ -238,8 +238,8 @@ class main_frame():
                 data["values"].append("")
 
             self.editor_entries["buttons"].append([
-                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs[1](self.editor_entries["entries"],
-                                                                                                                    self.mix_list.item(self.mix_list.focus(),"text")))
+                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],
+                                                                                                        self.mix_list.item(self.mix_list.focus(),"text")))
             ])
         
         elif editor_view == "start":
