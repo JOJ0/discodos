@@ -56,10 +56,12 @@ async def main():
         await sync.backup()
     elif args.restore:
         await sync._async_init()
-        await sync.select_revision()
+        await sync.print_revisions()
+        rev = ask_user('Which revision do you want to restore? ')
+        await sync.restore(rev)
     elif args.show:
         await sync._async_init()
-        await sync.select_revision()
+        await sync.print_revisions()
     else:
         log.error("Missing arguments.")
 
@@ -132,7 +134,7 @@ class Sync(object):
         self.dbx.files_download_to_file(self.discobase, self.backuppath, rev)
 
     # Look at all of the available revisions on Dropbox, and return the oldest one
-    async def select_revision(self):
+    async def print_revisions(self):
         # Get the revisions for a file (and sort by the datetime object, "server_modified")
         print("Finding available revisions on Dropbox...")
         entries = self.dbx.files_list_revisions(self.backuppath, limit=30).entries
