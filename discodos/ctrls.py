@@ -441,16 +441,14 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             release_mbid = _url_match(d_release_id, mb_releases)
             if release_mbid:
                 release_match_method = 'Discogs URL'
-
+            # and then catno-match
             if not release_mbid:
-                # and then catno-match
                 release_mbid = _catno_match(d_catno, mb_releases)
                 if release_mbid:
                     release_match_method = 'CatNo (exact)'
-
+            # and now try again with some name variation tricks
+            # sometimes digital releases have additional D at end or in between
             if not release_mbid:
-                # and now try again with some name variation tricks
-                # sometimes digital release CatNos end with additional D
                 release_mbid = _catno_match(d_catno, mb_releases, variations = True)
                 if release_mbid:
                     release_match_method = 'CatNo (variation)'
