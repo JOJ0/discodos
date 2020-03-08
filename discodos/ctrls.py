@@ -4,6 +4,7 @@ from discodos.views import *
 from abc import ABC, abstractmethod
 from discodos import log
 import pprint as p
+import re
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
@@ -312,6 +313,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
+        def _getNumericTail(str):
+            return re.split('[^\d]', str)[-1]
+
         def _url_match(_d_release_id, _mb_releases):
             '''finds Release MBID by looking through Discogs links.'''
             for release in _mb_releases['release-list']: # 1st: exact url match
@@ -342,12 +346,27 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 full_rel = coll_ctrl.brainz.get_mb_release_by_id(release['id'])
 
                 for mb_label_item in full_rel['release']['label-info-list']:
-                    mb_catno = coll_ctrl.brainz.get_catno_from_mb_label(
-                        mb_label_item).replace(' ', '') # always strip whitespace
+                    mb_catno_orig = coll_ctrl.brainz.get_catno_from_mb_label(mb_label_item)
+                    mb_catno = mb_catno_orig.replace(' ', '') # strip whitespace
                     if variations:
+                        log.info(
+                          'CTRL: ...MB CatNo: {} (original)'.format(mb_catno))
                         if mb_catno[-1:] == 'D' or mb_catno[-1:] == 'd':
                             mb_catno = mb_catno[:-1]
-                    log.info('CTRL: ...MB CatNo: {}'.format(mb_catno))
+                            log.info('CTRL: ...MB CatNo: {} (D-end cut off)'.format(
+                              mb_catno))
+                        else:
+                            mb_numtail = re.split('[^\d]', mb_catno)[-1]
+                            if mb_numtail:
+                                mb_beforenum = re.split('[^\D]', mb_catno)[0]
+                                mb_lastchar = mb_beforenum[-1:]
+                                if  mb_lastchar == 'D' or mb_lastchar == 'd':
+                                    until_d = mb_beforenum[0:-1]
+                                    mb_catno = '{}{}'.format(until_d, mb_numtail)
+                                    log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
+                                      mb_catno))
+                    else:
+                        log.info('CTRL: ...MB CatNo: {}'.format(mb_catno))
                     if mb_catno == _d_catno:
                         log.info(
                           'CTRL: Found MusicBrainz release match (via CatNo)')
@@ -392,8 +411,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             rec_mbid, rec_match_method = None, None         # in this order
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
-            log.info('CTRL: Trying to match Discogs release {}...'.format(
-                mix_track['d_release_id']))
+            log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
+                mix_track['d_release_id'], mix_track['discogs_title']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
             if not d_rel:
                 log.warning("Skipping. Cant't fetch Discogs release.".format(d_rel))
@@ -416,7 +435,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 if not mix_track['d_catno']: # no label name in db -> ask discogs
                     d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
                 else:
-                    d_catno = mix_track['d_track_name']
+                    d_catno = mix_track['d_catno']
 
             # MBID Release search
             # try most likely match first: search artist title catno
