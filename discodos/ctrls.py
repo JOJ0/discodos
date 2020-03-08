@@ -313,9 +313,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
-        def _getNumericTail(str):
-            return re.split('[^\d]', str)[-1]
-
         def _url_match(_d_release_id, _mb_releases):
             '''finds Release MBID by looking through Discogs links.'''
             for release in _mb_releases['release-list']: # 1st: exact url match
@@ -397,7 +394,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         if self.mix.id_existing:
             self.cli.print_help("Let's update current mixes tracks with info from AcousticBrainz...")
-            #mixed_tracks = self.mix.get_tracks_of_one_mix(start_pos)
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
