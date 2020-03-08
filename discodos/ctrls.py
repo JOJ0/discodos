@@ -376,8 +376,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             for medium in _mb_release['release']['medium-list']:
                 for pos, track in enumerate(medium['track-list']):
                     _rec_title = track['recording']['title']
-
-                    if _rec_title.lower() == d_track_name.lower(): # ignore case diffs
+                    _rec_title_low = _rec_title.lower()
+                    _d_track_name_low = _d_track_name.lower()
+                    if _rec_title_low == _d_track_name_low: # ignore case diffs
                         _rec_id = track['recording']['id']
                         log.info('CTRL: Track name matches: {}'.format(
                             _rec_title))
@@ -434,9 +435,14 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_catno = mix_track['d_catno']
 
             # MBID Release search
+            # lower-case search terms
+            d_artist = ''
+            if mix_track['d_artist']:
+                d_artist = mix_track['d_artist'].lower()
+            discogs_title = mix_track['discogs_title'].lower()
             # try most likely match first: search artist title catno, be strict
             mb_releases = coll_ctrl.brainz.search_mb_releases(
-                mix_track['d_artist'], mix_track['discogs_title'], d_catno,
+                d_artist, discogs_title, d_catno,
                   limit = 5, strict = True)
             # first url-match
             release_mbid = _url_match(d_release_id, mb_releases)
