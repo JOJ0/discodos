@@ -954,13 +954,15 @@ class Brainz (object):
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False
 
-    def search_mb_releases(self, artist, album, cat_no = False, limit = 10):
+    def search_mb_releases(self, artist, album, cat_no = False,
+          limit = 10, strict = False):
         try:
             if cat_no:
                 return m.search_releases(artist=artist, release=album,
-                    catno = cat_no, limit=limit)
+                    catno = cat_no, limit=limit, strict=strict)
             else:
-                return m.search_releases(artist=artist, release=album, limit=5)
+                return m.search_releases(artist=artist, release=album,
+                    limit=limit, strict=strict)
         except WebServiceError as exc:
             log.error("requesting data from MusicBrainz: %s" % exc)
             return False

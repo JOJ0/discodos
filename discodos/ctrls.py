@@ -434,9 +434,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_catno = mix_track['d_catno']
 
             # MBID Release search
-            # try most likely match first: search artist title catno
+            # try most likely match first: search artist title catno, be strict
             mb_releases = coll_ctrl.brainz.search_mb_releases(
-                mix_track['d_artist'], mix_track['discogs_title'], d_catno, 5)
+                mix_track['d_artist'], mix_track['discogs_title'], d_catno,
+                  limit = 5, strict = True)
             # first url-match
             release_mbid = _url_match(d_release_id, mb_releases)
             if release_mbid:
