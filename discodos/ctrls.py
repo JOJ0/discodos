@@ -390,6 +390,27 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 _d_track_name, _rec_title))
             return False
 
+        def _track_no_match(_d_track_name, _d_track_no, _mb_release):
+            #pprint.pprint(_mb_release) # human readable json
+            for medium in _mb_release['release']['medium-list']:
+                #track_count = len(medium['track-list'])
+                for track in medium['track-list']:
+                    _rec_title = track['recording']['title']
+                    track_number = track['number'] # could be A, AA, ..
+                    track_position = track['position'] # starts at 1
+                    #if (_d_track_pos == 'A' or _d_track_pos == 'A1' and
+                    #    pos == 0):
+                    if track_number == _d_track_no:
+                        _rec_id = track['recording']['id']
+                        log.info('CTRL: Track number matches: {}'.format(
+                            _rec_title))
+                        log.info('CTRL: Recording MBID: {}'.format(
+                            _rec_id)) # finally we have a rec MBID
+                        return _rec_id
+            log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
+                _d_track_name, _rec_title))
+            return False
+
         if not coll_ctrl.ONLINE:
             self.cli.print_help("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
@@ -409,6 +430,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             rec_mbid, rec_match_method = None, None         # in this order
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
+            d_track_no = mix_track['d_track_no']
             log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
                 mix_track['d_release_id'], mix_track['discogs_title']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
@@ -434,6 +456,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
                 else:
                     d_catno = mix_track['d_catno'].replace(' ', '')
+
+                # get_discogs_track_numerical_pos here
 
             # MBID Release search
             # lower-case search terms
@@ -494,6 +518,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 rec_mbid = _track_name_match(d_track_name, matched_rel)
                 if rec_mbid:
                     rec_match_method = 'Track name'
+
+                if not rec_mbid:
+                    rec_mbid = _track_no_match(d_track_name, d_track_no, matched_rel)
+                    rec_match_method = 'Track position'
 
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
