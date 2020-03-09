@@ -390,16 +390,15 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 _d_track_name, _rec_title))
             return False
 
-        def _track_no_match(_d_track_name, _d_track_no, _mb_release):
+        def _track_no_match(_d_track_name, _d_track_no, _d_track_numerical, _mb_release):
             #pprint.pprint(_mb_release) # human readable json
+            _d_track_numerical = int(_d_track_numerical) # make sure it's int
             for medium in _mb_release['release']['medium-list']:
                 #track_count = len(medium['track-list'])
                 for track in medium['track-list']:
                     _rec_title = track['recording']['title']
                     track_number = track['number'] # could be A, AA, ..
-                    track_position = track['position'] # starts at 1
-                    #if (_d_track_pos == 'A' or _d_track_pos == 'A1' and
-                    #    pos == 0):
+                    track_position = int(track['position']) # starts at 1, ensure int
                     if track_number == _d_track_no:
                         _rec_id = track['recording']['id']
                         log.info('CTRL: Track number matches: {}'.format(
@@ -407,8 +406,15 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                         log.info('CTRL: Recording MBID: {}'.format(
                             _rec_id)) # finally we have a rec MBID
                         return _rec_id
+                    elif track_position == _d_track_numerical:
+                        _rec_id = track['recording']['id']
+                        log.info('CTRL: Track number "numerical" matches: {}'.format(
+                            _rec_title))
+                        log.info('CTRL: Recording MBID: {}'.format(
+                            _rec_id)) # finally we have a rec MBID
+                        return _rec_id
             log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
-                _d_track_name, _rec_title))
+                _d_track_numerical, track_position))
             return False
 
         if not coll_ctrl.ONLINE:
@@ -457,7 +463,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 else:
                     d_catno = mix_track['d_catno'].replace(' ', '')
 
-                # get_discogs_track_numerical_pos here
+                # get_discogs track number numerical
+                #print(dir(d_rel.tracklist[1]))
+                d_rel_track_count = len(d_rel.tracklist)
+                d_track_numerical = coll_ctrl.cli.d_tracklist_parse_numerical(
+                    d_rel.tracklist, d_track_no)
 
             # MBID Release search
             # lower-case search terms
@@ -520,8 +530,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     rec_match_method = 'Track name'
 
                 if not rec_mbid:
-                    rec_mbid = _track_no_match(d_track_name, d_track_no, matched_rel)
-                    rec_match_method = 'Track position'
+                    rec_mbid = _track_no_match(d_track_name, d_track_no, d_track_numerical,
+                      matched_rel)
+                    rec_match_method = 'Track number' # not accurate, act. 2 methods
 
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
