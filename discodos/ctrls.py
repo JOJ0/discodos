@@ -312,7 +312,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         print("") # space for readability
         return True # we did at least something and thus were successfull
 
-    def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
+    def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
+          detail = 1):
         def _url_match(_d_release_id, _mb_releases):
             '''finds Release MBID by looking through Discogs links.'''
             for release in _mb_releases['release-list']: # 1st: exact url match
@@ -432,7 +433,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 if not mix_track['d_catno']: # no label name in db -> ask discogs
                     d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
                 else:
-                    d_catno = mix_track['d_catno']
+                    d_catno = mix_track['d_catno'].replace(' ', '')
 
             # MBID Release search
             # lower-case search terms
@@ -440,10 +441,15 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             if mix_track['d_artist']:
                 d_artist = mix_track['d_artist'].lower()
             discogs_title = mix_track['discogs_title'].lower()
-            # try most likely match first: search artist title catno, be strict
-            mb_releases = coll_ctrl.brainz.search_mb_releases(
-                d_artist, discogs_title, d_catno,
-                  limit = 5, strict = True)
+            # try most likely match first: search artist title catno
+            if detail > 1: # be strict
+                mb_releases = coll_ctrl.brainz.search_mb_releases(
+                    d_artist, discogs_title, d_catno,
+                      limit = 5, strict = False)
+            else: # fuzzy search
+                mb_releases = coll_ctrl.brainz.search_mb_releases(
+                    d_artist, discogs_title, d_catno,
+                      limit = 5, strict = True)
             # first url-match
             release_mbid = _url_match(d_release_id, mb_releases)
             if release_mbid:

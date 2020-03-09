@@ -341,6 +341,7 @@ class User_int(object):
         self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = False
         self.WANTS_TO_PULL_BRAINZ_INFO = False
         self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
+        self.BRAINZ_SEARCH_DETAIL = 1
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -375,6 +376,9 @@ class User_int(object):
                 if self.args.brainz_update:
                     self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
+                    self.BRAINZ_SEARCH_DETAIL == self.args.brainz_update
+                    if self.args.brainz_update > 1:
+                        self.BRAINZ_SEARCH_DETAIL = 2
             else:
                 self.WANTS_TO_SHOW_MIX_TRACKLIST = True
                 self.WANTS_ONLINE = False
@@ -413,6 +417,10 @@ class User_int(object):
                 if self.args.brainz_update:
                     self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
+                    self.BRAINZ_SEARCH_DETAIL == self.args.brainz_update
+                    if self.args.brainz_update > 1:
+                        self.BRAINZ_SEARCH_DETAIL = 2
+
 
         # SUGGEST MODE
         if hasattr(self.args, 'suggest_search'):
