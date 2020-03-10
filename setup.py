@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
-import discogs_client
-import csv
-import time
-import datetime
 import argparse
-import sys
-
-from discodos.models import *
-from discodos.ctrls import *
-from discodos.utils import *
+from sys import argv
+# setup.py is kind of a controller - it inits the db and uses some Coll_ctrl methods
+from discodos import log
+from discodos.utils import print_help, ask_user, Config, read_yaml
+from discodos.models import Database, sqlerr, Collection
+from discodos.views import User_int
+from discodos.ctrls import Coll_ctrl_cli
 
 # argparser init
 def argparser(argv):
@@ -150,12 +148,12 @@ def main():
     conf = Config()
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # ARGPARSER INIT
-    args=argparser(sys.argv)
+    args=argparser(argv)
     # INSTALL CLI if not there yet
     conf.install_cli()
 
     # INFORM USER what this script does
-    if len(sys.argv) <= 1:
+    if len(argv) <= 1:
         print_help(
           "This script sets up the DiscoBASE and/or imports data from Discogs.")
         print("Run setup.py -i to import your whole Discogs collection.")

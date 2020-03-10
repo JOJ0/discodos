@@ -4,6 +4,7 @@ from discodos.views import *
 from abc import ABC, abstractmethod
 from discodos import log
 import pprint as p
+import re
 
 import tkinter as tk
 from tkinter import ttk
@@ -315,7 +316,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         print("") # space for readability
         return True # we did at least something and thus were successfull
 
-    def update_track_info_from_brainz(self, coll_ctrl, start_pos = False):
+    def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
+          detail = 1):
         def _url_match(_d_release_id, _mb_releases):
             '''finds Release MBID by looking through Discogs links.'''
             for release in _mb_releases['release-list']: # 1st: exact url match
@@ -346,12 +348,27 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 full_rel = coll_ctrl.brainz.get_mb_release_by_id(release['id'])
 
                 for mb_label_item in full_rel['release']['label-info-list']:
-                    mb_catno = coll_ctrl.brainz.get_catno_from_mb_label(
-                        mb_label_item).replace(' ', '') # always strip whitespace
+                    mb_catno_orig = coll_ctrl.brainz.get_catno_from_mb_label(mb_label_item)
+                    mb_catno = mb_catno_orig.replace(' ', '') # strip whitespace
                     if variations:
+                        log.info(
+                          'CTRL: ...MB CatNo: {} (original)'.format(mb_catno))
                         if mb_catno[-1:] == 'D' or mb_catno[-1:] == 'd':
                             mb_catno = mb_catno[:-1]
-                    log.info('CTRL: ...MB CatNo: {}'.format(mb_catno))
+                            log.info('CTRL: ...MB CatNo: {} (D-end cut off)'.format(
+                              mb_catno))
+                        else:
+                            mb_numtail = re.split('[^\d]', mb_catno)[-1]
+                            if mb_numtail:
+                                mb_beforenum = re.split('[^\D]', mb_catno)[0]
+                                mb_lastchar = mb_beforenum[-1:]
+                                if  mb_lastchar == 'D' or mb_lastchar == 'd':
+                                    until_d = mb_beforenum[0:-1]
+                                    mb_catno = '{}{}'.format(until_d, mb_numtail)
+                                    log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
+                                      mb_catno))
+                    else:
+                        log.info('CTRL: ...MB CatNo: {}'.format(mb_catno))
                     if mb_catno == _d_catno:
                         log.info(
                           'CTRL: Found MusicBrainz release match (via CatNo)')
@@ -364,8 +381,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             for medium in _mb_release['release']['medium-list']:
                 for pos, track in enumerate(medium['track-list']):
                     _rec_title = track['recording']['title']
-
-                    if _rec_title.lower() == d_track_name.lower(): # ignore case diffs
+                    _rec_title_low = _rec_title.lower()
+                    _d_track_name_low = _d_track_name.lower()
+                    if _rec_title_low == _d_track_name_low: # ignore case diffs
                         _rec_id = track['recording']['id']
                         log.info('CTRL: Track name matches: {}'.format(
                             _rec_title))
@@ -376,13 +394,33 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 _d_track_name, _rec_title))
             return False
 
+        def _track_no_match(_d_track_name, _d_track_no, _mb_release):
+            #pprint.pprint(_mb_release) # human readable json
+            for medium in _mb_release['release']['medium-list']:
+                #track_count = len(medium['track-list'])
+                for track in medium['track-list']:
+                    _rec_title = track['recording']['title']
+                    track_number = track['number'] # could be A, AA, ..
+                    track_position = track['position'] # starts at 1
+                    #if (_d_track_pos == 'A' or _d_track_pos == 'A1' and
+                    #    pos == 0):
+                    if track_number == _d_track_no:
+                        _rec_id = track['recording']['id']
+                        log.info('CTRL: Track number matches: {}'.format(
+                            _rec_title))
+                        log.info('CTRL: Recording MBID: {}'.format(
+                            _rec_id)) # finally we have a rec MBID
+                        return _rec_id
+            log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
+                _d_track_name, _rec_title))
+            return False
+
         if not coll_ctrl.ONLINE:
             self.cli.print_help("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
 
         if self.mix.id_existing:
             self.cli.print_help("Let's update current mixes tracks with info from AcousticBrainz...")
-            #mixed_tracks = self.mix.get_tracks_of_one_mix(start_pos)
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
@@ -396,8 +434,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             rec_mbid, rec_match_method = None, None         # in this order
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
-            log.info('CTRL: Trying to match Discogs release {}...'.format(
-                mix_track['d_release_id']))
+            d_track_no = mix_track['d_track_no']
+            log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
+                mix_track['d_release_id'], mix_track['discogs_title']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
             if not d_rel:
                 log.warning("Skipping. Cant't fetch Discogs release.".format(d_rel))
@@ -420,26 +459,37 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 if not mix_track['d_catno']: # no label name in db -> ask discogs
                     d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
                 else:
-                    d_catno = mix_track['d_track_name']
+                    d_catno = mix_track['d_catno'].replace(' ', '')
+
+                # get_discogs_track_numerical_pos here
 
             # MBID Release search
+            # lower-case search terms
+            d_artist = ''
+            if mix_track['d_artist']:
+                d_artist = mix_track['d_artist'].lower()
+            discogs_title = mix_track['discogs_title'].lower()
             # try most likely match first: search artist title catno
-            mb_releases = coll_ctrl.brainz.search_mb_releases(
-                mix_track['d_artist'], mix_track['discogs_title'], d_catno, 5)
+            if detail > 1: # be strict
+                mb_releases = coll_ctrl.brainz.search_mb_releases(
+                    d_artist, discogs_title, d_catno,
+                      limit = 5, strict = False)
+            else: # fuzzy search
+                mb_releases = coll_ctrl.brainz.search_mb_releases(
+                    d_artist, discogs_title, d_catno,
+                      limit = 5, strict = True)
             # first url-match
             release_mbid = _url_match(d_release_id, mb_releases)
             if release_mbid:
                 release_match_method = 'Discogs URL'
-
+            # and then catno-match
             if not release_mbid:
-                # and then catno-match
                 release_mbid = _catno_match(d_catno, mb_releases)
                 if release_mbid:
                     release_match_method = 'CatNo (exact)'
-
+            # and now try again with some name variation tricks
+            # sometimes digital releases have additional D at end or in between
             if not release_mbid:
-                # and now try again with some name variation tricks
-                # sometimes digital release CatNos end with additional D
                 release_mbid = _catno_match(d_catno, mb_releases, variations = True)
                 if release_mbid:
                     release_match_method = 'CatNo (variation)'
@@ -472,6 +522,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 rec_mbid = _track_name_match(d_track_name, matched_rel)
                 if rec_mbid:
                     rec_match_method = 'Track name'
+
+                if not rec_mbid:
+                    rec_mbid = _track_no_match(d_track_name, d_track_no, matched_rel)
+                    rec_match_method = 'Track position'
 
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
