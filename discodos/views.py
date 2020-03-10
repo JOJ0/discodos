@@ -487,8 +487,8 @@ class main_frame():
         
         
 
-        self.main_win.geometry("800x600")     
-        self.main_win.minsize(800, 600)
+        self.main_win.geometry("1200x800")     
+        self.main_win.minsize(1200, 800)
 
         
         
@@ -519,10 +519,11 @@ class main_frame():
 
 
         self.create_toolbars()
-        # self.focus_first_object(self.mix_list)
+        self.search_tv_config()
         self.gui_ctrl.display_all_mixes()
         self.show_tracklist()
         self.spawn_editor("start")
+        
 
         
                     
@@ -776,36 +777,109 @@ class main_frame():
         self.new_mix_btn.grid(row=0, column=0, sticky="w")
 
 
+        #######################################################
+        # SEARCH AREA
+        ##################################################################
 
+        self.search_grid = tk.Frame(self.main_win)
+        self.bar_grid = tk.Frame(self.search_grid)
 
-        #########
-        # SEARCH TOGGLE BUTTON
-        self.search_toggle = tk.Button(self.main_win, text = ">", command=self.toggle_search_window) 
+        tk.Label(self.bar_grid, text="Artist").grid(row=0, column=0, sticky="e")
+        self.artist_bar = tk.Entry(self.bar_grid)
+        self.artist_bar.grid(row=0, column=1, columnspan=3, rowspan=1, sticky="we")
+
+        tk.Label(self.bar_grid, text="Release").grid(row=1, column=0, sticky="e")
+        self.release_bar = tk.Entry(self.bar_grid)
+        self.release_bar.grid(row=1, column=1, columnspan=3, rowspan=1, sticky="we")
+
+        tk.Label(self.bar_grid, text="Track").grid(row=2, column=0, sticky="e")
+        self.track_bar = tk.Entry(self.bar_grid)
+        self.track_bar.grid(row=2, column=1, columnspan=3, rowspan=1, sticky="we")
+
+        self.bar_grid.grid(row=0, column=0, rowspan=3, columnspan=3, sticky="we")
+
+        self.online = tk.IntVar()
+        tk.Checkbutton(self.search_grid, text="online", variable=self.online).grid(row=0, column=5, columnspan=2, rowspan=1, sticky="w")
+
+        self.search_tv = ttk.Treeview(self.search_grid)
+        self.search_tv.grid(row=4, column=0, columnspan=5, rowspan=10, sticky="nsew")
+
+        self.search_button = tk.Button(self.search_grid, 
+                                        text="Search...", 
+                                        command=lambda:eval(self.search_funcs[0]))
+
+        self.artist_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+        self.release_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+        self.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+
+        self.search_button.grid(row=0, column=4, sticky="we")
         
+        
+        # SEARCH TOOLS
+        ###############
+
+        self.search_tools = tk.Frame(self.search_grid)
+        self.add_btn = tk.Button(self.search_tools, text="Add Track to Mix", state="disabled", 
+                                                    command = lambda : self.gui_ctrl.add_track_to_mix(self.search_tv)) 
+        self.add_btn.grid(row=0, column=0, sticky="ws")
+
+        self.search_tools.grid(row=13, column=0, sticky="nsew")
+
+        self.pg_bar = ttk.Progressbar(self.search_grid, orient="horizontal", mode='indeterminate')
+        self.pg_bar.grid(row=15, column=0, columnspan=5, rowspan=1, sticky="we")
+
+
+        
+
+
+    def search_tv_config(self):
+        # self.search_tv['show'] = 'headings'
+        self.search_cols = {
+                        "1" : "", 
+                        "2" : "", 
+                        "3" : "", 
+                        "4" : "" 
+                        }
+
+        self.search_tv["columns"] = tuple(self.search_cols)
+
+        self.search_tv.column('#0', width=20, stretch=0)
+        
+        for col_id, heading in self.search_cols.items():
+            self.search_tv.column(col_id, width=5, stretch=1)
+            self.search_tv.heading(col_id,text=heading, anchor="w")
+        
+        self.search_tv.bind('<<TreeviewSelect>>', lambda a : self.search_tools_config())
+
+
 
         # DISPLAY
            
-        self.status_bar.grid(row=10, column=0, columnspan=10, rowspan=1, sticky="we")
+        self.status_bar.grid(row=15, column=0, columnspan=15, rowspan=1, sticky="we")
         self.mix_frame.grid(row=0, column=0, columnspan=5, rowspan=5, sticky="nwes")
-        self.tracks_frame.grid(row=5, column=0, columnspan=7, rowspan=4, sticky="swen")
-        self.toolbox.grid(row=5, column=7, columnspan=3,rowspan=4, sticky="sewn")
-        self.search_toggle.grid(row=0, column=11, columnspan=1,rowspan=11, sticky="sn")
-        
+        self.tracks_frame.grid(row=5, column=0, columnspan=7, rowspan=10, sticky="swen")
+        self.toolbox.grid(row=5, column=7, columnspan=3,rowspan=10, sticky="sewn")
+        self.search_grid.grid(row=0, column=10, rowspan=15, columnspan=5, sticky="nesw")
+
         # WEIGHTS
 
-        for i in range(11):
-            self.main_win.columnconfigure(i, weight=1)
-            self.main_win.rowconfigure(i, weight=1)
+        for i in range(15):
+                self.main_win.rowconfigure(i, weight=1)
+                self.main_win.columnconfigure(i, weight=1)
 
     
-    def toggle_search_window(self):
-        if self.search_open == False:
-                self.search_window = search_gui(self.main_win, "Search Releases...", self.gui_ctrl) 
-                self.search_window.dock_win.focus()
-                self.search_open = True
-        else:
-            self.search_window._quit()
-            self.search_open = False
+    def progress(self, currentValue):
+        pg_bar["value"]=currentValue
+
+
+    def search_tools_config(self):
+        if self.add_btn['state'] == "disabled":
+            self.add_btn.config(state='normal')
+            self.pos_entry.config(state='normal')
+                
+
+    
+
 
             
 
