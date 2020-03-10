@@ -671,7 +671,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
-        self.brainz = Brainz(_musicbrainz_user, _musicbrainz_pass, _appIdentifier)
+            else: # only try to initialize brainz if discogs is online already
+                self.brainz = Brainz(_musicbrainz_user, _musicbrainz_pass, _appIdentifier)
         log.info("CTRL: Initial ONLINE status is %s", self.ONLINE)
 
     @property
