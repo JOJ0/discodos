@@ -316,6 +316,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
           detail = 1):
         def _url_match(_d_release_id, _mb_releases):
             '''finds Release MBID by looking through Discogs links.'''
+            nonlocal release_match_method
             for release in _mb_releases['release-list']:
                 log.info('CTRL: ...Discogs-URL-matching MB-Release')
                 log.info('CTRL: ..."{}"'.format(release['title']))
@@ -337,6 +338,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         def _catno_match(_d_catno, _mb_releases, variations = False):
             '''finds Release MBID by looking through catalog numbers.'''
+            nonlocal release_match_method
             for release in _mb_releases['release-list']:
                 _mb_rel_id = False # this is what we are looking for
                 if variations:
@@ -394,6 +396,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         def _track_name_match(_d_track_name, _mb_release):
             #pprint.pprint(_mb_release) # human readable json
+            nonlocal rec_match_method
             for medium in _mb_release['release']['medium-list']:
                 for pos, track in enumerate(medium['track-list']):
                     _rec_title = track['recording']['title']
@@ -413,6 +416,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         def _track_no_match(_d_track_name, _d_track_no, _d_track_numerical, _mb_release):
             #pprint.pprint(_mb_release) # human readable json
+            nonlocal rec_match_method
             _d_track_numerical = int(_d_track_numerical) # make sure it's int
             for medium in _mb_release['release']['medium-list']:
                 #track_count = len(medium['track-list'])
