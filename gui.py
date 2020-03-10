@@ -9,7 +9,8 @@ from discodos import log
 # discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
 # print(discodos_root)
 
-######################################## PREPARING INSTANTIATION
+##################################
+# ###### PREPARING INSTANTIATION
         
 discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
 # conf = utils.read_yaml(discodos_root / "config.yaml")

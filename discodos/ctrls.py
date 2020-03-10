@@ -1042,7 +1042,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
             for release, details in grouped_releases.items():
                 release_levels[i] = search_tv.insert("", i, text="", values=([release]))
                 for j, track_detail in enumerate(details):
-                       search_tv.insert(release_levels[i],j, text="", values=(track_detail[0], track_detail[1], track_detail[2], track_detail[3]))
+                       search_tv.insert(release_levels[i],j, text=track_detail[0], values=(track_detail[1], track_detail[2], track_detail[3]))
                 i += 1
 
         elif online == 1:
@@ -1089,12 +1089,12 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def add_track_to_mix(self, search_tv):
         element = self.tracks_list.focus()
         print(element)
-        pos = self.tracks_list.get_children().index(element)+1
-        print("position", pos)
-        # if pos == "":
-        #     pos = 0
-        # else:
-        #     pos = int(pos) - 1
+        try:
+            pos = self.tracks_list.get_children().index(element)+1
+        except:
+            pos=1
+        # print("position", pos)
+
         sel_mix_id = self.mix_list.item(self.mix_list.focus(),"text")
         mix = Mix(self.db_conn, sel_mix_id)
         cur_item = search_tv.item(search_tv.focus())
