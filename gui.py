@@ -2,9 +2,11 @@
 from discodos.views import main_frame
 from discodos import utils
 from discodos import models
+from discodos.ctrls import mix_ctrl_gui
 import os
 from pathlib import Path
 from discodos import log
+import tkinter as tk
 
 # discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
 # print(discodos_root)
@@ -29,8 +31,10 @@ except:
     log.error("GUI: DB Connection Failed")
 
 
-main_gui = main_frame(conn)
-main_gui.main_win.mainloop()
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = mix_ctrl_gui(root, conn)
+    root.mainloop()
         
 
     

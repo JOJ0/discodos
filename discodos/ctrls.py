@@ -9,6 +9,7 @@ import re
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
+from PIL import Image, ImageTk
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
@@ -911,30 +912,192 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
 
+class setup_controller():
+    def __init__(self, conn=False):
+        pass
+
+    def write_yaml_file(self, setup_entries):
+        pass
+
+    def initiate_setup(self, setup_entries):
+        self.write_yaml_file(setup_entries)
+        pass
+
 
 class mix_ctrl_gui(Mix_ctrl_common):
 
-    def __init__(self, db_conn, 
-                        mix_cols, 
-                        track_cols, 
-                        mix_list, 
-                        tracks_list,
-                        start_up):
+    def __init__(self, root, conn):
+        self.start_up = True
+        image = Image.open("assets/editor.png")
+        self.background_image = ImageTk.PhotoImage(image)
+        self.conn = conn
+        self.main_win = views.main_frame(root)
 
-        self.start_up = start_up
-        self.db_conn = db_conn
-        self.mix_cols = mix_cols
-        self.track_cols = track_cols
-        self.mix_list = mix_list
-        self.tracks_list = tracks_list
+        self.editor_funcs=   {
+                            "save_track" : self.save_track_data,
+                            "save_mix" : self.save_mix_data,
+                            "delete_mix" : self.delete_selected_mix,
+                            "remove_track" : self.remove_track_from_mix,
+                            "move_track" : self.move_track_pos
+                            }
+
+
+        self.search_funcs = [
+                '''self.display_searched_releases((self.main_win.artist_bar.get(), 
+                                                        self.main_win.release_bar.get(),
+                                                        self.main_win.track_bar.get()),
+                                                        self.main_win.search_tv,
+                                                        self.main_win.online.get())'''
+                                    ]
+        
+
+        self.display_all_mixes()
+        self.display_tracklist
+        self.spawn_editor("start")
+
+        self.main_frame_config()
+    
+
+    def main_frame_config(self):
+        self.main_win.mix_list.bind('<<TreeviewSelect>>', lambda a : self.display_tracklist(self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text")))
+        self.main_win.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.spawn_editor(1))
+        self.main_win.search_button.configure(command=lambda:eval(self.search_funcs[0]))
+        self.main_win.add_btn.configure(command = lambda : self.add_track_to_mix(self.main_win.search_tv))
+        self.main_win.new_mix_btn.configure(command=lambda: self.spawn_editor(2))
+        self.main_win.artist_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+        self.main_win.release_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+        self.main_win.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
+
+    def spawn_editor(self, editor_view):
+
+        ########### PREPARATION ###############
+
+        self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")
+        self.move_frame = tk.Frame(self.editor_frame)
+
+        try: 
+            for name, lst in self.editor_entries.items():
+                for elem in lst:
+                        elem.destroy()
+        except:
+            pass
+           
+        ############### SWITCH ###################
+
+        self.editor_entries = {
+            "labels" : [],
+            "entries": [],
+            "buttons": []
+        }
+
+        if editor_view == 0:
+            show_entries = True
+            headings = list(self.main_win.mix_cols.values())
+            data = self.main_win.mix_list.item(self.main_win.mix_list.focus())
+
+
+            self.editor_entries["buttons"].append([
+                tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.editor_funcs["save_mix"]( self.editor_entries["entries"],
+                                                                                                                 self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"))),
+                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text")))
+            ])
+
+
+        elif editor_view == 1:
+            show_entries = True
+            headings = list(self.main_win.track_cols.values()) 
+            data = self.main_win.tracks_list.item(self.main_win.tracks_list.focus())
+
+            self.editor_entries["buttons"].append([
+                tk.Button(self.editor_frame, text="Save Track", command=lambda : self.editor_funcs["save_track"](  self.editor_entries["entries"],
+                                                                                                                    self.main_win.mix_list.item(self.mix_list.focus(),"text"))),
+                tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.editor_funcs["remove_track"]( self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"), 
+                                                                                                                data["values"][0])),
+                tk.Button(self.move_frame, text="^", command=lambda : self.editor_funcs["move_track"]( self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"), 
+                                                                                                                data["values"][0],
+                                                                                                                "up")),
+                tk.Button(self.move_frame, text="V", command=lambda : self.editor_funcs["move_track"]( self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"), 
+                                                                                                                data["values"][0],
+                                                                                                                "down"))
+            ])
+            
+        elif editor_view == 2:
+            show_entries = True
+            headings = list(self.main_win.mix_cols.values())
+            data = {}
+            data["values"] = []
+            for elem in headings:  
+                data["values"].append("")
+
+            self.editor_entries["buttons"].append([
+                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],
+                                                                                                        self.main_win.mix_list.item(self.mix_list.focus(),"text")))
+            ])
+        
+        elif editor_view == "start":
+            editor_image = tk.Label(self.editor_frame, image=self.background_image)
+            editor_image.grid(row=0, column=0, sticky="nsew")
+            headings = []
+            data = {}
+            data["values"] = []
+
+
+
+        ######### DESTILLERY ###########
+
+        try:
+            for i, val  in enumerate(data["values"]):
+                lab = tk.Label(self.editor_frame, text=headings[i])
+                lab.grid(row=i, column=0, sticky="w")
+                self.editor_entries["labels"].append(lab)
+                en = tk.Entry(self.editor_frame)
+                en.grid(row=i, column=1, sticky="w")
+                
+                en.insert(0, data["values"][i])
+                self.editor_entries["entries"].append(en)
+
+                
+        except:
+            pass
+
+        ######## WHICH ENTRIES ARE DISABLED ###########
+        
+        for i, en in enumerate(self.editor_entries["entries"]):
+            if editor_view == 0:
+                self.editor_entries["entries"][0].config(state='disabled')
+            elif editor_view == 1:  
+                if i == 0 or i == 1 or i == 2:
+                    self.editor_entries["entries"][i].config(state='disabled')
+
+        ########### BUTTONS ###########
+        
+        if data["values"] != "":
+            col_count = 0
+            row_count = 2
+            for lst in self.editor_entries["buttons"]:
+                for obj in lst:
+                    if col_count == 1:
+                        count = 0
+                    obj.grid(row=len(self.editor_entries["entries"])+row_count, column=col_count, sticky="w")
+                    if col_count == 1:
+                        row_count += 1
+                    col_count += 1
+
+
+        ########### SHOW ##############
+
+        if editor_view == 1:
+            self.move_frame.grid(row=len(self.editor_entries["entries"])+1, column=1, sticky="w")
+
+        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
 
 
 
     def display_all_mixes(self):
-        all_mix = Mix(self.db_conn, "all")
+        all_mix = Mix(self.conn, "all")
         self.mixes_data = all_mix.get_all_mixes()
 
-        self.mix_list.delete(*self.mix_list.get_children())
+        self.main_win.mix_list.delete(*self.main_win.mix_list.get_children())
 
         for i, row in enumerate(self.mixes_data):
 
@@ -942,21 +1105,21 @@ class mix_ctrl_gui(Mix_ctrl_common):
             # so that the dict with the headings controlls everything
             # Maybe to choose which columns are shown?
             
-            self.mix_list.insert("" , i, text=row["mix_id"], 
+            self.main_win.mix_list.insert("" , i, text=row["mix_id"], 
                                         values=(none_checker(row["mix_id"]), 
                                                 none_checker(row["name"]), 
                                                 none_checker(row["venue"]), 
                                                 none_checker(row["played"])))
                 
 
-            self.col_widths(self.mix_list, self.mix_cols)
+            self.col_widths(self.main_win.mix_list, self.main_win.mix_cols)
 
 
     
     def display_tracklist(self, selected_mix_id):
-        self.tracks_list.delete(*self.tracks_list.get_children())
+        self.main_win.tracks_list.delete(*self.main_win.tracks_list.get_children())
 
-        mix = Mix(self.db_conn, selected_mix_id)
+        mix = Mix(self.conn, selected_mix_id)
         mix_data = mix.get_full_mix(verbose = True) 
         # log.debug("GUI: Retrieved Mix data") 
         # status.set("Retrieved Mix data") 
@@ -965,7 +1128,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
         # status.set("Getting Mix Data failed")  
 
         for i, row in enumerate(mix_data):
-            self.tracks_list.insert("", i, text="", values=( none_checker(row["track_pos"]), 
+            self.main_win.tracks_list.insert("", i, text="", values=( none_checker(row["track_pos"]), 
                                                         none_checker(row["d_artist"]), 
                                                         none_checker(row["d_track_name"]), 
                                                         none_checker(row["key"]), 
@@ -975,8 +1138,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
                                                         none_checker(row["trans_notes"]), 
                                                         none_checker(row["notes"])))
         if self.start_up == True:
-            self.col_widths(self.tracks_list, self.track_cols)
+            self.col_widths(self.main_win.tracks_list, self.main_win.track_cols)
             self.start_up = False
+        
+        self.spawn_editor(0)
 
 
 
@@ -1002,7 +1167,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def delete_selected_mix(self, selected):
-        mix = Mix(self.db_conn, selected)
+        mix = Mix(self.conn, selected)
         try:
             mix.delete()
             log.info("GUI: Deleted Mix from list")
@@ -1013,7 +1178,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
     
     def save_track_data(self, editor_entries, selected_id):
-        mix = Mix(self.db_conn, selected_id)
+        mix = Mix(self.conn, selected_id)
         track_details = mix.get_one_mix_track(editor_entries[0].get())
 
         edit_answers = {}
@@ -1033,7 +1198,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def save_mix_data(self, editor_entries, selected_id):
-        mix = Mix(self.db_conn, selected_id)
+        mix = Mix(self.conn, selected_id)
         mix.create( editor_entries[2].get(),
                     editor_entries[1].get(),
                     editor_entries[3].get(),)
@@ -1042,25 +1207,25 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def remove_track_from_mix(self, selected_mix_id, selected_track_id):
-        mix = Mix(self.db_conn, selected_mix_id)
+        mix = Mix(self.conn, selected_mix_id)
         mix.delete_track(selected_track_id)
         mix.reorder_tracks(selected_track_id)
         self.display_tracklist(selected_mix_id)
-        self.focus_object(self.tracks_list, selected_track_id-1)
+        self.focus_object(self.main_win.tracks_list, selected_track_id-1)
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
-        mix = Mix(self.db_conn, selected_mix_id)
+        mix = Mix(self.conn, selected_mix_id)
         mix.shift_track(selected_track_id, direction)
         self.display_tracklist(selected_mix_id)
         # if direction == 'down':
-        #     self.focus_object(self.tracks_list, selected_track_id-1)
+        #     self.focus_object(self.main_win.tracks_list, selected_track_id-1)
         # elif direction == 'up':
-        #     self.focus_object(self.tracks_list, selected_track_id+1)
+        #     self.focus_object(self.main_win.tracks_list, selected_track_id+1)
 
     def display_searched_releases(self, search_terms, search_tv, online):
         grouped_releases = []
         search_tv.delete(*search_tv.get_children())
-        coll = Collection(self.db_conn)
+        coll = Collection(self.conn)
         # print(search_terms)
 
         if online == 0:
@@ -1119,37 +1284,25 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
 
     def add_track_to_mix(self, search_tv):
-        element = self.tracks_list.focus()
+        element = self.main_win.tracks_list.focus()
         print(element)
         try:
-            pos = self.tracks_list.get_children().index(element)+1
+            pos = self.main_win.tracks_list.get_children().index(element)+1
         except:
-            pos=1
+            pos=len(self.main_win.tracks_list.get_children())+1
         # print("position", pos)
 
-        sel_mix_id = self.mix_list.item(self.mix_list.focus(),"text")
-        mix = Mix(self.db_conn, sel_mix_id)
+        sel_mix_id = self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text")
+        mix = Mix(self.conn, sel_mix_id)
         cur_item = search_tv.item(search_tv.focus())
         tracks_to_shift = mix.get_tracks_from_position(pos)
-        mix.add_track(cur_item["values"][3], cur_item["values"][0], pos)
+        print(cur_item["values"][2])
+        mix.add_track(cur_item["values"][2], cur_item["text"], pos)
         mix.reorder_tracks_squeeze_in(pos, tracks_to_shift)
         self.display_tracklist(sel_mix_id)
-        # self.focus_object(self.tracks_list, int(pos)+1)
-
-        # TODO: make track position numbering okay
+        # self.focus_object(self.main_win.tracks_list, int(pos)+1)
 
     
-
-class setup_controller():
-    def __init__(self, conn=False):
-        pass
-
-    def write_yaml_file(self, setup_entries):
-        pass
-
-    def initiate_setup(self, setup_entries):
-        self.write_yaml_file(setup_entries)
-        pass
-
+    
 
         
