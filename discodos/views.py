@@ -180,6 +180,17 @@ class Collection_view_common(ABC):
             track_number))
         return False # we didn't find the tracknumber
 
+    def d_tracklist_parse_numerical(self, d_tracklist, track_number):
+        '''get numerical track pos from discogs tracklist object via
+           track_number, eg. A1'''
+        for num, tr in enumerate(d_tracklist):
+            if tr.position == track_number:
+                return num + 1 # return human readable (matches brainz position)
+        log.debug(
+            'd_tracklist_parse_numerical: Track {} not existing on release.'.format(
+              track_number))
+        return False # we didn't find the tracknumber
+
 # common view utils, usable in CLI only
 class View_common_cli(ABC):
     def print_help(self, message):

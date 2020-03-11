@@ -64,6 +64,8 @@ class Config():
         self.dropbox_token = ''
         self.discogs_token = ''
         self.discogs_appid = ''
+        self.musicbrainz_user = ''
+        self.musicbrainz_password = ''
         try: # essential settings
             self.discogs_token = self.conf["discogs_token"]
             self.discogs_appid = self.conf["discogs_appid"]
