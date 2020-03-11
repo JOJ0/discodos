@@ -126,8 +126,8 @@ class Sync(object):
     # Restore the local and Dropbox files to a certain revision
     async def restore(self, rev=None):
         # Restore the file on Dropbox to a certain revision
-        print("Restoring " + self.backuppath + " to revision " + rev + " on Dropbox...")
-        self.dbx.files_restore(self.backuppath, rev)
+        #print("Restoring " + self.backuppath + " to revision " + rev + " on Dropbox...")
+        #self.dbx.files_restore(self.backuppath, rev)
 
         # Download the specific revision of the file at self.backuppath to self.discobase
         print("Downloading current " + self.backuppath + " from Dropbox, overwriting " + self.discobase + "...")
