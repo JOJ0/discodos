@@ -271,10 +271,12 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_match_methods()
-        self.assertEqual(db_return, not([]))
-        self.assertEqual(len(db_return), 4) # should be a list with 4 Rows
-        #self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
+        db_return = self.collection.stats_match_method_release()
+        #self.debug_db(db_return)
+        self.assertEqual(len(db_return), 3) # should be a list with 4 Rows
+        self.assertEqual(db_return[0]['m_match_method'], None)
+        self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
+        self.assertEqual(db_return[2]['m_match_method'], "Discogs URL")
         print("{} - {} - END".format(self.clname, name))
     @classmethod
     def tearDownClass(self):
