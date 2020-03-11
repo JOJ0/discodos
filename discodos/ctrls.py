@@ -512,7 +512,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_artist, discogs_title, d_catno,
                       limit = 5, strict = False)
             # first url-match
-            release_match_method = ''
+            release_match_method = '' # will be filled from match methods
             release_mbid = _url_match(d_release_id, mb_releases)
             # and then catno-match
             if not release_mbid:
@@ -615,8 +615,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             added_key, added_chords_key, added_bpm)
         msg_err = 'Database errors: {}. Not found on Discogs errors: {}.'.format(
             errors_db, errors_not_found)
-        print(msg_mb+'\n'+msg_err)
-        log.info(msg_mb+'\n'+msg_err)
+        msg_note = 'Note that some of your tracks might be from the same release. '
+        msg_note+= 'Thus, the total release count added in reality might be less.'
+        print(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
+        log.info(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
         print("") # space for readability
 
         msg1 = "If DiscoDOS didn't find many Release MBIDs or Recording MBIDs "
