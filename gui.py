@@ -1,15 +1,13 @@
 #!/usr/bin/env python
-from discodos.views import main_frame
+from discodos.gui_views import main_frame
 from discodos import utils
 from discodos import models
-from discodos.ctrls import mix_ctrl_gui
+from discodos.gui_ctrls import mix_ctrl_gui
 import os
 from pathlib import Path
 from discodos import log
 import tkinter as tk
 
-# discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
-# print(discodos_root)
 
 ##################################
 # ###### PREPARING INSTANTIATION
@@ -22,7 +20,7 @@ conf = utils.Config()
 
 db_obj = models.Database(db_file = conf.discobase)
 
-################################################## DB CONN
+##### DB CONN ########################
 
 try:
     conn = db_obj.db_conn
@@ -32,9 +30,9 @@ except:
 
 
 if __name__ == '__main__':
-    root = tk.Tk()
-    app = mix_ctrl_gui(root, conn)
-    root.mainloop()
+    root = tk.Tk()  # TKINTER OBJECT
+    app = mix_ctrl_gui(root, conn, start_up=True) # GUI CONTROLLER
+    root.mainloop() # START WINDOW
         
 
     
