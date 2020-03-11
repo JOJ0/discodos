@@ -267,6 +267,15 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[10]["track_pos"], 2) # used at pos 2
         print("{} - {} - END".format(self.clname, name))
 
+    def test_stats_match_method_release(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_match_methods()
+        self.assertEqual(db_return, not([]))
+        self.assertEqual(len(db_return), 4) # should be a list with 4 Rows
+        #self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
+        print("{} - {} - END".format(self.clname, name))
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
