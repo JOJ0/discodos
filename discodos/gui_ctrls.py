@@ -13,10 +13,6 @@ class mix_ctrl_gui(Mix_ctrl_common):
     def __init__(self, root, conn, start_up):
         self.start_up = start_up
         self.conn = conn
-        self.main_win = main_frame(root)
-        self.main_win.withdraw() 
-        # Controller would create its own Toplevel Window,
-        # withdraw prevents it
 
         self.editor_funcs=   {
                             "save_track" : self.save_track_data,
@@ -34,7 +30,12 @@ class mix_ctrl_gui(Mix_ctrl_common):
                                                         self.main_win.search_tv,
                                                         self.main_win.online.get())'''
                                     ]
-        
+
+        self.main_win = main_frame(root, self.editor_funcs)
+        self.main_win.withdraw() 
+        # Controller would create its own Toplevel Window,
+        # withdraw prevents it
+
         self.display_all_mixes()
         self.main_frame_config()
 
@@ -166,6 +167,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
         #     self.focus_object(self.main_win.tracks_list, selected_track_id-1)
         # elif direction == 'up':
         #     self.focus_object(self.main_win.tracks_list, selected_track_id+1)
+
 
     def display_searched_releases(self, search_terms, search_tv, online):
         # OFFLINE

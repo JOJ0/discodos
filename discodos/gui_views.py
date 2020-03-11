@@ -11,12 +11,13 @@ from PIL import Image, ImageTk
 
 
 class main_frame(tk.Toplevel):
-    def __init__(self, master):
+    def __init__(self, master, editor_funcs):
         tk.Toplevel.__init__(self, master)
         log.debug("############################################################")
         log.debug("###########DISCODOS#LOG#START##############################")
         log.debug("############################################################")
         image = Image.open("assets/editor.png")
+        self.editor_funcs = editor_funcs
         self.background_image = ImageTk.PhotoImage(image)
         self.main_win = master 
         self.protocol('WM_DELETE_WINDOW', self.main_win.destroy)
