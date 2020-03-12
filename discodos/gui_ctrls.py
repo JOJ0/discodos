@@ -11,6 +11,7 @@ from discodos.ctrls import *
 class mix_ctrl_gui(Mix_ctrl_common):
 
     def __init__(self, root, conn, start_up):
+        self.flip = False
         self.start_up = start_up
         self.conn = conn
         self.cv = views.View_common()
@@ -52,22 +53,36 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.main_win.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
     
 
-    def display_all_mixes(self):
+    def display_all_mixes(self, date=False):
+        
         all_mix = Mix(self.conn, "all")
-        self.mixes_data = all_mix.get_all_mixes()
+        if date == False:
+            self.mixes_data = all_mix.get_all_mixes(order_by="played ASC")
+        else:
+            self.mixes_data = all_mix.get_all_mixes(order_by="played DESC")
 
         self.main_win.mix_list.delete(*self.main_win.mix_list.get_children())
 
+        # self.dates = {}
         for i, row in enumerate(self.mixes_data):
-            
+            # self.dates[row["played"]] = self.cv.format_date_month(self.cv.none_replace(row["played"]))
+
             self.main_win.mix_list.insert("" , i, text=row["mix_id"], 
                                         values=(self.cv.none_replace(row["mix_id"]), 
                                                 self.cv.none_replace(row["name"]), 
                                                 self.cv.none_replace(row["venue"]), 
                                                 self.cv.format_date_month(self.cv.none_replace(row["played"]))))
-                
-
+            # print(self.cv.none_replace(row["played"]), self.cv.format_date_month(self.cv.none_replace(row["played"])))
+        if self.start_up == True:
             self.col_widths(self.main_win.mix_list, self.main_win.mix_cols)
+            self.start_up = False
+
+        if self.flip == False:
+            self.main_win.mix_list.heading("played", command=lambda : self.display_all_mixes(date=True))
+            self.flip = not self.flip
+        else:
+            self.main_win.mix_list.heading("played", command=lambda : self.display_all_mixes(date=False))
+            self.flip = not self.flip
 
     
     def display_tracklist(self, selected_mix_id):

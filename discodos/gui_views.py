@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
 from PIL import Image, ImageTk
+import datetime
 
 
 class main_frame(tk.Toplevel):
@@ -40,16 +41,20 @@ class main_frame(tk.Toplevel):
     # COLUMN SORTING FUNCTION
     ############################################################
 
-    def treeview_sort_column(self, tv, col, reverse):
-        l = [(tv.set(k, col), k) for k in tv.get_children('')]
-        l.sort(reverse=reverse)
+    def treeview_sort_column(self, tv, col, reverse, date):
+        if date == False:
+            l = [(tv.set(k, col), k) for k in tv.get_children('')]
+            l.sort(reverse=reverse)
+        else:
+            l = [(tv.set(k, col), k) for k in tv.get_children('')]
+            l.sort(key=lambda x: datetime.datetime.strptime(x['date'], '%Y-%m-%d'))
 
         # rearrange items in sorted positions
         for index, (val, k) in enumerate(l):
             tv.move(k, '', index)
 
         # reverse sort next time
-        self.mix_list.heading(col, command=lambda _col=col: self.treeview_sort_column(tv, _col, not reverse))
+        self.mix_list.heading(col, command=lambda _col=col: self.treeview_sort_column(tv, _col, not reverse, date))
 
     #####################################################################################    
     # CREATE WIDGETS
@@ -103,7 +108,7 @@ class main_frame(tk.Toplevel):
 
         for col_id, heading in self.mix_cols.items():
             self.mix_list.column(col_id, width=2, stretch=1)
-            self.mix_list.heading(col_id,text=heading, anchor=tk.W, command=lambda _col=col_id: self.treeview_sort_column(self.mix_list, _col, False))
+            self.mix_list.heading(col_id,text=heading, anchor=tk.W, command=lambda _col=col_id: self.treeview_sort_column(self.mix_list, _col, False, False))
 
 
         for col_id, heading in self.track_cols.items():
@@ -274,18 +279,18 @@ class main_frame(tk.Toplevel):
         self.track_bar = tk.Entry(self.bar_grid)
         self.track_bar.grid(row=2, column=1, columnspan=3, rowspan=1, sticky="we")
 
-        self.bar_grid.grid(row=0, column=0, rowspan=4, columnspan=3, sticky="nw")
+        self.search_button = tk.Button(self.bar_grid, text="Search...")
+        self.search_button.grid(row=4, column=1, sticky="we", columnspan=3)
 
         self.online = tk.IntVar()
         tk.Checkbutton(self.bar_grid, text="online", variable=self.online).grid(row=0, column=4, sticky="ne")
 
-        self.search_button = tk.Button(self.bar_grid, text="Search...")
-        self.search_button.grid(row=4, column=1, sticky="we", columnspan=3)
+        self.bar_grid.grid(row=0, column=0, columnspan=20, sticky="nw")
 
         # SEARCH TREEVIEW
 
         self.search_tv = ttk.Treeview(self.search_frame)
-        self.search_tv.grid(row=4, column=0, columnspan=15, rowspan=9, sticky="nsew")
+        self.search_tv.grid(row=3, column=0, columnspan=20, rowspan=30, sticky="nsew")
 
         # SEARCH TOOLS
         ###############
@@ -294,10 +299,10 @@ class main_frame(tk.Toplevel):
         self.add_btn = tk.Button(self.search_tools, text="Add Track to Mix", state="disabled") 
         self.add_btn.grid(row=0, column=0, sticky="ws")
 
-        self.search_tools.grid(row=13, column=0, sticky="nsew")
+        self.search_tools.grid(row=35, column=0, columnspan=20, sticky="nsew")
 
-        self.pg_bar = ttk.Progressbar(self.search_frame, orient="horizontal", mode='indeterminate')
-        self.pg_bar.grid(row=15, column=0, columnspan=15, rowspan=1, sticky="we")
+        # self.pg_bar = ttk.Progressbar(self.search_frame, orient="horizontal", mode='indeterminate')
+        # self.pg_bar.grid(row=15, column=0, columnspan=15, rowspan=1, sticky="we")
         
         # DISPLAY
            
@@ -305,28 +310,31 @@ class main_frame(tk.Toplevel):
         self.mix_frame.grid(row=0, column=0, columnspan=5, rowspan=5, sticky="nwes")
         self.tracks_frame.grid(row=5, column=0, columnspan=7, rowspan=10, sticky="swen")
         self.toolbox.grid(row=5, column=7, columnspan=3,rowspan=10, sticky="sewn")
-        self.search_frame.grid(row=0, column=10, columnspan=5, rowspan=15, sticky="nsew")
+        self.search_frame.grid(row=0, column=10, columnspan=5, rowspan=40, sticky="nsew")
 
         # WEIGHTS
 
         for i in range(15):
-                self.main_win.rowconfigure(i, weight=1)
-                self.main_win.columnconfigure(i, weight=1)
-                self.search_frame.columnconfigure(i, weight=1)
-                self.search_frame.rowconfigure(i, weight=1)
+            self.main_win.rowconfigure(i, weight=1)
+            self.main_win.columnconfigure(i, weight=1)
+
+        for i in range(20):
+            self.search_frame.columnconfigure(i, weight=1)
+
+        for i in range(40):
+            self.search_frame.rowconfigure(i, weight=1)
 
     
     def search_tv_config(self):
         self.search_cols = {
-                        "1" : "", 
+                        "1" : "Release", 
                         "2" : "", 
                         "3" : "", 
-                        "4" : "" 
                         }
 
         self.search_tv["columns"] = tuple(self.search_cols)
 
-        self.search_tv.column('#0', width=20, stretch=0)
+        self.search_tv.column('#0', width=80, stretch=0)
         
         for col_id, heading in self.search_cols.items():
             self.search_tv.column(col_id, width=5, stretch=1, anchor="w")
