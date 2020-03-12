@@ -76,6 +76,7 @@ class Config():
         self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
         self.webdav_user = self._get_config_entry('webdav_user')
         self.webdav_password = self._get_config_entry('webdav_password')
+        self.webdav_url = self._get_config_entry('webdav_url')
 
     def _get_config_entry(self, yaml_key, optional = True):
         if optional:
