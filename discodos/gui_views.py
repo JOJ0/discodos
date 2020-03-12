@@ -41,20 +41,20 @@ class main_frame(tk.Toplevel):
     # COLUMN SORTING FUNCTION
     ############################################################
 
-    def treeview_sort_column(self, tv, col, reverse, date):
-        if date == False:
-            l = [(tv.set(k, col), k) for k in tv.get_children('')]
-            l.sort(reverse=reverse)
-        else:
-            l = [(tv.set(k, col), k) for k in tv.get_children('')]
-            l.sort(key=lambda x: datetime.datetime.strptime(x['date'], '%Y-%m-%d'))
+    def treeview_sort_column(self, tv, col, reverse):
+        l = [(tv.set(k, col), k) for k in tv.get_children('')]
+        for i in l:
+            i = list(map(int, i[0]))
+
+        l.sort(reverse=reverse)
+        print(l)
 
         # rearrange items in sorted positions
         for index, (val, k) in enumerate(l):
             tv.move(k, '', index)
 
         # reverse sort next time
-        self.mix_list.heading(col, command=lambda _col=col: self.treeview_sort_column(tv, _col, not reverse, date))
+        self.mix_list.heading(col, command=lambda _col=col: self.treeview_sort_column(tv, _col, not reverse))
 
     #####################################################################################    
     # CREATE WIDGETS
@@ -108,7 +108,7 @@ class main_frame(tk.Toplevel):
 
         for col_id, heading in self.mix_cols.items():
             self.mix_list.column(col_id, width=2, stretch=1)
-            self.mix_list.heading(col_id,text=heading, anchor=tk.W, command=lambda _col=col_id: self.treeview_sort_column(self.mix_list, _col, False, False))
+            self.mix_list.heading(col_id,text=heading, anchor=tk.W, command=lambda _col=col_id: self.treeview_sort_column(self.mix_list, _col, False))
 
 
         for col_id, heading in self.track_cols.items():
