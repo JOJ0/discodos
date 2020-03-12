@@ -20,11 +20,11 @@ def argparser(argv):
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
         help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
+    parser.add_argument(
+		"-t", "--type", dest="sync_type",
+        type=str, default='dropbox', choices=['dropbox', 'webdav'],
+        help="select synchronisation type: dropbox (default) or webdav")
     parser_group1 = parser.add_mutually_exclusive_group()
-    #parser_group1.add_argument(
-	#	"-x", "--xxx", dest="xxx",
-    #    type=int, default=False, nargs="*",
-    #    help="")
     parser_group1.add_argument(
 		"--backup",
         action='store_true',
@@ -50,27 +50,33 @@ def argparser(argv):
 
 async def main():
     conf=Config()
-    log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-    sync = Sync(conf.dropbox_token, conf.discobase.name)
+    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     args = argparser(argv)
-    if args.backup:
-        await sync._async_init()
-        await sync.backup()
-    elif args.restore:
-        await sync._async_init()
-        await sync.print_revisions()
-        rev = ask_user('Which revision do you want to restore? ')
-        try:
-            await sync.restore(rev)
-        except dropbox.stone_validators.ValidationError:
-            log.error('Revision not valid.')
-    elif args.show:
-        await sync._async_init()
-        await sync.print_revisions()
+    if args.sync_type == 'dropbox':
+        sync = Dropbox_sync(conf.dropbox_token, conf.discobase.name)
+        if args.backup:
+            await sync._async_init()
+            await sync.backup()
+        elif args.restore:
+            await sync._async_init()
+            await sync.print_revisions()
+            rev = ask_user('Which revision do you want to restore? ')
+            try:
+                await sync.restore(rev)
+            except dropbox.stone_validators.ValidationError:
+                log.error('Revision not valid.')
+        elif args.show:
+            await sync._async_init()
+            await sync.print_revisions()
+        else:
+            log.error("Missing arguments.")
     else:
-        log.error("Missing arguments.")
+        log.info("webdav sync here")
+        sync = Webdav_sync(conf.webdav_user, conf.webdav_password,
+          conf.webdav_url, conf.discobase.name)
 
-class Sync(object):
+
+class Dropbox_sync(object):
     def __init__(self, token, db_file):
         log.info("We are in __init__")
         self.token = token
@@ -156,19 +162,14 @@ class Sync(object):
         #return revisions[0].rev
 
 
-# Create a backup of the current settings file
-#backup()
-
-# Change the user's file, create another backup
-#change_local_file("updated")
-#backup()
-
-# Restore the local and Dropbox files to a certain revision
-#to_rev = select_revision()
-#restore(to_rev)
-
-#print("Done!")
-
+class Webdav_sync(object):
+    def __init__(self, user, password, url, db_file):
+        log.info("We are in __init__")
+        self.user = user
+        self.password = password
+        self.url = url
+        self.discobase = db_file
+        #self.backuppath = '/discodos/{}'.format(db_file)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
