@@ -61,48 +61,42 @@ class Config():
         self.discobase = self.discodos_root / "discobase.db"
         log.info("Config.discobase: {}".format(self.discobase))
         self.conf = read_yaml( self.discodos_root / "config.yaml")
-        self.dropbox_token = ''
-        self.discogs_token = ''
-        self.discogs_appid = ''
-        self.musicbrainz_user = ''
-        self.musicbrainz_password = ''
-        try: # essential settings
-            self.discogs_token = self.conf["discogs_token"]
-            self.discogs_appid = self.conf["discogs_appid"]
-        except KeyError as ke:
-            log.error("Missing key in config.yaml: {}".format(ke))
-            raise SystemExit(3)
-        try: # optional setting log_level
+        try: # do optional setting log_level first thing!
             self.log_level = self.conf["log_level"]
-            log.info("Config.log_level set to {}.".format(
+            log.info("config.yaml entry log_level is {}.".format(
                 self.log_level))
         except KeyError:
             self.log_level = "WARNING"
-            log.warn("Config.log_level not set, will take from argparser or default.")
-        try: # optional setting dropbox_token
-            if self.conf["dropbox_token"] == "":
-                log.info("Config.dropbox_token is empty.")
-            else:
-                self.dropbox_token = self.conf["dropbox_token"]
-                log.info("Config.dropbox_token is set.")
-        except KeyError:
-            log.info("Config.dropbox_token is not set.")
-        try: # optional setting musicbrainz_user
-            if self.conf["musicbrainz_user"] == "":
-                log.info("Config.musicbrainz_user is empty.")
-            else:
-                self.musicbrainz_user = self.conf["musicbrainz_user"]
-                log.info("Config.musicbrainz_user is set.")
-        except KeyError:
-            log.info("Config.musicbrainz_user is not set.")
-        try: # optional setting musicbrainz_password
-            if self.conf["musicbrainz_password"] == "":
-                log.info("Config.musicbrainz_password is empty.")
-            else:
-                self.musicbrainz_password = self.conf["musicbrainz_password"]
-                log.info("Config.musicbrainz_password is set.")
-        except KeyError:
-            log.info("Config.musicbrainz_password is not set.")
+            log.warn("config.yaml entry log_level not set, will take from cli option or default.")
+        # then other settings
+        self.discogs_token = self._get_config_entry('discogs_token', False)
+        self.discogs_appid = self._get_config_entry('discogs_appid', False)
+        self.dropbox_token = self._get_config_entry('dropbox_token')
+        self.musicbrainz_user = self._get_config_entry('musicbrainz_user')
+        self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
+        self.webdav_user = self._get_config_entry('webdav_user')
+        self.webdav_password = self._get_config_entry('webdav_password')
+
+    def _get_config_entry(self, yaml_key, optional = True):
+        if optional:
+            try:
+                if self.conf[yaml_key] == '':
+                    value = ''
+                    log.error("config.yaml entry {} is empty.".format(yaml_key))
+                else:
+                    value = self.conf[yaml_key]
+                    log.info("config.yaml entry {} is set.".format(yaml_key))
+            except KeyError:
+                value = ''
+                log.info("config.yaml entry {} is missing.".format(yaml_key))
+            return value
+        else:
+            try: # essential settings entries should error and exit
+                value = self.conf[yaml_key]
+            except KeyError as ke:
+                log.error("Missing essential entry in config.yaml: {}".format(ke))
+                raise SystemExit(3)
+            return value
 
     # install cli command (disco) into discodos_root
     def install_cli(self):
