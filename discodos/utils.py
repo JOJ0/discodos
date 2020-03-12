@@ -172,18 +172,23 @@ class Config():
 
 
 def none_checker(value_to_check):
-# Universal Checking function 
-# None will be replaced by empty space, so it looks prettier in gui
-# Empty list will be replaced by Zero, so tkinter can measure something
+    '''replaces string "None" by empty string
+        (eg. we use this to pretty empty db-fields in tkinter gui)
+        empty list will be replaced by zero, so tkinter can measure something
+        spaces (" ") will be replaced by empty string as well
+    '''
 
     if value_to_check == "None":
         value_to_check = ""
 
     elif value_to_check == " ":
         value_to_check = ""
-    
+
     elif value_to_check == []:
         value_to_check = [X]
-        
+
+    if value_to_check == None:
+        value_to_check = ""
+
     return value_to_check
     

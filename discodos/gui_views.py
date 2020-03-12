@@ -176,8 +176,7 @@ class main_frame(tk.Toplevel):
                 data["values"].append("")
 
             self.editor_entries["buttons"].append([
-                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],
-                                                                                                        self.mix_list.item(self.mix_list.focus(),"text")))
+                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],0))
             ])
         
         elif editor_view == "start":
@@ -210,6 +209,8 @@ class main_frame(tk.Toplevel):
             elif editor_view == 1:  
                 if i == 0 or i == 1 or i == 2:
                     self.editor_entries["entries"][i].config(state='disabled')
+            elif editor_view == 2:
+                self.editor_entries["entries"][0].config(state='disabled')
 
         ########### BUTTONS ###########
         

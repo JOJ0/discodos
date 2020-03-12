@@ -3,16 +3,17 @@ from tkinter import ttk
 import tkinter.font as tkfont
 
 from discodos.gui_views import *
+from discodos.views import View_common
 from discodos import utils
 from discodos.models import *
 from discodos.ctrls import *
-
 
 class mix_ctrl_gui(Mix_ctrl_common):
 
     def __init__(self, root, conn, start_up):
         self.start_up = start_up
         self.conn = conn
+        self.cv = views.View_common()
 
         self.editor_funcs=   {
                             "save_track" : self.save_track_data,
@@ -60,10 +61,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
         for i, row in enumerate(self.mixes_data):
             
             self.main_win.mix_list.insert("" , i, text=row["mix_id"], 
-                                        values=(none_checker(row["mix_id"]), 
-                                                none_checker(row["name"]), 
-                                                none_checker(row["venue"]), 
-                                                none_checker(row["played"])))
+                                        values=(self.cv.none_replace(row["mix_id"]), 
+                                                self.cv.none_replace(row["name"]), 
+                                                self.cv.none_replace(row["venue"]), 
+                                                self.cv.format_date_month(self.cv.none_replace(row["played"]))))
                 
 
             self.col_widths(self.main_win.mix_list, self.main_win.mix_cols)
@@ -76,15 +77,15 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix_data = mix.get_full_mix(verbose = True) 
 
         for i, row in enumerate(mix_data):
-            self.main_win.tracks_list.insert("", i, text="", values=( none_checker(row["track_pos"]), 
-                                                        none_checker(row["d_artist"]), 
-                                                        none_checker(row["d_track_name"]), 
-                                                        none_checker(row["key"]), 
-                                                        none_checker(row["bpm"]), 
-                                                        none_checker(row["key_notes"]), 
-                                                        none_checker(row["trans_rating"]), 
-                                                        none_checker(row["trans_notes"]), 
-                                                        none_checker(row["notes"])))
+            self.main_win.tracks_list.insert("", i, text="", values=( self.cv.none_replace(row["track_pos"]), 
+                                                        self.cv.none_replace(row["d_artist"]), 
+                                                        self.cv.none_replace(row["d_track_name"]), 
+                                                        self.cv.none_replace(row["key"]), 
+                                                        self.cv.none_replace(row["bpm"]), 
+                                                        self.cv.none_replace(row["key_notes"]), 
+                                                        self.cv.none_replace(row["trans_rating"]), 
+                                                        self.cv.none_replace(row["trans_notes"]), 
+                                                        self.cv.none_replace(row["notes"])))
         # if self.start_up == True:
         #     self.col_widths(self.main_win.tracks_list, self.main_win.track_cols)
         #     self.start_up = False
@@ -145,9 +146,9 @@ class mix_ctrl_gui(Mix_ctrl_common):
 
     def save_mix_data(self, editor_entries, selected_id):
         mix = Mix(self.conn, selected_id)
-        mix.create( editor_entries[2].get(),
-                    editor_entries[1].get(),
-                    editor_entries[3].get(),)
+        mix.create( editor_entries[3].get(),
+                    editor_entries[2].get(),
+                    editor_entries[1].get(),)
                     
         self.display_all_mixes()
 
