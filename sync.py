@@ -12,6 +12,10 @@ import asyncio
 #from codetiming import Timer
 import argparse
 from sys import argv
+from webdav3.client import Client
+from webdav3.client import WebDavException
+from datetime import datetime
+from dateutil.parser import parse
 
 
 def argparser(argv):
@@ -74,6 +78,8 @@ async def main():
         log.info("webdav sync here")
         sync = Webdav_sync(conf.webdav_user, conf.webdav_password,
           conf.webdav_url, conf.discobase.name)
+        if args.backup:
+            sync.backup()
 
 
 class Dropbox_sync(object):
@@ -164,12 +170,54 @@ class Dropbox_sync(object):
 
 class Webdav_sync(object):
     def __init__(self, user, password, url, db_file):
-        log.info("We are in __init__")
-        self.user = user
-        self.password = password
-        self.url = url
+        log.info("We are in Webdav_sync.__init__")
+        if user == '' or password == '' or url == '':
+            log.error("Webdav config incomplete. Check config.yaml")
+            raise SystemExit
+        else:
+            self.user = user
+            self.password = password
+            self.url = url
         self.discobase = db_file
         #self.backuppath = '/discodos/{}'.format(db_file)
+        options = {
+            'webdav_hostname': self.url,
+            'webdav_login':    self.user,
+            'webdav_password': self.password
+        }
+        self.client = Client(options)
+        print(dir(self.client))
+        print('')
+        #print(self.client.is_dir('discodos'))
+        #print(self.client.check(self.discobase))
+
+    def backup(self):
+        with open(self.discobase, 'rb') as f:
+            #print("Uploading {} to Webserver as {} ...".format(self.discobase,
+            #  self.backuppath))
+            print("Uploading {} to {} ...".format(self.discobase, self.url))
+            existing = False
+            try:
+                if self.client.check(self.discobase):
+                    existing = True
+                else:
+                    existing = False
+            except WebDavException as exception:
+                print('Webserver returned: {}'.format(exception))
+                raise SystemExit
+
+            if existing:
+                print('Already existing, moving file ...')
+                date_time = parse(self.client.info(self.discobase)['modified'])
+                datestr = date_time.strftime('%Y-%m-%d_%H%M%S')
+                bak_file_name = '{}_{}'.format(self.discobase, datestr)
+                print(bak_file_name)
+                print('Directory listing ...')
+                print(self.client.list())
+            else:
+                print('Backup not existing yet, uploading ...')
+                self.client.upload_sync(remote_path='{}'.format(self.discobase),
+                                        local_path='{}'.format(self.discobase))
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
