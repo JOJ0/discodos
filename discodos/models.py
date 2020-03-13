@@ -929,6 +929,12 @@ class Collection (Database):
         tuple_upd = (mbid, match_method, release_id)
         return self.execute_sql(sql_upd, tuple_upd)
 
+    def stats_match_method_release(self):
+        sql_stats = '''
+                    SELECT m_match_method, COUNT(*) FROM release GROUP BY m_match_method;
+                    '''
+        return self._select(sql_stats, fetchone = False)
+
 class Brainz (object):
 
     def __init__(self, musicbrainz_user, musicbrainz_pass, musicbrainz_appid):

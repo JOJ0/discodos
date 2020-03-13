@@ -4,6 +4,8 @@ import sys
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
+from urllib3.exceptions import NewConnectionError
+from requests.exceptions import ConnectionError
 from discodos import log
 from discodos.utils import *
 import asyncio
@@ -58,7 +60,10 @@ async def main():
         await sync._async_init()
         await sync.print_revisions()
         rev = ask_user('Which revision do you want to restore? ')
-        await sync.restore(rev)
+        try:
+            await sync.restore(rev)
+        except dropbox.stone_validators.ValidationError:
+            log.error('Revision not valid.')
     elif args.show:
         await sync._async_init()
         await sync.print_revisions()
@@ -87,9 +92,13 @@ class Sync(object):
         log.info("We are in _login")
         # Create an instance of a Dropbox class, which can make requests to the API.
         log.info("Creating a Dropbox object...")
-        self.dbx = dropbox.Dropbox(self.token)
+        try:
+            self.dbx = dropbox.Dropbox(self.token)
+        #except urllib3.exceptions.NewConnectionError:
+        except requests.exceptions.ConnectionError:
+            log.error("connecting to Dropbox.")
         #print("One")
-        await asyncio.sleep(1)
+        #await asyncio.sleep(1)
         #print("Two")
 
         # Check that the access token is valid
@@ -126,8 +135,8 @@ class Sync(object):
     # Restore the local and Dropbox files to a certain revision
     async def restore(self, rev=None):
         # Restore the file on Dropbox to a certain revision
-        print("Restoring " + self.backuppath + " to revision " + rev + " on Dropbox...")
-        self.dbx.files_restore(self.backuppath, rev)
+        #print("Restoring " + self.backuppath + " to revision " + rev + " on Dropbox...")
+        #self.dbx.files_restore(self.backuppath, rev)
 
         # Download the specific revision of the file at self.backuppath to self.discobase
         print("Downloading current " + self.backuppath + " from Dropbox, overwriting " + self.discobase + "...")
