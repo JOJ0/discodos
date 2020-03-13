@@ -1,0 +1,364 @@
+[1mdiff --git a/discodos/gui_ctrls.py b/discodos/gui_ctrls.py[m
+[1mindex da59dae..830d99d 100644[m
+[1m--- a/discodos/gui_ctrls.py[m
+[1m+++ b/discodos/gui_ctrls.py[m
+[36m@@ -1,7 +1,7 @@[m
+ import tkinter as tk[m
+ from tkinter import ttk[m
+ import tkinter.font as tkfont[m
+[31m-from PIL import Image, ImageTk[m
+[32m+[m
+ [m
+ from discodos.gui_views import *[m
+ from discodos import utils[m
+[36m@@ -13,10 +13,9 @@[m [mclass mix_ctrl_gui(Mix_ctrl_common):[m
+ [m
+     def __init__(self, root, conn):[m
+         self.start_up = True[m
+[31m-        image = Image.open("assets/editor.png")[m
+[31m-        self.background_image = ImageTk.PhotoImage(image)[m
+         self.conn = conn[m
+         self.main_win = main_frame(root)[m
+[32m+[m[32m        self.main_win.withdraw()[m
+ [m
+         self.editor_funcs=   {[m
+                             "save_track" : self.save_track_data,[m
+[36m@@ -35,148 +34,27 @@[m [mclass mix_ctrl_gui(Mix_ctrl_common):[m
+                                                         self.main_win.online.get())'''[m
+                                     ][m
+         [m
+[31m-[m
+         self.display_all_mixes()[m
+[31m-        self.display_tracklist[m
+[31m-        self.spawn_editor("start")[m
+[31m-[m
+[32m+[m[32m        # self.display_tracklist()[m
+         self.main_frame_config()[m
+[32m+[m
+[32m+[m[32m        # self.lulu = tk.LabelFrame(self.main_win, text="hoe")[m
+[32m+[m[32m        # self.lulu.grid(row=0, column=0)[m
+[32m+[m[32m        # for i in range(10):[m
+[32m+[m[32m        #     tk.Button(self.lulu, text="Cake").grid(row=i, column=1, sticky="w")[m
+     [m
+ [m
+     def main_frame_config(self):[m
+         self.main_win.mix_list.bind('<<TreeviewSelect>>', lambda a : self.display_tracklist(self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text")))[m
+[31m-        self.main_win.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.spawn_editor(1))[m
+[32m+[m[32m        self.main_win.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.main_win.spawn_editor(1))[m
+         self.main_win.search_button.configure(command=lambda:eval(self.search_funcs[0]))[m
+         self.main_win.add_btn.configure(command = lambda : self.add_track_to_mix(self.main_win.search_tv))[m
+[31m-        self.main_win.new_mix_btn.configure(command=lambda: self.spawn_editor(2))[m
+[32m+[m[32m        self.main_win.new_mix_btn.configure(command=lambda: self.main_win.spawn_editor(2))[m
+         self.main_win.artist_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))[m
+         self.main_win.release_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))[m
+         self.main_win.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))[m
+ [m
+[31m-    def spawn_editor(self, editor_view):[m
+[31m-[m
+[31m-        ########### PREPARATION ###############[m
+[31m-[m
+[31m-        self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")[m
+[31m-        self.move_frame = tk.Frame(self.editor_frame)[m
+[31m-[m
+[31m-        try: [m
+[31m-            for name, lst in self.editor_entries.items():[m
+[31m-                for elem in lst:[m
+[31m-                        elem.destroy()[m
+[31m-        except:[m
+[31m-            pass[m
+[31m-           [m
+[31m-        ############### SWITCH ###################[m
+[31m-[m
+[31m-        self.editor_entries = {[m
+[31m-            "labels" : [],[m
+[31m-            "entries": [],[m
+[31m-            "buttons": [][m
+[31m-        }[m
+[31m-[m
+[31m-        if editor_view == 0:[m
+[31m-            show_entries = True[m
+[31m-            headings = list(self.main_win.mix_cols.values())[m
+[31m-            data = self.main_win.mix_list.item(self.main_win.mix_list.focus())[m
+[31m-[m
+[31m-[m
+[31m-            self.editor_entries["buttons"].append([[m
+[31m-                tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.editor_funcs["save_mix"]( self.editor_entries["entries"],[m
+[31m-                                                                                                                 self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"))),[m
+[31m-                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text")))[m
+[31m-            ])[m
+[31m-[m
+[31m-[m
+[31m-        elif editor_view == 1:[m
+[31m-            show_entries = True[m
+[31m-            headings = list(self.main_win.track_cols.values()) [m
+[31m-            data = self.main_win.tracks_list.item(self.main_win.tracks_list.focus())[m
+[31m-[m
+[31m-            self.editor_entries["buttons"].append([[m
+[31m-                tk.Button(self.editor_frame, text="Save Track", command=lambda : self.editor_funcs["save_track"](  self.editor_entries["entries"],[m
+[31m-                                                                                                                    self.main_win.mix_list.item(self.mix_list.focus(),"text"))),[m
+[31m-                tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.editor_funcs["remove_track"]( self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"), [m
+[31m-                                                                                                                data["values"][0])),[m
+[31m-                tk.Button(self.move_frame, text="^", command=lambda : self.editor_funcs["move_track"]( self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"), [m
+[31m-                                                                                                                data["values"][0],[m
+[31m-                                                                                                                "up")),[m
+[31m-                tk.Button(self.move_frame, text="V", command=lambda : self.editor_funcs["move_track"]( self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"), [m
+[31m-                                                                                                                data["values"][0],[m
+[31m-                                                                                                                "down"))[m
+[31m-            ])[m
+[31m-            [m
+[31m-        elif editor_view == 2:[m
+[31m-            show_entries = True[m
+[31m-            headings = list(self.main_win.mix_cols.values())[m
+[31m-            data = {}[m
+[31m-            data["values"] = [][m
+[31m-            for elem in headings:  [m
+[31m-                data["values"].append("")[m
+[31m-[m
+[31m-            self.editor_entries["buttons"].append([[m
+[31m-                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],[m
+[31m-                                                                                                        self.main_win.mix_list.item(self.mix_list.focus(),"text")))[m
+[31m-            ])[m
+[31m-        [m
+[31m-        elif editor_view == "start":[m
+[31m-            editor_image = tk.Label(self.editor_frame, image=self.background_image)[m
+[31m-            editor_image.grid(row=0, column=0, sticky="nsew")[m
+[31m-            headings = [][m
+[31m-            data = {}[m
+[31m-            data["values"] = [][m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-        ######### DESTILLERY ###########[m
+[31m-[m
+[31m-        try:[m
+[31m-            for i, val  in enumerate(data["values"]):[m
+[31m-                lab = tk.Label(self.editor_frame, text=headings[i])[m
+[31m-                lab.grid(row=i, column=0, sticky="w")[m
+[31m-                self.editor_entries["labels"].append(lab)[m
+[31m-                en = tk.Entry(self.editor_frame)[m
+[31m-                en.grid(row=i, column=1, sticky="w")[m
+[31m-                [m
+[31m-                en.insert(0, data["values"][i])[m
+[31m-                self.editor_entries["entries"].append(en)[m
+[31m-[m
+[31m-                [m
+[31m-        except:[m
+[31m-            pass[m
+[31m-[m
+[31m-        ######## WHICH ENTRIES ARE DISABLED ###########[m
+[31m-        [m
+[31m-        for i, en in enumerate(self.editor_entries["entries"]):[m
+[31m-            if editor_view == 0:[m
+[31m-                self.editor_entries["entries"][0].config(state='disabled')[m
+[31m-            elif editor_view == 1:  [m
+[31m-                if i == 0 or i == 1 or i == 2:[m
+[31m-                    self.editor_entries["entries"][i].config(state='disabled')[m
+[31m-[m
+[31m-        ########### BUTTONS ###########[m
+[31m-        [m
+[31m-        if data["values"] != "":[m
+[31m-            col_count = 0[m
+[31m-            row_count = 2[m
+[31m-            for lst in self.editor_entries["buttons"]:[m
+[31m-                for obj in lst:[m
+[31m-                    if col_count == 1:[m
+[31m-                        count = 0[m
+[31m-                    obj.grid(row=len(self.editor_entries["entries"])+row_count, column=col_count, sticky="w")[m
+[31m-                    if col_count == 1:[m
+[31m-                        row_count += 1[m
+[31m-                    col_count += 1[m
+[31m-[m
+[31m-[m
+[31m-        ########### SHOW ##############[m
+[31m-[m
+[31m-        if editor_view == 1:[m
+[31m-            self.move_frame.grid(row=len(self.editor_entries["entries"])+1, column=1, sticky="w")[m
+[31m-[m
+[31m-        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")[m
+[31m-[m
+[31m-[m
+[32m+[m[41m    [m
+ [m
+     def display_all_mixes(self):[m
+         all_mix = Mix(self.conn, "all")[m
+[36m@@ -226,7 +104,7 @@[m [mclass mix_ctrl_gui(Mix_ctrl_common):[m
+             self.col_widths(self.main_win.tracks_list, self.main_win.track_cols)[m
+             self.start_up = False[m
+         [m
+[31m-        self.spawn_editor(0)[m
+[32m+[m[32m        self.main_win.spawn_editor(0)[m
+ [m
+ [m
+ [m
+[1mdiff --git a/discodos/gui_views.py b/discodos/gui_views.py[m
+[1mindex 9b602c1..b35713b 100644[m
+[1m--- a/discodos/gui_views.py[m
+[1m+++ b/discodos/gui_views.py[m
+[36m@@ -7,6 +7,7 @@[m [mimport discodos.log as log[m
+ import tkinter as tk[m
+ from tkinter import ttk[m
+ import tkinter.font as tkfont[m
+[32m+[m[32mfrom PIL import Image, ImageTk[m
+ [m
+ [m
+ class main_frame(tk.Toplevel):[m
+[36m@@ -15,6 +16,8 @@[m [mclass main_frame(tk.Toplevel):[m
+         log.debug("############################################################")[m
+         log.debug("###########DISCODOS#LOG#START##############################")[m
+         log.debug("############################################################")[m
+[32m+[m[32m        image = Image.open("assets/editor.png")[m
+[32m+[m[32m        self.background_image = ImageTk.PhotoImage(image)[m
+         self.main_win = master [m
+         self.protocol('WM_DELETE_WINDOW', self.main_win.destroy)[m
+         [m
+[36m@@ -29,6 +32,7 @@[m [mclass main_frame(tk.Toplevel):[m
+         # Create all Widgets, outsourced to its own function[m
+         self.create_lists()[m
+         self.create_toolbars()[m
+[32m+[m[32m        self.spawn_editor("start")[m
+         self.search_tv_config()[m
+ [m
+     #############################################################[m
+[36m@@ -106,6 +110,133 @@[m [mclass main_frame(tk.Toplevel):[m
+             self.tracks_list.column(col_id, width=2, stretch=1)[m
+             self.tracks_list.heading(col_id, text=heading,anchor=tk.W)[m
+ [m
+[32m+[m
+[32m+[m[32m    #####################################[m
+[32m+[m[32m    # SPAWN EDITOR[m
+[32m+[m[32m    #####################################[m
+[32m+[m
+[32m+[m[32m    def spawn_editor(self, editor_view):[m
+[32m+[m
+[32m+[m[32m        ########### PREPARATION ###############[m
+[32m+[m[41m        [m
+[32m+[m[32m        self.editor_frame = tk.LabelFrame(self.main_win, text="Editor")[m
+[32m+[m[32m        self.move_frame = tk.Frame(self.editor_frame)[m
+[32m+[m
+[32m+[m[32m        try:[m[41m [m
+[32m+[m[32m            for name, lst in self.editor_entries.items():[m
+[32m+[m[32m                for elem in lst:[m
+[32m+[m[32m                        elem.destroy()[m
+[32m+[m[32m        except:[m
+[32m+[m[32m            pass[m
+[32m+[m[41m           [m
+[32m+[m[32m        ############### SWITCH ###################[m
+[32m+[m
+[32m+[m[32m        self.editor_entries = {[m
+[32m+[m[32m            "labels" : [],[m
+[32m+[m[32m            "entries": [],[m
+[32m+[m[32m            "buttons": [][m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if editor_view == 0:[m
+[32m+[m[32m            show_entries = True[m
+[32m+[m[32m            headings = list(self.mix_cols.values())[m
+[32m+[m[32m            data = self.mix_list.item(self.mix_list.focus())[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            self.editor_entries["buttons"].append([[m
+[32m+[m[32m                tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.editor_funcs["save_mix"]( self.editor_entries["entries"],[m
+[32m+[m[32m                                                                                                                 self.mix_list.item(self.mix_list.focus(),"text"))),[m
+[32m+[m[32m                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.mix_list.item(self.mix_list.focus(),"text")))[m
+[32m+[m[32m            ])[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        elif editor_view == 1:[m
+[32m+[m[32m            show_entries = True[m
+[32m+[m[32m            headings = list(self.track_cols.values())[m[41m [m
+[32m+[m[32m            data = self.tracks_list.item(self.tracks_list.focus())[m
+[32m+[m
+[32m+[m[32m            self.editor_entries["buttons"].append([[m
+[32m+[m[32m                tk.Button(self.editor_frame, text="Save Track", command=lambda : self.editor_funcs["save_track"](  self.editor_entries["entries"],[m
+[32m+[m[32m                                                                                                                    self.mix_list.item(self.mix_list.focus(),"text"))),[m
+[32m+[m[32m                tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.editor_funcs["remove_track"]( self.mix_list.item(self.mix_list.focus(),"text"),[m[41m [m
+[32m+[m[32m                                                                                                                data["values"][0])),[m
+[32m+[m[32m                tk.Button(self.move_frame, text="^", command=lambda : self.editor_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"),[m[41m [m
+[32m+[m[32m                                                                                                                data["values"][0],[m
+[32m+[m[32m                                                                                                                "up")),[m
+[32m+[m[32m                tk.Button(self.move_frame, text="V", command=lambda : self.editor_funcs["move_track"]( self.mix_list.item(self.mix_list.focus(),"text"),[m[41m [m
+[32m+[m[32m                                                                                                                data["values"][0],[m
+[32m+[m[32m                                                                                                                "down"))[m
+[32m+[m[32m            ])[m
+[32m+[m[41m            [m
+[32m+[m[32m        elif editor_view == 2:[m
+[32m+[m[32m            show_entries = True[m
+[32m+[m[32m            headings = list(self.mix_cols.values())[m
+[32m+[m[32m            data = {}[m
+[32m+[m[32m            data["values"] = [][m
+[32m+[m[32m            for elem in headings:[m[41m  [m
+[32m+[m[32m                data["values"].append("")[m
+[32m+[m
+[32m+[m[32m            self.editor_entries["buttons"].append([[m
+[32m+[m[32m                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],[m
+[32m+[m[32m                                                                                                        self.mix_list.item(self.mix_list.focus(),"text")))[m
+[32m+[m[32m            ])[m
+[32m+[m[41m        [m
+[32m+[m[32m        elif editor_view == "start":[m
+[32m+[m[32m            editor_image = tk.Label(self.editor_frame, image=self.background_image)[m
+[32m+[m[32m            editor_image.grid(row=0, column=0, sticky="nsew")[m
+[32m+[m[32m            headings = [][m
+[32m+[m[32m            data = {}[m
+[32m+[m[32m            data["values"] = [][m
+[32m+[m
+[32m+[m[32m        ######### DESTILLERY ###########[m
+[32m+[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            for i, val  in enumerate(data["values"]):[m
+[32m+[m[32m                lab = tk.Label(self.editor_frame, text=headings[i])[m
+[32m+[m[32m                lab.grid(row=i, column=0, sticky="w")[m
+[32m+[m[32m                self.editor_entries["labels"].append(lab)[m
+[32m+[m[32m                en = tk.Entry(self.editor_frame)[m
+[32m+[m[32m                en.grid(row=i, column=1, sticky="w")[m
+[32m+[m[41m                [m
+[32m+[m[32m                en.insert(0, data["values"][i])[m
+[32m+[m[32m                self.editor_entries["entries"].append(en)[m
+[32m+[m
+[32m+[m[41m                [m
+[32m+[m[32m        except:[m
+[32m+[m[32m            pass[m
+[32m+[m
+[32m+[m[32m        ######## WHICH ENTRIES ARE DISABLED ###########[m
+[32m+[m[41m        [m
+[32m+[m[32m        for i, en in enumerate(self.editor_entries["entries"]):[m
+[32m+[m[32m            if editor_view == 0:[m
+[32m+[m[32m                self.editor_entries["entries"][0].config(state='disabled')[m
+[32m+[m[32m            elif editor_view == 1:[m[41m  [m
+[32m+[m[32m                if i == 0 or i == 1 or i == 2:[m
+[32m+[m[32m                    self.editor_entries["entries"][i].config(state='disabled')[m
+[32m+[m
+[32m+[m[32m        ########### BUTTONS ###########[m
+[32m+[m[41m        [m
+[32m+[m[32m        if data["values"] != "":[m
+[32m+[m[32m            col_count = 0[m
+[32m+[m[32m            row_count = 2[m
+[32m+[m[32m            for lst in self.editor_entries["buttons"]:[m
+[32m+[m[32m                for obj in lst:[m
+[32m+[m[32m                    if col_count == 1:[m
+[32m+[m[32m                        count = 0[m
+[32m+[m[32m                    obj.grid(row=len(self.editor_entries["entries"])+row_count, column=col_count, sticky="w")[m
+[32m+[m[32m                    if col_count == 1:[m
+[32m+[m[32m                        row_count += 1[m
+[32m+[m[32m                    col_count += 1[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        ########### SHOW ##############[m
+[32m+[m
+[32m+[m[32m        if editor_view == 1:[m
+[32m+[m[32m            self.move_frame.grid(row=len(self.editor_entries["entries"])+1, column=1, sticky="w")[m
+[32m+[m
+[32m+[m[32m        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")[m
+[32m+[m
+[32m+[m
+         [m
+ [m
+     def create_toolbars(self):[m
+[36m@@ -155,7 +286,7 @@[m [mclass main_frame(tk.Toplevel):[m
+         tk.Checkbutton(self.bar_grid, text="online", variable=self.online).grid(row=0, column=4, sticky="ne")[m
+ [m
+         self.search_button = tk.Button(self.bar_grid, text="Search...")[m
+[31m-        self.search_button.grid(row=4, column=0, sticky="we", columnspan=3)[m
+[32m+[m[32m        self.search_button.grid(row=4, column=1, sticky="we", columnspan=3)[m
+ [m
+         # SEARCH TREEVIEW[m
+ [m
