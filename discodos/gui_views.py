@@ -160,6 +160,8 @@ class main_frame(tk.Toplevel):
             data = self.tracks_list.item(self.tracks_list.focus())
 
             self.editor_entries["buttons"].append([
+                tk.Label(self.editor_frame, text="Music Brainz", foreground="blue"),
+                tk.Label(self.editor_frame, text="Acoustic Brainz", foreground="blue"),
                 tk.Button(self.editor_frame, text="Save Track", command=lambda : self.editor_funcs["save_track"](  self.editor_entries["entries"],
                                                                                                                     self.mix_list.item(self.mix_list.focus(),"text"))),
                 tk.Button(self.editor_frame, text="Remove Track", command=lambda : self.editor_funcs["remove_track"]( self.mix_list.item(self.mix_list.focus(),"text"), 
