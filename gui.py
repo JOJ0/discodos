@@ -32,7 +32,9 @@ except:
 if __name__ == '__main__':
     root = tk.Tk()  # TKINTER OBJECT
     app = mix_ctrl_gui(root, conn, start_up=True) # GUI CONTROLLER
-    root.mainloop() # START WINDOW
-        
 
-    
+    root.lift()
+    root.attributes('-topmost', True)
+    root.attributes('-topmost', False)
+
+    root.mainloop() # START WINDOW

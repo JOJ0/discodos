@@ -11,7 +11,6 @@ from discodos.ctrls import *
 class mix_ctrl_gui(Mix_ctrl_common):
 
     def __init__(self, root, conn, start_up):
-        self.flip = False
         self.start_up = start_up
         self.conn = conn
         self.cv = views.View_common()
@@ -53,13 +52,29 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.main_win.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
     
 
-    def display_all_mixes(self, date=False):
+    def display_all_mixes(self, flip=False, col="played"):
         
         all_mix = Mix(self.conn, "all")
-        if date == False:
-            self.mixes_data = all_mix.get_all_mixes(order_by="played ASC")
-        else:
-            self.mixes_data = all_mix.get_all_mixes(order_by="played DESC")
+        if flip == False:
+            if col == "played":
+                self.mixes_data = all_mix.get_all_mixes(order_by="played ASC")
+            elif col == "mix_id":
+                self.mixes_data = all_mix.get_all_mixes(order_by="mix_id ASC")
+            elif col == "name":
+                self.mixes_data = all_mix.get_all_mixes(order_by="name ASC")
+            elif col == "venue":
+                self.mixes_data = all_mix.get_all_mixes(order_by="venue ASC")
+
+        elif flip == True:
+            if col == "played":
+                self.mixes_data = all_mix.get_all_mixes(order_by="played DESC")
+            elif col == "mix_id":
+                self.mixes_data = all_mix.get_all_mixes(order_by="mix_id DESC")
+            elif col == "name":
+                self.mixes_data = all_mix.get_all_mixes(order_by="name DESC")
+            elif col == "venue":
+                self.mixes_data = all_mix.get_all_mixes(order_by="venue DESC")
+
 
         self.main_win.mix_list.delete(*self.main_win.mix_list.get_children())
 
@@ -77,12 +92,18 @@ class mix_ctrl_gui(Mix_ctrl_common):
             self.col_widths(self.main_win.mix_list, self.main_win.mix_cols)
             self.start_up = False
 
-        if self.flip == False:
-            self.main_win.mix_list.heading("played", command=lambda : self.display_all_mixes(date=True))
-            self.flip = not self.flip
+        if flip == False:
+            self.main_win.mix_list.heading("played", command=lambda : self.display_all_mixes(flip=True, col="played"))
+            self.main_win.mix_list.heading("name", command=lambda : self.display_all_mixes(flip=True, col="name"))
+            self.main_win.mix_list.heading("venue", command=lambda : self.display_all_mixes(flip=True, col="venue"))
+            self.main_win.mix_list.heading("mix_id", command=lambda : self.display_all_mixes(flip=True, col="mix_id"))
+            self.flip = not flip
         else:
-            self.main_win.mix_list.heading("played", command=lambda : self.display_all_mixes(date=False))
-            self.flip = not self.flip
+            self.main_win.mix_list.heading("played", command=lambda : self.display_all_mixes(flip=False, col="played"))
+            self.main_win.mix_list.heading("name", command=lambda : self.display_all_mixes(flip=False, col="name"))
+            self.main_win.mix_list.heading("venue", command=lambda : self.display_all_mixes(flip=False, col="venue"))
+            self.main_win.mix_list.heading("mix_id", command=lambda : self.display_all_mixes(flip=False, col="mix_id"))
+            flip = not flip
 
     
     def display_tracklist(self, selected_mix_id):
@@ -174,15 +195,13 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix.reorder_tracks(selected_track_id)
         self.display_tracklist(selected_mix_id)
         self.focus_object(self.main_win.tracks_list, selected_track_id-1)
+        
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         mix = Mix(self.conn, selected_mix_id)
         mix.shift_track(selected_track_id, direction)
         self.display_tracklist(selected_mix_id)
-        # if direction == 'down':
-        #     self.focus_object(self.main_win.tracks_list, selected_track_id-1)
-        # elif direction == 'up':
-        #     self.focus_object(self.main_win.tracks_list, selected_track_id+1)
+        self.focus_object(self.main_win.tracks_list, selected_track_id)
 
 
     def display_searched_releases(self, search_terms, search_tv, online):
