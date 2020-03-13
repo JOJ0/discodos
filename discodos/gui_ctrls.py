@@ -112,6 +112,8 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix = Mix(self.conn, selected_mix_id)
         mix_data = mix.get_full_mix(verbose = True) 
 
+        mix_data = self.cv.replace_key_bpm(mix_data)
+
         for i, row in enumerate(mix_data):
             self.main_win.tracks_list.insert("", i, text="", values=( self.cv.none_replace(row["track_pos"]), 
                                                         self.cv.none_replace(row["d_artist"]), 
@@ -125,6 +127,8 @@ class mix_ctrl_gui(Mix_ctrl_common):
         # if self.start_up == True:
         #     self.col_widths(self.main_win.tracks_list, self.main_win.track_cols)
         #     self.start_up = False
+        # for i in range(8):
+        #     print(self.main_win.tracks_list.identify_region(i,5))
         
         self.main_win.spawn_editor(0)
 
@@ -195,7 +199,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix.reorder_tracks(selected_track_id)
         self.display_tracklist(selected_mix_id)
         self.focus_object(self.main_win.tracks_list, selected_track_id-1)
-        
+
 
     def move_track_pos(self, selected_mix_id, selected_track_id, direction):
         mix = Mix(self.conn, selected_mix_id)
