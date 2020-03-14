@@ -22,14 +22,6 @@ def print_help(message):
 def ask_user(text=""):
     return input(text)
 
-# util: Discogs: stay in 60/min rate limit
-def rate_limit_slow_downer(d_obj, remaining=10, sleep=2):
-    if int(d_obj._fetcher.rate_limit_remaining) < remaining:
-        log.info("Discogs request rate limit is about to exceed,\
-                  let's wait a bit: %s\n",
-                     d_obj._fetcher.rate_limit_remaining)
-        time.sleep(sleep)
-
 # read yaml
 def read_yaml(yamlfile):
     """expects path/file"""
@@ -76,6 +68,7 @@ class Config():
         self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
         self.webdav_user = self._get_config_entry('webdav_user')
         self.webdav_password = self._get_config_entry('webdav_password')
+        self.webdav_url = self._get_config_entry('webdav_url')
 
     def _get_config_entry(self, yaml_key, optional = True):
         if optional:
