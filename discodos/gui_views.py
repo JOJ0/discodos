@@ -236,10 +236,13 @@ class main_frame(tk.Toplevel):
         ########### SHOW ##############
 
         if editor_view == 1:
+            self.editor_funcs["place_link"]()
             self.move_frame.grid(row=len(self.editor_entries["entries"])+1, column=1, sticky="w")
-
+            
         self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
 
+            
+    
 
     def create_toolbars(self):
 

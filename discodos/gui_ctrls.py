@@ -7,6 +7,7 @@ from discodos.views import View_common
 from discodos import utils
 from discodos.models import *
 from discodos.ctrls import *
+import webbrowser
 
 class mix_ctrl_gui(Mix_ctrl_common):
 
@@ -20,7 +21,8 @@ class mix_ctrl_gui(Mix_ctrl_common):
                             "save_mix" : self.save_mix_data,
                             "delete_mix" : self.delete_selected_mix,
                             "remove_track" : self.remove_track_from_mix,
-                            "move_track" : self.move_track_pos
+                            "move_track" : self.move_track_pos,
+                            "place_link" : self.link_placer
                             }
 
 
@@ -124,13 +126,20 @@ class mix_ctrl_gui(Mix_ctrl_common):
                                                         self.cv.none_replace(row["trans_rating"]), 
                                                         self.cv.none_replace(row["trans_notes"]), 
                                                         self.cv.none_replace(row["notes"])))
-        # if self.start_up == True:
-        #     self.col_widths(self.main_win.tracks_list, self.main_win.track_cols)
-        #     self.start_up = False
-        # for i in range(8):
-        #     print(self.main_win.tracks_list.identify_region(i,5))
         
         self.main_win.spawn_editor(0)
+
+    
+    def link_placer(self):
+        mix = Mix(self.conn, self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"))
+        track_details = mix.get_one_mix_track(self.main_win.tracks_list.item(self.main_win.tracks_list.focus(),"values")[0])
+
+        self.main_win.editor_entries["buttons"][0][0].bind("<Button-1>", lambda e: self.open_browser(self.cv.link_to("musicbrainz release", track_details["d_release_id"])))
+        self.main_win.editor_entries["buttons"][0][1].bind("<Button-1>", lambda e: self.open_browser(self.cv.link_to("accousticbrainz recording", track_details["d_release_id"])))
+
+    
+    def open_browser(self, url):
+        webbrowser.open_new(url)
 
 
     def col_widths(self, tree_view, headings):
@@ -175,7 +184,6 @@ class mix_ctrl_gui(Mix_ctrl_common):
         edit_answers["trans_rating"] = editor_entries[6].get()
         edit_answers["trans_notes"] = editor_entries[7].get()
         edit_answers["notes"] = editor_entries[8].get()
-        
 
         mix.update_mix_track_and_track_ext(track_details, edit_answers)
 
