@@ -134,6 +134,25 @@ class View_common(ABC):
             del(table[i]['a_bpm'])
         return table
 
+    def link_to(self, service, id):
+        '''return link to either Discgos release, MusicBrainz Release/Recording
+           or AccousticBrainz recording entries.
+           Method currently does no sanity checking at all!
+        '''
+        if service == 'discogs release':
+            return 'https://discogs.com/release/{}'.format(id)
+        elif service == 'discogs master release':
+            return 'https://discogs.com/master/{}'.format(id)
+        elif service == 'musicbrainz release':
+            return 'https://musicbrainz.org/release/{}'.format(id)
+        elif service == 'musicbrainz recording':
+            return 'https://musicbrainz.org/recording/{}'.format(id)
+        elif service == 'accousticbrainz recording':
+            return 'https://accousticbrainz.org/{}'.format(id)
+        else:
+            return 'Unknown online service'
+
+
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
 class Mix_view_common(ABC):
     def __init__(self):
