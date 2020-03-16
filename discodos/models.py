@@ -664,19 +664,36 @@ class Collection (Database):
                 raise Exc
 
     def search_release_track_offline(self, artist='', release='', track=''):
-        fields = ['track.d_artist', 'track.d_release_id', 'discogs_title',
+        fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id', 'discogs_title',
                  'track.d_track_no', 'd_track_name',
                  'key', 'bpm', 'key_notes', 'notes']
         from_tables='''
-                    track INNER JOIN release
+                    release LEFT OUTER JOIN track
                     ON track.d_release_id = release.discogs_id
-                      INNER JOIN track_ext
+                      LEFT OUTER JOIN track_ext
                       ON track.d_release_id = track_ext.d_release_id
                       AND track.d_track_no = track_ext.d_track_no'''
-        where = '''(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "{}")
-                      AND discogs_title LIKE "%{}%"
-                      AND d_track_name LIKE "%{}%"'''.format(
-                          artist, artist, release, track)
+
+        if artist == '':
+            artist = '''
+                     ((track.d_artist IS NULL OR track.d_artist LIKE "%") OR
+                      (release.d_artist IS NULL OR release.d_artist LIKE "%"))'''
+        else:
+            artist = '(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "%{}%")'.format(
+              artist, artist)
+
+        if release == '':
+            release = '(discogs_title IS NULL OR discogs_title LIKE "%")'
+        else:
+            release = 'discogs_title LIKE "%{}%"'.format(release)
+
+        if track == '':
+            track = '(d_track_name IS NULL OR d_track_name LIKE "%")'
+        else:
+            track = 'd_track_name LIKE "%{}%"'.format(track)
+
+        where = '''{} AND {} AND {}'''.format(artist, release, track)
+
         order_by = 'track.d_artist, discogs_title, d_track_name'
         if artist == '' and release =='' and track == '':
             tracks = []

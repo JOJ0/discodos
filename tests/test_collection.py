@@ -204,9 +204,9 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='Märtini', release='', track='')
-        #self.debug_db(dbr)
+        self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 3) # should be a list with 1 Row
+        self.assertEqual(len(dbr), 3) # should be a list with 3 Rows
         self.assertEqual(dbr[2]['d_release_id'], 123456)
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(dbr[1]['discogs_title'], 'Material Love')
@@ -220,6 +220,63 @@ class TestCollection(unittest.TestCase):
             artist='', release='', track='')
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 0) # should be a list with 0 Rows
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_search_release_track_offline_artist_without_tracks(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        dbr = self.collection.search_release_track_offline(
+            artist='Amon', release='', track='')
+        self.debug_db(dbr)
+        self.assertIsNotNone(dbr)
+        self.assertEqual(len(dbr), 2) # should be a list with 2 Rows
+        self.assertEqual(dbr[0]['d_artist'], 'Amon Tobin')
+        self.assertEqual(dbr[0]['discogs_title'], 'Foley Room')
+        self.assertEqual(dbr[0]['d_artist'], 'Amon Tobin')
+        self.assertEqual(dbr[1]['discogs_title'], 'Out From Out Where')
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_search_release_track_offline_track(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        dbr = self.collection.search_release_track_offline(
+            artist='', release='', track='Hedup!')
+        self.debug_db(dbr)
+        self.assertIsNotNone(dbr)
+        self.assertEqual(len(dbr), 1) # should be a list with 1 Rows
+        self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
+        self.assertEqual(dbr[0]['d_track_name'], 'Hedup!')
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_search_release_track_offline_release(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        dbr = self.collection.search_release_track_offline(
+            artist='', release='material', track='')
+        self.debug_db(dbr)
+        self.assertIsNotNone(dbr)
+        self.assertEqual(len(dbr), 3) # it's one release but finds all track entries!
+        self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(dbr[1]['d_track_name'], 'Material Love')
+        self.assertEqual(dbr[2]['discogs_title'], 'Material Love')
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_search_release_track_offline_artist_release_track(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        dbr = self.collection.search_release_track_offline(
+            artist='Märtini', release='material', track='cab')
+        self.debug_db(dbr)
+        self.assertIsNotNone(dbr)
+        self.assertEqual(len(dbr), 1) # one track
+        self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
+        self.assertEqual(dbr[0]['d_track_name'], 'Material Love (Cab Drivers Remix)')
+        self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
         print("{} - {} - END".format(self.clname, name))
 
     def test_track_report_snippet(self):
