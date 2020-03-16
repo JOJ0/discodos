@@ -7,7 +7,7 @@ from dropbox.exceptions import ApiError, AuthError
 from urllib3.exceptions import NewConnectionError
 from requests.exceptions import ConnectionError
 from discodos import log
-from discodos.utils import *
+from discodos.utils import print_help, ask_user, is_number, Config
 import asyncio
 #from codetiming import Timer
 import argparse
@@ -16,6 +16,7 @@ from webdav3.client import Client
 from webdav3.client import WebDavException
 from datetime import datetime
 from dateutil.parser import parse
+from shutil import copy2
 
 
 def argparser(argv):
@@ -207,17 +208,32 @@ class Webdav_sync(object):
                 raise SystemExit
 
             if existing:
-                print('Already existing, moving file ...')
+                print('Backup already existing, moving file away ...'.format(
+                    self.discobase))
                 date_time = parse(self.client.info(self.discobase)['modified'])
                 datestr = date_time.strftime('%Y-%m-%d_%H%M%S')
                 bak_file_name = '{}_{}'.format(self.discobase, datestr)
-                print(bak_file_name)
-                print('Directory listing ...')
-                print(self.client.list())
+                print('Backup will be called: {}\n'.format(bak_file_name))
+                # check if backup file with name already existing and ask user for overwrite
+                if self.client.check(bak_file_name):
+                    # double check for file time??
+                    #bak_file_time = parse(self.client.info(bak_file_name)['modified'])
+                    yes_copy = ask_user('A backup named "{}" is already existing. Overwrite? '.format(bak_file_name))
+                    if yes_copy:
+                        #copy2(self.discobase, bak_file_name)) # local command also?
+                        self.client.copy(remote_path_from=self.discobase, remote_path_to=bak_file_name)
+                else: # backup with timestamp not existing yet
+                        self.client.copy(remote_path_from=self.discobase, remote_path_to=bak_file_name)
+                self.show_backups()
             else:
                 print('Backup not existing yet, uploading ...')
                 self.client.upload_sync(remote_path='{}'.format(self.discobase),
                                         local_path='{}'.format(self.discobase))
+    def show_backups(self):
+        print_help('\nExisting backups:')
+        for resource in self.client.list():
+            print(resource)
+        print()
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
