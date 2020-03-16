@@ -232,7 +232,10 @@ class mix_ctrl_gui(Mix_ctrl_common):
             for release, details in grouped_releases.items():
                 release_levels[i] = search_tv.insert("", i, text="", values=([release]))
                 for j, track_detail in enumerate(details):
-                       search_tv.insert(release_levels[i],j, text=track_detail[0], values=(track_detail[1], track_detail[2], track_detail[3]))
+                    search_tv.insert(release_levels[i],j, text=self.cv.none_replace(track_detail[0]),
+                          values=(self.cv.none_replace(track_detail[1]),
+                                  self.cv.none_replace(track_detail[2]),
+                                  self.cv.none_replace(track_detail[3])))
                 i += 1
 
         elif online == 1:
