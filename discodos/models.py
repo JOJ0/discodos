@@ -476,7 +476,9 @@ class Mix (Database):
         if not ret_tr and ret_tr_bef and ret_tr_aft:
             log.error ('MODEL: shift_track: one or more track updates failed.')
             return False
-        log.error ('MODEL: shift_track: shift correctly done.')
+        log.info (
+            'MODEL: shift_track: Former track {} was successfully shifted {}.'.format(
+                     pos, direction))
         return True
 
 
