@@ -204,7 +204,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='Märtini', release='', track='')
-        self.debug_db(dbr)
+        #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 3) # should be a list with 3 Rows
         self.assertEqual(dbr[2]['d_release_id'], 123456)
@@ -228,7 +228,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='Amon', release='', track='')
-        self.debug_db(dbr)
+        #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 2) # should be a list with 2 Rows
         self.assertEqual(dbr[0]['d_artist'], 'Amon Tobin')
@@ -243,7 +243,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='', release='', track='Hedup!')
-        self.debug_db(dbr)
+        #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 1) # should be a list with 1 Rows
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
@@ -257,7 +257,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='', release='material', track='')
-        self.debug_db(dbr)
+        #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 3) # it's one release but finds all track entries!
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
@@ -271,7 +271,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='Märtini', release='material', track='cab')
-        self.debug_db(dbr)
+        #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 1) # one track
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
