@@ -6,6 +6,18 @@ import pprint
 from datetime import datetime
 from datetime import date
 
+import discodos.views as views
+import discodos.ctrls as ctrls
+import discodos.models as models
+import discodos.utils as utils
+import discodos.log as log
+
+import tkinter as tk
+from tkinter import ttk
+import tkinter.font as tkfont
+from tabulate import tabulate as tab
+
+
 
 # common view utils, usable in CLI and GUI
 class View_common(ABC):
@@ -486,3 +498,5 @@ class User_int(object):
 
         if self.args.offline_mode == True:
             self.WANTS_ONLINE = False
+
+

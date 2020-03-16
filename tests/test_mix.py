@@ -224,6 +224,11 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_get_bef['key'], "Am") # will be changed
         # do the edit
         track_details = db_get_bef
+        # print(dir(track_details))
+        # print(track_details.keys())
+        # for i in track_details:
+        #     print(i)
+        # print
         edit_answers = {'bpm': 130, 'key': 'Fm'}
         db_ret_upd = self.mix.update_mix_track_and_track_ext(track_details, edit_answers)
         self.assertEqual(db_ret_upd, 1) # was a row updated?

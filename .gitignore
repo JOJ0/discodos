@@ -16,3 +16,4 @@ disco
 install_cli_system.sh
 disco.bat
 discoshell.bat
+disco_env/

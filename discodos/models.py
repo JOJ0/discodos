@@ -27,6 +27,7 @@ class Database (object):
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file)
+            
         self.db_conn.row_factory = sqlite3.Row # also this was in each db.function before
         self.cur = self.db_conn.cursor() # we had this in each db function before
         self.configure_db() # set PRAGMA options
@@ -414,13 +415,18 @@ class Mix (Database):
                 return False
             pos = pos + 1
         return True
+        
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
         log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
-            new_pos = t['track_pos'] + 1
+            if t['track_pos'] != "":
+                new_pos = t['track_pos'] + 1
+            else:
+                new_pos = 1
+
             log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
                      t['track_pos'], new_pos)
             #if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):
@@ -716,6 +722,7 @@ class Collection (Database):
                                    fetchone = False, orderby = order_by)
         log.debug(self.debug_db(tracks))
         return tracks
+        
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         tuple_tr = (release_id, track_no, track_artist, track_name,
