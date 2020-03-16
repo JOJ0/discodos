@@ -24,8 +24,8 @@ class main_frame(tk.Toplevel):
         self.protocol('WM_DELETE_WINDOW', self.main_win.destroy)
         
         
-        self.main_win.geometry("1200x700")     
-        self.main_win.minsize(1200, 700)
+        self.main_win.geometry("1024x768")     
+        self.main_win.minsize(1024, 768)
 
 
         self.main_win.title("Discodos") # TODO: Add relevant Information to title, like Titles in Mix etc
@@ -151,7 +151,8 @@ class main_frame(tk.Toplevel):
             self.editor_entries["buttons"].append([
                 tk.Button(self.editor_frame, text="Save Mix", command=lambda : self.editor_funcs["save_mix"]( self.editor_entries["entries"],
                                                                                                                  self.mix_list.item(self.mix_list.focus(),"text"))),
-                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.mix_list.item(self.mix_list.focus(),"text")))
+                tk.Button(self.editor_frame, text="Delete Mix", command=lambda : self.editor_funcs["delete_mix"](self.mix_list.item(self.mix_list.focus(),"text"))),
+                tk.Button(self.editor_frame, text="New Mix", command=lambda:self.spawn_editor(2))
             ])
 
         elif editor_view == 1:
@@ -183,7 +184,7 @@ class main_frame(tk.Toplevel):
                 data["values"].append("")
 
             self.editor_entries["buttons"].append([
-                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],0))
+                tk.Button(self.editor_frame, text="Save New Mix", command=lambda : self.editor_funcs["save_mix"](self.editor_entries["entries"],0))  
             ])
         
         elif editor_view == "start":
@@ -239,7 +240,7 @@ class main_frame(tk.Toplevel):
             self.editor_funcs["place_link"]()
             self.move_frame.grid(row=len(self.editor_entries["entries"])+1, column=1, sticky="w")
             
-        self.editor_frame.grid(row=0, column=5, columnspan=5, rowspan=5, sticky="news")
+        self.editor_frame.grid(row=0, column=7, columnspan=3, rowspan=5, sticky="news")
 
             
     
@@ -259,10 +260,7 @@ class main_frame(tk.Toplevel):
         # BUTTON AREA
         #########################################################################
 
-        self.toolbox = tk.LabelFrame(self.main_win, text="Toolbox")
-        
-        self.new_mix_btn = tk.Button(self.toolbox, text="New Mix")
-        self.new_mix_btn.grid(row=0, column=0, sticky="w")
+ 
 
         #######################################################
         # SEARCH AREA
@@ -312,9 +310,8 @@ class main_frame(tk.Toplevel):
         # DISPLAY
            
         self.status_bar.grid(row=15, column=0, columnspan=15, rowspan=1, sticky="wes")
-        self.mix_frame.grid(row=0, column=0, columnspan=5, rowspan=5, sticky="nwes")
-        self.tracks_frame.grid(row=5, column=0, columnspan=7, rowspan=10, sticky="swen")
-        self.toolbox.grid(row=5, column=7, columnspan=3,rowspan=10, sticky="sewn")
+        self.mix_frame.grid(row=0, column=0, columnspan=10, rowspan=5, sticky="nwes")
+        self.tracks_frame.grid(row=5, column=0, columnspan=10, rowspan=10, sticky="swen")
         self.search_frame.grid(row=0, column=10, columnspan=5, rowspan=40, sticky="nsew")
 
         # WEIGHTS

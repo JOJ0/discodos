@@ -48,7 +48,6 @@ class mix_ctrl_gui(Mix_ctrl_common):
         self.main_win.tracks_list.bind('<<TreeviewSelect>>', lambda a : self.main_win.spawn_editor(1))
         self.main_win.search_button.configure(command=lambda:eval(self.search_funcs[0]))
         self.main_win.add_btn.configure(command = lambda : self.add_track_to_mix(self.main_win.search_tv))
-        self.main_win.new_mix_btn.configure(command=lambda: self.main_win.spawn_editor(2))
         self.main_win.artist_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
         self.main_win.release_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
         self.main_win.track_bar.bind("<Return>", lambda x:eval(self.search_funcs[0]))
@@ -134,7 +133,7 @@ class mix_ctrl_gui(Mix_ctrl_common):
         mix = Mix(self.conn, self.main_win.mix_list.item(self.main_win.mix_list.focus(),"text"))
         track_details = mix.get_one_mix_track(self.main_win.tracks_list.item(self.main_win.tracks_list.focus(),"values")[0])
 
-        self.main_win.editor_entries["buttons"][0][0].bind("<Button-1>", lambda e: self.open_browser(self.cv.link_to("musicbrainz release", track_details["d_release_id"])))
+        self.main_win.editor_entries["buttons"][0][0].bind("<Button-1>", lambda e: self.open_browser(self.cv.link_to("musicbrainz release", track_details["m_rel_id"])))
         self.main_win.editor_entries["buttons"][0][1].bind("<Button-1>", lambda e: self.open_browser(self.cv.link_to("accousticbrainz recording", track_details["d_release_id"])))
 
     
