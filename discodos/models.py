@@ -138,6 +138,18 @@ class Database (object):
     def close_conn(self): # manually close conn! - context manager (with) doesn't do it
         self.db_conn.close()
 
+    def debug_db(self, db_return):
+        #print(dbr.keys())
+        print()
+        for i in db_return:
+            #print(i.keys())
+            stringed = ''
+            for j in i:
+                stringed+='{}, '.format(j)
+            print(stringed)
+            print()
+        return True
+
 # mix model class
 class Mix (Database):
 
@@ -706,6 +718,7 @@ class Collection (Database):
         else:
             tracks = self._select_simple(fields, from_tables, where,
                                    fetchone = False, orderby = order_by)
+        log.debug(self.debug_db(tracks))
         return tracks
         
 
