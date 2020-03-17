@@ -28,7 +28,7 @@ class main_frame(tk.Toplevel):
         self.main_win.minsize(1024, 768)
 
 
-        self.main_win.title("Discodos") # TODO: Add relevant Information to title, like Titles in Mix etc
+        self.main_win.title("DiscoDOS") # TODO: Add relevant Information to title, like Titles in Mix etc
 
 
         # Create all Widgets, outsourced to its own function
@@ -282,7 +282,7 @@ class main_frame(tk.Toplevel):
         self.track_bar = tk.Entry(self.bar_grid)
         self.track_bar.grid(row=2, column=1, columnspan=3, rowspan=1, sticky="we")
 
-        self.search_button = tk.Button(self.bar_grid, text="Search...")
+        self.search_button = tk.Button(self.bar_grid, text="Search")
         self.search_button.grid(row=4, column=1, sticky="we", columnspan=3)
 
         self.online = tk.IntVar()
@@ -339,7 +339,7 @@ class main_frame(tk.Toplevel):
         self.search_tv.column('#0', width=80, stretch=0)
         
         for col_id, heading in self.search_cols.items():
-            self.search_tv.column(col_id, width=5, stretch=1, anchor="w")
+            self.search_tv.column(col_id, width=15, stretch=1, anchor="w")
             self.search_tv.heading(col_id,text=heading, anchor="w")
         
         self.search_tv.bind('<<TreeviewSelect>>', lambda a : self.search_tools_config())
