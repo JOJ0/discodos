@@ -47,13 +47,20 @@ def read_yaml(yamlfile):
 
 class Config():
     def __init__(self):
+        # path handling
         discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
         self.discodos_root = discodos_lib.parents[0]
         log.info("Config.discodos_root: {}".format(self.discodos_root))
-        self.discobase = self.discodos_root / "discobase.db"
-        log.info("Config.discobase: {}".format(self.discobase))
+        # config.yaml handling
         self.conf = read_yaml( self.discodos_root / "config.yaml")
-        try: # do optional setting log_level first thing!
+        # db file handling
+        db_file = self._get_config_entry('discobase_file') # maybe configured?
+        if not db_file: # if not set default value
+            db_file = 'discobase.db'
+        self.discobase = self.discodos_root / db_file
+        log.info("Config.discobase: {}".format(self.discobase))
+
+        try: # optional setting log_level
             self.log_level = self.conf["log_level"]
             log.info("config.yaml entry log_level is {}.".format(
                 self.log_level))

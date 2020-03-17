@@ -17,6 +17,7 @@ from webdav3.client import WebDavException
 from datetime import datetime
 from dateutil.parser import parse
 from shutil import copy2
+from pathlib import Path
 
 
 def argparser(argv):
@@ -210,10 +211,19 @@ class Webdav_sync(object):
             if existing:
                 print('Backup already existing, moving file away ...'.format(
                     self.discobase))
-                date_time = parse(self.client.info(self.discobase)['modified'])
+                # check file stats on local machine
+                mod_local_dt = datetime.fromtimestamp(
+                                  Path(self.discobase).stat().st_mtime)
+                mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
+                bak_file_name = '{}_{}'.format(self.discobase, mod_local_str)
+                print(bak_file_name)
+
+                # check file stats on server
+                mod_server_dt = parse(self.client.info(self.discobase)['modified'])
                 datestr = date_time.strftime('%Y-%m-%d_%H%M%S')
                 bak_file_name = '{}_{}'.format(self.discobase, datestr)
                 print('Backup will be called: {}\n'.format(bak_file_name))
+
                 # check if backup file with name already existing and ask user for overwrite
                 if self.client.check(bak_file_name):
                     # double check for file time??
