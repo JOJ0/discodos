@@ -188,57 +188,55 @@ class Webdav_sync(object):
             'webdav_password': self.password
         }
         self.client = Client(options)
-        print(dir(self.client))
-        print('')
+        #print(dir(self.client))
+        #print('')
         #print(self.client.is_dir('discodos'))
         #print(self.client.check(self.discobase))
 
+    def _local_mtime(self, filename): # returns a file's formatted mtime
+        mod_local_dt = datetime.fromtimestamp(
+                          Path(filename).stat().st_mtime)
+        mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
+        return mod_local_str
+
+    def _webdav_mtime(self, filename): # we currently don't need this, put to func anyway
+        mod_server_dt = parse(self.client.info(filenam)['modified'])
+        mod_server_str = mod_server_dt.strftime('%Y-%m-%d_%H%M%S')
+        #if mod_local_str != mod_server_str:
+        #    print('Local and server discobase.db modification time diverge.')
+        #    print(mod_local_str)
+        #    print(mod_server_str)
+        return mod_server_str
+
+    def _filename_mtime(self, filename):
+        local_mtime = self._local_mtime(filename)
+        return '{}_{}'.format(filename, local_mtime)
+
     def backup(self):
-        with open(self.discobase, 'rb') as f:
-            #print("Uploading {} to Webserver as {} ...".format(self.discobase,
-            #  self.backuppath))
-            print("Uploading {} to {} ...".format(self.discobase, self.url))
-            existing = False
-            try:
-                if self.client.check(self.discobase):
-                    existing = True
-                else:
-                    existing = False
-            except WebDavException as exception:
-                print('Webserver returned: {}'.format(exception))
-                raise SystemExit
-
-            if existing:
-                print('Backup already existing, moving file away ...'.format(
-                    self.discobase))
-                # check file stats on local machine
-                mod_local_dt = datetime.fromtimestamp(
-                                  Path(self.discobase).stat().st_mtime)
-                mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
-                bak_file_name = '{}_{}'.format(self.discobase, mod_local_str)
-                print(bak_file_name)
-
-                # check file stats on server
-                mod_server_dt = parse(self.client.info(self.discobase)['modified'])
-                datestr = date_time.strftime('%Y-%m-%d_%H%M%S')
-                bak_file_name = '{}_{}'.format(self.discobase, datestr)
-                print('Backup will be called: {}\n'.format(bak_file_name))
-
-                # check if backup file with name already existing and ask user for overwrite
-                if self.client.check(bak_file_name):
-                    # double check for file time??
-                    #bak_file_time = parse(self.client.info(bak_file_name)['modified'])
-                    yes_copy = ask_user('A backup named "{}" is already existing. Overwrite? '.format(bak_file_name))
-                    if yes_copy:
-                        #copy2(self.discobase, bak_file_name)) # local command also?
-                        self.client.copy(remote_path_from=self.discobase, remote_path_to=bak_file_name)
-                else: # backup with timestamp not existing yet
-                        self.client.copy(remote_path_from=self.discobase, remote_path_to=bak_file_name)
-                self.show_backups()
+        # check file stats on local machine
+        bak_file_name = self._filename_mtime(self.discobase)
+        print("Uploading as {} to {}".format(bak_file_name, self.url))
+        existing = False
+        try:
+            if self.client.check(bak_file_name):
+                existing = True
             else:
-                print('Backup not existing yet, uploading ...')
-                self.client.upload_sync(remote_path='{}'.format(self.discobase),
-                                        local_path='{}'.format(self.discobase))
+                existing = False
+        except WebDavException as exception:
+            log.error('Webserver returned: {}'.format(exception))
+            raise SystemExit
+
+        if existing:
+            log.warning('Backup existing. Won\'t overwrite "{}" '.format(
+                    bak_file_name))
+        else:
+            print('Backup not existing yet, uploading ...')
+            self.client.upload_sync(remote_path='{}'.format(bak_file_name),
+                                    local_path='{}'.format(self.discobase))
+
+        self.show_backups()
+        return True
+
     def show_backups(self):
         print_help('\nExisting backups:')
         for resource in self.client.list():
