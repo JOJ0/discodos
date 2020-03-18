@@ -225,13 +225,13 @@ class View_common_cli(ABC):
             self.print_help(tab(_mix_data_nl, tablefmt='pipe',
               headers={'track_pos': '#', 'discogs_title': 'Release',
                        'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                       'd_track_no': 'Track\nPos', 'key': 'Key', 'bpm': 'BPM',
+                       'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
                        'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
-                       'trans_notes': 'Trans.\nR. Notes', 'notes': 'Track\nNotes'}))
+                       'trans_notes': 'Trans.\nNotes', 'notes': 'Track\nNotes'}))
         else:
             self.print_help(tab(_mix_data_nl, tablefmt='pipe',
               headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_track_no': 'Tr\nPos', 'trans_rating': 'Trns\nRat',
+                       'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
                        'key': 'Key', 'bpm': 'BPM'}))
 
 # viewing mixes in CLI mode:
