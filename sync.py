@@ -18,6 +18,7 @@ from datetime import datetime
 from dateutil.parser import parse
 from shutil import copy2
 from pathlib import Path
+import re
 
 
 def argparser(argv):
@@ -242,11 +243,34 @@ class Webdav_sync(object):
         self.show_backups()
         return True
 
-    def show_backups(self):
-        print_help('\nExisting backups:')
-        for resource in self.client.list():
-            print(resource)
+    def show_backups(self, list_ids = False):
+        if not list_ids:
+            print_help('\nExisting backups:')
+        relevant_files = self.client.list()[1:] # leave out first item, it's the containing folder
+        for i, resource in enumerate(relevant_files):
+            if not re.search('.*/$', resource): # leave out all other folders
+                if list_ids:
+                    resource = '({}) - {}'.format(i, resource)
+                print(resource)
+            else: # delete unwanted from list
+                del(relevant_files[i])
+
+        if list_ids:
+            restore_id = ask_user('Revision: ')
+            try:
+                restore_file = relevant_files[int(restore_id)]
+            except ValueError:
+                log.warning('Nothing to restore!')
+                raise SystemExit
+            except IndexError:
+                log.warning('Non-existent ID. Nothing to restore!')
+                raise SystemExit
+            print('Restoring Backup {}...'.format(restore_file))
         print()
+
+    def restore(self):
+        print('\nWhich revision would you like to restore?')
+        restore_id = self.show_backups(list_ids = True)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
