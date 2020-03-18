@@ -19,6 +19,7 @@ from dateutil.parser import parse
 from shutil import copy2
 from pathlib import Path
 import re
+from os import utime
 
 
 def argparser(argv):
@@ -217,6 +218,19 @@ class Webdav_sync(object):
         local_mtime = self._local_mtime(filename)
         return '{}_{}'.format(filename, local_mtime)
 
+    def _times_tuple(self, filename): # get epoch from file someth_YYYY-MM-DD_HHMMMSS
+        time = re.split('[^\d]', filename)[-1]
+        day = re.split('[^\d]', filename)[-2]
+        month = re.split('[^\d]', filename)[-3]
+        year = re.split('[^\d]', filename)[-4]
+        filename_datepart = "{}{}{}{}".format(year, month, day, time)
+        #print(filename_datepart)
+        mod_dt = datetime.strptime(filename_datepart, '%Y%m%d%H%M%S')
+        mod_epoch = mod_dt.timestamp()
+        #print(mod_epoch)
+        times_tuple = (mod_epoch, mod_epoch)
+        return times_tuple
+
     def backup(self):
         # check file stats on local machine
         bak_file_name = self._filename_mtime(self.discobase)
@@ -271,11 +285,20 @@ class Webdav_sync(object):
                 log.warning('Non-existent ID. Nothing to restore!')
                 raise SystemExit
             print('Restoring Backup {}...'.format(restore_file))
+            return restore_file
         print()
 
     def restore(self):
         print('\nWhich revision would you like to restore?')
-        restore_id = self.show_backups(restore = True)
+        restore_filename = self.show_backups(restore = True)
+        overwrite = ask_user("Download {} and overwrite local file {} (n)? ".format(
+            restore_filename, self.discobase))
+        if overwrite.lower() == 'y':
+            self.client.download_sync(remote_path='{}'.format(restore_filename),
+                                      local_path='{}'.format(self.discobase))
+            downloaded_file = Path(self.discobase)
+            mod_acc_times = self._times_tuple(restore_filename)
+            utime(downloaded_file, mod_acc_times)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
