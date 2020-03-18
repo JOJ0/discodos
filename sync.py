@@ -28,19 +28,20 @@ def argparser(argv):
         help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
 		"-t", "--type", dest="sync_type",
-        type=str, default='dropbox', choices=['dropbox', 'webdav'],
-        help="select synchronisation type: dropbox (default) or webdav")
+        type=str, default='dropbox', choices=['dropbox', 'webdav', 'd', 'w'],
+        help='''select synchronisation type: dropbox (default) or webdav;
+                or just in short: d or w''')
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
-		"--backup",
+		"-b", "--backup",
         action='store_true',
         help="")
     parser_group1.add_argument(
-		"--restore",
+		"-r", "--restore",
         action='store_true',
         help="")
     parser_group1.add_argument(
-		"--show",
+		"-s", "--show",
         action='store_true',
         help="")
     arguments = parser.parse_args(argv[1:])
@@ -82,6 +83,10 @@ async def main():
           conf.webdav_url, conf.discobase.name)
         if args.backup:
             sync.backup()
+        elif args.restore:
+            sync.restore()
+        elif args.show:
+            sync.show_backups()
 
 
 class Dropbox_sync(object):
