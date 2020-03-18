@@ -79,7 +79,6 @@ async def main():
         else:
             log.error("Missing arguments.")
     else:
-        log.info("webdav sync here")
         sync = Webdav_sync(conf.webdav_user, conf.webdav_password,
           conf.webdav_url, conf.discobase.name)
         if args.backup:
@@ -243,19 +242,25 @@ class Webdav_sync(object):
         self.show_backups()
         return True
 
-    def show_backups(self, list_ids = False):
-        if not list_ids:
-            print_help('\nExisting backups:')
-        relevant_files = self.client.list()[1:] # leave out first item, it's the containing folder
-        for i, resource in enumerate(relevant_files):
-            if not re.search('.*/$', resource): # leave out all other folders
-                if list_ids:
-                    resource = '({}) - {}'.format(i, resource)
-                print(resource)
-            else: # delete unwanted from list
-                del(relevant_files[i])
+    def show_backups(self, restore = False):
+        if not restore:
+            print('\nExisting backups:')
+        #relevant_files = self.client.list()[1:] # leave out first item, it's the containing folder
+        all_files = self.client.list()
+        relevant_files = []
+        for i, resource in enumerate(all_files):
+            re_result = re.search('.*/$', resource)
+            log.debug('Sync: Folder regex matched: {}'.format(re_result))
+            if re_result: # skip all folders
+                log.debug('Sync: Skipping resource: {}'.format(all_files[i]))
+            else: # add files to new list
+                relevant_files.append(resource)
 
-        if list_ids:
+        for j, file in enumerate(relevant_files):
+            file = '({}) - {}'.format(j, file)
+            print(file)
+
+        if restore:
             restore_id = ask_user('Revision: ')
             try:
                 restore_file = relevant_files[int(restore_id)]
@@ -270,7 +275,7 @@ class Webdav_sync(object):
 
     def restore(self):
         print('\nWhich revision would you like to restore?')
-        restore_id = self.show_backups(list_ids = True)
+        restore_id = self.show_backups(restore = True)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
