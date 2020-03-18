@@ -159,7 +159,7 @@ class Dropbox_sync(object):
         #self.dbx.files_restore(self.backuppath, rev)
 
         # Download the specific revision of the file at self.backuppath to self.discobase
-        print("Downloading current " + self.backuppath + " from Dropbox, overwriting " + self.discobase + "...")
+        print("Downloading " + self.backuppath + " from Dropbox, overwriting " + self.discobase + "...")
         self.dbx.files_download_to_file(self.discobase, self.backuppath, rev)
 
     # Look at all of the available revisions on Dropbox, and return the oldest one
