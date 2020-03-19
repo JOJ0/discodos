@@ -48,9 +48,12 @@ def argparser(argv):
         nargs='?',
         default='all')
     mix_subparser.add_argument(
-        "-v", "--verbose", action='store_true',
+        "-v", "--verbose",
+        action="count", default=0,
         dest='verbose_tracklist',
-        help='mix tracklist shows more details')
+        help='''mix tracklist shows more details (-v) or shows MusicBrainz
+                "matching information" (-vv) - this also gives you links to Discogs
+                releases, MusicBrainz releases/recordings and AccousticBrainz entries''')
     # only one of --create-mix OR --edit OR --add possible
     mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
     mix_subp_excl_group.add_argument(

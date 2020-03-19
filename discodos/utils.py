@@ -45,6 +45,14 @@ def read_yaml(yamlfile):
         raise err
         raise SystemExit(3)
 
+def join_sep(iterator, seperator):
+    it = map(str, iterator)
+    seperator = str(seperator)
+    string = next(it, '')
+    for s in it:
+        string += seperator + s
+    return string
+
 class Config():
     def __init__(self):
         # path handling

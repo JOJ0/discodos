@@ -50,6 +50,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.tab_mix_info_header(self.mix.info)
             if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
                 full_mix = self.mix.get_full_mix(verbose = True)
+            elif self.user.WANTS_MUSICBRAINZ_MIX_TRACKLIST:
+                full_mix = self.mix.get_full_mix(brainz = True)
             else:
                 full_mix = self.mix.get_full_mix(verbose = False)
 
@@ -58,6 +60,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             else:
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
                     self.cli.tab_mix_table(full_mix, _verbose = True)
+                elif self.user.WANTS_MUSICBRAINZ_MIX_TRACKLIST:
+                    self.cli.tab_mix_table(full_mix, brainz = True)
                 else:
                     self.cli.tab_mix_table(full_mix, _verbose = False)
         else:
@@ -368,7 +372,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                             log.info('CTRL: ...MB CatNo: {} (D-end cut off)'.format(
                               mb_catno))
                             if mb_catno == _d_catno:
-                                release_match_method = 'CatNo (variation 1)'
+                                release_match_method = 'CatNo (var 1)'
                                 _mb_rel_id = release['id']
                         else:
                             mb_numtail = re.split('[^\d]', mb_catno)[-1]
@@ -382,7 +386,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                                     log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
                                       mb_catno))
                                     if mb_catno == _d_catno:
-                                        release_match_method = 'CatNo (variation 2)'
+                                        release_match_method = 'CatNo (var 2)'
                                         _mb_rel_id = release['id']
                             else:
                                 log.info('CTRL: ...no applicable variations found')
@@ -408,7 +412,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                             _rec_title))
                         log.info('CTRL: Recording MBID: {}'.format(
                             _rec_id)) # finally we have a rec MBID
-                        rec_match_method = 'Track name'
+                        rec_match_method = 'Track Name'
                         return _rec_id
             log.info('CTRL: No track name match: {} vs. {}'.format(
                 _d_track_name, _rec_title))
@@ -430,7 +434,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                             _rec_title))
                         log.info('CTRL: Recording MBID: {}'.format(
                             _rec_id)) # finally we have a rec MBID
-                        rec_match_method = 'Track number'
+                        rec_match_method = 'Track No'
                         return _rec_id
                     elif track_position == _d_track_numerical:
                         _rec_id = track['recording']['id']
@@ -438,7 +442,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                             _rec_title))
                         log.info('CTRL: Recording MBID: {}'.format(
                             _rec_id)) # finally we have a rec MBID
-                        rec_match_method = 'Track number numerical'
+                        rec_match_method = 'Track No (num)'
                         return _rec_id
             log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
                 _d_track_numerical, track_position))

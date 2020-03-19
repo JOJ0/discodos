@@ -488,13 +488,22 @@ class Mix (Database):
         ids_tuple = (self.id, pos)
         return self.execute_sql(sql_del, (ids_tuple))
 
-    def get_full_mix(self, verbose = False):
+    def get_full_mix(self, verbose = False, brainz = False):
         log.info('MODEL: Getting full mix.')
         if verbose:
             sql_sel = '''SELECT track_pos, discogs_title, track.d_artist,
                           d_track_name, mix_track.d_track_no,
                           key, bpm, key_notes, trans_rating, trans_notes, notes,
                           a_key, a_chords_key, a_bpm FROM'''
+        elif brainz:
+            sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
+                          key, bpm, a_key, a_chords_key, a_bpm,
+                          d_catno, discogs_id, m_rel_id, m_rec_id,
+                          m_rel_id_override, m_rec_id_override,
+                          track.m_match_method AS track_match_method,
+                          release.m_match_method AS release_match_method,
+                          release.m_match_time AS release_match_time,
+                          track.m_match_time AS track_match_time FROM'''
         else:
             sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
                           trans_rating, key, bpm, a_key, a_chords_key, a_bpm FROM'''

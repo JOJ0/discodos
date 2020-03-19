@@ -83,10 +83,9 @@ class View_common(ABC):
 
         return value_to_check
 
-    def trim_table_fields(self, tuple_table):
+    def trim_table_fields(self, tuple_table, cut_pos = 16, exclude = []):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
-        cut_pos = 16
         log.info('VIEW: Trimming table field width to max {} chars'.format(cut_pos))
         # first convert list of tuples to list of lists:
         table_nl = [dict(row) for row in tuple_table]
@@ -94,7 +93,8 @@ class View_common(ABC):
         for i, row in enumerate(table_nl):
             for key, field in row.items():
                 cut_pos_space = False # reset cut_pos_space on each field cycle
-                if not is_number(field) and field is not None:
+                if (not is_number(field) and field is not None
+                    and not key in exclude):
                     if len(field) > cut_pos:
                         cut_pos_space = field.find(" ", cut_pos)
                         log.debug("cut_pos_space index (next space after cut_pos): %s", cut_pos_space)
@@ -136,7 +136,7 @@ class View_common(ABC):
 
     def link_to(self, service, id):
         '''return link to either Discgos release, MusicBrainz Release/Recording
-           or AccousticBrainz recording entries.
+           or AcousticBrainz recording entries.
            Method currently does no sanity checking at all!
         '''
         if service == 'discogs release':
@@ -147,10 +147,63 @@ class View_common(ABC):
             return 'https://musicbrainz.org/release/{}'.format(id)
         elif service == 'musicbrainz recording':
             return 'https://musicbrainz.org/recording/{}'.format(id)
-        elif service == 'accousticbrainz recording':
-            return 'https://accousticbrainz.org/{}'.format(id)
+        elif service == 'acousticbrainz recording':
+            return 'https://acousticbrainz.org/{}'.format(id)
         else:
             return 'Unknown online service'
+
+    def replace_brainz(self, list_of_rows):
+        '''compile a links field combining accousticbrainz, musicbrainz, discogs links
+           into one field, then remove (mb)id fields'''
+        log.info('VIEW: compile and put links field into mix_table.')
+        # first convert list of rows to list of dicts - should be done already actually
+        table = [dict(row) for row in list_of_rows]
+        # now look for (mb)id values and put to list if necessary
+        for i, row in enumerate(table):
+            methods = []
+            if row['release_match_method']:
+                methods.append(row['release_match_method'])
+            if row['track_match_method']:
+                methods.append(row['track_match_method'])
+            methods_str = join_sep(methods, '\n')
+            table[i]['methods'] = methods_str
+
+            times = []
+            if row['release_match_time']:
+                times.append(self.shorten_timestamp(row['release_match_time']))
+            if row['track_match_time']:
+                times.append(self.shorten_timestamp(row['track_match_time']))
+            times_str = join_sep(times, '\n')
+            table[i]['times'] = times_str
+
+            links = []
+            if row['m_rel_id_override']:
+                links.append(self.link_to('musicbrainz release', row['m_rel_id_override']))
+            if row['m_rel_id']:
+                links.append(self.link_to('musicbrainz release', row['m_rel_id']))
+            if row['m_rec_id_override']:
+                links.append(self.link_to('musicbrainz recording', row['m_rec_id_override']))
+                links.append(self.link_to('acousticbrainz recording', row['m_rec_id_override']))
+            elif row['m_rec_id']:
+                links.append(self.link_to('musicbrainz recording', row['m_rec_id']))
+                links.append(self.link_to('acousticbrainz recording', row['m_rec_id']))
+            if row['discogs_id']:
+                links.append(self.link_to('discogs release', row['discogs_id']))
+            links_str = join_sep(links, '\n')
+            table[i]['links'] = links_str
+
+
+            # del from list what we don't need anymore
+            del(table[i]['m_rel_id_override'])
+            del(table[i]['m_rel_id'])
+            del(table[i]['discogs_id'])
+            del(table[i]['m_rec_id_override'])
+            del(table[i]['m_rec_id'])
+            del(table[i]['release_match_method'])
+            del(table[i]['track_match_method'])
+            del(table[i]['release_match_time'])
+            del(table[i]['track_match_time'])
+        return table
 
 
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
@@ -215,12 +268,12 @@ class View_common_cli(ABC):
             track_no = 'A1'
         return track_no
 
-    def tab_mix_table(self, _mix_data, _verbose = False):
+    def tab_mix_table(self, _mix_data, _verbose = False, brainz = False):
         _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
         _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
-        for row in _mix_data_nl: # debug only
-           log.debug(str(row))
-        log.debug("")
+        #for row in _mix_data_nl: # debug only
+        #   log.debug(str(row))
+        #log.debug("")
         if _verbose:
             self.print_help(tab(_mix_data_nl, tablefmt='pipe',
               headers={'track_pos': '#', 'discogs_title': 'Release',
@@ -228,6 +281,19 @@ class View_common_cli(ABC):
                        'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
                        'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
                        'trans_notes': 'Trans.\nNotes', 'notes': 'Track\nNotes'}))
+        elif brainz:
+            _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
+            _mix_data_brainz_nl = self.trim_table_fields(_mix_data_brainz,
+                exclude = ['methods'])
+            self.print_help(tab(_mix_data_brainz_nl, tablefmt='grid',
+              headers={'track_pos': '#', 'discogs_title': 'Release',
+                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
+                       'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
+                       'd_catno': 'Discogs\nCatNo',
+                       'methods': 'Rel match via\nRec match via',
+                       'times': 'Matched\non',
+                       'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
+                       }))
         else:
             self.print_help(tab(_mix_data_nl, tablefmt='pipe',
               headers={'track_pos': '#', 'discogs_title': 'Release',
@@ -372,6 +438,7 @@ class User_int(object):
         self.WANTS_TO_PULL_BRAINZ_INFO = False
         self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
         self.BRAINZ_SEARCH_DETAIL = 1
+        self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -419,8 +486,11 @@ class User_int(object):
                 if self.args.edit_mix_track:
                     self.WANTS_TO_EDIT_MIX_TRACK = True
                     self.WANTS_ONLINE = False
-                if self.args.verbose_tracklist:
+                if self.args.verbose_tracklist == 1:
                     self.WANTS_VERBOSE_MIX_TRACKLIST = True
+                    self.WANTS_ONLINE = False
+                if self.args.verbose_tracklist == 2:
+                    self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = True
                     self.WANTS_ONLINE = False
                 if self.args.reorder_from_pos:
                     self.WANTS_TO_REORDER_MIX_TRACKLIST = True
