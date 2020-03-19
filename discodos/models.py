@@ -17,7 +17,7 @@ import json
 
 class Database (object):
 
-    def __init__(self, db_conn=False, db_file=False):
+    def __init__(self, db_conn=False, db_file=False, setup=False):
         if db_conn:
             log.debug("DB-NEW: db_conn argument was handed over.")
             self.db_conn = db_conn
@@ -26,18 +26,26 @@ class Database (object):
             if not db_file:
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
-            self.db_conn = self.create_conn(db_file)
+            self.db_conn = self.create_conn(db_file, setup) # setup=True creates empty db
         self.db_conn.row_factory = sqlite3.Row # also this was in each db.function before
         self.cur = self.db_conn.cursor() # we had this in each db function before
         self.configure_db() # set PRAGMA options
 
-    def create_conn(self, db_file):
-        try:
-            conn = sqlite3.connect(str(db_file)) # make sure it's a string
+    def create_conn(self, db_file, setup=False):
+        try:  # format ensures db_file is string. uri rw mode throws error if non-existen
+            if setup:
+                conn = sqlite3.connect('file:{}'.format(db_file), uri=True)
+            else:
+                conn = sqlite3.connect('file:{}?mode=rw'.format(db_file), uri=True)
             return conn
         except sqlerr as e:
-            log.error("DB-NEW: Connection error: %s", e)
-        return None
+            if e.args[0] == 'unable to open database file':
+                log.error(
+                  "DB-NEW: Database {} can't be opened, launch setup.py!".format(db_file))
+                raise SystemExit(5) # 5 = no db error
+            else:
+                log.error("DB-NEW: Connection error: %s", e)
+                raise SystemExit(4) # 4 = other db error. will SystemExit break gui?
 
     def execute_sql(self, sql, values_tuple = False, raise_err = False):
         '''used for eg. creating tables or inserts'''

@@ -46,7 +46,7 @@ def argparser(argv):
 
 # initial db setup
 def create_db_tables(_db_obj):
-    sql_settings = "PRAGMA foreign_keys = ON;"
+    #sql_settings = "PRAGMA foreign_keys = ON;"
     sql_create_release_table = """ CREATE TABLE release (
                                      discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                                      discogs_title TEXT NOT NULL,
@@ -162,7 +162,7 @@ def main():
     log.info(vars(args))
 
     # DB setup
-    db_obj = Database(db_file = conf.discobase)
+    db_obj = Database(db_file = conf.discobase, setup = True)
 
     if args.update_db_schema:
         update_vers = 0
