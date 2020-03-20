@@ -2,6 +2,7 @@
 
 import argparse
 from sys import argv
+import pprint
 # setup.py is kind of a controller - it inits the db and uses some Coll_ctrl methods
 from discodos import log
 from discodos.utils import print_help, ask_user, Config, read_yaml
@@ -102,8 +103,28 @@ class Db_setup(Database):
                   notes TEXT,
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """}
-        self.sql_v2 = []
-        self.sql_v3 = []
+
+        self.sql_upgrades = [    # list element 0 contains a dict
+           {'schema_version': 2, # this dict contains 2 entries: schema and tasks
+            'tasks': {           # tasks entry contains another dict with a lot of entries
+                'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
+                'Add field track.m_rec_id_override': 'ALTER TABLE track ADD m_rec_id_override TEXT;',
+                'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
+                'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
+                'Add field track_ext.a_key': 'ALTER TABLE track_ext ADD a_key TEXT;',
+                'Add field track_ext.a_chords_key': 'ALTER TABLE track_ext ADD a_chords_key TEXT;',
+                'Add field track_ext.a_bpm': 'ALTER TABLE track_ext ADD a_bpm TEXT;',
+                'Add field release.m_rel_id': 'ALTER TABLE release ADD m_rel_id TEXT;',
+                'Add field release.m_rel_id_override': 'ALTER TABLE release ADD m_rel_id_override TEXT;',
+                'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
+                'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
+                'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
+             }
+           }                       # list element 0 ends here
+           #{'schema_version': 3,  # list element 1 starts here
+           # 'tasks': {}
+           #}                      # list element 1 ends here
+        ]                          # list closes here
 
     def create_tables(self): # initial db setup
         for table, sql in self.sql_initial.items():
@@ -114,6 +135,50 @@ class Db_setup(Database):
                 print_help(msg_release)
             except sqlerr as e:
                 log.info("CREATE TABLE '%s': %s", table, e.args[0])
+
+    def get_latest_schema_version(self):
+        vers_list = [schema['schema_version'] for schema in self.sql_upgrades]
+        latest = max(vers_list)
+        log.debug('Db_setup: Latest DiscoBASE schema version: {}'.format(latest))
+        return latest
+
+    def get_current_schema_version(self):
+        curr_vers_row = self._select('PRAGMA user_version', fetchone = True)
+        return int(curr_vers_row['user_version'])
+
+    def upgrade_schema(self):
+        current_schema = self.get_current_schema_version()
+        latest_schema = self.get_latest_schema_version()
+        if not latest_schema > current_schema: # check if upgrade necessary
+            log.info('Db_setup: No schema update necessary.')
+        else:
+            failure = False
+            self.execute_sql('PRAGMA foreign_keys = OFF;')
+            for upgrade in self.sql_upgrades: # list is sorted -> execute all up to highest
+                if upgrade['schema_version'] < latest_schema:
+                    for task, sql in upgrade['tasks'].items():
+                        try: # if task fails all_done is not updated!
+                            self.execute_sql(sql, raise_err = True)
+                            msg_task="Task '{}' was successful.".format(task)
+                            log.info(msg_task)
+                            print_help(msg_task)
+                        except sqlerr as e:
+                            log.info("Task failed '%s': %s", task, e.args[0])
+                            failure = True
+                            break
+            if failure:
+                print('DiscoBASE schema update failed, open an issue on Github!')
+                log.info('DiscoBASE schema update failed, open an issue on Github!')
+                self.configure_db() # this sets foreign_keys = ON again
+                return False
+            else:
+                self.execute_sql('PRAGMA user_version = {}'.format(latest_schema))
+                print('DiscoBASE schema update done!')
+                log.info('DiscoBASE schema update done!')
+                self.configure_db() # this sets foreign_keys = ON again
+                return True
+
+
 
 # main program
 def main():
@@ -134,63 +199,12 @@ def main():
         print("Run setup.py -a <ID> to add a release to your collection.\n")
     log.info(vars(args))
 
-    # DB setup
-    #db_obj = Database(db_file = conf.discobase, setup = True)
     setup = Db_setup(conf.discobase)
     setup.create_tables()
-    #setup.upgrade_schema()
+    setup.upgrade_schema()
 
     if args.update_db_schema:
-        update_vers = 0
-        curr_vers_row = db_obj._select('PRAGMA user_version', fetchone = True)
-        curr_vers = int(curr_vers_row['user_version'])
-        print('Current schema version: {}'.format(curr_vers))
-        log.info('Current schema version: {}'.format(curr_vers))
-        if curr_vers == 0 or curr_vers == 1: # update to v2
-            upd_vers = 2
-            alter_table = ['ALTER TABLE track ADD m_rec_id TEXT;',
-                           'ALTER TABLE track ADD m_rec_id_override TEXT;',
-                           'ALTER TABLE track ADD m_match_method TEXT;',
-                           'ALTER TABLE track ADD m_match_time TEXT;',
-                           'ALTER TABLE track_ext ADD a_key TEXT;',
-                           'ALTER TABLE track_ext ADD a_chords_key TEXT;',
-                           'ALTER TABLE track_ext ADD a_bpm TEXT;',
-                           'ALTER TABLE release ADD m_rel_id TEXT;',
-                           'ALTER TABLE release ADD m_rel_id_override TEXT;',
-                           'ALTER TABLE release ADD m_match_method TEXT;',
-                           'ALTER TABLE release ADD m_match_time TEXT;',
-                           'ALTER TABLE release ADD d_catno TEXT;']
-        elif curr_vers == 2: # we are up2date
-            print('DiscoBASE schema already up to date!')
-            log.info('DiscoBASE schema already up to date!')
-            raise SystemExit(0)
-        else:
-            log.error('Unknown DiscoBASE schema version!')
-            raise SystemExit(0)
-
-        a = ask_user('Update DiscoBASE schema to version {}? (n) '.format(upd_vers))
-        if a.lower() == 'y':
-            fkeys_off = 'PRAGMA foreign_keys = OFF;'
-            fkeys_on = 'PRAGMA foreign_keys = ON;'
-            all_done = False
-            db_obj.execute_sql(fkeys_off)
-            for cmd in alter_table:
-                success = db_obj.execute_sql(cmd)
-                if not success:
-                    log.error('Schema update command unsuccessful.')
-                    break
-                all_done = True
-
-            if all_done:
-                db_obj.execute_sql('PRAGMA user_version = {}'.format(upd_vers))
-                print('DiscoBASE schema update done!')
-                log.info('DiscoBASE schema update done!')
-            db_obj.execute_sql(fkeys_on)
-            #print('DiscoBASE schema update done.')
-        raise SystemExit(0)
-
-    # create DB tables if not existing already
-    #create_db_tables(db_obj)
+        pass
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
