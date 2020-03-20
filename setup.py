@@ -44,103 +44,76 @@ def argparser(argv):
             log.handlers[0].level))
     return arguments 
 
-# initial db setup
-def create_db_tables(_db_obj):
-    #sql_settings = "PRAGMA foreign_keys = ON;"
-    sql_create_release_table = """ CREATE TABLE release (
-                                     discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
-                                     discogs_title TEXT NOT NULL,
-                                     import_timestamp TEXT,
-                                     d_artist TEXT,
-                                     in_d_collection INTEGER
-                                     ); """
-    sql_create_mix_table = """ CREATE TABLE mix (
-                                    mix_id INTEGER PRIMARY KEY,
-                                    name TEXT,
-                                    created TEXT,
-                                    updated TEXT,
-                                    played TEXT,
-                                    venue TEXT
-                                        ); """
-    sql_create_mix_track_table = """ CREATE TABLE mix_track (
-                                         mix_track_id INTEGER PRIMARY KEY,
-                                         mix_id INTEGER,
-                                         d_release_id INTEGER NOT NULL,
-                                         d_track_no TEXT NOT NULL,
-                                         track_pos INTEGER NOT NULL,
-                                         trans_rating TEXT,
-                                         trans_notes TEXT,
-                                         FOREIGN KEY (mix_id)
-                                            REFERENCES mix(mix_id)
-                                         ON DELETE CASCADE
-                                         ON UPDATE CASCADE
-                                        ); """
-    sql_create_track_table = """ CREATE TABLE track (
-                                     d_release_id INTEGER NOT NULL,
-                                     d_track_no TEXT NOT NULL,
-                                     d_track_name TEXT,
-                                     import_timestamp TEXT,
-                                     d_artist TEXT,
-                                     PRIMARY KEY (d_release_id, d_track_no)
-                                     ); """
+class Db_setup(Database):
+    def __init__(self, _db_file):
+        super().__init__(db_file = _db_file, setup = True)
+        self.sql_initial = {
+            'release':
+            """ CREATE TABLE release (
+                  discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
+                  discogs_title TEXT NOT NULL,
+                  import_timestamp TEXT,
+                  d_artist TEXT,
+                  in_d_collection INTEGER
+                  ); """,
+            'mix':
+            """ CREATE TABLE mix (
+                  mix_id INTEGER PRIMARY KEY,
+                  name TEXT,
+                  created TEXT,
+                  updated TEXT,
+                  played TEXT,
+                  venue TEXT
+                  ); """,
+            'mix_track':
+            """ CREATE TABLE mix_track (
+                  mix_track_id INTEGER PRIMARY KEY,
+                  mix_id INTEGER,
+                  d_release_id INTEGER NOT NULL,
+                  d_track_no TEXT NOT NULL,
+                  track_pos INTEGER NOT NULL,
+                  trans_rating TEXT,
+                  trans_notes TEXT,
+                  FOREIGN KEY (mix_id)
+                     REFERENCES mix(mix_id)
+                  ON DELETE CASCADE
+                  ON UPDATE CASCADE
+                  ); """,
+            'track':
+            """ CREATE TABLE track (
+                  d_release_id INTEGER NOT NULL,
+                  d_track_no TEXT NOT NULL,
+                  d_track_name TEXT,
+                  import_timestamp TEXT,
+                  d_artist TEXT,
+                  PRIMARY KEY (d_release_id, d_track_no)
+                  ); """,
+                  # We had this constraints once...
+                  # FOREIGN KEY (d_release_id)
+                  #     REFERENCES release(d_discogs_id)
+            # the initial idea of track_ext was to "extend" discogs data with some fields
+            'track_ext':
+            """ CREATE TABLE track_ext (
+                  d_release_id INTEGER NOT NULL,
+                  d_track_no TEXT NOT NULL,
+                  key TEXT,
+                  key_notes TEXT,
+                  bpm INTEGER,
+                  notes TEXT,
+                  PRIMARY KEY (d_release_id, d_track_no)
+                  ); """}
+        self.sql_v2 = []
+        self.sql_v3 = []
 
-                                           # We had this constraint before
-                                           # FOREIGN KEY (d_release_id)
-                                           #     REFERENCES release(d_discogs_id)
-    # extend discogs track info with these fields
-    sql_create_track_ext_table = """ CREATE TABLE track_ext (
-                                         d_release_id INTEGER NOT NULL,
-                                         d_track_no TEXT NOT NULL,
-                                         key TEXT,
-                                         key_notes TEXT,
-                                         bpm INTEGER,
-                                         notes TEXT,
-                                         PRIMARY KEY (d_release_id, d_track_no)
-                                        ); """
-                                        #FOREIGN KEY (d_release_id)
-                                        #    REFERENCES track(d_release_id)
-                                        #FOREIGN KEY (d_track_no)
-                                        #    REFERENCES track(d_track_no)
-    #try: # settings
-    #    _db_obj.execute_sql(sql_settings)
-    #    log.info("Adjusting sqlite settings")
-    #except sqlerr as e:
-    #    log.info(e.args[0])
-    try: # release
-        _db_obj.execute_sql(sql_create_release_table, raise_err = True)
-        msg_release="CREATE TABLE 'release' was successful."
-        log.info(msg_release)
-        print_help(msg_release)
-    except sqlerr as e:
-        log.info("CREATE TABLE 'release': %s", e.args[0])
-    try: # mix
-        _db_obj.execute_sql(sql_create_mix_table, raise_err = True)
-        msg_mix="CREATE TABLE 'mix' was successful."
-        log.info(msg_mix)
-        print_help(msg_mix)
-    except sqlerr as e:
-        log.info("CREATE TABLE 'mix': %s", e.args[0])
-    try: # mix_track
-        _db_obj.execute_sql(sql_create_mix_track_table, raise_err = True)
-        msg_mix_track="CREATE TABLE 'mix_track' was successful."
-        log.info(msg_mix_track)
-        print_help(msg_mix_track)
-    except sqlerr as e:
-        log.info("CREATE TABLE 'mix_track': %s", e.args[0])
-    try: # track
-        _db_obj.execute_sql(sql_create_track_table, raise_err = True)
-        msg_track="CREATE TABLE 'track' was successful."
-        log.info(msg_track)
-        print_help(msg_track)
-    except sqlerr as e:
-        log.info("CREATE TABLE 'track': %s", e.args[0])
-    try: # track_ext
-        _db_obj.execute_sql(sql_create_track_ext_table, raise_err = True)
-        msg_track_ext="CREATE TABLE 'track_ext' was successful."
-        log.info(msg_track_ext)
-        print_help(msg_track_ext)
-    except sqlerr as e:
-        log.info("CREATE TABLE 'track_ext': %s", e.args[0])
+    def create_tables(self): # initial db setup
+        for table, sql in self.sql_initial.items():
+            try: # release
+                self.execute_sql(sql, raise_err = True)
+                msg_release="CREATE TABLE '{}' was successful.".format(table)
+                log.info(msg_release)
+                print_help(msg_release)
+            except sqlerr as e:
+                log.info("CREATE TABLE '%s': %s", table, e.args[0])
 
 # main program
 def main():
@@ -162,7 +135,10 @@ def main():
     log.info(vars(args))
 
     # DB setup
-    db_obj = Database(db_file = conf.discobase, setup = True)
+    #db_obj = Database(db_file = conf.discobase, setup = True)
+    setup = Db_setup(conf.discobase)
+    setup.create_tables()
+    #setup.upgrade_schema()
 
     if args.update_db_schema:
         update_vers = 0
@@ -214,14 +190,14 @@ def main():
         raise SystemExit(0)
 
     # create DB tables if not existing already
-    create_db_tables(db_obj)
+    #create_db_tables(db_obj)
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
     # PREPARE DISCOGS API and USER INTERACTION classes
     user = User_int(args)
-    coll_ctrl = Coll_ctrl_cli(db_obj.db_conn, user, conf.discogs_token,
-            conf.discogs_appid)
+    coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token,
+            conf.discogs_appid, _db_file = conf.discobase)
 
     # ADD RELEASE TO DISCOGS COLLECTION
     if args.add_release_id:
