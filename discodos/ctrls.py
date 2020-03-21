@@ -9,12 +9,8 @@ from time import time
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
-    def __init__():
+    def __init__(self):
         pass
-
-    @property
-    def id():
-        return self.mix.id
 
 # mix controller class CLI implementation
 class Mix_ctrl_cli (Mix_ctrl_common):
@@ -127,7 +123,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                              _track_det[db_field])
                     answers[db_field] = _track_det[db_field]
         if log.level == 10:
-            log.debug("CTRL: _edit_track_ask_details: answers dict:".format(answers))
+            log.debug("CTRL: _edit_track_ask_details: answers dict: {}".format(answers))
         return answers
 
     def bulk_edit_tracks(self, fields_str, first_track):
@@ -209,7 +205,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if not _track_no:
             track_to_add = self.cli.ask_user_for_track()
         else:
-            log.debug("_track_no was given, value is".format(_track_no))
+            log.debug("_track_no was given, value is {}".format(_track_no))
             track_to_add = _track_no
         if _pos == None:
             log.debug("_pos was None, setting to 0")
@@ -661,9 +657,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if coll_ctrl.ONLINE:
             if self.mix.id_existing:
                 self.cli.print_help("Let's update Discogs collection field in current mixes releases...")
-                db_releases = self.mix.get_releases_of_one_mix(start_pos)
-                for db_rel in db_releases:
-                    pass
+                #db_releases = self.mix.get_releases_of_one_mix(start_pos)
+                #for db_rel in db_releases:
+                #    pass
             #else:
             #    self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
             #    mixed_tracks = self.mix.get_all_tracks_in_mixes()
@@ -671,7 +667,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
 
-    def __init__():
+    def __init__(self):
         pass
 
 # Collection controller class
@@ -799,7 +795,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 result = self.collection.get_d_release(release_id)
                 if result:
                     artists = self.collection.d_artists_to_str(result.artists)
-                    d_catno = self.collection.d_get_first_catno(result.release.labels)
+                    d_catno = self.collection.d_get_first_catno(result.labels)
                     log.debug(dir(result))
                     self.cli.print_help("Adding \"{}\" to collection".format(result.title))
                     for folder in self.collection.me.collection_folders:
