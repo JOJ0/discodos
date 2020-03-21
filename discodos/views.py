@@ -296,7 +296,7 @@ class View_common_cli(ABC):
                        }))
         else:
             self.print_help(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
+              headers={'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
                        'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
                        'key': 'Key', 'bpm': 'BPM'}))
 

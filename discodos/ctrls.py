@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from discodos import log
 import pprint as p
 import re
+from time import time
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
@@ -266,6 +267,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         if self.mix.id_existing:
             self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
+            start_time = time()
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.print_help("Let's update every track contained in any mix with info from Discogs...")
@@ -314,6 +316,12 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         print('Database errors: {}. Not found on Discogs errors: {}.'.format(
             db_errors, not_found_errors))
         print("") # space for readability
+        took_seconds = time() - start_time
+        log.info('Updating track info took {} seconds'.format(took_seconds))
+        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
+        msg_took = "Updating track info took {}".format(took_str)
+        log.info(msg_took)
+        print(msg_took)
         return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
@@ -458,7 +466,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
-
+        start_time = time()
         processed = len(mixed_tracks)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
@@ -633,6 +641,14 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         msg2 = "Help improving the matching algorithm: "
         msg2+= "Open an issue on github.com/JOJ0/discodos"
         print(msg2+'\n')
+        # time stats
+        took_seconds = time() - start_time
+        #log.info('Updating track info took {} seconds'.format(took_seconds))
+        print('Updating track info took {} seconds'.format(took_seconds))
+        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
+        msg_took = "Updating track info took {}".format(took_str)
+        log.info(msg_took)
+        print(msg_took)
         return False # we are through all tracks in mix
 
     def copy_mix(self):
@@ -837,13 +853,15 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.print_help(
         "Gathering your Discogs collection and importing necessary fields into DiscoBASE")
+        start_time = time()
         insert_count = 0
         for r in self.collection.me.collection_folders[0].releases:
             self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
             artists = self.collection.d_artists_to_str(r.release.artists)
+            d_catno = self.collection.d_get_first_catno(r.release.labels)
             print("Release :", r.release.id, "-", artists, "-",  r.release.title)
             rowcount = self.collection.create_release(r.release.id, r.release.title,
-                    artists, d_coll = True)
+                    artists, d_catno, d_coll = True)
             # create_release will return False if unsuccessful
             if rowcount:
                 insert_count = insert_count + 1
@@ -853,6 +871,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 print()
             else:
                 log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
+        took_seconds = time() - start_time
+        log.info('Discogs import took {} seconds'.format(took_seconds))
+        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
+        msg_took = "Discogs import took {}".format(took_str)
+        log.info(msg_took)
+        print(msg_took)
 
     def bpm_report(self, bpm, pitch_range):
         #track_no = self.cli.ask_user_for_track()

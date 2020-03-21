@@ -186,7 +186,7 @@ class TestCollection(unittest.TestCase):
         if self.collection.discogs_connect(self.conf.discogs_token,
             self.conf.discogs_appid):
             print('We are ONLINE')
-            d_return = self.collection.search_release_online('69092') # artist or title
+            d_return = self.collection.search_release_online('69092')
             #print(dir(d_return))
             self.assertEqual(len(d_return), 1) # should be single release in a list!
             self.assertEqual(int(d_return[0].id), 69092) # we get it as a string!
@@ -194,8 +194,8 @@ class TestCollection(unittest.TestCase):
             self.assertEqual(d_return[0].title, 'Out From Out Where')
         else:
             print('We are OFFLINE, testing if we properly fail!')
-            db_return = self.collection.search_release_online('Amon Tobin') # artist or title
-            self.assertFalse(db_return)
+            d_return = self.collection.search_release_online('69092')
+            self.assertFalse(d_return) # FIXME returns list because d.release not throwing error
         print("TestMix.search_release_online_number: DONE\n")
 
     def test_search_release_track_offline_artist(self):
@@ -335,6 +335,35 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
         self.assertEqual(db_return[2]['m_match_method'], "Discogs URL")
         print("{} - {} - END".format(self.clname, name))
+
+    def test_d_get_first_catno(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        if self.collection.discogs_connect(self.conf.discogs_token,
+            self.conf.discogs_appid):
+            print('We are ONLINE')
+            # we need to fetch a release by id first - let's also check it
+            d_return = self.collection.search_release_online('69092')
+            self.assertEqual(len(d_return), 1) # should be single release in a list!
+            self.assertEqual(int(d_return[0].id), 69092) # we get it as a string!
+            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
+            self.assertEqual(d_return[0].title, 'Out From Out Where')
+            #print(d_return[0].labels)
+            #for item in d_return[0].labels:
+                #print(dir(item.data))
+                #print(item.data.keys())
+            d_return_catno = self.collection.d_get_first_catno(d_return[0].labels)
+            self.assertEqual(d_return_catno, 'ZEN 70')
+        else:
+            print('We are OFFLINE, testing if we properly fail!')
+            d_return = self.collection.search_release_online('69092')
+            self.assertFalse(d_return) # FIXME returns list object because d.release not throwing error
+            d_return_catno = self.collection.d_get_first_catno(d_return[0].labels)
+            self.assertFalse(d_return_catno, '') # should return empty string
+
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)

@@ -513,7 +513,7 @@ class Mix (Database):
                           release.m_match_time AS release_match_time,
                           track.m_match_time AS track_match_time FROM'''
         else:
-            sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
+            sql_sel = '''SELECT track_pos, d_catno, discogs_title, mix_track.d_track_no,
                           trans_rating, key, bpm, a_key, a_chords_key, a_bpm FROM'''
         sql_sel+=''' 
                            mix_track INNER JOIN mix
@@ -646,6 +646,7 @@ class Collection (Database):
     def search_release_online(self, id_or_title):
         try:
             if is_number(id_or_title):
+                # FIXME this doesn't raise an error when offline, how to catch?
                 release = self.d.release(id_or_title)
                 #return '|'+str(release.id)+'|'+ str(release.title)+'|'
                 return [release]
@@ -750,13 +751,13 @@ class Collection (Database):
         return self._select_simple(['*'], 'release',
             'discogs_id == {}'.format(release_id), fetchone = True)
 
-    def create_release(self, release_id, release_title, release_artists, d_coll = False):
+    def create_release(self, release_id, release_title, release_artists, d_catno, d_coll = False):
         try:
             insert_sql = '''INSERT OR FAIL INTO release(discogs_id, discogs_title,
-                                    import_timestamp, d_artist, in_d_collection)
-                                    VALUES(?, ?, ?, ?, ?)'''
+                                    import_timestamp, d_artist, in_d_collection, d_catno)
+                                    VALUES(?, ?, ?, ?, ?, ?)'''
             in_tuple = (release_id, release_title, datetime.today().isoformat(' ', 'seconds'),
-                    release_artists, d_coll)
+                    release_artists, d_coll, d_catno)
             rowcnt = self.execute_sql(insert_sql, in_tuple, raise_err = True)
             log.info("MODEL: rowcount: %d", rowcnt)
             return rowcnt
@@ -765,10 +766,10 @@ class Collection (Database):
                 log.warning("Release already in DiscoBASE, updating ...")
                 try:
                     upd_sql = '''UPDATE release SET (discogs_title,
-                        import_timestamp, d_artist, in_d_collection)
-                        = (?, ?, ?, ?) WHERE discogs_id == ?;'''
+                        import_timestamp, d_artist, in_d_collection, d_catno)
+                        = (?, ?, ?, ?, ?) WHERE discogs_id == ?;'''
                     upd_tuple = (release_title, datetime.today().isoformat(' ', 'seconds'),
-                        release_artists, d_coll, release_id)
+                        release_artists, d_coll, d_catno, release_id)
                     rowcnt = self.execute_sql(upd_sql, upd_tuple, raise_err = True)
                     log.info("MODEL: rowcount: %d", rowcnt)
                     return rowcnt
@@ -976,6 +977,21 @@ class Collection (Database):
                     SELECT m_match_method, COUNT(*) FROM release GROUP BY m_match_method;
                     '''
         return self._select(sql_stats, fetchone = False)
+
+    def d_get_first_catno(self, d_labels):
+        '''get first found catalog number from discogs label object'''
+        catno_str = ''
+        if len(d_labels) == 0:
+            log.warning('MODEL: Discogs release without CatNo. This is weird!')
+        else:
+            for cnt, label in enumerate(d_labels):
+                if cnt == 0:
+                    catno_str = label.data['catno']
+                else:
+                    log.warning('MODEL: Found multiple CatNos, not adding "{}"'.format(
+                      label.data['catno']))
+            log.info('MODEL: Found Discogs CatNo "{}"'.format(catno_str))
+        return catno_str
 
 class Brainz (object):
 
