@@ -782,6 +782,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     # ADD RELEASE TO COLLECTION
     def add_release(self, release_id):
+        start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
         if not is_number(release_id):
             log.error('Not a number')
@@ -798,19 +799,22 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 result = self.collection.get_d_release(release_id)
                 if result:
                     artists = self.collection.d_artists_to_str(result.artists)
+                    d_catno = self.collection.d_get_first_catno(result.release.labels)
                     log.debug(dir(result))
                     self.cli.print_help("Adding \"{}\" to collection".format(result.title))
                     for folder in self.collection.me.collection_folders:
                         if folder.id == 1:
                             folder.add_release(release_id)
                             last_row_id = self.collection.create_release(result.id,
-                                    result.title, artists, d_coll = True)
+                                    result.title, artists, d_catno, d_coll = True)
                     if not last_row_id:
                         self.cli.error_not_the_release()
                     log.debug("Discogs release was maybe added to Collection")
+                    self.cli.duration_stats(start_time, 'Adding Release to Collection')
                     return True
                 else:
                     log.debug("No Discogs release. Returning False")
+                    self.cli.duration_stats(start_time, 'Adding Release to Collection')
                     return False
 
     # import specific release ID into DB
@@ -832,11 +836,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             in_coll = self.collection.is_in_d_coll(_release_id)
             if in_coll:
                 artists = self.collection.d_artists_to_str(in_coll.release.artists)
+                d_catno = self.collection.d_get_first_catno(in_coll.release.labels)
                 self.cli.print_help(
-                    "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
-                    in_coll.release.id, artists, in_coll.release.title))
+                  "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
+                  in_coll.release.id, artists, in_coll.release.title))
                 self.collection.create_release(in_coll.release.id, in_coll.release.title,
-                  self.collection.d_artists_to_str(in_coll.release.artists), d_coll = True)
+                  artists, d_catno, d_coll = True)
             else:
                 self.cli.error_not_the_release()
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
