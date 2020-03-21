@@ -43,7 +43,7 @@ def read_yaml(yamlfile):
     except Exception as err:
         log.error(" trying to load %s.", yamlfile)
         raise err
-        raise SystemExit(3)
+        #raise SystemExit(3)
 
 def join_sep(iterator, seperator):
     it = map(str, iterator)
@@ -170,4 +170,4 @@ class Config():
         except Exception as err:
             log.error(" trying to write %s \n\n", file)
             raise err
-            raise SystemExit(3)
+            #raise SystemExit(3)

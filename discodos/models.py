@@ -1,4 +1,4 @@
-from discodos.utils import * # most of this should only be in view
+from discodos.utils import is_number # most of this should only be in view
 from abc import ABC, abstractmethod
 from discodos import log
 import pprint
@@ -336,13 +336,13 @@ class Mix (Database):
         if mix_track_edit:
             update_mix_track = 'UPDATE mix_track SET '
             where_mix_track = 'WHERE mix_track_id == {}'.format(track_details['mix_track_id'])
-            for cnt,answer in enumerate(edit_answers.items()):
+            for answer in enumerate(edit_answers.items()):
                 log.debug('key: {}, value: {}'.format(answer[0], answer[1]))
                 if answer[0] in mix_track_cols:
                     if values_mix_track == '':
-                        values_mix_track += "{} = ? ".format(answer[0], answer[1])
+                        values_mix_track += "{} = ? ".format(answer[0])
                     else:
-                        values_mix_track += ", {} = ? ".format(answer[0], answer[1])
+                        values_mix_track += ", {} = ? ".format(answer[0])
                     values_list_mix_track.append(answer[1])
             final_update_mix_track = update_mix_track + values_mix_track + where_mix_track
             #log.info('MODEL: {}'.format(final_update_mix_track))
@@ -356,21 +356,21 @@ class Mix (Database):
             insert_track_ext = 'INSERT INTO track_ext'
             where_track_ext = 'WHERE d_release_id == {} AND d_track_no == \"{}\"'.format(
                                 track_details['d_release_id'], track_details['d_track_no'])
-            for cnt,answer in enumerate(edit_answers.items()):
+            for answer in enumerate(edit_answers.items()):
                 log.debug('key: {}, value: {}'.format(answer[0], answer[1]))
                 if answer[0] in track_ext_cols:
                     if values_track_ext == '':
-                        values_track_ext += "{} = ? ".format(answer[0], answer[1])
+                        values_track_ext += "{} = ? ".format(answer[0])
                     else:
-                        values_track_ext += ", {} = ? ".format(answer[0], answer[1])
+                        values_track_ext += ", {} = ? ".format(answer[0])
                     values_list_track_ext.append(answer[1])
 
                     if values_insert_track_ext == '':
                         cols_insert_track_ext += "{}".format(answer[0])
-                        values_insert_track_ext += "?".format(answer[1])
+                        values_insert_track_ext += "?"
                     else:
                         cols_insert_track_ext += ", {}".format(answer[0])
-                        values_insert_track_ext += ", ?".format(answer[1])
+                        values_insert_track_ext += ", ?"
                     # the list is the same as with update
 
             final_update_track_ext = update_track_ext + values_track_ext + where_track_ext
@@ -631,7 +631,8 @@ class Collection (Database):
             global me
             me = self.me
             _ONLINE = True
-        except Exception as Exc:
+        #except Exception as Exc:
+        except Exception:
             _ONLINE = False
             #raise Exc
         self.ONLINE = _ONLINE
@@ -672,11 +673,6 @@ class Collection (Database):
         if is_number(id_or_title):
             try:
                 return self.search_release_id(id_or_title)
-                if release:
-                    return [release]
-                else:
-                    release_not_found = None
-                    return release_not_found
             except Exception as Exc:
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
@@ -801,7 +797,7 @@ class Collection (Database):
             return False
 
     def is_in_d_coll(self, release_id):
-        successful = False
+        #successful = False
         for r in self.me.collection_folders[0].releases:
             #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
             if r.release.id == release_id:
@@ -899,15 +895,6 @@ class Collection (Database):
         log.debug('d_artists_parse: Track {} not existing on release.'.format(
             track_number))
 
-    def get_releases_of_one_mix(self, start_pos = False):
-        if not start_pos:
-            where = "mix_id == {}".format(self.id)
-        else:
-            where = "mix_id == {} and track_pos >= {}".format(self.id, start_pos)
-        log.info("MODEL: Returning tracks of a mix.")
-        return self._select_simple(['*'], 'mix_track', where,
-                fetchone = False, orderby = 'track_pos')
-
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
         max_bpm = bpm + (bpm / 100 * pitch_range)
@@ -923,8 +910,8 @@ class Collection (Database):
         return self._select(sql_bpm, fetchone = False)
 
     def get_tracks_by_key(self, key):
-        prev_key = ""
-        next_key = ""
+        #prev_key = "" # future music ;-) when we have key-translation-table
+        #next_key = ""
         sql_key = '''SELECT discogs_title, track.d_artist, d_track_name,
                            track.d_track_no, key, bpm, key_notes, notes FROM
                                release LEFT OUTER JOIN track
@@ -1045,7 +1032,8 @@ class Brainz (object):
             "recording-rels", "recording-level-rels" ])
         except WebServiceError as exc:
             log.error("requesting data from MusicBrainz: %s" % exc)
-            return False
+            log.error("MODELS: get_mb_release_by_id returning empty dict.")
+            return {}
 
     def get_mb_recording_by_id(self, mb_id):
         try:

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-from discodos.utils import *
-from discodos.ctrls import *
+from discodos.utils import ask_user, print_help, Config
+from discodos.views import User_int
+from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
+from discodos import log
 import argparse
 import sys
 import pprint
@@ -145,7 +147,8 @@ def main():
     conf = Config()
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # SETUP / INIT
-    global args, ONLINE, user
+    #global args, ONLINE, user
+    global args, user
     args = argparser(sys.argv)
     # DEBUG stuff
     #print(vars(args))

@@ -1,4 +1,4 @@
-from discodos.utils import * # some of this is a view thing right?
+from discodos.utils import is_number, join_sep
 from abc import ABC, abstractmethod
 from discodos import log
 from tabulate import tabulate as tab # should be only in views.py
@@ -76,8 +76,8 @@ class View_common(ABC):
         elif value_to_check == " ":
             value_to_check = ""
 
-        elif value_to_check == []:
-            value_to_check = [X]
+        #elif value_to_check == []:
+        #    value_to_check = [X]
 
         if value_to_check == None:
             value_to_check = ""
@@ -123,8 +123,8 @@ class View_common(ABC):
         for i, row in enumerate(table):
             if row['a_key'] and not row['key']:
                 if row['a_chords_key'] != row['a_key']:
-                    table[i]['key'] = '{}/{}*'.format((row['a_key'],
-                                                       row['a_chords_key']))
+                    table[i]['key'] = '{}/{}*'.format(row['a_key'],
+                                                       row['a_chords_key'])
                 else:
                     table[i]['key'] = '{}*'.format((row['a_key']))
             if row['a_bpm'] and not row['bpm']:
@@ -253,16 +253,16 @@ class Collection_view_common(ABC):
         return False # we didn't find the tracknumber
 
 # common view utils, usable in CLI only
-class View_common_cli(ABC):
-    def print_help(self, message):
+class View_common_cli(View_common):
+    def p(self, message):
         print(''+str(message)+'\n')
 
-    def ask_user(self, text=""):
+    def ask(self, text=""):
         ''' ask user for something and return answer '''
         return input(text)
 
-    def ask_user_for_track(self):
-        track_no = self.ask_user("Which track? (A1) ")
+    def ask_for_track(self):
+        track_no = self.ask("Which track? (A1) ")
         # FIXME a sanity checker, at least for online search, would be nice here.
         # also the default value is not checked, eg it could be A in reality!
         if track_no == '':
@@ -276,7 +276,7 @@ class View_common_cli(ABC):
         #   log.debug(str(row))
         #log.debug("")
         if _verbose:
-            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+            self.p(tab(_mix_data_nl, tablefmt='pipe',
               headers={'track_pos': '#', 'discogs_title': 'Release',
                        'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
                        'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
@@ -286,7 +286,7 @@ class View_common_cli(ABC):
             _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
             _mix_data_brainz_nl = self.trim_table_fields(_mix_data_brainz,
                 exclude = ['methods'])
-            self.print_help(tab(_mix_data_brainz_nl, tablefmt='grid',
+            self.p(tab(_mix_data_brainz_nl, tablefmt='grid',
               headers={'track_pos': '#', 'discogs_title': 'Release',
                        'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
                        'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
@@ -296,7 +296,7 @@ class View_common_cli(ABC):
                        'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
                        }))
         else:
-            self.print_help(tab(_mix_data_nl, tablefmt='pipe',
+            self.p(tab(_mix_data_nl, tablefmt='pipe',
               headers={'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
                        'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
                        'key': 'Key', 'bpm': 'BPM'}))
@@ -326,10 +326,10 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
           tablefmt="simple", # headers has to be dict too!
           headers={'mix_id': '#', 'name': 'Name', 'played':'Played',
                    'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'})
-        self.print_help(tabulated)
+        self.p(tabulated)
 
     def tab_mix_info_header(self, mix_info):
-        self.print_help(tab([mix_info], tablefmt="plain",
+        self.p(tab([mix_info], tablefmt="plain",
                 headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
@@ -337,7 +337,7 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
         'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
             .format(track_to_add, release_name, int(mix_id), pos))
-        _answ = self.ask_user(quest)
+        _answ = self.ask(quest)
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
 
@@ -350,14 +350,14 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         ''' formatted output _and return of Discogs release search results'''
         # only show pages count if it's a Release Title Search
         if not is_number(_searchterm):
-            self.print_help("Found "+str(discogs_results.pages )+" page(s) of results!")
+            self.p("Found "+str(discogs_results.pages )+" page(s) of results!")
         else:
-            self.print_help("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+            self.p("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
         for result_item in discogs_results:
-            self.print_help("Checking " + str(result_item.id))
+            self.p("Checking " + str(result_item.id))
             for dbr in _db_releases:
                 if result_item.id == dbr[0]:
-                    self.print_help("Good, first matching record in your collection is:")
+                    self.p("Good, first matching record in your collection is:")
                     result_list=[]
                     result_list.append([])
                     result_list[0].append(result_item.id)
@@ -379,15 +379,16 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
                     #return result_list[0]
                     log.info("Compiled Discogs result_list: {}".format(result_list))
                     return result_list
-                    break
-            except UnboundLocalError as unb:
+                # FIXME this is bullshit, will never be reached FIXME
+                #    break
+            except UnboundLocalError:
                 log.error("Discogs collection was not imported to DiscoBASE properly!")
                 #raise unb
                 raise SystemExit(1)
         return False
 
     def tab_online_search_results(self, _result_list):
-        self.print_help(tab(_result_list, tablefmt="simple",
+        self.p(tab(_result_list, tablefmt="simple",
                   headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
 
     def online_search_results_tracklist(self, _tracklist):
@@ -396,7 +397,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         print()
 
     def tab_all_releases(self, releases_data):
-        #self.print_help(tab(releases_data, tablefmt="plain",
+        #self.p(tab(releases_data, tablefmt="plain",
         print(tab(releases_data, tablefmt="plain",
             #headers=["Discogs ID", "Artist", "Release Title", "Last import", "in Collection"]))
             headers=["Discogs ID", "Artist", "Release Title"]))

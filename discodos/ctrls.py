@@ -1,8 +1,9 @@
-from discodos.utils import * # some of this is a view thing right?
-from discodos.models import *
-from discodos.views import *
+from discodos.utils import is_number, join_sep
+from discodos.models import Mix, Collection, Brainz
+from discodos.views import Mix_view_cli, Collection_view_cli
 from abc import ABC, abstractmethod
 from discodos import log
+import discogs_client.exceptions as errors
 import pprint as p
 import re
 from time import time
@@ -24,16 +25,16 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if is_number(self.mix.name_or_id):
             log.error("Mix name can't be a number!") # log is everywhere, also in view
         else:
-            print_help("Creating new mix \"{}\".".format(self.mix.name)) # view
+            self.cli.p("Creating new mix \"{}\".".format(self.mix.name)) # view
             answers = self._create_ask_details() # view with questions from common
             created_id = self.mix.create(answers['played'], answers['venue']) # model
             self.mix.db_conn.commit() # model
-            print_help("New mix created with ID {}.".format(created_id)) # view
+            self.cli.p("New mix created with ID {}.".format(created_id)) # view
             self.view_mixes_list() # view
 
     def _create_ask_details(self):
-        played = ask_user("When did you (last) play it? eg 2018-01-01 ")
-        venue = ask_user(text="And where? ")
+        played = self.cli.ask("When did you (last) play it? eg 2018-01-01 ")
+        venue = self.cli.ask(text="And where? ")
         return {'played': played, 'venue': venue}
 
     def view_mixes_list(self):
@@ -53,7 +54,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 full_mix = self.mix.get_full_mix(verbose = False)
 
             if not full_mix:
-                print_help("No tracks in mix yet.")
+                self.cli.p("No tracks in mix yet.")
             else:
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
                     self.cli.tab_mix_table(full_mix, _verbose = True)
@@ -62,24 +63,24 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 else:
                     self.cli.tab_mix_table(full_mix, _verbose = False)
         else:
-            print_help("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
+            self.cli.p("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 
     def delete(self):
         if self.mix.id_existing:
             if self._delete_confirm() == True:
                 self.mix.delete()
                 self.mix.db_conn.commit()
-                print_help("Mix \"{} - {}\" deleted successfully.".format(self.mix.id, self.mix.name))
+                self.cli.p("Mix \"{} - {}\" deleted successfully.".format(self.mix.id, self.mix.name))
         else:
-           print_help("Mix \"{}\" doesn't exist.".format(self.mix.name_or_id))
+           self.cli.p("Mix \"{}\" doesn't exist.".format(self.mix.name_or_id))
 
     def edit_track(self, edit_track):
         if self.mix.id_existing:
-            print_help("Editing track "+edit_track+" in \""+
+            self.cli.p("Editing track "+edit_track+" in \""+
                         self.mix.name+"\":")
             track_details = self.mix.get_one_mix_track(edit_track)
             if track_details:
-                print_help("{} - {} - {}".format(
+                self.cli.p("{} - {} - {}".format(
                            track_details['discogs_title'],
                            track_details['d_track_no'],
                            track_details['d_track_name']))
@@ -90,16 +91,16 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     log.info("answers: %s", str(a))
                 update_ok = self.mix.update_mix_track_and_track_ext(track_details, edit_answers)
                 if update_ok:
-                    print_help("Track edit was successful.")
+                    self.cli.p("Track edit was successful.")
                 else:
                     log.error("Something went wrong on mix_track edit!")
                     raise SystemExit(1)
                 self.view()
             else:
-                print_help("No track "+edit_track+" in \""+
+                self.cli.p("No track "+edit_track+" in \""+
                             self.mix.name+"\".")
         else:
-            print_help("Mix unknown: \"{}\".".format(self.mix.name_or_id))
+            self.cli.p("Mix unknown: \"{}\".".format(self.mix.name_or_id))
 
     def _edit_track_ask_details(self, _track_det, edit_track_questions):
         #print(_track_det['d_track_no'])
@@ -110,13 +111,13 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         for db_field, question in edit_track_questions:
             if db_field == 'track_pos':
                 while not is_number(answers['track_pos']):
-                    answers[db_field] = ask_user(
+                    answers[db_field] = self.cli.ask(
                                              question.format(_track_det[db_field]))
                     if answers[db_field] == "":
                         answers[db_field] = _track_det[db_field]
                         break
             else:
-                answers[db_field] = ask_user(
+                answers[db_field] = self.cli.ask(
                                          question.format(_track_det[db_field]))
                 if answers[db_field] == "":
                     log.info("Answer was empty, keeping previous value: %s",
@@ -135,7 +136,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if self.mix.id_existing:
             for track in self.mix.get_full_mix(verbose = True):
                 if not track['track_pos'] < first_track:
-                    self.cli.print_help(
+                    self.cli.p(
                            "Editing track {}  |  {} - {}  |  {} - {}".format(
                            track['track_pos'], track['discogs_title'], track['d_track_no'],
                            track['d_artist'], track['d_track_name']))
@@ -151,13 +152,12 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     log.debug("CTRL: bulk_questions: {}".format(bulk_questions))
                     edit_answers = self._edit_track_ask_details(track_details,
                         bulk_questions)
-                    update_ok = self.mix.update_mix_track_and_track_ext(track_details,
-                            edit_answers)
+                    self.mix.update_mix_track_and_track_ext(track_details,
+                          edit_answers)
                     print("") # just some space
 
     def reorder_tracks(self, startpos = 1):
-        reorder_pos = int(startpos)
-        reordered = self.mix.reorder_tracks(startpos)
+        reordered = self.mix.reorder_tracks(int(startpos))
         if not reordered:
             log.error("Reorder failed. No track {} in mix.".format(startpos))
         else:
@@ -165,7 +165,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.view()
 
     def delete_track(self, delete_track_pos):
-         really_del = ask_user(text="Delete Track {} from mix {}? ".format(
+         really_del = self.cli.ask(text="Delete Track {} from mix {}? ".format(
                                       delete_track_pos, self.mix.id))
          if really_del.lower() == "y":
              successful = self.mix.delete_track(delete_track_pos)
@@ -177,12 +177,12 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     self.mix.reorder_tracks(delete_track_pos - 1)
                  self.view()
              else:
-                 print_help("Delete failed, maybe nonexistent track position?")
+                 self.cli.p("Delete failed, maybe nonexistent track position?")
 
     # definitely cli specific
 
     def _delete_confirm(self):
-        really_delete = ask_user(
+        really_delete = self.cli.ask(
             "Are you sure you want to delete mix \"{} - {}\" and all its containing tracks? ".format(
                 self.mix.id, self.mix.name))
         if really_delete == "y": return True
@@ -203,7 +203,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
     # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
         if not _track_no:
-            track_to_add = self.cli.ask_user_for_track()
+            track_to_add = self.cli.ask_for_track()
         else:
             log.debug("_track_no was given, value is {}".format(_track_no))
             track_to_add = _track_no
@@ -253,20 +253,20 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 log.error("Add track to DB failed!")
                 #return False
         else:
-            self.cli.print_help("Mix ID {} is not existing yet.".format(self.mix.id))
+            self.cli.p("Mix ID {} is not existing yet.".format(self.mix.id))
             return False
 
     def pull_track_info_from_discogs(self, coll_ctrl, start_pos = False):
         if not coll_ctrl.ONLINE:
-            self.cli.print_help("Not online, can't pull from Discogs...")
+            self.cli.p("Not online, can't pull from Discogs...")
             return False # exit method we are offline
 
         start_time = time()
         if self.mix.id_existing:
-            self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
+            self.cli.p("Let's update current mixes tracks with info from Discogs...")
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
-            self.cli.print_help("Let's update every track contained in any mix with info from Discogs...")
+            self.cli.p("Let's update every track contained in any mix with info from Discogs...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
         processed = len(mixed_tracks)
         added = 0
@@ -352,6 +352,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     log.info('CTRL: ...CatNo-matching (exact) MB-Release')
                     log.info('CTRL: ..."{}"'.format(release['title']))
                 full_rel = coll_ctrl.brainz.get_mb_release_by_id(release['id'])
+                # FIXME should we do something here if full_rel not successful?
 
                 for mb_label_item in full_rel['release']['label-info-list']:
                     mb_catno_orig = coll_ctrl.brainz.get_catno_from_mb_label(mb_label_item)
@@ -402,7 +403,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             #pprint.pprint(_mb_release) # human readable json
             nonlocal rec_match_method
             for medium in _mb_release['release']['medium-list']:
-                for pos, track in enumerate(medium['track-list']):
+                for track in medium['track-list']:
                     _rec_title = track['recording']['title']
                     _rec_title_low = _rec_title.lower()
                     _d_track_name_low = _d_track_name.lower()
@@ -449,15 +450,15 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             return False
 
         if not coll_ctrl.ONLINE:
-            self.cli.print_help("Not online, can't pull from AcousticBrainz...")
+            self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
 
         start_time = time()
         if self.mix.id_existing:
-            self.cli.print_help("Let's update current mixes tracks with info from AcousticBrainz...")
+            self.cli.p("Let's update current mixes tracks with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
-            self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
+            self.cli.p("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
         processed = len(mixed_tracks)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
@@ -496,7 +497,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
                 # get_discogs track number numerical
                 #print(dir(d_rel.tracklist[1]))
-                d_rel_track_count = len(d_rel.tracklist)
+                #d_rel_track_count = len(d_rel.tracklist)
                 d_track_numerical = coll_ctrl.cli.d_tracklist_parse_numerical(
                     d_rel.tracklist, d_track_no)
 
@@ -638,30 +639,34 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         return False # we are through all tracks in mix
 
     def copy_mix(self):
-        self.cli.print_help("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
+        self.cli.p("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
         copy_tr = self.mix.get_tracks_of_one_mix()
-        new_mix_name = self.cli.ask_user("How should the copy be named? ")
+        new_mix_name = self.cli.ask("How should the copy be named? ")
         new_mix = Mix(self.mix.db_conn, new_mix_name)
         db_return_new = new_mix.create(self.mix.played, self.mix.venue, new_mix_name)
-        for tr in copy_tr:
-            log.debug("CTRL copy_mix data: {}, {}, {}, {}, {}, ".format(
-                tr["d_release_id"], tr["d_track_no"], tr["track_pos"], tr["trans_rating"],
-                tr["trans_notes"]))
-            new_mix.add_track(tr["d_release_id"], tr["d_track_no"], tr["track_pos"], tr["trans_rating"],
-                tr["trans_notes"])
-        new_mix.db_conn.commit()
-        self.cli.print_help("Copy mix successful. New ID is {}.".format(new_mix.id))
-        return True
+        if db_return_new:
+            for tr in copy_tr:
+                log.debug("CTRL copy_mix data: {}, {}, {}, {}, {}, ".format(
+                    tr["d_release_id"], tr["d_track_no"], tr["track_pos"], tr["trans_rating"],
+                    tr["trans_notes"]))
+                new_mix.add_track(tr["d_release_id"], tr["d_track_no"], tr["track_pos"], tr["trans_rating"],
+                    tr["trans_notes"])
+            new_mix.db_conn.commit()
+            self.cli.p("Copy mix successful. New ID is {}.".format(new_mix.id))
+            return True
+        else:
+            log.error("Copy mix failed. Couldn't create.")
+            return False
 
     def update_in_d_coll(self, coll_ctrl, start_pos = False):
         if coll_ctrl.ONLINE:
             if self.mix.id_existing:
-                self.cli.print_help("Let's update Discogs collection field in current mixes releases...")
+                self.cli.p("Let's update Discogs collection field in current mixes releases...")
                 #db_releases = self.mix.get_releases_of_one_mix(start_pos)
                 #for db_rel in db_releases:
                 #    pass
             #else:
-            #    self.cli.print_help("Let's update ALL tracks in ALL mixes with info from Discogs...")
+            #    self.cli.p("Let's update ALL tracks in ALL mixes with info from Discogs...")
             #    mixed_tracks = self.mix.get_all_tracks_in_mixes()
 
 # Collection controller common methods
@@ -708,12 +713,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     def search_release(self, _searchterm): # online or offline search is decided in this method
         if self.collection.ONLINE:
             if is_number(_searchterm):
-                print_help('Searchterm is a number, trying to add Release ID to collection...')
+                self.cli.p('Searchterm is a number, trying to add Release ID to collection...')
                 if not self.add_release(int(_searchterm)):
                     log.warning("Release wasn't added to Collection, continuing anyway.")
 
             db_releases = self.collection.get_all_db_releases()
-            print_help('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
+            self.cli.p('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_online(_searchterm)
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.cli.print_found_discogs_release(
@@ -721,23 +726,23 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             return compiled_results_list
 
         else:
-            print_help('Searching database for ID or Title: {}'.format(_searchterm))
+            self.cli.p('Searching database for ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_offline(_searchterm)
             if not search_results:
-                print_help('Nothing found.')
+                self.cli.p('Nothing found.')
                 return False
             else:
                 if len(search_results) == 1:
-                    print_help('Found release: {} - {}'.format(search_results[0][3],
+                    self.cli.p('Found release: {} - {}'.format(search_results[0][3],
                                                           search_results[0][1]))
                     return search_results
                 else:
-                    print_help('Found several releases:')
+                    self.cli.p('Found several releases:')
                     for cnt,release in enumerate(search_results):
-                        print_help('({}) {} - {}'.format(cnt, release[3], release[1]))
+                        self.cli.p('({}) {} - {}'.format(cnt, release[3], release[1]))
                     #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
                     #print(num_search_results)
-                    answ = self.cli.ask_user('Which release? (0) ')
+                    answ = self.cli.ask('Which release? (0) ')
                     if answ == '':
                         answ = 0
                     else:
@@ -746,7 +751,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     #return num_search_results[answ][0]
 
     def view_all_releases(self):
-        self.cli.print_help("Showing all releases in DiscoBASE.")
+        self.cli.p("Showing all releases in DiscoBASE.")
         #all_releases_result = self.cli.trim_table_fields(
         #    self.collection.get_all_db_releases())
         all_releases_result = self.collection.get_all_db_releases()
@@ -755,7 +760,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     def track_report(self, track_searchterm):
         release = self.search_release(track_searchterm)
         if release:
-            track_no = self.cli.ask_user_for_track()
+            track_no = self.cli.ask_for_track()
             if self.collection.ONLINE == True:
                 rel_id = release[0][0]
                 rel_name = release[0][2]
@@ -766,10 +771,10 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             tr_sugg_msg = '\nTrack combo suggestions for {} on "{}".'.format(
                 track_no, rel_name)
             tr_sugg_msg+= '\nThis is how you used this track in the past:'
-            self.cli.print_help(tr_sugg_msg)
+            self.cli.p(tr_sugg_msg)
             if track_occurences:
                 for tr in track_occurences:
-                    self.cli.print_help('Snippet of Mix {} - "{}":'.format(
+                    self.cli.p('Snippet of Mix {} - "{}":'.format(
                         tr['mix_id'], tr['name']))
                     report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
                     self.cli.tab_mix_table(report_snippet, _verbose = True)
@@ -788,16 +793,16 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             if self.collection.search_release_id(release_id):
                 msg = "Release ID is already existing in DiscoBASE, "
                 msg+= "won't add it to your Discogs collection. We don't want dups!"
-                self.cli.print_help(msg)
+                self.cli.p(msg)
             else:
-                self.cli.print_help("Asking Discogs if release ID {:d} is valid.".format(
+                self.cli.p("Asking Discogs if release ID {:d} is valid.".format(
                        release_id))
                 result = self.collection.get_d_release(release_id)
                 if result:
                     artists = self.collection.d_artists_to_str(result.artists)
                     d_catno = self.collection.d_get_first_catno(result.labels)
                     log.debug(dir(result))
-                    self.cli.print_help("Adding \"{}\" to collection".format(result.title))
+                    self.cli.p("Adding \"{}\" to collection".format(result.title))
                     for folder in self.collection.me.collection_folders:
                         if folder.id == 1:
                             folder.add_release(release_id)
@@ -821,19 +826,19 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         #print(dir(me))
         #print(me.collection_item)
         #if not force == True:
-        self.cli.print_help("Asking Discogs for release ID {:d}".format(
+        self.cli.p("Asking Discogs for release ID {:d}".format(
                _release_id))
         result = self.collection.get_d_release(_release_id)
         if not result:
             raise SystemExit(3)
         else:
-            self.cli.print_help("Release ID is valid: {}\n".format(result.title) +
+            self.cli.p("Release ID is valid: {}\n".format(result.title) +
                   "Let's see if it's in your collection, this might take some time...")
             in_coll = self.collection.is_in_d_coll(_release_id)
             if in_coll:
                 artists = self.collection.d_artists_to_str(in_coll.release.artists)
                 d_catno = self.collection.d_get_first_catno(in_coll.release.labels)
-                self.cli.print_help(
+                self.cli.p(
                   "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
                   in_coll.release.id, artists, in_coll.release.title))
                 self.collection.create_release(in_coll.release.id, in_coll.release.title,
@@ -844,7 +849,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     def import_collection(self):
         self.cli.exit_if_offline(self.collection.ONLINE)
-        self.cli.print_help(
+        self.cli.p(
         "Gathering your Discogs collection and importing necessary fields into DiscoBASE")
         start_time = time()
         insert_count = 0
@@ -868,7 +873,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
     def bpm_report(self, bpm, pitch_range):
-        #track_no = self.cli.ask_user_for_track()
+        #track_no = self.cli.self.cli.ask_for_track()
         #if self.collection.ONLINE == True:
         #    rel_id = release[0][0]
         #    rel_name = release[0][2]
@@ -877,14 +882,14 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         #    rel_name = release[0][1]
         possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
         tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
-        self.cli.print_help(tr_sugg_msg)
+        self.cli.p(tr_sugg_msg)
         if possible_tracks:
             max_width = self.cli.get_max_width(possible_tracks,
               ['key', 'bpm'], 3)
             for tr in possible_tracks:
                 key_bpm_and_space = self.cli.combine_fields_to_width(tr,
                   ['key', 'bpm'], max_width)
-                self.cli.print_help('{}{} - {} [{} ({})]:'.format(
+                self.cli.p('{}{} - {} [{} ({})]:'.format(
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
@@ -898,14 +903,14 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         #    rel_name = release[0][1]
         possible_tracks = self.collection.get_tracks_by_key(key)
         tr_sugg_msg = '\nShowing tracks with key {}'.format(key)
-        self.cli.print_help(tr_sugg_msg)
+        self.cli.p(tr_sugg_msg)
         if possible_tracks:
             max_width = self.cli.get_max_width(possible_tracks,
               ['key', 'bpm'], 3)
             for tr in possible_tracks:
                 key_bpm_and_space = self.cli.combine_fields_to_width(tr,
                   ['key', 'bpm'], max_width)
-                self.cli.print_help('{}{} - {} [{} ({})]:'.format(
+                self.cli.p('{}{} - {} [{} ({})]:'.format(
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
