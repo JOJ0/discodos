@@ -261,9 +261,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.print_help("Not online, can't pull from Discogs...")
             return False # exit method we are offline
 
+        start_time = time()
         if self.mix.id_existing:
             self.cli.print_help("Let's update current mixes tracks with info from Discogs...")
-            start_time = time()
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.print_help("Let's update every track contained in any mix with info from Discogs...")
@@ -452,13 +452,13 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.print_help("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
 
+        start_time = time()
         if self.mix.id_existing:
             self.cli.print_help("Let's update current mixes tracks with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.print_help("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
-        start_time = time()
         processed = len(mixed_tracks)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
