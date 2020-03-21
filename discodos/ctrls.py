@@ -316,12 +316,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         print('Database errors: {}. Not found on Discogs errors: {}.'.format(
             db_errors, not_found_errors))
         print("") # space for readability
-        took_seconds = time() - start_time
-        log.info('Updating track info took {} seconds'.format(took_seconds))
-        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
-        msg_took = "Updating track info took {}".format(took_str)
-        log.info(msg_took)
-        print(msg_took)
+
+        self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
@@ -641,14 +637,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         msg2 = "Help improving the matching algorithm: "
         msg2+= "Open an issue on github.com/JOJ0/discodos"
         print(msg2+'\n')
-        # time stats
-        took_seconds = time() - start_time
-        #log.info('Updating track info took {} seconds'.format(took_seconds))
-        print('Updating track info took {} seconds'.format(took_seconds))
-        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
-        msg_took = "Updating track info took {}".format(took_str)
-        log.info(msg_took)
-        print(msg_took)
+
+        self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return False # we are through all tracks in mix
 
     def copy_mix(self):
@@ -825,6 +815,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     # import specific release ID into DB
     def import_release(self, _release_id):
+        start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
         #print(dir(me.collection_folders[0].releases))
         #print(dir(me))
@@ -848,6 +839,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                   self.collection.d_artists_to_str(in_coll.release.artists), d_coll = True)
             else:
                 self.cli.error_not_the_release()
+        self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
     def import_collection(self):
         self.cli.exit_if_offline(self.collection.ONLINE)
@@ -871,12 +863,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 print()
             else:
                 log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
-        took_seconds = time() - start_time
-        log.info('Discogs import took {} seconds'.format(took_seconds))
-        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
-        msg_took = "Discogs import took {}".format(took_str)
-        log.info(msg_took)
-        print(msg_took)
+
+        self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
     def bpm_report(self, bpm, pitch_range):
         #track_no = self.cli.ask_user_for_track()

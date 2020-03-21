@@ -5,6 +5,7 @@ from tabulate import tabulate as tab # should be only in views.py
 import pprint
 from datetime import datetime
 from datetime import date
+from time import time
 
 
 # common view utils, usable in CLI and GUI
@@ -299,6 +300,14 @@ class View_common_cli(ABC):
               headers={'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
                        'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
                        'key': 'Key', 'bpm': 'BPM'}))
+
+    def duration_stats(self, start_time, msg):
+        took_seconds = time() - start_time
+        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
+        msg_took = "{} took {}".format(msg, took_str)
+        log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
+        log.info('CTRLS: {}'.format(msg_took))
+        print(msg_took)
 
 # viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
