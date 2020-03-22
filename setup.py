@@ -27,9 +27,9 @@ def argparser(argv):
         type=int, default=False, nargs="*",
         help="import release ID from Discogs, default is _all_ releases")
     parser_group1.add_argument(
-		"--update-db-schema", dest="update_db_schema",
+		"--upgrade-db-schema", dest="upgrade_db_schema",
         action='store_true',
-        help="update database schema - be careful! Checkout README.md")
+        help="upgrade database schema - be careful! Checkout README.md")
     parser_group1.add_argument(
 		"-a", "--add_to_collection", dest="add_release_id",
         type=int,
@@ -146,16 +146,18 @@ class Db_setup(Database):
         curr_vers_row = self._select('PRAGMA user_version', fetchone = True)
         return int(curr_vers_row['user_version'])
 
-    def upgrade_schema(self):
+    def upgrade_schema(self, force_upgrade = False):
         current_schema = self.get_current_schema_version()
         latest_schema = self.get_latest_schema_version()
-        if not latest_schema > current_schema: # check if upgrade necessary
+        # check if upgrade necessary
+        if not latest_schema > current_schema and force_upgrade == False:
             log.info('Db_setup: No schema update necessary.')
-        else:
+        else: # also happens if force_upgrade True
             failure = False
             self.execute_sql('PRAGMA foreign_keys = OFF;')
             for upgrade in self.sql_upgrades: # list is sorted -> execute all up to highest
-                if upgrade['schema_version'] < latest_schema:
+                if (upgrade['schema_version'] < latest_schema 
+                          or force_upgrade == True):
                     for task, sql in upgrade['tasks'].items():
                         try: # if task fails all_done is not updated!
                             self.execute_sql(sql, raise_err = True)
@@ -163,9 +165,9 @@ class Db_setup(Database):
                             log.info(msg_task)
                             print_help(msg_task)
                         except sqlerr as e:
-                            log.info("Task failed '%s': %s", task, e.args[0])
+                            log.warning("Task failed '%s': %s", task, e.args[0])
                             failure = True
-                            break
+                            #break
             if failure:
                 print('DiscoBASE schema update failed, open an issue on Github!')
                 log.info('DiscoBASE schema update failed, open an issue on Github!')
@@ -203,8 +205,9 @@ def main():
     setup.create_tables()
     setup.upgrade_schema()
 
-    if args.update_db_schema:
-        pass
+    if args.upgrade_db_schema:
+        setup.create_tables()
+        setup.upgrade_schema(force_upgrade = True)
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
