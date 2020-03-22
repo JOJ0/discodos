@@ -682,7 +682,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
             _db_file = False, _musicbrainz_user = False, _musicbrainz_pass = False):
         self.user = _user_int # take an instance of the User_int class and set as attribute
-        self.user = _user_int
         self.collection = Collection(_db_conn, _db_file)
         self.cli = Collection_view_cli() # instantiate cli frontend class 
         if self.user.WANTS_ONLINE:
