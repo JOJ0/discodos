@@ -417,6 +417,31 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             log.error("Need to be ONLINE to do that!")
             raise SystemExit(3)
 
+    def brainz_processed_report(self, processed, added_release, added_rec,
+      added_key, added_chords_key, added_bpm, errors_db, errors_not_found):
+        msg_mb = 'Processed: {}.\nAdded MusicBrainz info to DiscoBASE: '.format(processed)
+        msg_mb+= 'Release MBIDs: {}, Recording MBIDs: {}\n'.format(
+            added_release, added_rec)
+        msg_mb+= 'Added AccousticBrainz info: Key: {}, Chords Key: {}, BPM: {}'.format(
+            added_key, added_chords_key, added_bpm)
+        msg_err = 'Database errors: {}. Not found on Discogs errors: {}.'.format(
+            errors_db, errors_not_found)
+        msg_note = 'Note that some of your tracks might be from the same release. '
+        msg_note+= 'Thus, the total release count added in reality might be less.'
+        print(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
+        log.info(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
+        print("") # space for readability
+
+        msg1 = "If DiscoDOS didn't find many Release MBIDs or Recording MBIDs "
+        msg1+= "and hence no key and BPM data, "
+        msg1+= "please investigate: Execute match command again "
+        msg1+= "with increased log-level: disco -v .. "
+        print(msg1)
+        msg2 = "Help improving the matching algorithm: "
+        msg2+= "Open an issue on github.com/JOJ0/discodos"
+        print(msg2+'\n')
+
+
 # CLI user interaction class - holds info about what user wants to do
 # analyzes argparser args and puts it to nicely human readable properties
 class User_int(object):
