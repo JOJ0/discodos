@@ -76,8 +76,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def edit_track(self, edit_track):
         if self.mix.id_existing:
-            self.cli.p("Editing track "+edit_track+" in \""+
-                        self.mix.name+"\":")
+            msg_editing ='Editing track {} in "{}".\n'.format(edit_track, self.mix.name)
+            msg_editing+='* to keep a value as is, press enter\n'
+            msg_editing+='* text in (braces) shows current value'
+            self.cli.p(msg_editing)
             track_details = self.mix.get_one_mix_track(edit_track)
             if track_details:
                 self.cli.p("{} - {} - {}".format(
