@@ -334,8 +334,7 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
         quest=(
-        #'Add "{:s}" on "{:s}" to mix #{:d}, at position {:d}? (y) '
-        'Add "{}" on "{:s}" to mix #{}, at position {}? (y) '
+        'Add "{}" on "{}" to mix #{}, at position {}? (Y/n) '
             .format(track_to_add, release_name, int(mix_id), pos))
         _answ = self.ask(quest)
         if _answ.lower() == "y" or _answ.lower() == "":
