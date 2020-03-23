@@ -336,14 +336,14 @@ class Mix (Database):
         if mix_track_edit:
             update_mix_track = 'UPDATE mix_track SET '
             where_mix_track = 'WHERE mix_track_id == {}'.format(track_details['mix_track_id'])
-            for answer in enumerate(edit_answers.items()):
-                log.debug('key: {}, value: {}'.format(answer[0], answer[1]))
-                if answer[0] in mix_track_cols:
+            for key, answer in edit_answers.items():
+                log.debug('key: {}, value: {}'.format(key, answer))
+                if key in mix_track_cols:
                     if values_mix_track == '':
-                        values_mix_track += "{} = ? ".format(answer[0])
+                        values_mix_track += "{} = ? ".format(key)
                     else:
-                        values_mix_track += ", {} = ? ".format(answer[0])
-                    values_list_mix_track.append(answer[1])
+                        values_mix_track += ", {} = ? ".format(key)
+                    values_list_mix_track.append(answer)
             final_update_mix_track = update_mix_track + values_mix_track + where_mix_track
             #log.info('MODEL: {}'.format(final_update_mix_track))
             #log.info(log.info('MODEL: {}'.format(tuple(values_list_mix_track))))
@@ -356,20 +356,20 @@ class Mix (Database):
             insert_track_ext = 'INSERT INTO track_ext'
             where_track_ext = 'WHERE d_release_id == {} AND d_track_no == \"{}\"'.format(
                                 track_details['d_release_id'], track_details['d_track_no'])
-            for answer in enumerate(edit_answers.items()):
-                log.debug('key: {}, value: {}'.format(answer[0], answer[1]))
-                if answer[0] in track_ext_cols:
+            for key, answer in edit_answers.items():
+                log.debug('key: {}, value: {}'.format(key, answer))
+                if key in track_ext_cols:
                     if values_track_ext == '':
-                        values_track_ext += "{} = ? ".format(answer[0])
+                        values_track_ext += "{} = ? ".format(key)
                     else:
-                        values_track_ext += ", {} = ? ".format(answer[0])
-                    values_list_track_ext.append(answer[1])
+                        values_track_ext += ", {} = ? ".format(key)
+                    values_list_track_ext.append(answer)
 
                     if values_insert_track_ext == '':
-                        cols_insert_track_ext += "{}".format(answer[0])
+                        cols_insert_track_ext += "{}".format(key)
                         values_insert_track_ext += "?"
                     else:
-                        cols_insert_track_ext += ", {}".format(answer[0])
+                        cols_insert_track_ext += ", {}".format(key)
                         values_insert_track_ext += ", ?"
                     # the list is the same as with update
 
