@@ -250,6 +250,7 @@ def main():
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl,
               start_pos=args.mix_mode_add_at_pos)
+        #### UPDATE TRACKS WITH MUSICBRAINZ & ACOUSTICBRAINZ INFO
         elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
             mix_ctrl.update_track_info_from_brainz(coll_ctrl,
               start_pos=args.mix_mode_add_at_pos, detail=user.BRAINZ_SEARCH_DETAIL)

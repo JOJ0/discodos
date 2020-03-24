@@ -14,6 +14,7 @@ import musicbrainzngs as m
 from musicbrainzngs import WebServiceError
 import requests
 import json
+import re
 
 class Database (object):
 
@@ -984,14 +985,17 @@ class Brainz (object):
 
     def __init__(self, musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
         self.ONLINE = False
+        self.musicbrainz_user = musicbrainz_user
+        self.musicbrainz_password = musicbrainz_pass
+        self.musicbrainz_appid = musicbrainz_appid
         if self.musicbrainz_connect(musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
             self.ONLINE = True
-            log.info("Brainz class is ONLINE.")
+            log.info("MODEL: Brainz class is ONLINE.")
 
     # musicbrainz connect try,except wrapper
     def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):
         # If you plan to submit data, authenticate
-        #m.auth(mb_user, mb_pass)
+        m.auth(mb_user, mb_pass) # FIXME useragent generate in Config class
         m.set_useragent(mb_appid, "0.0.2", "https://github.com/JOJ0")
         # If you are connecting to a different server
         #m.set_hostname("beta.musicbrainz.org")
@@ -1107,3 +1111,224 @@ class Brainz (object):
             majmin = ''
         chords_key = '{}{}'.format(ab_return['tonal']['chords_key'], majmin)
         return chords_key
+
+class Brainz_match (Brainz): # we are based on Brainz, but it's not online
+    '''This class tries to find _one_ release and/or recording on musicbrainz
+       using the information passed in init'''
+
+    def __init__(self, coll_ctrl_o, # MB credentials taken from coll_ctrl obj
+          d_release_id, d_release_title, d_catno, d_artist, d_track_name,
+          d_track_no, d_track_no_num,
+          detail = 1):
+        # FIXME we take mb credentials from passed coll_ctrl object
+        super().__init__(coll_ctrl_o.brainz.musicbrainz_user,
+                         coll_ctrl_o.brainz.musicbrainz_password,
+                         coll_ctrl_o.brainz.musicbrainz_appid)
+        # we don't need to create a Brainz obj, we are a child of it
+        # remember all original discogs names
+        self.d_release_id_orig = d_release_id
+        self.d_release_title_orig = d_release_title
+        self.d_catno_orig = d_catno
+        self.d_artist_orig = d_artist
+        self.d_track_name_orig = d_track_name
+        self.d_track_no_orig = d_track_no
+        self.d_track_no_num_orig = d_track_no_num
+        #self.detail = detail
+        # match methods and times init
+        self.release_match_method = ''
+        self.release_mbid = ''
+        self.rec_match_method = ''
+        self.rec_mbid = ''
+        # strip and lowercase here already, we need it all the time
+        self.d_release_id = d_release_id # no mods here, just streamlining
+        self.d_release_title = d_release_title.lower()
+        self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
+        if d_artist:
+            self.d_artist = d_artist.lower()
+        else: # if it's None or something else
+            self.d_artist = ''
+        self.d_track_name = d_track_name.lower()
+        self.d_track_no = d_track_no.upper() # upper experiment
+        self.d_track_no_num = int(d_track_no_num)
+
+    def fetch_mb_releases(self, detail): # fetching controllable from outside
+        # decide which search method is used according to detail (-z count)
+        # FIXME error handling should be happening here
+        if detail < 2: # be strict, also use _original_ data here
+            log.debug('strict catno: {}'.format(self.d_catno_orig))
+            log.debug('strict artist: {}'.format(self.d_artist_orig))
+            log.debug('strict release: {}'.format(self.d_release_title_orig))
+            self.mb_releases = self.search_mb_releases(
+                self.d_artist_orig, self.d_release_title_orig,
+                self.d_catno_orig, limit = 5, strict = True)
+        else: # fuzzy search
+            self.mb_releases = self.search_mb_releases(
+                self.d_artist, self.d_release_title, self.d_catno,
+                  limit = 5, strict = False)
+        return True # FIXME error handling
+
+    def fetch_mb_matched_rel(self, rel_mbid = False): # mbid passable from outside
+        if rel_mbid: # given from outside, rest of necess. data from init
+            self.mb_matched_rel = self.get_mb_release_by_id(rel_mbid)
+        else: # we have it as class attribute already
+            self.mb_matched_rel = self.get_mb_release_by_id(self.release_mbid)
+        return True # FIXME error handling
+
+    def match_release(self): # start a match run (multiple things are tried)
+        # first url-match
+        self.release_mbid = self.url_match()
+        # and then catno-match
+        if not self.release_mbid:
+            self.release_mbid = self.catno_match()
+        # and now try again with some name variation tricks
+        # sometimes digital releases have additional D at end or in between
+        if not self.release_mbid:
+            self.release_mbid = self.catno_match(variations = True)
+        # if we still didn't find anything, we have logged already and are
+        # returning empty string here
+        return self.release_mbid
+
+    def match_recording(self): # start a match run (multiple things are tried)
+        #pprint.pprint(matched_rel) # human readable json
+        # get track position as a number from discogs release
+        #print(d_rel.tracklist[index])
+        #d_track_position = d_rel.tracklist[index]
+        rec_mbid = self.track_name_match()
+        if not rec_mbid:
+            rec_mbid = self.track_no_match()
+        return rec_mbid # if we didn't find, we logged already and return ''
+
+    # define matching methods as in update_track.... here
+    def url_match(self):
+        '''finds Release MBID by looking through Discogs links.'''
+        # reset match method var. FIXME is this the right place
+        self.release_match_method = ''
+        for release in self.mb_releases['release-list']:
+            log.info('CTRL: ...Discogs-URL-matching MB-Release')
+            log.info('CTRL: ..."{}"'.format(release['title']))
+            full_mb_rel = self.get_mb_release_by_id(release['id'])
+            #pprint.pprint(full_mb_rel) # DEBUG
+            urls = self.get_urls_from_mb_release(full_mb_rel)
+            if urls:
+                for url in urls:
+                    if url['type'] == 'discogs':
+                        log.info('CTRL: ...trying Discogs URL: ..{}'.format(
+                            url['target'].replace('https://www.discogs.com/', '')))
+                        if str(self.d_release_id) in url['target']:
+                            log.info(
+                              'CTRL: Found MusicBrainz match (via Discogs URL)')
+                            _mb_rel_id = release['id']
+                            self.release_match_method = 'Discogs URL'
+                            return _mb_rel_id # found release match
+        return False
+
+    def catno_match(self, variations = False):
+        '''finds Release MBID by looking through catalog numbers.'''
+        # reset match method var. FIXME is this the right place
+        self.release_match_method = ''
+        for release in self.mb_releases['release-list']:
+            _mb_rel_id = False # this is what we are looking for
+            if variations:
+                log.info('CTRL: ...CatNo-matching (variation) MB-Release')
+                log.info('CTRL: ..."{}"'.format(release['title']))
+            else:
+                log.info('CTRL: ...CatNo-matching (exact) MB-Release')
+                log.info('CTRL: ..."{}"'.format(release['title']))
+            full_rel = self.get_mb_release_by_id(release['id'])
+            # FIXME should we do something here if full_rel not successful?
+
+            for mb_label_item in full_rel['release']['label-info-list']:
+                mb_catno_orig = self.get_catno_from_mb_label(mb_label_item)
+                # d_catnos are uppered and stripped too
+                mb_catno = mb_catno_orig.upper().replace(' ', '')
+
+                if variations == False: # this is the vanilla exact-match
+                    log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                    log.info('CTRL: ...MB CatNo: {}'.format(mb_catno_orig))
+                    if mb_catno == self.d_catno:
+                        self.release_match_method = 'CatNo (exact)'
+                        _mb_rel_id = release['id']
+                else: # these are the variation matches
+                    #log.info(
+                    #  'CTRL: ...MB CatNo: {} (original)'.format(mb_catno))
+                    if mb_catno[-1:] == 'D' or mb_catno[-1:] == 'd':
+                        mb_catno = mb_catno[:-1]
+                        log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                        log.info('CTRL: ...MB CatNo: {} (D-end cut off)'.format(
+                          mb_catno_orig))
+                        if mb_catno == self.d_catno:
+                            release_match_method = 'CatNo (var 1)'
+                            _mb_rel_id = release['id']
+                    else:
+                        mb_numtail = re.split('[^\d]', mb_catno)[-1]
+                        if mb_numtail:
+                            mb_beforenum = re.split('[^\D]', mb_catno)[0]
+                            mb_lastchar = mb_beforenum[-1:]
+                            if  mb_lastchar == 'D' or mb_lastchar == 'd':
+                                until_d = mb_beforenum[0:-1]
+                                mb_catno = '{}{}'.format(until_d, mb_numtail)
+                                log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                                log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
+                                  mb_catno_orig))
+                                if mb_catno == self.d_catno:
+                                    release_match_method = 'CatNo (var 2)'
+                                    _mb_rel_id = release['id']
+                        else:
+                            log.info('CTRL: ...no applicable variations found')
+
+                # only show the final log line if we found a match
+                if _mb_rel_id:
+                    log.info(
+                      'CTRL: Found MusicBrainz release match via {} '.format(
+                          self.release_match_method))
+                # always return this var - if nothing found it's False
+                return _mb_rel_id # found release match
+
+    def track_name_match(self):
+        #pprint.pprint(_mb_release) # human readable json
+        self.rec_match_method = ''
+        for medium in self.mb_matched_rel['release']['medium-list']:
+            for track in medium['track-list']:
+                _rec_title = track['recording']['title']
+                _rec_title_low = _rec_title.lower()
+                #_d_track_name_low = _d_track_name.lower()
+                if _rec_title_low == self.d_track_name: # ignore case diffs
+                    _rec_id = track['recording']['id']
+                    log.info('CTRL: Track name matches: {}'.format(
+                        _rec_title))
+                    log.info('CTRL: Recording MBID: {}'.format(
+                        _rec_id)) # finally we have a rec MBID
+                    self.rec_match_method = 'Track Name'
+                    return _rec_id
+        log.info('CTRL: No track name match: {} vs. {}'.format(
+            self.d_track_name, _rec_title))
+        return False
+
+    def track_no_match(self):
+        #pprint.pprint(_mb_release) # human readable json
+        self.rec_match_method = ''
+        for medium in self.mb_matched_rel['release']['medium-list']:
+            #track_count = len(medium['track-list'])
+            for track in medium['track-list']:
+                _rec_title = track['recording']['title']
+                track_number = track['number'] # could be A, AA, ..
+                track_position = int(track['position']) # starts at 1, ensure int
+                if track_number == self.d_track_no:
+                    _rec_id = track['recording']['id']
+                    log.info('CTRL: Track number matches: {}'.format(
+                        _rec_title))
+                    log.info('CTRL: Recording MBID: {}'.format(
+                        _rec_id)) # finally we have a rec MBID
+                    self.rec_match_method = 'Track No'
+                    return _rec_id
+                elif track_position == self.d_track_no_num:
+                    _rec_id = track['recording']['id']
+                    log.info('CTRL: Track number "numerical" matches: {}'.format(
+                        _rec_title))
+                    log.info('CTRL: Recording MBID: {}'.format(
+                        _rec_id)) # finally we have a rec MBID
+                    self.rec_match_method = 'Track No (num)'
+                    return _rec_id
+        log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
+            self.d_track_numerical, track_position))
+        return False

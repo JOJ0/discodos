@@ -1,5 +1,5 @@
 from discodos.utils import is_number, join_sep
-from discodos.models import Mix, Collection, Brainz
+from discodos.models import Mix, Collection, Brainz, Brainz_match
 from discodos.views import Mix_view_cli, Collection_view_cli
 from abc import ABC, abstractmethod
 from discodos import log
@@ -462,6 +462,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             self.cli.p("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
+
         processed = len(mixed_tracks)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
@@ -471,6 +472,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
             d_track_no = mix_track['d_track_no']
+
             log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
                 mix_track['d_release_id'], mix_track['discogs_title']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
@@ -493,9 +495,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_track_name = mix_track['d_track_name'] # trackname in db, good
 
                 if not mix_track['d_catno']: # no label name in db -> ask discogs
-                    d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
+                    #d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
+                    d_catno = d_rel.labels[0].data['catno']
                 else:
-                    d_catno = mix_track['d_catno'].replace(' ', '')
+                    #d_catno = mix_track['d_catno'].replace(' ', '')
+                    d_catno = mix_track['d_catno']
 
                 # get_discogs track number numerical
                 #print(dir(d_rel.tracklist[1]))
@@ -503,63 +507,26 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 d_track_numerical = coll_ctrl.cli.d_tracklist_parse_numerical(
                     d_rel.tracklist, d_track_no)
 
-            # MBID Release search
-            # lower-case search terms
-            d_artist = ''
-            if mix_track['d_artist']:
-                d_artist = mix_track['d_artist'].lower()
-            discogs_title = mix_track['discogs_title'].lower()
-            # try most likely match first: search artist title catno
-            if detail < 2: # be strict
-                mb_releases = coll_ctrl.brainz.search_mb_releases(
-                    d_artist, discogs_title, d_catno,
-                      limit = 5, strict = True)
-            else: # fuzzy search
-                mb_releases = coll_ctrl.brainz.search_mb_releases(
-                    d_artist, discogs_title, d_catno,
-                      limit = 5, strict = False)
-            # first url-match
-            release_match_method = '' # will be filled from match methods
-            release_mbid = _url_match(d_release_id, mb_releases)
-            # and then catno-match
+            # initialize the brainz match class here,
+            # we pass it the prepared track data we'd like to match,
+            # detailed modifications are done inside (strip spaces, etc)
+            bmatch = Brainz_match(coll_ctrl, d_release_id,
+                                             mix_track['discogs_title'],
+                                             d_catno,
+                                             mix_track['d_artist'],
+                                             d_track_name,
+                                             d_track_no,
+                                             d_track_numerical,
+                                             )
+            # fetching of mb_releases controllable from outside
+            # (reruns with different settings)
+            bmatch.fetch_mb_releases(detail = detail)
+            release_mbid = bmatch.match_release()
             if not release_mbid:
-                release_mbid = _catno_match(d_catno, mb_releases)
-            # and now try again with some name variation tricks
-            # sometimes digital releases have additional D at end or in between
-            if not release_mbid:
-                release_mbid = _catno_match(d_catno, mb_releases, variations = True)
-
-        # leave out broader search for now
-            #if not release_mbid: # if nothing yet, try broader search
-            #    mb_releases_coarse = coll_ctrl.brainz.search_mb_releases(
-            #        mix_track['d_artist'], mix_track['discogs_title'], 10)
-            #    # and again, first url-match
-            #    release_mbid = _url_match(d_release_id,
-            #        mb_releases_coarse)
-            #    if release_mbid:
-            #        release_match_method = 'Discogs URL'
-            #if not release_mbid: # try to match catno
-            #    # then catno-match
-            #    release_mbid = _catno_match(d_catno, mb_releases_coarse)
-            #    if release_mbid:
-            #        release_match_method = 'CatNo'
-        # leave out broader search for now END
-
-            if not release_mbid: # still no matching release? give up
                 log.info('CTRL: No MusicBrainz release matches. Sorry dude!')
             else: # Recording MBID search
-                matched_rel = coll_ctrl.brainz.get_mb_release_by_id(
-                    release_mbid)
-                #pprint.pprint(matched_rel) # human readable json
-                # get track position as a number from discogs release
-                #print(d_rel.tracklist[index])
-                #d_track_position = d_rel.tracklist[index]
-                rec_match_method = '' # will be filled from match methods
-                rec_mbid = _track_name_match(d_track_name, matched_rel)
-
-                if not rec_mbid:
-                    rec_mbid = _track_no_match(d_track_name, d_track_no, d_track_numerical,
-                      matched_rel)
+                bmatch.fetch_mb_matched_rel()
+                rec_mbid = bmatch.match_recording()
 
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
@@ -568,7 +535,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     bpm = coll_ctrl.brainz.get_accbr_bpm(rec_mbid)
                 else:
                     errors_no_rec += 1
-
+            # user reporting starts here, not in model anymore
             if release_mbid: # summary and save only when we have Release MBID
                 print("Adding Brainz info for track {} on {} ({})".format(
                     mix_track['d_track_no'],  mix_track['discogs_title'],
