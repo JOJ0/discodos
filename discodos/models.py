@@ -1116,14 +1116,12 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
     '''This class tries to match _one_ given release and/or recording with
         musicbrainz using the information passed in init'''
 
-    def __init__(self, coll_ctrl_o, # MB credentials taken from coll_ctrl obj
+    def __init__(self, mb_user, mb_pass, mb_appid,
           d_release_id, d_release_title, d_catno, d_artist, d_track_name,
           d_track_no, d_track_no_num,
           detail = 1):
         # FIXME we take mb credentials from passed coll_ctrl object
-        super().__init__(coll_ctrl_o.brainz.musicbrainz_user,
-                         coll_ctrl_o.brainz.musicbrainz_password,
-                         coll_ctrl_o.brainz.musicbrainz_appid)
+        super().__init__(mb_user, mb_pass, mb_appid)
         # we don't need to create a Brainz obj, we are a child of it
         # remember all original discogs names
         self.d_release_id_orig = d_release_id

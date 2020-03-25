@@ -508,14 +508,13 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             # initialize the brainz match class here,
             # we pass it the prepared track data we'd like to match,
             # detailed modifications are done inside (strip spaces, etc)
-            bmatch = Brainz_match(coll_ctrl, d_release_id,
-                                             mix_track['discogs_title'],
-                                             d_catno,
-                                             mix_track['d_artist'],
-                                             d_track_name,
-                                             d_track_no,
-                                             d_track_numerical,
-                                             )
+            coll_ctrl.brainz.musicbrainz_password
+            bmatch = Brainz_match(coll_ctrl.brainz.musicbrainz_appid,
+                                  coll_ctrl.brainz.musicbrainz_user,
+                                  coll_ctrl.brainz.musicbrainz_password,
+              d_release_id, mix_track['discogs_title'], d_catno,
+              mix_track['d_artist'], d_track_name, d_track_no,
+              d_track_numerical)
             # fetching of mb_releases controllable from outside
             # (reruns with different settings)
             bmatch.fetch_mb_releases(detail = detail)
