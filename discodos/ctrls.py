@@ -495,10 +495,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     d_track_name = mix_track['d_track_name'] # trackname in db, good
 
                 if not mix_track['d_catno']: # no label name in db -> ask discogs
-                    #d_catno = d_rel.labels[0].data['catno'].replace(' ', '')
                     d_catno = d_rel.labels[0].data['catno']
                 else:
-                    #d_catno = mix_track['d_catno'].replace(' ', '')
                     d_catno = mix_track['d_catno']
 
                 # get_discogs track number numerical

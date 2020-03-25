@@ -1113,8 +1113,8 @@ class Brainz (object):
         return chords_key
 
 class Brainz_match (Brainz): # we are based on Brainz, but it's not online
-    '''This class tries to find _one_ release and/or recording on musicbrainz
-       using the information passed in init'''
+    '''This class tries to match _one_ given release and/or recording with
+        musicbrainz using the information passed in init'''
 
     def __init__(self, coll_ctrl_o, # MB credentials taken from coll_ctrl obj
           d_release_id, d_release_title, d_catno, d_artist, d_track_name,
@@ -1142,7 +1142,8 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         # strip and lowercase here already, we need it all the time
         self.d_release_id = d_release_id # no mods here, just streamlining
         self.d_release_title = d_release_title.lower()
-        self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
+        #self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
+        self.d_catno = d_catno.upper().replace(' ', '').replace('-','')
         if d_artist:
             self.d_artist = d_artist.lower()
         else: # if it's None or something else
@@ -1227,7 +1228,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         # reset match method var. FIXME is this the right place
         self.release_match_method = ''
         for release in self.mb_releases['release-list']:
-            _mb_rel_id = False # this is what we are looking for
+            #_mb_rel_id = False # this is what we are looking for
             if variations:
                 log.info('CTRL: ...CatNo-matching (variation) MB-Release')
                 log.info('CTRL: ..."{}"'.format(release['title']))
@@ -1240,49 +1241,72 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
             for mb_label_item in full_rel['release']['label-info-list']:
                 mb_catno_orig = self.get_catno_from_mb_label(mb_label_item)
                 # d_catnos are uppered and stripped too
-                mb_catno = mb_catno_orig.upper().replace(' ', '')
+                mb_catno = mb_catno_orig.upper().replace(' ', '').replace('-','')
+                #log.debug(
+                #  'CTRL: ...MB CatNo (upper, no-ws): {}'.format(mb_catno))
 
                 if variations == False: # this is the vanilla exact-match
                     log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
                     log.info('CTRL: ...MB CatNo: {}'.format(mb_catno_orig))
                     if mb_catno == self.d_catno:
                         self.release_match_method = 'CatNo (exact)'
-                        _mb_rel_id = release['id']
-                else: # these are the variation matches
-                    #log.info(
-                    #  'CTRL: ...MB CatNo: {} (original)'.format(mb_catno))
-                    if mb_catno[-1:] == 'D' or mb_catno[-1:] == 'd':
-                        mb_catno = mb_catno[:-1]
-                        log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
-                        log.info('CTRL: ...MB CatNo: {} (D-end cut off)'.format(
-                          mb_catno_orig))
-                        if mb_catno == self.d_catno:
-                            release_match_method = 'CatNo (var 1)'
-                            _mb_rel_id = release['id']
-                    else:
-                        mb_numtail = re.split('[^\d]', mb_catno)[-1]
-                        if mb_numtail:
-                            mb_beforenum = re.split('[^\D]', mb_catno)[0]
-                            mb_lastchar = mb_beforenum[-1:]
-                            if  mb_lastchar == 'D' or mb_lastchar == 'd':
-                                until_d = mb_beforenum[0:-1]
-                                mb_catno = '{}{}'.format(until_d, mb_numtail)
-                                log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
-                                log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
-                                  mb_catno_orig))
-                                if mb_catno == self.d_catno:
-                                    release_match_method = 'CatNo (var 2)'
-                                    _mb_rel_id = release['id']
-                        else:
-                            log.info('CTRL: ...no applicable variations found')
+                        self._catno_match_found_msg()
+                        return release['id']
 
-                # only show the final log line if we found a match
-                if _mb_rel_id:
-                    log.info(
-                      'CTRL: Found MusicBrainz release match via {} '.format(
-                          self.release_match_method))
-                # always return this var - if nothing found it's False
-                return _mb_rel_id # found release match
+                else: # these are the variation matches
+
+                    # start with simple "ending differences"
+                    mb_catno_last2 = mb_catno[-2:]
+                    if mb_catno_last2 == 'CD':
+                        mb_catno_cd_cut = mb_catno[:-2]
+                        log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                        log.info('CTRL: ...MB CatNo: {} (CD cut off)'.format(
+                          mb_catno_orig))
+                        if mb_catno_cd_cut == self.d_catno:
+                            self.release_match_method = 'CatNo (var 3)'
+                            self.release_mbid = release['id']
+                            self._catno_match_found_msg()
+                            return self.release_mbid
+
+                    mb_catno_last1 = mb_catno[-1:]
+                    if mb_catno_last1 == 'D':
+                        mb_catno_d_cut = mb_catno[:-1]
+                        log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                        log.info('CTRL: ...MB CatNo: {} (D cut off)'.format(
+                          mb_catno_orig))
+                        if mb_catno_d_cut == self.d_catno:
+                            self.release_match_method = 'CatNo (var 1)'
+                            self.release_mbid = release['id']
+                            self._catno_match_found_msg()
+                            return self.release_mbid
+
+                    # now the trickier stuff - char in between is different
+                    mb_numtail = re.split('[^\d]', mb_catno)[-1]
+                    if mb_numtail:
+                        mb_beforenum = re.split('[^\D]', mb_catno)[0]
+                        mb_lastchar = mb_beforenum[-1:]
+                        if  mb_lastchar == 'D':
+                            until_d = mb_beforenum[0:-1]
+                            mb_catno_d_betw_cut = '{}{}'.format(
+                                  until_d, mb_numtail)
+                            log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                            log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
+                              mb_catno_orig))
+                            if mb_catno_d_betw_cut == self.d_catno:
+                                self.release_match_method = 'CatNo (var 2)'
+                                self.release_mbid = release['id']
+                                self._catno_match_found_msg()
+                                return self.release_mbid
+
+                    # we didn't find a variation and return False
+                    log.info('CTRL: ...no applicable variations found')
+                    return False
+
+    def _catno_match_found_msg(self):
+        # only show this final log line if we found a match
+        log.info(
+          'CTRL: Found MusicBrainz release match via {} '.format(
+              self.release_match_method))
 
     def track_name_match(self):
         #pprint.pprint(_mb_release) # human readable json
