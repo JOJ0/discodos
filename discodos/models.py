@@ -1143,7 +1143,8 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         self.d_release_id = d_release_id # no mods here, just streamlining
         self.d_release_title = d_release_title.lower()
         #self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
-        self.d_catno = d_catno.upper().replace(' ', '').replace('-','')
+        self.d_catno = d_catno.upper().replace(' ', '').replace(
+            '-','').replace('#', '')
         if d_artist:
             self.d_artist = d_artist.lower()
         else: # if it's None or something else
@@ -1241,7 +1242,8 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
             for mb_label_item in full_rel['release']['label-info-list']:
                 mb_catno_orig = self.get_catno_from_mb_label(mb_label_item)
                 # d_catnos are uppered and stripped too
-                mb_catno = mb_catno_orig.upper().replace(' ', '').replace('-','')
+                mb_catno = mb_catno_orig.upper().replace(' ', '').replace(
+                    '-','').replace('#', '')
                 #log.debug(
                 #  'CTRL: ...MB CatNo (upper, no-ws): {}'.format(mb_catno))
 
