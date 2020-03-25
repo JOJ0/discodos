@@ -1230,7 +1230,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         for release in self.mb_releases['release-list']:
             #_mb_rel_id = False # this is what we are looking for
             if variations:
-                log.info('CTRL: ...CatNo-matching (variation) MB-Release')
+                log.info('CTRL: ...CatNo-matching (variations) MB-Release')
                 log.info('CTRL: ..."{}"'.format(release['title']))
             else:
                 log.info('CTRL: ...CatNo-matching (exact) MB-Release')
@@ -1254,26 +1254,25 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                         return release['id']
 
                 else: # these are the variation matches
+                    # log original DC CatNo only once
+                    log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
 
                     # start with simple "ending differences"
+                    log.info('CTRL: ...MB CatNo: {} (CD cut off)'.format(mb_catno_orig))
                     mb_catno_last2 = mb_catno[-2:]
                     if mb_catno_last2 == 'CD':
                         mb_catno_cd_cut = mb_catno[:-2]
-                        log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
-                        log.info('CTRL: ...MB CatNo: {} (CD cut off)'.format(
-                          mb_catno_orig))
                         if mb_catno_cd_cut == self.d_catno:
                             self.release_match_method = 'CatNo (var 3)'
                             self.release_mbid = release['id']
                             self._catno_match_found_msg()
                             return self.release_mbid
 
+                    #log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                    log.info('CTRL: ...MB CatNo: {} (D cut off)'.format(mb_catno_orig))
                     mb_catno_last1 = mb_catno[-1:]
                     if mb_catno_last1 == 'D':
                         mb_catno_d_cut = mb_catno[:-1]
-                        log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
-                        log.info('CTRL: ...MB CatNo: {} (D cut off)'.format(
-                          mb_catno_orig))
                         if mb_catno_d_cut == self.d_catno:
                             self.release_match_method = 'CatNo (var 1)'
                             self.release_mbid = release['id']
@@ -1281,6 +1280,9 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                             return self.release_mbid
 
                     # now the trickier stuff - char in between is different
+                    #log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
+                    log.info('CTRL: ...MB CatNo: {} (D cut out)'.format(
+                      mb_catno_orig))
                     mb_numtail = re.split('[^\d]', mb_catno)[-1]
                     if mb_numtail:
                         mb_beforenum = re.split('[^\D]', mb_catno)[0]
@@ -1289,9 +1291,6 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                             until_d = mb_beforenum[0:-1]
                             mb_catno_d_betw_cut = '{}{}'.format(
                                   until_d, mb_numtail)
-                            log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
-                            log.info('CTRL: ...MB CatNo: {} (D in between cut out)'.format(
-                              mb_catno_orig))
                             if mb_catno_d_betw_cut == self.d_catno:
                                 self.release_match_method = 'CatNo (var 2)'
                                 self.release_mbid = release['id']
