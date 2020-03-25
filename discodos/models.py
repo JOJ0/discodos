@@ -1231,10 +1231,10 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         for release in self.mb_releases['release-list']:
             #_mb_rel_id = False # this is what we are looking for
             if variations:
-                log.info('CTRL: ...CatNo-matching (variations) MB-Release')
+                log.info('CTRL: ...CatNo-matching (variations) MB-Release:')
                 log.info('CTRL: ..."{}"'.format(release['title']))
             else:
-                log.info('CTRL: ...CatNo-matching (exact) MB-Release')
+                log.info('CTRL: ...CatNo-matching (exact) MB-Release:')
                 log.info('CTRL: ..."{}"'.format(release['title']))
             full_rel = self.get_mb_release_by_id(release['id'])
             # FIXME should we do something here if full_rel not successful?
@@ -1270,7 +1270,6 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                             self._catno_match_found_msg()
                             return self.release_mbid
 
-                    #log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
                     log.info('CTRL: ...MB CatNo: {} (D cut off)'.format(mb_catno_orig))
                     mb_catno_last1 = mb_catno[-1:]
                     if mb_catno_last1 == 'D':
@@ -1282,7 +1281,6 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                             return self.release_mbid
 
                     # now the trickier stuff - char in between is different
-                    #log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
                     log.info('CTRL: ...MB CatNo: {} (D cut out)'.format(
                       mb_catno_orig))
                     mb_numtail = re.split('[^\d]', mb_catno)[-1]
