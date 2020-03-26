@@ -1141,8 +1141,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         self.d_release_id = d_release_id # no mods here, just streamlining
         self.d_release_title = d_release_title.lower()
         #self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
-        self.d_catno = d_catno.upper().replace(' ', '').replace(
-            '-','').replace('#', '')
+        self.d_catno = d_catno.upper().replace(' ', '')
         if d_artist:
             self.d_artist = d_artist.lower()
         else: # if it's None or something else
@@ -1204,7 +1203,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         # reset match method var. FIXME is this the right place
         self.release_match_method = ''
         for release in self.mb_releases['release-list']:
-            log.info('CTRL: ...Discogs-URL-matching MB-Release')
+            log.info('CTRL: ...Discogs-URL-matching MB-Release:')
             log.info('CTRL: ..."{}"'.format(release['title']))
             full_mb_rel = self.get_mb_release_by_id(release['id'])
             #pprint.pprint(full_mb_rel) # DEBUG
@@ -1239,9 +1238,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
 
             for mb_label_item in full_rel['release']['label-info-list']:
                 mb_catno_orig = self.get_catno_from_mb_label(mb_label_item)
-                # d_catnos are uppered and stripped too
-                mb_catno = mb_catno_orig.upper().replace(' ', '').replace(
-                    '-','').replace('#', '')
+                mb_catno = mb_catno_orig.upper().replace(' ', '')
                 #log.debug(
                 #  'CTRL: ...MB CatNo (upper, no-ws): {}'.format(mb_catno))
 
@@ -1279,25 +1276,52 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                             return self.release_mbid
 
                     # now the trickier stuff - char in between is different
-                    log.info('CTRL: ...MB CatNo: {} (D cut out)'.format(
+                    log.info('CTRL: ...MB CatNo: {} (middle cut out)'.format(
                       mb_catno_orig))
-                    mb_numtail = re.split('[^\d]', mb_catno)[-1]
-                    if mb_numtail:
-                        mb_beforenum = re.split('[^\D]', mb_catno)[0]
-                        mb_lastchar = mb_beforenum[-1:]
-                        if  mb_lastchar == 'D':
-                            until_d = mb_beforenum[0:-1]
-                            mb_catno_d_betw_cut = '{}{}'.format(
-                                  until_d, mb_numtail)
-                            if mb_catno_d_betw_cut == self.d_catno:
-                                self.release_match_method = 'CatNo (var 2)'
-                                self.release_mbid = release['id']
-                                self._catno_match_found_msg()
-                                return self.release_mbid
+                    # FIXME extendable via config.yaml
+                    middle_terms = ['-', '#', 'D', 'CD', 'BLACK']
+                    if self._catno_has_numtail(mb_catno):
+                        for term in middle_terms:
+                            log.info('CTRL: ...trying split at: {}'.format(term))
+                            parts = self._catno_cutter(mb_catno, term)
+                            if parts['term'] == term:
+                                mb_catno_d_betw_cut = '{}{}'.format(
+                                      parts['before'], parts['after'])
+                                if mb_catno_d_betw_cut == self.d_catno:
+                                    self.release_match_method = 'CatNo (var 2)'
+                                    self.release_mbid = release['id']
+                                    self._catno_match_found_msg()
+                                    return self.release_mbid
 
                     # we didn't find a variation and return False
                     log.info('CTRL: ...no applicable variations found')
                     return False
+
+    def _catno_has_numtail(self, catno):
+        numtail = re.split('[^\d]', catno)[-1]
+        log.debug('CTRL: ...catno_match_numtail return: {}'.format(numtail))
+        return numtail
+
+    def _catno_cutter(self, catno, term):
+        '''returns 3 parts of catno: before delimiter-term, the delim-term
+           and after delim-term, which _has_ to be a number'''
+        ret_dict = {}
+        # first thing: the tail is a number check, exit if not
+        numtail = re.split('[^\d]', catno)[-1]
+        if not numtail:
+            return False # should never happen, we catch it with _catno_has_numtail
+        # before delimiter-term check
+        beforenum = re.split('[^\D]', catno)[0]
+        #log.debug('CTRL: ...catno_cutter: beforenum {}'.format(beforenum))
+        split_at_term = beforenum.split(term)
+        #log.debug('CTRL: ...catno_cutter: split_at_term {}'.format(split_at_term))
+        ret_dict['before'] = split_at_term[0]
+        ret_dict['term'] = term
+        ret_dict['after'] = numtail
+        log.debug('CTRL: ...catno_cutter: before: {}'.format(ret_dict['before']))
+        #log.debug('CTRL: ...catno_cutter: term: {}'.format(ret_dict['term']))
+        log.debug('CTRL: ...catno_cutter: after: {}'.format(ret_dict['after']))
+        return ret_dict
 
     def _catno_match_found_msg(self):
         # only show this final log line if we found a match

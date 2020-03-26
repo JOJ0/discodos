@@ -172,6 +172,19 @@ class TestBrainz(unittest.TestCase):
             self.assertFalse(mb_return)
         print("{} - {} - END".format(self.clname, name))
 
+    def test_catno_match_cutter_var_2(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        bmatch = Brainz_match(self.mb_appid, self.mb_user, self.mb_pass,
+              6762725, 'Imperial Propaganda', 'MONNOM BLACK 005',
+              'Dax J', 'Imperial Propaganda', 'A1', 1)
+        # no auto-ws-stripping here, in reality done after fetch mb_releases
+        cutter_return = bmatch._catno_match_cutter('MONNOMBLACK005', 'BLACK')
+        self.assertEqual(cutter_return['before'], 'MONNOM')
+        self.assertEqual(cutter_return['term'], 'BLACK')
+        self.assertEqual(cutter_return['after'], '005')
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         os.remove(self.db_path)
