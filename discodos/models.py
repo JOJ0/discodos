@@ -1311,18 +1311,17 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         for medium in self.mb_matched_rel['release']['medium-list']:
             for track in medium['track-list']:
                 _rec_title = track['recording']['title']
-                _rec_title_low = _rec_title.lower()
-                #_d_track_name_low = _d_track_name.lower()
-                if _rec_title_low == self.d_track_name: # ignore case diffs
-                    _rec_id = track['recording']['id']
+                _rec_title_low = _rec_title.lower() # we made discogs lower too
+                if _rec_title_low == self.d_track_name:
+                    self.rec_mbid = track['recording']['id']
                     log.info('CTRL: Track name matches: {}'.format(
                         _rec_title))
                     log.info('CTRL: Recording MBID: {}'.format(
-                        _rec_id)) # finally we have a rec MBID
+                        self.rec_mbid)) # finally we have a rec MBID
                     self.rec_match_method = 'Track Name'
-                    return _rec_id
+                    return self.rec_mbid
         log.info('CTRL: No track name match: {} vs. {}'.format(
-            self.d_track_name, _rec_title))
+            self.d_track_name_orig, _rec_title))
         return False
 
     def track_no_match(self):
@@ -1335,21 +1334,21 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
                 track_number = track['number'] # could be A, AA, ..
                 track_position = int(track['position']) # starts at 1, ensure int
                 if track_number == self.d_track_no:
-                    _rec_id = track['recording']['id']
+                    self.rec_mbid = track['recording']['id']
                     log.info('CTRL: Track number matches: {}'.format(
                         _rec_title))
                     log.info('CTRL: Recording MBID: {}'.format(
-                        _rec_id)) # finally we have a rec MBID
+                        self.rec_mbid)) # finally we have a rec MBID
                     self.rec_match_method = 'Track No'
-                    return _rec_id
+                    return self.rec_mbid
                 elif track_position == self.d_track_no_num:
-                    _rec_id = track['recording']['id']
+                    self.rec_mbid = track['recording']['id']
                     log.info('CTRL: Track number "numerical" matches: {}'.format(
                         _rec_title))
                     log.info('CTRL: Recording MBID: {}'.format(
-                        _rec_id)) # finally we have a rec MBID
+                        self.rec_mbid)) # finally we have a rec MBID
                     self.rec_match_method = 'Track No (num)'
-                    return _rec_id
+                    return self.rec_mbid
         log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
-            self.d_track_numerical, track_position))
+            self.d_track_no_num, track_position))
         return False
