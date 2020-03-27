@@ -220,7 +220,6 @@ class Mix_view_common(ABC):
             ["key_notes", "Key notes/bassline/etc. ({}): "],
             ["trans_rating", "Transition rating ({}): "],
             ["trans_notes", "Transition notes ({}): "],
-            ["d_release_id", "Release ID ({}): "],
             ["notes", "Other track notes: ({}): "]
         ]
 
