@@ -55,8 +55,8 @@ class Database (object):
             with self.db_conn: # auto commits and auto rolls back on exceptions
                 c = self.cur  # connection close has to be done manually though!
                 if values_tuple:
-                    c.execute(sql, values_tuple)
                     log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
+                    c.execute(sql, values_tuple)
                 else:
                     c.execute(sql)
                 log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount,
@@ -927,29 +927,21 @@ class Collection (Database):
     def upsert_track_brainz(self, release_id, track_no, rec_id,
           match_method, key, chords_key, bpm):
         sql_track = '''INSERT INTO track(d_release_id, d_track_no,
-                         m_rec_id, m_match_method, m_match_time)
-                         VALUES(?, ?, ?, ?, datetime('now', 'localtime'))
-                         ON CONFLICT (d_release_id, d_track_no)
-                         DO UPDATE SET
-                         d_release_id=?, d_track_no=?, m_rec_id=?,
-                         m_match_method=?,
-                         m_match_time=datetime('now', 'localtime');'''
+              m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
+              VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?)
+              ON CONFLICT (d_release_id, d_track_no)
+              DO UPDATE SET
+              d_release_id=?, d_track_no=?, m_rec_id=?,
+              m_match_method=?,
+              m_match_time=datetime('now', 'localtime'),
+              a_key=?, a_chords_key=?, a_bpm=?;
+              '''
         tuple_track = (release_id, track_no, rec_id, match_method,
-                       release_id, track_no, rec_id, match_method)
+                       key, chords_key, bpm,
+                       release_id, track_no, rec_id, match_method,
+                       key, chords_key, bpm)
         ok_track = self.execute_sql(sql_track, tuple_track)
-
-        sql_ext = '''INSERT INTO track_ext(d_release_id, d_track_no,
-                         a_key, a_chords_key, a_bpm)
-                         VALUES(?, ?, ?, ?, ?)
-                         ON CONFLICT (d_release_id, d_track_no)
-                         DO UPDATE SET
-                         d_release_id=?, d_track_no=?, a_key=?,
-                         a_chords_key=?, a_bpm=?;'''
-        tuple_ext = (release_id, track_no, key, chords_key, bpm,
-                     release_id, track_no, key, chords_key, bpm)
-        ok_ext = self.execute_sql(sql_ext, tuple_ext)
-
-        if ok_track and ok_ext:
+        if ok_track:
             return True
         return False
 

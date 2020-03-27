@@ -557,20 +557,20 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     log.error('while updating release table. Continuing anyway.')
                     errors_db += 1
 
-                # update track and track_ext tables
+                # update track and track_ext table
                 ok_rec = coll_ctrl.collection.upsert_track_brainz(d_release_id,
                     mix_track['d_track_no'], rec_mbid, rec_match_method,
                     key, chords_key, bpm)
 
                 if ok_rec:
                     if rec_mbid: added_rec += 1
-                    print('Track tables updated successfully.')
-                    log.info('Track tables updated successfully.')
+                    print('Track table updated successfully.')
+                    log.info('Track table updated successfully.')
                     if key: added_key += 1
                     if chords_key: added_chords_key += 1
                     if bpm: added_bpm += 1
                 else:
-                    log.error('while updating track tables. Continuing anyway.')
+                    log.error('while updating track table. Continuing anyway.')
                     errors_db += 1
 
             else:

@@ -84,9 +84,9 @@ class Db_setup(Database):
             """ CREATE TABLE track (
                   d_release_id INTEGER NOT NULL,
                   d_track_no TEXT NOT NULL,
+                  d_artist TEXT,
                   d_track_name TEXT,
                   import_timestamp TEXT,
-                  d_artist TEXT,
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """,
                   # We had this constraints once...
@@ -108,12 +108,12 @@ class Db_setup(Database):
            {'schema_version': 2, # this dict contains 2 entries: schema and tasks
             'tasks': {           # tasks entry contains another dict with a lot of entries
                 'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
-                'Add field track.m_rec_id_override': 'ALTER TABLE track ADD m_rec_id_override TEXT;',
                 'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
                 'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
-                'Add field track_ext.a_key': 'ALTER TABLE track_ext ADD a_key TEXT;',
-                'Add field track_ext.a_chords_key': 'ALTER TABLE track_ext ADD a_chords_key TEXT;',
-                'Add field track_ext.a_bpm': 'ALTER TABLE track_ext ADD a_bpm TEXT;',
+                'Add field track.a_key': 'ALTER TABLE track ADD a_key TEXT;',
+                'Add field track.a_chords_key': 'ALTER TABLE track ADD a_chords_key TEXT;',
+                'Add field track.a_bpm': 'ALTER TABLE track ADD a_bpm TEXT;',
+                'Add field track_ext.m_rec_id_override': 'ALTER TABLE track_ext ADD m_rec_id_override TEXT;',
                 'Add field release.m_rel_id': 'ALTER TABLE release ADD m_rel_id TEXT;',
                 'Add field release.m_rel_id_override': 'ALTER TABLE release ADD m_rel_id_override TEXT;',
                 'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
