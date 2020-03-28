@@ -463,7 +463,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
-        processed = len(mixed_tracks)
+        processed, processed_total = 0, len(mixed_tracks)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
         for mix_track in mixed_tracks:
@@ -471,12 +471,14 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
             d_track_no = mix_track['d_track_no']
+            processed += 1
 
             log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
                 mix_track['d_release_id'], mix_track['discogs_title']))
             d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
             if not d_rel:
                 log.warning("Skipping. Cant't fetch Discogs release.")
+                coll_ctrl.cli.brainz_processed_so_far(processed, processed_total)
                 print('')
                 continue
             else:
@@ -487,8 +489,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     if not d_track_name:
                         errors_not_found += 1
                         log.warning(
-                          'Skipping. Track number {} not existing on release "{}"\n'.format(
+                          'Skipping. Track number {} not existing on release "{}"'.format(
                            mix_track['d_track_no'], mix_track['discogs_title']))
+                        coll_ctrl.cli.brainz_processed_so_far(processed, processed_total)
+                        print('')
                         continue # jump to next track. space for readability ^^
                 else:
                     d_track_name = mix_track['d_track_name'] # trackname in db, good
@@ -576,9 +580,10 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 errors_no_release += 1
                 log.warning('No Release MBID found for track {} on Discogs release "{}"'.format(
                         mix_track['d_track_no'], mix_track['discogs_title']))
-            print("") # space for readability
+            coll_ctrl.cli.brainz_processed_so_far(processed, processed_total)
+            print('') # space for readability
 
-        coll_ctrl.cli.brainz_processed_report(processed, added_release, added_rec,
+        coll_ctrl.cli.brainz_processed_report(processed_total, added_release, added_rec,
           added_key, added_chords_key, added_bpm, errors_db, errors_not_found)
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return False # we are through all tracks in mix

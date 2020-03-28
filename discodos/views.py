@@ -439,6 +439,10 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         msg2+= "Open an issue on github.com/JOJ0/discodos"
         print(msg2+'\n')
 
+    def brainz_processed_so_far(self, processed, processed_total):
+        msg_proc='{}/{}'.format(processed, processed_total)
+        log.info(msg_proc)
+        print(msg_proc)
 
 # CLI user interaction class - holds info about what user wants to do
 # analyzes argparser args and puts it to nicely human readable properties
