@@ -322,7 +322,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
           detail = 1):
         def _url_match(_d_release_id, _mb_releases):
             '''finds Release MBID by looking through Discogs links.'''
-            nonlocal release_match_method
+            #nonlocal release_match_method
             for release in _mb_releases['release-list']:
                 log.info('CTRL: ...Discogs-URL-matching MB-Release')
                 log.info('CTRL: ..."{}"'.format(release['title']))
@@ -344,7 +344,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         def _catno_match(_d_catno, _mb_releases, variations = False):
             '''finds Release MBID by looking through catalog numbers.'''
-            nonlocal release_match_method
+            #nonlocal release_match_method
             for release in _mb_releases['release-list']:
                 _mb_rel_id = False # this is what we are looking for
                 if variations:
@@ -403,7 +403,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         def _track_name_match(_d_track_name, _mb_release):
             #pprint.pprint(_mb_release) # human readable json
-            nonlocal rec_match_method
+            #nonlocal rec_match_method
             for medium in _mb_release['release']['medium-list']:
                 for track in medium['track-list']:
                     _rec_title = track['recording']['title']
@@ -423,7 +423,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
         def _track_no_match(_d_track_name, _d_track_no, _d_track_numerical, _mb_release):
             #pprint.pprint(_mb_release) # human readable json
-            nonlocal rec_match_method
+            #nonlocal rec_match_method
             _d_track_numerical = int(_d_track_numerical) # make sure it's int
             for medium in _mb_release['release']['medium-list']:
                 #track_count = len(medium['track-list'])
@@ -467,8 +467,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
         for mix_track in mixed_tracks:
-            release_mbid, release_match_method = None, None # we are filling these
-            rec_mbid, rec_match_method = None, None         # in this order
+            release_mbid, rec_mbid = None, None # we are filling these
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
             d_track_no = mix_track['d_track_no']
@@ -548,7 +547,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
                 # update release table
                 ok_release = coll_ctrl.collection.update_release_brainz(d_release_id,
-                    release_mbid, release_match_method)
+                    release_mbid, bmatch.release_match_method)
                 if ok_release:
                     print('Release table updated successfully.')
                     log.info('Release table updated successfully.')
@@ -559,7 +558,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
                 # update track and track_ext table
                 ok_rec = coll_ctrl.collection.upsert_track_brainz(d_release_id,
-                    mix_track['d_track_no'], rec_mbid, rec_match_method,
+                    mix_track['d_track_no'], rec_mbid, bmatch.rec_match_method,
                     key, chords_key, bpm)
 
                 if ok_rec:
