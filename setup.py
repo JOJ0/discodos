@@ -29,7 +29,7 @@ def argparser(argv):
     parser_group1.add_argument(
 		"--upgrade-db-schema", dest="upgrade_db_schema",
         action='store_true',
-        help="upgrade database schema - be careful! Checkout README.md")
+        help="force upgrade database schema - only use if you know what you are doing.")
     parser_group1.add_argument(
 		"-a", "--add_to_collection", dest="add_release_id",
         type=int,
