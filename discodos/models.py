@@ -307,9 +307,9 @@ class Mix (Database):
                                       ON mix_track.d_release_id = track_ext.d_release_id
                                       AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'discogs_title', 'd_track_name',
-            'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key', 'key_notes',
-             'bpm', 'notes', 'mix_track_id', 'mix_track.d_release_id'],
-             _join, fetchone = True, condition = _where)
+          'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key', 'key_notes',
+          'bpm', 'notes', 'mix_track_id', 'mix_track.d_release_id', 'm_rec_id_override'],
+          _join, fetchone = True, condition = _where)
 
     def update_mix_track_and_track_ext(self, track_details, edit_answers):
         log.info("MODEL: Updating track in mix_track and track_ext tables.")

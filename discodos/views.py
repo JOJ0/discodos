@@ -220,7 +220,8 @@ class Mix_view_common(ABC):
             ["key_notes", "Key notes/bassline/etc. ({}): "],
             ["trans_rating", "Transition rating ({}): "],
             ["trans_notes", "Transition notes ({}): "],
-            ["notes", "Other track notes: ({}): "]
+            ["notes", "Other track notes: ({}): "],
+            ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
 
 # Collection view utils, usable in CLI and GUI, related to Collection only
