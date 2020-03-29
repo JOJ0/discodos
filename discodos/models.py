@@ -572,7 +572,7 @@ class Mix (Database):
         return mix_info
 
     def get_mix_tracks_for_brainz_update(self, start_pos = False):
-        log.info("MODEL: Getting tracks of a mix. Preparing for AcousticBrainz update.")
+        log.info("MODEL: Getting tracks of a mix. Preparing for Discogs or AcousticBrainz update.")
         if not start_pos:
             where = "mix_id == {}".format(self.id)
         else:
@@ -593,7 +593,7 @@ class Mix (Database):
            fetchone = False, orderby = 'mix_track.track_pos')
 
     def get_all_mix_tracks_for_brainz_update(self):
-        log.info("MODEL: Getting all tracks of all mix. Preparing for AcousticBrainz update.")
+        log.info("MODEL: Getting all tracks of all mix. Preparing for Discogs or AcousticBrainz update.")
         tables = '''mix_track
                       INNER JOIN release
                       ON mix_track.d_release_id = release.discogs_id
