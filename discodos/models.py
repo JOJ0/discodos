@@ -870,7 +870,7 @@ class Collection (Database):
         for tr in d_tracklist:
             #log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
             #log.debug("d_artists_parse: this is the tr object: {}".format(tr))
-            if tr.position == track_number:
+            if tr.position.lower() == track_number.lower():
                 #log.info("d_tracklist_parse: found by track number.")
                 if len(tr.artists) == 1:
                     name = tr.artists[0].name
