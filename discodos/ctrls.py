@@ -512,7 +512,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             # initialize the brainz match class here,
             # we pass it the prepared track data we'd like to match,
             # detailed modifications are done inside (strip spaces, etc)
-            coll_ctrl.brainz.musicbrainz_password
             bmatch = Brainz_match(coll_ctrl.brainz.musicbrainz_appid,
                                   coll_ctrl.brainz.musicbrainz_user,
                                   coll_ctrl.brainz.musicbrainz_password,
@@ -531,9 +530,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
-                    key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
-                    chords_key = coll_ctrl.brainz.get_accbr_key(rec_mbid)
-                    bpm = coll_ctrl.brainz.get_accbr_bpm(rec_mbid)
+                    key = bmatch.get_accbr_key(rec_mbid)
+                    chords_key = bmatch.get_accbr_key(rec_mbid)
+                    bpm = bmatch.get_accbr_bpm(rec_mbid)
                 else:
                     errors_no_rec += 1
             # user reporting starts here, not in model anymore
