@@ -1009,8 +1009,8 @@ class Brainz (object):
     # musicbrainz connect try,except wrapper
     def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):
         # If you plan to submit data, authenticate
-        m.auth(mb_user, mb_pass) # FIXME useragent generate in Config class
-        m.set_useragent(mb_appid, "0.0.2", "https://github.com/JOJ0")
+        m.auth(mb_user, mb_pass)
+        m.set_useragent(mb_appid[0], mb_appid[1]) # 0=version, 1=app
         # If you are connecting to a different server
         #m.set_hostname("beta.musicbrainz.org")
         #m.set_rate_limit(limit_or_interval=1.0, new_requests=1)

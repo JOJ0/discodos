@@ -31,7 +31,8 @@ def read_yaml(yamlfile):
     except IOError as errio:
         log.error("Can't find %s.", yamlfile)
         #raise errio
-        raise SystemExit(3)
+        #raise SystemExit(3)
+        return False
     except yaml.parser.ParserError as errparse:
         log.error("ParserError in %s.", yamlfile)
         #raise errparse
@@ -61,6 +62,9 @@ class Config():
         log.info("Config.discodos_root: {}".format(self.discodos_root))
         # config.yaml handling
         self.conf = read_yaml( self.discodos_root / "config.yaml")
+        if not self.conf:
+            self.create_conf()
+            raise SystemExit()
         # db file handling
         db_file = self._get_config_entry('discobase_file') # maybe configured?
         if not db_file: # if not set default value
@@ -77,7 +81,8 @@ class Config():
             log.warn("config.yaml entry log_level not set, will take from cli option or default.")
         # then other settings
         self.discogs_token = self._get_config_entry('discogs_token', False)
-        self.discogs_appid = self._get_config_entry('discogs_appid', False)
+        self.discogs_appid = 'DiscoDOS/1.0 +https://github.com/JOJ0/discodos'
+        self.musicbrainz_appid = ['1.0', 'DiscoDOS https://github.com/JOJ0/discodos']
         self.dropbox_token = self._get_config_entry('dropbox_token')
         self.musicbrainz_user = self._get_config_entry('musicbrainz_user')
         self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
@@ -90,7 +95,7 @@ class Config():
             try:
                 if self.conf[yaml_key] == '':
                     value = ''
-                    log.error("config.yaml entry {} is empty.".format(yaml_key))
+                    log.info("config.yaml entry {} is empty.".format(yaml_key))
                 else:
                     value = self.conf[yaml_key]
                     log.info("config.yaml entry {} is set.".format(yaml_key))
@@ -171,3 +176,44 @@ class Config():
             log.error(" trying to write %s \n\n", file)
             raise err
             #raise SystemExit(3)
+
+    def create_conf(self):
+        '''creates config.yaml'''
+        config = {
+            'discogs_token': '',
+            'log_level': "WARNING",
+            'dropbox_token': '',
+            'musicbrainz_user': '',
+            'musicbrainz_password': '',
+            'webdav_user': '',
+            'webdav_password': '',
+            'webdav_url': '',
+            'discobase_file': 'discobase.db'
+        }
+        create_msg = '\nCreating config file...'
+        log.info(create_msg)
+        print(create_msg)
+        written = self._write_yaml(config, self.discodos_root / 'config.yaml')
+        if written:
+            written_msg = 'Now please open the file config.yaml with a '
+            written_msg+= 'texteditor and set a value for discogs_token!\n'
+            written_msg+= 'Read how to get a Discogs token here: '
+            written_msg+= 'https://github.com/JOJ0/discodos#configuring-discogs-api-access\n'
+            written_msg+= "Run setup again, when your're done!"
+            log.info(written_msg)
+            print_help(written_msg)
+
+    def _write_yaml(self, data, yamlfile):
+        """data expects dict, yamlfile expects path/file"""
+        try:
+            with open(yamlfile, "w") as fyamlfile:
+                yaml.dump(data, fyamlfile, default_flow_style=False,
+                                 allow_unicode=True)
+                return True
+        except IOError as errio:
+            log.error("IOError: could not write file %s \n\n", yamlfile)
+            raise errio
+        except Exception as err:
+            log.error(" trying to write %s \n\n", yamlfile)
+            raise err
+            raise SystemExit(3)

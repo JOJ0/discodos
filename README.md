@@ -100,14 +100,13 @@ To access your Discogs collection you need to generate an API login token.
 - Select _Settings_
 - Switch to section _Developers_
 - Click _Generate new token_
-- Create a file named `config.yaml` inside the discodos root dir (next to the files `setup.py` and `cli.py`) that looks like this:
+- Open the file `config.yaml` (inside the discodos root dir, next to the files `setup.py` and `cli.py`) and copy/paste the generated Discogs token into it:
 
  ```
- ---
- discogs_token: "XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH"
- discogs_appid: "J0J0 Todos DiscoDOS/0.0.2 +http://github.com/JOJ0"
- log_level: "WARNING"
+ discogs_token: 'XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH'
  ```
+
+- Save and close the file
 
 Make sure you are still in the discodos application directory before you move on with setup.
 
