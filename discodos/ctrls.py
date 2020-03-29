@@ -283,7 +283,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             coll_ctrl.collection.rate_limit_slow_downer(remaining=20, sleep=3)
             try: # we catch 404 here, and not via get_d_release, to save one request
                 d_tracklist = discogs.release(d_release_id).tracklist
-                name = coll_ctrl.cli.d_tracklist_parse(d_tracklist, d_track_no)
+                name = coll_ctrl.collection.d_tracklist_parse(
+                      d_tracklist, d_track_no)
                 artist = coll_ctrl.collection.d_artists_parse(
                       d_tracklist, d_track_no,
                       discogs.release(d_release_id).artists)
@@ -484,8 +485,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             else:
                 if not mix_track['d_track_name']: # no track name in db -> ask discogs
                     d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
-                    d_track_name = coll_ctrl.cli.d_tracklist_parse(d_rel.tracklist,
-                        mix_track['d_track_no'])
+                    d_track_name = coll_ctrl.ollection.d_tracklist_parse(
+                        d_rel.tracklist, mix_track['d_track_no'])
                     if not d_track_name:
                         errors_not_found += 1
                         log.warning(
@@ -505,7 +506,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 # get_discogs track number numerical
                 #print(dir(d_rel.tracklist[1]))
                 #d_rel_track_count = len(d_rel.tracklist)
-                d_track_numerical = coll_ctrl.cli.d_tracklist_parse_numerical(
+                d_track_numerical = coll_ctrl.collection.d_tracklist_parse_numerical(
                     d_rel.tracklist, d_track_no)
 
             # initialize the brainz match class here,

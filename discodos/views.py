@@ -230,28 +230,6 @@ class Collection_view_common(ABC):
         #super(Collection_view_cli, self).__init__()
         pass
 
-    def d_tracklist_parse(self, d_tracklist, track_number):
-        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
-        for tr in d_tracklist:
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if tr.position.lower() == track_number.lower():
-                return tr.title
-        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
-            track_number))
-        return False # we didn't find the tracknumber
-
-    def d_tracklist_parse_numerical(self, d_tracklist, track_number):
-        '''get numerical track pos from discogs tracklist object via
-           track_number, eg. A1'''
-        for num, tr in enumerate(d_tracklist):
-            if tr.position.lower() == track_number.lower():
-                return num + 1 # return human readable (matches brainz position)
-        log.debug(
-            'd_tracklist_parse_numerical: Track {} not existing on release.'.format(
-              track_number))
-        return False # we didn't find the tracknumber
-
 # common view utils, usable in CLI only
 class View_common_cli(View_common):
     def p(self, message):

@@ -896,6 +896,28 @@ class Collection (Database):
         log.debug('d_artists_parse: Track {} not existing on release.'.format(
             track_number))
 
+    def d_tracklist_parse(self, d_tracklist, track_number):
+        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
+        for tr in d_tracklist:
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
+            if tr.position.lower() == track_number.lower():
+                return tr.title
+        log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
+            track_number))
+        return False # we didn't find the tracknumber
+
+    def d_tracklist_parse_numerical(self, d_tracklist, track_number):
+        '''get numerical track pos from discogs tracklist object via
+           track_number, eg. A1'''
+        for num, tr in enumerate(d_tracklist):
+            if tr.position.lower() == track_number.lower():
+                return num + 1 # return human readable (matches brainz position)
+        log.debug(
+            'd_tracklist_parse_numerical: Track {} not existing on release.'.format(
+              track_number))
+        return False # we didn't find the tracknumber
+
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
         max_bpm = bpm + (bpm / 100 * pitch_range)
