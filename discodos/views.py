@@ -235,7 +235,7 @@ class Collection_view_common(ABC):
         for tr in d_tracklist:
             #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
             #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if tr.position == track_number:
+            if tr.position.lower() == track_number.lower():
                 return tr.title
         log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
             track_number))
@@ -245,7 +245,7 @@ class Collection_view_common(ABC):
         '''get numerical track pos from discogs tracklist object via
            track_number, eg. A1'''
         for num, tr in enumerate(d_tracklist):
-            if tr.position == track_number:
+            if tr.position.lower() == track_number.lower():
                 return num + 1 # return human readable (matches brainz position)
         log.debug(
             'd_tracklist_parse_numerical: Track {} not existing on release.'.format(
