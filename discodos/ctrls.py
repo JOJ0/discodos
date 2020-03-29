@@ -472,6 +472,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             key, chords_key, bpm = None, None, None # searched later, in this order
             d_release_id = mix_track['d_release_id']
             d_track_no = mix_track['d_track_no']
+            user_rec_mbid = mix_track['m_rec_id_override']
             processed += 1
 
             log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
@@ -485,7 +486,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             else:
                 if not mix_track['d_track_name']: # no track name in db -> ask discogs
                     d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
-                    d_track_name = coll_ctrl.ollection.d_tracklist_parse(
+                    d_track_name = coll_ctrl.collection.d_tracklist_parse(
                         d_rel.tracklist, mix_track['d_track_no'])
                     if not d_track_name:
                         errors_not_found += 1
@@ -522,11 +523,14 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             # (reruns with different settings)
             bmatch.fetch_mb_releases(detail = detail)
             release_mbid = bmatch.match_release()
-            if not release_mbid:
+            if not release_mbid and not user_rec_mbid:
                 log.info('CTRL: No MusicBrainz release matches. Sorry dude!')
             else: # Recording MBID search
-                bmatch.fetch_mb_matched_rel()
-                rec_mbid = bmatch.match_recording()
+                if user_rec_mbid:
+                    rec_mbid = user_rec_mbid
+                else:
+                    bmatch.fetch_mb_matched_rel()
+                    rec_mbid = bmatch.match_recording()
 
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
@@ -536,16 +540,25 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 else:
                     errors_no_rec += 1
             # user reporting starts here, not in model anymore
-            if release_mbid: # summary and save only when we have Release MBID
+            # summary and save only when we have Release MBID or user_rec_mbid
+            if release_mbid or user_rec_mbid:
                 print("Adding Brainz info for track {} on {} ({})".format(
                     mix_track['d_track_no'],  mix_track['discogs_title'],
                     d_release_id))
                 print("{} - {}".format(mix_track['d_artist'], d_track_name))
-                print("Release MBID: {}".format(release_mbid))
+                if release_mbid:
+                    print("Release MBID: {}".format(release_mbid))
+                else:
+                    log.warning("No Release MBID found!!!")
+
                 if not rec_mbid:
                     log.warning("No Recording MBID found!!!")
                 else:
-                    print("Recording MBID: {}".format(rec_mbid))
+                    if user_rec_mbid:
+                        print("Recording MBID: {} (user override)".format(rec_mbid))
+                    else:
+                        print("Recording MBID: {}".format(rec_mbid))
+
                 print("Key: {}, Chords Key: {}, BPM: {}".format(
                     key, chords_key, bpm))
 

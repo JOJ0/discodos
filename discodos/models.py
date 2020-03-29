@@ -316,7 +316,7 @@ class Mix (Database):
         log.debug("MODEL: track_details dict: {}".format(track_details))
         log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
         mix_track_cols=['d_release_id', 'd_track_no', 'track_pos', 'trans_rating', 'trans_notes']
-        track_ext_cols=['key', 'bpm', 'key_notes', 'notes']
+        track_ext_cols=['key', 'bpm', 'key_notes', 'notes', 'm_rec_id_override']
         values_mix_track = '' # mix_track update
         values_list_mix_track = []
         values_track_ext = '' # track_ext update
@@ -589,7 +589,7 @@ class Mix (Database):
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
           'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
-          'mix_track.d_track_no', 'key', 'bpm'], tables, where,
+          'mix_track.d_track_no', 'm_rec_id_override'], tables, where,
            fetchone = False, orderby = 'mix_track.track_pos')
 
     def get_all_mix_tracks_for_brainz_update(self):
@@ -605,7 +605,7 @@ class Mix (Database):
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
           'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
-          'mix_track.d_track_no', 'key', 'bpm'], tables, fetchone = False,
+          'mix_track.d_track_no', 'm_rec_id_override'], tables, fetchone = False,
            orderby = 'mix_track.mix_id, mix_track.track_pos',
            distinct = True)
 
