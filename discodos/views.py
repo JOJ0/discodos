@@ -325,6 +325,31 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         if _answ.lower() == "y" or _answ.lower() == "":
             return True
 
+    def edit_ask_details(self, orig_data, edit_questions):
+        # collect answers from user input
+        answers = {}
+        answers['track_pos'] = "not a number"
+        for db_field, question in edit_questions:
+            if db_field == 'track_pos':
+                while not is_number(answers['track_pos']):
+                    answers[db_field] = self.ask(
+                                             question.format(orig_data[db_field]))
+                    if answers[db_field] == "":
+                        log.info("Answer was empty, dropping item from update.")
+                        del(answers[db_field])
+                        break
+            else:
+                answers[db_field] = self.ask(
+                                         question.format(orig_data[db_field]))
+                if answers[db_field] == "":
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers[db_field])
+
+        log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
+        return answers
+
+
+
 # viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
     def __init__(self):

@@ -87,7 +87,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                            track_details['d_track_no'],
                            track_details['d_track_name']))
                 log.info("current d_release_id: %s", track_details['d_release_id'])
-                edit_answers = self._edit_track_ask_details(track_details,
+                edit_answers = self.cli.edit_ask_details(track_details,
                         self.cli._edit_track_questions)
                 for a in edit_answers.items():
                     log.info("answers: %s", str(a))
@@ -116,7 +116,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                            mix_details['name'],
                            mix_details['played'],
                            mix_details['venue']))
-                edit_answers = self._edit_track_ask_details(mix_details,
+                edit_answers = self.cli.edit_ask_details(mix_details,
                         self.cli._edit_mix_questions)
                 for a in edit_answers.items():
                     log.info("answers: %s", str(a))
@@ -131,31 +131,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 self.cli.p("Mix details couldn't be fetched.")
         else:
             self.cli.p('Mix unknown: "{}".'.format(self.mix.name_or_id))
-
-    def _edit_track_ask_details(self, _track_det, edit_track_questions):
-        #print(_track_det['d_track_no'])
-        # collect answers from user input
-        answers = {}
-        answers['track_pos'] = "not a number"
-        #answers['track_pos'] = ""
-        for db_field, question in edit_track_questions:
-            if db_field == 'track_pos':
-                while not is_number(answers['track_pos']):
-                    answers[db_field] = self.cli.ask(
-                                             question.format(_track_det[db_field]))
-                    if answers[db_field] == "":
-                        del(answers[db_field])
-                        break
-            else:
-                answers[db_field] = self.cli.ask(
-                                         question.format(_track_det[db_field]))
-                if answers[db_field] == "":
-                    log.info("Answer was empty, keeping previous value: %s",
-                             _track_det[db_field])
-                    del(answers[db_field])
-        if log.level == 10:
-            log.debug("CTRL: _edit_track_ask_details: answers dict: {}".format(answers))
-        return answers
 
     def bulk_edit_tracks(self, fields_str, first_track):
         log.debug("bulk_edit_tracks args: {} {}".format(fields_str, first_track))
