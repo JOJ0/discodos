@@ -104,6 +104,34 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         else:
             self.cli.p("Mix unknown: \"{}\".".format(self.mix.name_or_id))
 
+    def edit_mix(self):
+        if self.mix.id_existing:
+            msg_editing ='Editing mix {}\n'.format(self.mix.name)
+            msg_editing+='* to keep a value as is, press enter\n'
+            msg_editing+='* text in (braces) shows current value'
+            self.cli.p(msg_editing)
+            mix_details = self.mix.get_mix_info()
+            if mix_details:
+                self.cli.p("{} - {} - {}".format(
+                           mix_details['name'],
+                           mix_details['played'],
+                           mix_details['venue']))
+                edit_answers = self._edit_track_ask_details(mix_details,
+                        self.cli._edit_mix_questions)
+                for a in edit_answers.items():
+                    log.info("answers: %s", str(a))
+                update_ok = self.mix.update_mix_info(mix_details, edit_answers)
+                if update_ok:
+                    self.cli.p("Mix edit was successful.")
+                else:
+                    log.error("Something went wrong on mix edit!")
+                    raise SystemExit(1)
+                self.view_mixes_list()
+            else:
+                self.cli.p("Mix details couldn't be fetched.")
+        else:
+            self.cli.p('Mix unknown: "{}".'.format(self.mix.name_or_id))
+
     def _edit_track_ask_details(self, _track_det, edit_track_questions):
         #print(_track_det['d_track_no'])
         # collect answers from user input
@@ -116,7 +144,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     answers[db_field] = self.cli.ask(
                                              question.format(_track_det[db_field]))
                     if answers[db_field] == "":
-                        answers[db_field] = _track_det[db_field]
+                        del(answers[db_field])
                         break
             else:
                 answers[db_field] = self.cli.ask(
@@ -124,7 +152,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                 if answers[db_field] == "":
                     log.info("Answer was empty, keeping previous value: %s",
                              _track_det[db_field])
-                    answers[db_field] = _track_det[db_field]
+                    del(answers[db_field])
         if log.level == 10:
             log.debug("CTRL: _edit_track_ask_details: answers dict: {}".format(answers))
         return answers

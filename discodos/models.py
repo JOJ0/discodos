@@ -346,11 +346,12 @@ class Mix (Database):
                         values_mix_track += ", {} = ? ".format(key)
                     values_list_mix_track.append(answer)
             final_update_mix_track = update_mix_track + values_mix_track + where_mix_track
+            # debug
             #log.info('MODEL: {}'.format(final_update_mix_track))
             #log.info(log.info('MODEL: {}'.format(tuple(values_list_mix_track))))
-            with self.db_conn:
-                log.info("MODEL: Now really executing mix_track update...")
-                self.execute_sql(final_update_mix_track, tuple(values_list_mix_track))
+
+            log.info("MODEL: Now really executing mix_track update...")
+            self.execute_sql(final_update_mix_track, tuple(values_list_mix_track))
 
         if track_ext_edit:
             update_track_ext = 'UPDATE track_ext SET '
@@ -378,6 +379,7 @@ class Mix (Database):
             final_insert_track_ext = "{} ({}, d_release_id, d_track_no) VALUES ({}, ?, ?)".format(
                     insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
 
+            # debug
             #log.info('MODEL: {}'.format(final_update_track_ext))
             #log.info('MODEL: {}'.format(tuple(values_list_track_ext)))
 
@@ -387,18 +389,18 @@ class Mix (Database):
             values_insert_list_track_ext.append(track_details['d_track_no'])
             #log.info('MODEL: {}'.format(tuple(values_insert_list_track_ext)))
 
-            with self.db_conn:
-                log.info("MODEL: Now really executing track_ext update/insert...")
-                #log.info(values_list_track_ext)
-                #log.info(tuple(values_list_track_ext))
+            log.info("MODEL: Now really executing track_ext update/insert...")
+            #log.info(values_list_track_ext)
+            #log.info(tuple(values_list_track_ext))
 
-                dbret = self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
-                if dbret == 0: # checks rowcount
-                    log.info("MODEL: UPDATE didn't change anything, trying INSERT...")
-                    dbret = self.execute_sql(final_insert_track_ext,
-                        tuple(values_insert_list_track_ext))
+            dbret = self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
+            if dbret == 0: # checks rowcount
+                log.info("MODEL: UPDATE didn't change anything, trying INSERT...")
+                dbret = self.execute_sql(final_insert_track_ext,
+                    tuple(values_insert_list_track_ext))
             return dbret
-        return False
+
+        return True # we didn't update track nor track_ext - all good
 
     def get_tracks_from_position(self, pos):
         log.info('MODEL: Getting tracks in mix, starting at position {}.'.format(pos))
@@ -570,6 +572,37 @@ class Mix (Database):
         """
         mix_info = self._select_simple(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
         return mix_info
+
+    def update_mix_info(self, mix_details, edit_answers):
+        log.info("MODEL: Updating mix table.")
+        log.debug("MODEL: mix_details dict: {}".format(mix_details))
+        log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
+        values_mix = ''
+        values_list_mix = []
+        if 'track_pos' in edit_answers: #filter out track_pos='not a number'
+            if edit_answers['track_pos'] == 'not a number':
+                edit_answers.pop('track_pos')
+
+        update_mix = 'UPDATE mix SET '
+        where_mix = 'WHERE mix_id == {}'.format(mix_details['mix_id'])
+        for key, answer in edit_answers.items():
+            log.debug('key: {}, value: {}'.format(key, answer))
+            if values_mix == '':
+                values_mix += "{} = ? ".format(key)
+            else:
+                values_mix += ", {} = ? ".format(key)
+
+        if len(edit_answers) != 0: # only update if necessary
+            values_list_mix.append(answer)
+            values_mix += ", updated = datetime('now', 'localtime') "
+            final_update_mix = update_mix + values_mix + where_mix
+            log.info('MODEL: {}'.format(final_update_mix))
+            log.info(log.info('MODEL: {}'.format(tuple(values_list_mix))))
+            log.info("MODEL: Executing mix update...")
+            return self.execute_sql(final_update_mix, tuple(values_list_mix))
+        else:
+            log.info("MODEL: Nothing changed - not executing mix update")
+            return True
 
     def get_mix_tracks_for_brainz_update(self, start_pos = False):
         log.info("MODEL: Getting tracks of a mix. Preparing for Discogs or AcousticBrainz update.")

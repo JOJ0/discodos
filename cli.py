@@ -70,6 +70,9 @@ def argparser(argv):
         metavar='POSITION',
         help='add/edit rating, notes, key and other info of a track in a mix')
     mix_subp_excl_group.add_argument(
+        "-E", "--edit-mix", action='store_true',
+        help='edit general info about a mix (name, played date, venue)')
+    mix_subp_excl_group.add_argument(
         "-b", "--bulk-edit", type=str,
         dest='bulk_edit',
         metavar='FIELD_LIST',
@@ -245,6 +248,9 @@ def main():
         #### COPY A MIX
         elif user.WANTS_TO_COPY_MIX:
             mix_ctrl.copy_mix()
+        #### EDIT MIX INFO
+        elif user.WANTS_TO_EDIT_MIX:
+            mix_ctrl.edit_mix()
                                        
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:

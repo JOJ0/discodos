@@ -224,6 +224,13 @@ class Mix_view_common(ABC):
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
 
+        # list of questions a user is asked when editing a mixes info
+        self._edit_mix_questions = [
+            ["name", "Name ({}): "],
+            ["played", "Played ({}): "],
+            ["venue", "Venue ({}): "]
+        ]
+
 # Collection view utils, usable in CLI and GUI, related to Collection only
 class Collection_view_common(ABC):
     def __init__(self):
@@ -455,6 +462,7 @@ class User_int(object):
         self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
         self.BRAINZ_SEARCH_DETAIL = 1
         self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = False
+        self.WANTS_TO_EDIT_MIX = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -536,6 +544,9 @@ class User_int(object):
                     self.BRAINZ_SEARCH_DETAIL == self.args.brainz_update
                     if self.args.brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
+                if self.args.edit_mix:
+                    self.WANTS_TO_EDIT_MIX = True
+                    self.WANTS_ONLINE = False
 
 
         # SUGGEST MODE
