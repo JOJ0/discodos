@@ -122,7 +122,9 @@ class Db_setup(Database):
              }
            }                       # list element 0 ends here
            #{'schema_version': 3,  # list element 1 starts here
-           # 'tasks': {}
+           # 'tasks': {
+           #     'Add field track.test_upgrade': 'ALTER TABLE track ADD test_upgrade TEXT;',
+           # }
            #}                      # list element 1 ends here
         ]                          # list closes here
 
@@ -132,7 +134,7 @@ class Db_setup(Database):
                 self.execute_sql(sql, raise_err = True)
                 msg_release="CREATE TABLE '{}' was successful.".format(table)
                 log.info(msg_release)
-                print_help(msg_release)
+                print(msg_release)
             except sqlerr as e:
                 log.info("CREATE TABLE '%s': %s", table, e.args[0])
 
@@ -150,33 +152,36 @@ class Db_setup(Database):
         current_schema = self.get_current_schema_version()
         latest_schema = self.get_latest_schema_version()
         # check if upgrade necessary
-        if not latest_schema > current_schema and force_upgrade == False:
-            log.info('Db_setup: No schema update necessary.')
+        if not current_schema < latest_schema and force_upgrade == False:
+            log.info('Db_setup: No schema upgrade necessary.')
         else: # also happens if force_upgrade True
+            print("Upgrading DiscoBASE schema to latest version.")
             failure = False
             self.execute_sql('PRAGMA foreign_keys = OFF;')
             for upgrade in self.sql_upgrades: # list is sorted -> execute all up to highest
-                if (upgrade['schema_version'] < latest_schema 
-                          or force_upgrade == True):
+                current_schema = self.get_current_schema_version()
+                if (current_schema < upgrade['schema_version'] or force_upgrade == True):
                     for task, sql in upgrade['tasks'].items():
-                        try: # if task fails all_done is not updated!
+                        try:
                             self.execute_sql(sql, raise_err = True)
                             msg_task="Task '{}' was successful.".format(task)
                             log.info(msg_task)
-                            print_help(msg_task)
+                            print(msg_task)
                         except sqlerr as e:
                             log.warning("Task failed '%s': %s", task, e.args[0])
                             failure = True
-                            #break
+
             if failure:
-                print('DiscoBASE schema update failed, open an issue on Github!')
-                log.info('DiscoBASE schema update failed, open an issue on Github!')
+                msg_fail='DiscoBASE schema upgrade failed, open an issue on Github!'
+                log.info(msg_fail)
+                print(msg_fail)
                 self.configure_db() # this sets foreign_keys = ON again
                 return False
             else:
                 self.execute_sql('PRAGMA user_version = {}'.format(latest_schema))
-                print('DiscoBASE schema update done!')
-                log.info('DiscoBASE schema update done!')
+                msg_done='DiscoBASE schema upgrade done!')
+                log.info(msg_fail)
+                print(msg_fail)
                 self.configure_db() # this sets foreign_keys = ON again
                 return True
 
