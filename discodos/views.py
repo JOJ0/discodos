@@ -12,10 +12,17 @@ from time import time
 class View_common(ABC):
     def shorten_timestamp(self, sqlite_date, text = False):
         ''' remove time from timestamps we get out of the db, just leave date'''
-        date_only = datetime.fromisoformat(sqlite_date).date()
-        if text == True:
-            return str(date_only)
-        return date_only
+        try:
+            date_only = datetime.fromisoformat(sqlite_date).date()
+            if text == True:
+                return str(date_only)
+            return date_only
+        except ValueError as valerr:
+            #log.debug(
+            #  "VIEW: Can't convert date, returning dash {}".format(valerr))
+            if text:
+                return '-'
+            raise valerr
 
     def format_date_month(self, sqlite_date, text = False):
         ''' format a date string to eg "May 2020" '''
@@ -302,10 +309,12 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
     def tab_mixes_list(self, mixes_data):
         # make list of dicts out of the sqlite tuples list
         mixes = [dict(row) for row in mixes_data]
-        for i, mix in enumerate(mixes): # shorten all created timestamp fields
+        for i, mix in enumerate(mixes): # shorten/format timestamps in this view
             mixes[i]['created'] = self.shorten_timestamp(mix['created'],
                   text = True)
             mixes[i]['played'] = self.format_date_month(mix['played'],
+                  text = True)
+            mixes[i]['updated'] = self.shorten_timestamp(mix['updated'],
                   text = True)
         tabulated = tab(self.trim_table_fields(mixes),
           tablefmt="simple", # headers has to be dict too!
