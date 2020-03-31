@@ -45,7 +45,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def view(self):
         if self.mix.id_existing:
-            self.cli.tab_mix_info_header(self.mix.info)
+            self.cli.tab_mix_info_header(self.mix.get_mix_info())
             if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
                 full_mix = self.mix.get_full_mix(verbose = True)
             elif self.user.WANTS_MUSICBRAINZ_MIX_TRACKLIST:

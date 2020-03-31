@@ -312,7 +312,8 @@ class Mix (Database):
           _join, fetchone = True, condition = _where)
 
     def update_mix_track_and_track_ext(self, track_details, edit_answers):
-        log.info("MODEL: Updating track in mix_track and track_ext tables.")
+        log.info(
+            "MODEL: Updating mix_track and track_ext entries (if necessary).")
         log.debug("MODEL: track_details dict: {}".format(track_details))
         log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
         mix_track_cols=['d_release_id', 'd_track_no', 'track_pos', 'trans_rating', 'trans_notes']
@@ -328,6 +329,8 @@ class Mix (Database):
                 edit_answers.pop('track_pos')
         mix_track_edit = False # decide if it's table mix_track or track_ext
         track_ext_edit = False
+        updated_mix_track = False # save if we've updated mix_track table
+        updated_track_ext = False # save if we've updated track_ext table
         for key in edit_answers:
             if key in mix_track_cols:
                 mix_track_edit = True
@@ -351,7 +354,8 @@ class Mix (Database):
             #log.info(log.info('MODEL: {}'.format(tuple(values_list_mix_track))))
 
             log.info("MODEL: Now really executing mix_track update...")
-            self.execute_sql(final_update_mix_track, tuple(values_list_mix_track))
+            updated_mix_track = self.execute_sql(
+                final_update_mix_track, tuple(values_list_mix_track))
 
         if track_ext_edit:
             update_track_ext = 'UPDATE track_ext SET '
@@ -398,8 +402,13 @@ class Mix (Database):
                 log.info("MODEL: UPDATE didn't change anything, trying INSERT...")
                 dbret = self.execute_sql(final_insert_track_ext,
                     tuple(values_insert_list_track_ext))
-            return dbret
+            updated_track_ext = dbret
 
+        # finally update mix table with current timestamp (only if changed)
+        if updated_mix_track or updated_track_ext:
+            return self.execute_sql("""UPDATE mix SET
+                  updated = datetime('now', 'localtime') WHERE mix_id == ?;""",
+                  (self.id, ))
         return True # we didn't update track nor track_ext - all good
 
     def get_tracks_from_position(self, pos):
@@ -570,8 +579,9 @@ class Mix (Database):
         @return sqlite fetchone rows object
         @author
         """
-        mix_info = self._select_simple(['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
-        return mix_info
+        self.mix_info = self._select_simple(
+            ['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
+        return self.mix_info
 
     def update_mix_info(self, mix_details, edit_answers):
         log.info("MODEL: Updating mix table.")
