@@ -406,10 +406,12 @@ class Mix (Database):
 
         # finally update mix table with current timestamp (only if changed)
         if updated_mix_track or updated_track_ext:
-            return self.execute_sql("""UPDATE mix SET
-                  updated = datetime('now', 'localtime') WHERE mix_id == ?;""",
-                  (self.id, ))
+            return self._updated_timestamp()
         return True # we didn't update track nor track_ext - all good
+
+    def _updated_timestamp(self):
+        return self.execute_sql("""UPDATE mix SET
+          updated = datetime('now', 'localtime') WHERE mix_id == ?;""", (self.id, ))
 
     def get_tracks_from_position(self, pos):
         log.info('MODEL: Getting tracks in mix, starting at position {}.'.format(pos))
@@ -433,7 +435,7 @@ class Mix (Database):
             if not self.execute_sql(sql_upd, ids_tuple):
                 return False
             pos = pos + 1
-        return True
+        return self._updated_timestamp()
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
         log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
@@ -449,7 +451,7 @@ class Mix (Database):
             ids_tuple = (new_pos, t['mix_track_id'])
             if not self.execute_sql(sql_upd, ids_tuple):
                 return False
-        return True
+        return self._updated_timestamp()
 
     def shift_track(self, pos, direction):
         if direction != 'up' and direction != 'down':
@@ -499,14 +501,17 @@ class Mix (Database):
         log.info (
             'MODEL: shift_track: Former track {} was successfully shifted {}.'.format(
                      pos, direction))
-        return True
+        return self._updated_timestamp()
 
 
     def delete_track(self, pos):
         log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
         sql_del = 'DELETE FROM mix_track WHERE mix_id == ? AND track_pos == ?'
         ids_tuple = (self.id, pos)
-        return self.execute_sql(sql_del, (ids_tuple))
+        del_success = self.execute_sql(sql_del, (ids_tuple))
+        if del_success:
+            return self._updated_timestamp()
+        return del_success
 
     def get_full_mix(self, verbose = False, brainz = False):
         log.info('MODEL: Getting full mix.')
@@ -550,7 +555,10 @@ class Mix (Database):
             (mix_id, d_release_id, d_track_no, track_pos, trans_rating, trans_notes)
             VALUES(?, ?, ?, ?, ?, ?)'''
         values = (self.id, release_id, track_no, track_pos, trans_rating, trans_notes)
-        return self.execute_sql(sql_add, values) # returns rowcount
+        add_success = self.execute_sql(sql_add, values) # returns rowcount
+        if add_success:
+            return self._updated_timestamp()
+        return add_success
 
     def get_last_track(self):
         log.info('MODEL: Getting last track in current mix')
