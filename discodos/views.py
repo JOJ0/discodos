@@ -253,12 +253,8 @@ class View_common_cli(View_common):
         ''' ask user for something and return answer '''
         return input(text)
 
-    def ask_for_track(self):
-        track_no = self.ask("Which track? (A1) ")
-        # FIXME a sanity checker, at least for online search, would be nice here.
-        # also the default value is not checked, eg it could be A in reality!
-        if track_no == '':
-            track_no = 'A1'
+    def ask_for_track(self, suggest = 'A1'):
+        track_no = self.ask("Which track? ({}) ".format(suggest))
         return track_no
 
     def tab_mix_table(self, _mix_data, _verbose = False, brainz = False):
