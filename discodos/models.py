@@ -1213,7 +1213,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         else: # if it's None or something else
             self.d_artist = ''
         self.d_track_name = d_track_name.lower()
-        self.d_track_no = d_track_no.upper() # upper experiment
+        self.d_track_no = d_track_no.lower() # lower comparision everywhere
         self.d_track_no_num = int(d_track_no_num)
 
     def fetch_mb_releases(self, detail): # fetching controllable from outside
@@ -1421,7 +1421,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
             #track_count = len(medium['track-list'])
             for track in medium['track-list']:
                 _rec_title = track['recording']['title']
-                track_number = track['number'] # could be A, AA, ..
+                track_number = track['number'].lower(), # could be A, AA, a, ..
                 track_position = int(track['position']) # starts at 1, ensure int
                 if track_number == self.d_track_no:
                     self.rec_mbid = track['recording']['id']
