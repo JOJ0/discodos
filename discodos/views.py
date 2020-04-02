@@ -255,6 +255,8 @@ class View_common_cli(View_common):
 
     def ask_for_track(self, suggest = 'A1'):
         track_no = self.ask("Which track? ({}) ".format(suggest))
+        if track_no == '':
+            return suggest
         return track_no
 
     def tab_mix_table(self, _mix_data, _verbose = False, brainz = False):
@@ -362,6 +364,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
 
     def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
         ''' formatted output _and return of Discogs release search results'''
+        self.first_track_on_release = '' # reset this in any case first
         # only show pages count if it's a Release Title Search
         if not is_number(_searchterm):
             self.p("Found "+str(discogs_results.pages )+" page(s) of results!")
@@ -387,6 +390,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
 
                     self.tab_online_search_results(result_list)
                     self.online_search_results_tracklist(result_item.tracklist)
+                    self.first_track_on_release = result_item.tracklist[0].position
                     break
             try:
                 if result_item.id == dbr[0]:

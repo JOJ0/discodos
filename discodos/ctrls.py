@@ -197,9 +197,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if rel_list:
             self._add_track(rel_list[0][0], rel_list[0][1], track_no, pos)
 
-    def add_discogs_track(self, rel_list, track_no, pos):
+    def add_discogs_track(self, rel_list, track_no, pos, track_no_suggest = ''):
         log.info("discogs rel_list: {}".format(rel_list))
         if rel_list:
+            if not track_no:
+                track_no = self.cli.ask_for_track(suggest = track_no_suggest)
             self._add_track(rel_list[0][0], rel_list[0][2], track_no, pos)
         else:
             log.error("No release to add to mix.")
@@ -725,7 +727,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     def track_report(self, track_searchterm):
         release = self.search_release(track_searchterm)
         if release:
-            track_no = self.cli.ask_for_track()
+            track_no = self.cli.ask_for_track(
+                suggest=self.cli.first_track_on_release)
             if self.collection.ONLINE == True:
                 rel_id = release[0][0]
                 rel_name = release[0][2]

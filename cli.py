@@ -174,7 +174,8 @@ def main():
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
                 mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add,
-                        args.add_at_pos)
+                        args.add_at_pos,
+                        track_no_suggest = coll_ctrl.cli.first_track_on_release)
             else:
                 print_help("Nothing more to do. Use -m <mix_name> to add to a mix.")
         else:
@@ -235,9 +236,10 @@ def main():
                     # search_release returns an online or offline releases type object
                     # depending on the models online-state
                     discogs_rel_found = coll_ctrl.search_release(
-                            args.add_release_to_mix)
+                      args.add_release_to_mix)
                     mix_ctrl.add_discogs_track(discogs_rel_found, False,
-                            args.mix_mode_add_at_pos)
+                      args.mix_mode_add_at_pos,
+                      track_no_suggest = coll_ctrl.cli.first_track_on_release)
                 else:
                     database_rel_found = coll_ctrl.search_release(
                             args.add_release_to_mix)
