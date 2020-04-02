@@ -179,9 +179,9 @@ class Db_setup(Database):
                 return False
             else:
                 self.execute_sql('PRAGMA user_version = {}'.format(latest_schema))
-                msg_done='DiscoBASE schema upgrade done!')
-                log.info(msg_fail)
-                print(msg_fail)
+                msg_done='DiscoBASE schema upgrade done!'
+                log.info(msg_done)
+                print(msg_done)
                 self.configure_db() # this sets foreign_keys = ON again
                 return True
 
