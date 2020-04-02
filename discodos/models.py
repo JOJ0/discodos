@@ -552,6 +552,7 @@ class Mix (Database):
         log.info('MODEL: Adding track to current mix.')
         log.debug("MODEL: add_track got this: mix_id: {}, d_release_id: {}, track_no: {}, track_pos: {}, trans_rating: {}, trans_notes: {}".format(
             self.id, release_id, track_no, track_pos, trans_rating, trans_notes))
+        track_no = track_no.upper() # always save uppercase track numbers
         sql_add = '''INSERT INTO mix_track
             (mix_id, d_release_id, d_track_no, track_pos, trans_rating, trans_notes)
             VALUES(?, ?, ?, ?, ?, ?)'''
@@ -785,6 +786,7 @@ class Collection (Database):
         return tracks
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
+        track_no = track_no.upper() # always save uppercase track numbers
         tuple_tr = (release_id, track_no, track_artist, track_name,
                                           track_artist, track_name)
         sql_tr='''INSERT INTO track(d_release_id, d_track_no, d_artist,
@@ -922,7 +924,7 @@ class Collection (Database):
         for tr in d_tracklist:
             #log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
             #log.debug("d_artists_parse: this is the tr object: {}".format(tr))
-            if tr.position.lower() == track_number.lower():
+            if tr.position.upper() == track_number.upper():
                 #log.info("d_tracklist_parse: found by track number.")
                 if len(tr.artists) == 1:
                     name = tr.artists[0].name
@@ -953,7 +955,7 @@ class Collection (Database):
         for tr in d_tracklist:
             #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
             #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if tr.position.lower() == track_number.lower():
+            if tr.position.upper() == track_number.upper():
                 return tr.title
         log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
             track_number))
@@ -1000,6 +1002,7 @@ class Collection (Database):
 
     def upsert_track_brainz(self, release_id, track_no, rec_id,
           match_method, key, chords_key, bpm):
+        track_no = track_no.upper() # always save uppercase track numbers
         sql_track = '''INSERT INTO track(d_release_id, d_track_no,
               m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
               VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?)
@@ -1213,7 +1216,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         else: # if it's None or something else
             self.d_artist = ''
         self.d_track_name = d_track_name.lower()
-        self.d_track_no = d_track_no.lower() # lower comparision everywhere
+        self.d_track_no = d_track_no.upper() # upper comparision everywhere
         self.d_track_no_num = int(d_track_no_num)
 
     def fetch_mb_releases(self, detail): # fetching controllable from outside
@@ -1421,7 +1424,7 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
             #track_count = len(medium['track-list'])
             for track in medium['track-list']:
                 _rec_title = track['recording']['title']
-                track_number = track['number'].lower(), # could be A, AA, a, ..
+                track_number = track['number'].upper(), # could be A, AA, a, ..
                 track_position = int(track['position']) # starts at 1, ensure int
                 if track_number == self.d_track_no:
                     self.rec_mbid = track['recording']['id']
