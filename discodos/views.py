@@ -375,28 +375,17 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             for dbr in _db_releases:
                 if result_item.id == dbr[0]:
                     self.p("Good, first matching record in your collection is:")
-                    result_list=[]
-                    result_list.append([])
-                    result_list[0].append(result_item.id)
-                    result_list[0].append(str(result_item.artists[0].name))
-                    result_list[0].append(result_item.title)
-                    result_list[0].append(str(result_item.labels[0].name))
-                    result_list[0].append(result_item.country)
-                    result_list[0].append(str(result_item.year))
-                    #result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                    #           ", "+str(result_item.formats[0]['descriptions'][1]))
-                    result_list[0].append(str(result_item.formats[0]['descriptions'][0])+
-                               ", "+str(result_item.formats[0]['descriptions'][0]))
-
-                    self.tab_online_search_results(result_list)
+                    release_details = self.prepare_release_info(result_item)
+                    # we need to pass a list in list here. we use tabulate to view
+                    self.tab_online_search_results([release_details])
                     self.online_search_results_tracklist(result_item.tracklist)
                     self.first_track_on_release = result_item.tracklist[0].position
                     break
             try:
                 if result_item.id == dbr[0]:
-                    #return result_list[0]
-                    log.info("Compiled Discogs result_list: {}".format(result_list))
-                    return result_list
+                    #return release_details[0]
+                    log.info("Compiled Discogs release_details: {}".format(release_details))
+                    return release_details
                 # FIXME this is bullshit, will never be reached FIXME
                 #    break
             except UnboundLocalError:
@@ -413,6 +402,24 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         for track in _tracklist:
             print(track.position + "\t" + track.title)
         print()
+
+    def prepare_release_info(self, release): # discogs_client Release object
+        '''takes a discogs_client Release object and returns a list of
+           its data. Eg used for nicely formatted release view (tabulate)'''
+        rel_data_list=[]
+        rel_data_list.append(release.id)
+        rel_data_list.append(str(release.artists[0].name))
+        rel_data_list.append(release.title)
+        rel_data_list.append(str(release.labels[0].name))
+        rel_data_list.append(release.country)
+        rel_data_list.append(str(release.year))
+        #rel_data_list.append(str(release.formats[0]['descriptions'][0])+
+        #           ", "+str(release.formats[0]['descriptions'][1]))
+        rel_data_list.append(str(release.formats[0]['descriptions'][0])+
+                   ", "+str(release.formats[0]['descriptions'][0]))
+        log.info("prepare_release_info: rel_data_list: {}".format(
+            rel_data_list))
+        return rel_data_list
 
     def tab_all_releases(self, releases_data):
         #self.p(tab(releases_data, tablefmt="plain",
