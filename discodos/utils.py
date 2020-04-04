@@ -199,7 +199,7 @@ class Config():
             written_msg+= 'texteditor and set a value for discogs_token!\n'
             written_msg+= 'Read how to get a Discogs token here: '
             written_msg+= 'https://github.com/JOJ0/discodos#configuring-discogs-api-access\n'
-            written_msg+= "Run setup again, when your're done!"
+            written_msg+= "Then run setup again!"
             log.info(written_msg)
             print_help(written_msg)
 
