@@ -203,7 +203,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         if release_details:
             if not track_no:
                 track_no = self.cli.ask_for_track(suggest = track_no_suggest)
-            self._add_track(release_details[0], release_details[2], track_no, pos)
+            self._add_track(release_details['id'], release_details['title'],
+              track_no, pos)
         else:
             log.error("No release to add to mix.")
 

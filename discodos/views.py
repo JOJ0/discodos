@@ -395,8 +395,10 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         return False
 
     def tab_online_search_results(self, _result_list):
-        self.p(tab(_result_list, tablefmt="simple",
-                  headers=["ID", "Artist", "Release", "Label", "C", "Year", "Format"]))
+        self.p(tab(_result_list, tablefmt="simple", headers={
+          'id': 'ID', 'artist': 'Artist', 'title':'Release',
+          'label': 'Label', 'country': 'C', 'year': 'Year', 'format': 'Format'}))
+              
 
     def online_search_results_tracklist(self, _tracklist):
         for track in _tracklist:
@@ -406,20 +408,19 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
     def prepare_release_info(self, release): # discogs_client Release object
         '''takes a discogs_client Release object and returns a list of
            its data. Eg used for nicely formatted release view (tabulate)'''
-        rel_data_list=[]
-        rel_data_list.append(release.id)
-        rel_data_list.append(str(release.artists[0].name))
-        rel_data_list.append(release.title)
-        rel_data_list.append(str(release.labels[0].name))
-        rel_data_list.append(release.country)
-        rel_data_list.append(str(release.year))
-        #rel_data_list.append(str(release.formats[0]['descriptions'][0])+
-        #           ", "+str(release.formats[0]['descriptions'][1]))
-        rel_data_list.append(str(release.formats[0]['descriptions'][0])+
-                   ", "+str(release.formats[0]['descriptions'][0]))
-        log.info("prepare_release_info: rel_data_list: {}".format(
-            rel_data_list))
-        return rel_data_list
+        rel_details={}
+        rel_details['id'] = release.id
+        rel_details['artist'] = release.artists[0].name
+        rel_details['title'] = release.title
+        rel_details['label'] = release.labels[0].name
+        rel_details['country'] = release.country
+        rel_details['year'] = release.year
+        rel_details['format'] = release.formats[0]['descriptions'][0]
+        # FIXME     ", "+str = release.formats[0]['descriptions'][1]))
+
+        log.info("prepare_release_info: rel_details: {}".format(
+            rel_details))
+        return rel_details
 
     def tab_all_releases(self, releases_data):
         #self.p(tab(releases_data, tablefmt="plain",
