@@ -213,6 +213,17 @@ class View_common(ABC):
             del(table[i]['track_match_time'])
         return table
 
+    def welcome_to_discodos(self):
+        print(r'''
+                _______  _______ ________
+               /       \        /       /
+              /  ___   /  ___  /  _____/
+             /  /  /  /  /  /  \____  \
+            /  /__/  /  /__/  _____/  /
+Welcome to / D i s c o      /        /
+          /_______/\_______/________/
+              ''')
+
 
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
 class Mix_view_common(ABC):
@@ -482,6 +493,7 @@ class User_int(object):
         self.BRAINZ_SEARCH_DETAIL = 1
         self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = False
         self.WANTS_TO_EDIT_MIX = False
+        self.DID_NOT_PROVIDE_COMMAND = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -599,6 +611,11 @@ class User_int(object):
                 self.WANTS_SUGGEST_TRACK_REPORT = True
             #log.error("track search not implemented yet.")
             #raise SystemExit(1)
+
+        # NO COMMAND - SHOW HELP
+        if ('mix_name' not in self.args and 'release_search' not in self.args
+                  and 'suggest_search' not in self.args):
+            self.DID_NOT_PROVIDE_COMMAND = True
 
         if self.args.offline_mode == True:
             self.WANTS_ONLINE = False
