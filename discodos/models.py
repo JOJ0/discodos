@@ -1039,7 +1039,8 @@ class Collection (Database):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
         if len(d_labels) == 0:
-            log.warning('MODEL: Discogs release without CatNo. This is weird!')
+            log.warning(
+              'MODEL: Discogs release without Label/CatNo. This is weird!')
         else:
             for cnt, label in enumerate(d_labels):
                 if cnt == 0:
@@ -1048,6 +1049,22 @@ class Collection (Database):
                     log.warning('MODEL: Found multiple CatNos, not adding "{}"'.format(
                       label.data['catno']))
             log.info('MODEL: Found Discogs CatNo "{}"'.format(catno_str))
+        return catno_str
+
+    def d_get_all_catnos(self, d_labels):
+        '''get all found catalog number from discogs label object concatinated
+           with newline'''
+        catno_str = ''
+        if len(d_labels) == 0:
+            log.warning(
+              'MODEL: Discogs release without Label/CatNo. This is weird!')
+        else:
+            for cnt, label in enumerate(d_labels):
+                if cnt == 0:
+                    catno_str = label.data['catno']
+                else:
+                    catno_str += '\n{}'.format(label.data['catno'])
+            log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
         return catno_str
 
 class Brainz (object):

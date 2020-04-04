@@ -412,11 +412,14 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         rel_details['id'] = release.id
         rel_details['artist'] = release.artists[0].name
         rel_details['title'] = release.title
-        rel_details['label'] = release.labels[0].name
+        if len(release.labels) != 0:
+            rel_details['label'] = release.labels[0].name
         rel_details['country'] = release.country
         rel_details['year'] = release.year
         rel_details['format'] = release.formats[0]['descriptions'][0]
-        # FIXME     ", "+str = release.formats[0]['descriptions'][1]))
+        if len(release.formats[0]['descriptions']) > 1:
+            rel_details['format'] += ' {}'.format(
+                  release.formats[0]['descriptions'][1])
 
         log.info("prepare_release_info: rel_details: {}".format(
             rel_details))
