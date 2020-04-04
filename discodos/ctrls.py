@@ -171,9 +171,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.view()
 
     def delete_track(self, delete_track_pos):
-         really_del = self.cli.ask(text="Delete Track {} from mix {}? ".format(
-                                      delete_track_pos, self.mix.id))
-         if really_del.lower() == "y":
+        if self.cli.really_delete_track(delete_track_pos, self.mix.name):
              successful = self.mix.delete_track(delete_track_pos)
              # reorder existing and print tracklist
              if successful:
