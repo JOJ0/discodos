@@ -332,6 +332,14 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         if _answ.lower() == "y" or _answ == "":
             return True
 
+    def really_delete_mix(self, mix_id, mix_name):
+        really_delete = self.ask(
+            'Are you sure you want to delete mix "{} - {}" and all its containing tracks? '.format(
+                mix_id, mix_name))
+        if really_delete.lower() == "y":
+            return True
+        return False
+
     def edit_ask_details(self, orig_data, edit_questions):
         # collect answers from user input
         answers = {}

@@ -67,10 +67,11 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def delete(self):
         if self.mix.id_existing:
-            if self._delete_confirm() == True:
-                self.mix.delete()
-                self.mix.db_conn.commit()
-                self.cli.p("Mix \"{} - {}\" deleted successfully.".format(self.mix.id, self.mix.name))
+            if self.cli.really_delete_mix(self.mix.id, self.mix.name):
+                if self.mix.delete():
+                    self.cli.p(
+                      'Mix "{} - {}" deleted successfully.'.format(
+                          self.mix.id, self.mix.name))
         else:
            self.cli.p("Mix \"{}\" doesn't exist.".format(self.mix.name_or_id))
 
@@ -185,13 +186,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                  self.cli.p("Delete failed, maybe nonexistent track position?")
 
     # definitely cli specific
-
-    def _delete_confirm(self):
-        really_delete = self.cli.ask(
-            "Are you sure you want to delete mix \"{} - {}\" and all its containing tracks? ".format(
-                self.mix.id, self.mix.name))
-        if really_delete == "y": return True
-        else: return False
 
     def add_offline_track(self, rel_list, track_no, pos):
         if rel_list:
