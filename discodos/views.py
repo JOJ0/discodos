@@ -362,68 +362,15 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
     def __init__(self):
         super(Collection_view_cli, self).__init__()
 
-    def print_found_discogs_release(self, discogs_results, _searchterm, _db_releases):
-        ''' formatted output _and return of Discogs release search results'''
-        self.first_track_on_release = '' # reset this in any case first
-        # only show pages count if it's a Release Title Search
-        if not is_number(_searchterm):
-            self.p("Found "+str(discogs_results.pages )+" page(s) of results!")
-        else:
-            self.p("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
-        for result_item in discogs_results:
-            self.p("Checking " + str(result_item.id))
-            for dbr in _db_releases:
-                if result_item.id == dbr[0]:
-                    self.p("Good, first matching record in your collection is:")
-                    release_details = self.prepare_release_info(result_item)
-                    # we need to pass a list in list here. we use tabulate to view
-                    self.tab_online_search_results([release_details])
-                    self.online_search_results_tracklist(result_item.tracklist)
-                    self.first_track_on_release = result_item.tracklist[0].position
-                    break
-            try:
-                if result_item.id == dbr[0]:
-                    #return release_details[0]
-                    log.info("Compiled Discogs release_details: {}".format(release_details))
-                    return release_details
-                # FIXME this is bullshit, will never be reached FIXME
-                #    break
-            except UnboundLocalError:
-                log.error("Discogs collection was not imported to DiscoBASE properly!")
-                #raise unb
-                raise SystemExit(1)
-        return False
-
     def tab_online_search_results(self, _result_list):
         self.p(tab(_result_list, tablefmt="simple", headers={
           'id': 'ID', 'artist': 'Artist', 'title':'Release',
           'label': 'Label', 'country': 'C', 'year': 'Year', 'format': 'Format'}))
-              
 
     def online_search_results_tracklist(self, _tracklist):
         for track in _tracklist:
             print(track.position + "\t" + track.title)
         print()
-
-    def prepare_release_info(self, release): # discogs_client Release object
-        '''takes a discogs_client Release object and returns a list of
-           its data. Eg used for nicely formatted release view (tabulate)'''
-        rel_details={}
-        rel_details['id'] = release.id
-        rel_details['artist'] = release.artists[0].name
-        rel_details['title'] = release.title
-        if len(release.labels) != 0:
-            rel_details['label'] = release.labels[0].name
-        rel_details['country'] = release.country
-        rel_details['year'] = release.year
-        rel_details['format'] = release.formats[0]['descriptions'][0]
-        if len(release.formats[0]['descriptions']) > 1:
-            rel_details['format'] += ' {}'.format(
-                  release.formats[0]['descriptions'][1])
-
-        log.info("prepare_release_info: rel_details: {}".format(
-            rel_details))
-        return rel_details
 
     def tab_all_releases(self, releases_data):
         #self.p(tab(releases_data, tablefmt="plain",

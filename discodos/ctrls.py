@@ -690,7 +690,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             self.cli.p('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
             search_results = self.collection.search_release_online(_searchterm)
             # SEARCH RESULTS OUTPUT HAPPENS HERE
-            compiled_results_list = self.cli.print_found_discogs_release(
+            compiled_results_list = self.print_and_return_first_d_release(
                   search_results, _searchterm, db_releases)
             return compiled_results_list
 
@@ -718,6 +718,38 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                         answ = int(answ)
                     return [search_results[answ]]
                     #return num_search_results[answ][0]
+
+    def print_and_return_first_d_release(self, discogs_results, _searchterm, _db_releases):
+        ''' formatted output _and return of Discogs release search results'''
+        self.first_track_on_release = '' # reset this in any case first
+        # only show pages count if it's a Release Title Search
+        if not is_number(_searchterm):
+            self.cli.p("Found "+str(discogs_results.pages )+" page(s) of results!")
+        else:
+            self.cli.p("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+        for result_item in discogs_results:
+            self.cli.p("Checking " + str(result_item.id))
+            for dbr in _db_releases:
+                if result_item.id == dbr[0]:
+                    self.cli.p("Good, first matching record in your collection is:")
+                    release_details = self.collection.prepare_release_info(result_item)
+                    # we need to pass a list in list here. we use tabulate to view
+                    self.cli.tab_online_search_results([release_details])
+                    self.cli.online_search_results_tracklist(result_item.tracklist)
+                    self.first_track_on_release = result_item.tracklist[0].position
+                    break
+            try:
+                if result_item.id == dbr[0]:
+                    #return release_details[0]
+                    log.info("Compiled Discogs release_details: {}".format(release_details))
+                    return release_details
+                # FIXME this is bullshit, will never be reached FIXME
+                #    break
+            except UnboundLocalError:
+                log.error("Discogs collection was not imported to DiscoBASE properly!")
+                #raise unb
+                raise SystemExit(1)
+        return False
 
     def view_all_releases(self):
         self.cli.p("Showing all releases in DiscoBASE.")

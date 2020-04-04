@@ -723,6 +723,27 @@ class Collection (Database):
             log.error("Exception: %s", Exc)
             return False
 
+    def prepare_release_info(self, release): # discogs_client Release object
+        '''takes a discogs_client Release object and returns prepares "relevant"
+           data into a dict with named keys. We use it eg for a nicely formatted
+           release view using tabulate'''
+        rel_details={}
+        rel_details['id'] = release.id
+        rel_details['artist'] = release.artists[0].name
+        rel_details['title'] = release.title
+        if len(release.labels) != 0:
+            rel_details['label'] = release.labels[0].name
+        rel_details['country'] = release.country
+        rel_details['year'] = release.year
+        rel_details['format'] = release.formats[0]['descriptions'][0]
+        if len(release.formats[0]['descriptions']) > 1:
+            rel_details['format'] += ' {}'.format(
+                  release.formats[0]['descriptions'][1])
+
+        log.info("prepare_release_info: rel_details: {}".format(
+            rel_details))
+        return rel_details
+
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:

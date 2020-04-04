@@ -175,7 +175,7 @@ def main():
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
                 mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add,
                         args.add_at_pos,
-                        track_no_suggest = coll_ctrl.cli.first_track_on_release)
+                        track_no_suggest = coll_ctrl.first_track_on_release)
             else:
                 print_help("Nothing more to do. Use -m <mix_name> to add to a mix.")
         else:
@@ -239,7 +239,7 @@ def main():
                       args.add_release_to_mix)
                     mix_ctrl.add_discogs_track(discogs_rel_found, False,
                       args.mix_mode_add_at_pos,
-                      track_no_suggest = coll_ctrl.cli.first_track_on_release)
+                      track_no_suggest = coll_ctrl.first_track_on_release)
                 else:
                     database_rel_found = coll_ctrl.search_release(
                             args.add_release_to_mix)
