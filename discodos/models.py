@@ -338,6 +338,30 @@ class Mix (Database):
                 track_ext_edit = True
 
         if mix_track_edit:
+            # save current track order if pos-edit included
+            if 'track_pos' in edit_answers:
+                move_to = int(edit_answers['track_pos'])
+                # when moving the track "up"
+                if move_to < track_details['track_pos']:
+                    all_after_dest_pos = self.get_tracks_from_position(
+                          edit_answers['track_pos'])
+                    # shift all those tracks "down" +1
+                    self.reorder_tracks_squeeze_in(edit_answers['track_pos'],
+                          all_after_dest_pos)
+                # when moving the track "down"
+                elif move_to > track_details['track_pos']:
+                    # we set dest pos to be one further down to really be the
+                    # chosen destination after reorder_pos (see below db update)
+                    edit_answers['track_pos'] = move_to + 1
+                    all_after_dest_pos = self.get_tracks_from_position(
+                          edit_answers['track_pos'])
+                    # shift all those tracks "down" +1
+                    self.reorder_tracks_squeeze_in(edit_answers['track_pos'],
+                          all_after_dest_pos)
+                # no else: nothing to do if track_pos stays the same
+                # FIXME somehow we should user inform like this:
+                # this track will be put in after/bevore track "name" ok?
+
             update_mix_track = 'UPDATE mix_track SET '
             where_mix_track = 'WHERE mix_track_id == {}'.format(track_details['mix_track_id'])
             for key, answer in edit_answers.items():
@@ -356,6 +380,12 @@ class Mix (Database):
             log.info("MODEL: Now really executing mix_track update...")
             updated_mix_track = self.execute_sql(
                 final_update_mix_track, tuple(values_list_mix_track))
+
+            # finish "track moving":
+            # after original track_pos was edited we fill in the gap
+            if 'track_pos' in edit_answers:
+                self.reorder_tracks(int(track_details['track_pos']) - 1)
+            # FIXME no sanity check if this was ok
 
         if track_ext_edit:
             update_track_ext = 'UPDATE track_ext SET '
