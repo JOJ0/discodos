@@ -115,51 +115,118 @@ class Config():
     def install_cli(self):
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
         if os.name == 'posix':
-            disco_file = self.discodos_root / 'disco'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate'
-            script_contents = '#!/bin/bash\n'
-            script_contents+= '# This is the DiscoDOS cli wrapper.\n'
-            script_contents+= 'source "{}"\n'.format(venv_act)
-            script_contents+= '"{}" "$@"\n'.format(self.discodos_root / 'cli.py')
-            sysinst = self.discodos_root / 'install_cli_system.sh'
-            sysinst_contents = 'sudo -p "Need your users password to allow '
-            sysinst_contents+= 'systemwide installation of disco cli command: " '
-            sysinst_contents+=  'cp {} /usr/local/bin\n'.format(disco_file)
+            # cli.py wrapper
+            disco_wrapper = self.discodos_root / 'disco'
+            disco_py = self.discodos_root / 'cli.py'
+            disco_contents = self._posix_wrapper(disco_py, venv_act,
+                  '# This is the DiscoDOS cli wrapper.')
+            # setup.py wrapper
+            setup_wrapper = self.discodos_root / 'setup'
+            setup_py = self.discodos_root / 'setup.py'
+            setup_contents = self._posix_wrapper(setup_py, venv_act,
+                  '# This is the DiscoDOS setup script wrapper.')
+            # sync.py wrapper
+            sync_wrapper = self.discodos_root / 'sync'
+            sync_py = self.discodos_root / 'sync.py'
+            sync_contents = self._posix_wrapper(sync_py, venv_act,
+                  '# This is the DiscoDOS sync/backup script wrapper.')
+            # install systemwide
+            sysinst_sh = self.discodos_root / 'install_systemwide.sh'
+            sysinst_sh_contents = 'sudo -p "Need your users password to allow '
+            sysinst_sh_contents+= 'systemwide installation of disco cli command: " '
+            sysinst_sh_contents+=  'cp {} /usr/local/bin\n'.format(disco_wrapper)
         elif os.name == 'nt':
-            disco_file = self.discodos_root / 'disco.bat'
-            script_contents = '@echo off\n'
-            script_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
-            script_contents+= 'setlocal enableextensions\n'
-            script_contents+= '"{}" %*\n'.format(self.discodos_root / 'cli.py')
-            script_contents+= 'endlocal\n'
+            disco_wrapper = self.discodos_root / 'disco.bat'
+            disco_contents = '@echo off\n'
+            disco_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
+            disco_contents+= 'setlocal enableextensions\n'
+            disco_contents+= '"{}" %*\n'.format(self.discodos_root / 'cli.py')
+            disco_contents+= 'endlocal\n'
             discoshell = self.discodos_root / 'discoshell.bat'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
             discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
                 self.discodos_root, venv_act)
         else:
-            log.warn("Config.cli: Unknown OS - not creating disco cli wrapper.")
+            log.warn("Config.cli: Unknown OS - not creating disco CLI wrapper.")
             return True
 
-        if disco_file.is_file(): # install wrappers only if non-existent
-            log.info("Config.cli: DiscoDOS cli wrapper is already existing: {}".format(
-                disco_file))
-        else:
-            print_help("\nInstalling DiscoDOS cli wrapper: {}".format(disco_file))
-            self._write_textfile(script_contents, disco_file)
-            if os.name == "posix":
-                disco_file.chmod(0o755)
-                print("You can now use the DiscoDOS cli using ./disco")
-                self._write_textfile(sysinst_contents, sysinst)
-                sysinst.chmod(0o755)
-                hlpmsg ="Execute ./{} for systemwide installation".format(sysinst.name)
-                hlpmsg+="\n(makes disco command executable from everywhere)."
+        # file installation part starts here
+        if os.name == "posix":
+            log.info('Config.cli: Installing DiscoDOS wrappers.')
+            # install cli wrapper
+            if disco_wrapper.is_file(): # install only if non-existent
+                log.info("Config.cli: CLI wrapper is already existing: {}".format(
+                    disco_wrapper))
+            else:
+                print("Installing cli wrapper: {}".format(disco_wrapper))
+                self._write_textfile(disco_contents, disco_wrapper)
+                disco_wrapper.chmod(0o755)
+                print("You can now use the DiscoDOS CLI using ./disco\n")
+            # install setup wrapper
+            if setup_wrapper.is_file(): # install only if non-existent
+                log.info("Config.cli: setup wrapper is already existing: {}".format(
+                    setup_wrapper))
+            else:
+                print("Installing setup wrapper: {}".format(setup_wrapper))
+                self._write_textfile(setup_contents, setup_wrapper)
+                setup_wrapper.chmod(0o755)
+                print("You can now use DiscoDOS setup using ./setup\n")
+            # install sync wrapper
+            if sync_wrapper.is_file(): # install only if non-existent
+                log.info("Config.cli: sync wrapper is already existing: {}".format(
+                    sync_wrapper))
+            else:
+                print("Installing DiscoDOS sync wrapper: {}".format(sync_wrapper))
+                self._write_textfile(sync_contents, sync_wrapper)
+                sync_wrapper.chmod(0o755)
+                print("You can now use DiscoDOS sync using ./sync\n")
+            # systemwide installation handling
+            if sysinst_sh.is_file(): # install only if non-existent
+                log.info("Config.cli: install_systemwide.sh is already existing: {}".format(
+                    sysinst_sh))
+            else:
+                self._write_textfile(sysinst_sh_contents, sysinst_sh)
+                sysinst_sh.chmod(0o755)
+                hlpmsg ="Execute ./{} for systemwide installation".format(
+                    sysinst_sh.name)
+                hlpmsg+="\n* makes disco command executable from everywhere."
+                hlpmsg+="\n* setup and sync commands still have to be executed "
+                hlpmsg+="from inside discodos dir using: "
+                hlpmsg+="\n./disco"
+                hlpmsg+="\n./sync"
                 print_help(hlpmsg)
-            elif os.name == "nt":
+        elif os.name == "nt":
+            if disco_wrapper.is_file(): # install only if non-existent
+                log.info("Config.cli: DiscoDOS cli wrapper is already existing: {}".format(
+                    disco_wrapper))
+            else:
+                msg_discoinst = ("\nInstalling DiscoDOS CLI wrapper: {}".format(
+                      disco_wrapper))
+                print(msg_discoinst)
+                log.info(msg_discoinst)
+                self._write_textfile(disco_contents, disco_wrapper)
                 print_help('Installing DiscoDOS shell: {}'.format(discoshell))
                 self._write_textfile(discoshell_contents, discoshell)
-                hlpshmsg = 'Usage: Double click discoshell.bat to open the "DiscoDOS shell" '
-                hlpshmsg+= 'window; Now enter "disco ..." or "setup ..." commands.'
+                hlpshmsg = 'Usage: '
+                hlpshmsg = 'Double click discoshell.bat to open the "DiscoDOS shell," '
+                hlpshmsg+= '\nThen put DiscoDOS commands in there.'
+                hlpshmsg+= '\nView available commands:'
+                hlpshmsg+= '\ndisco -h'
+                hlpshmsg+= '\ndisco mix -h'
+                hlpshmsg+= '\ndisco search -h'
+                hlpshmsg+= '\ndisco suggest -h'
+                hlpshmsg+= '\nsetup -h'
+                hlpshmsg+= '\nsync -h'
                 print_help(hlpshmsg)
+
+    def _posix_wrapper(self, filename, venv_activate, comment):
+        '''return some lines forming a basic posix venv wrapper'''
+        contents = '#!/bin/bash\n'
+        contents+= '{}\n'.format(comment)
+        contents+= 'source "{}"\n'.format(venv_activate)
+        contents+= '"{}" "$@"\n'.format(filename)
+        return contents
 
     # write a textile (eg. shell script)
     def _write_textfile(self, contents, file):
