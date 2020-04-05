@@ -588,14 +588,14 @@ class User_int(object):
                   and self.args.suggest_key):
                 log.debug("Entered BPM and key suggestion report.")
                 self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = True
-            elif (self.args.suggest_bpm and self.args.suggest_search is not "0"
+            elif (self.args.suggest_bpm and self.args.suggest_search != "0"
                   and self.args.suggest_key):
                 log.error("You can't combine BPM and key with Track-combination report.")
                 raise SystemExit(1)
-            elif self.args.suggest_bpm and self.args.suggest_search is not "0":
+            elif self.args.suggest_bpm and self.args.suggest_search != "0":
                 log.error("You can't combine BPM with Track-combination report.")
                 raise SystemExit(1)
-            elif self.args.suggest_key and self.args.suggest_search is not "0":
+            elif self.args.suggest_key and self.args.suggest_search != "0":
                 log.error("You can't combine key with Track-combination report.")
                 raise SystemExit(1)
             elif self.args.suggest_bpm and self.args.suggest_search == "0":
