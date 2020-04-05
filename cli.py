@@ -27,11 +27,29 @@ def argparser(argv):
         name='search',
         help='search for a Discogs release or track and optionally add it to a mix')
     search_subparser.add_argument(
-        dest='release_search',
-        help='search for this release name or ID')
-    search_subparser.add_argument(
+        dest='release_search', metavar='search_terms',
+        help='''When offline, searches in release name or ID only.
+                When online, Discogs API search engine is used:
+                also tracknames, artists, labels, catalog numbers allowed.
+                put multiple words inside double quotes''')
+    search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
+    search_subp_excl_group.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix',
-        help='add found release to given mix ID (asks which track to add)', default=0)
+        help='''adds found release to given mix ID
+                (asks which track to add in case -t is missing)''',
+        default=0)
+    search_subp_excl_group.add_argument(
+        "-u", "--discogs-update", action='store_true',
+        dest='search_discogs_update', default=0,
+        help='''updates found release/track with Discogs track/artist details
+                (asks which track to update in case -t is missing)''')
+    search_subp_excl_group.add_argument(
+        "-z", "--brainz-update", action="count",
+        dest='brainz_update', default=0,
+        help='''updates found release/track with additional info from MusicBrainz
+                and AcousticBrainz. (asks which track to match in case -t is missing)
+                -z quick match,
+                -zz detailed match (takes longer, but more results)''')
     search_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add',
         help='add this track number to mix (eg. A1, AA, B2, ...)', default=0)
@@ -170,6 +188,10 @@ def main():
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         if coll_ctrl.ONLINE:
+            msg_use = "Nothing more to do. Use -m <mix> to add to a "
+            msg_use+= "mix, -u to update with Discogs information "
+            msg_use+= "or -zz to update with *Brainz information. "
+            msg_use+= "You can combine these options with -t too."
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
@@ -177,7 +199,7 @@ def main():
                         args.add_at_pos,
                         track_no_suggest = coll_ctrl.first_track_on_release)
             else:
-                print_help("Nothing more to do. Use -m <mix_name> to add to a mix.")
+                print_help(msg_use)
         else:
             database_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
@@ -185,7 +207,7 @@ def main():
                 mix_ctrl.add_offline_track(database_rel_found, args.track_to_add,
                         args.add_at_pos)
             else:
-                print_help("Nothing more to do. Use -m <mix_name> to add to a mix.")
+                print_help(msg_use)
 
 
     ##### MIX MODE ########################################################
