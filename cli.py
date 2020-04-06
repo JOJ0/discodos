@@ -45,7 +45,7 @@ def argparser(argv):
                 (asks which track to update in case -t is missing)''')
     search_subp_excl_group.add_argument(
         "-z", "--brainz-update", action="count",
-        dest='brainz_update', default=0,
+        dest='search_brainz_update', default=0,
         help='''updates found release/track with additional info from MusicBrainz
                 and AcousticBrainz. (asks which track to match in case -t is missing)
                 -z quick match,
@@ -198,6 +198,12 @@ def main():
                 mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add,
                         args.add_at_pos,
                         track_no_suggest = coll_ctrl.first_track_on_release)
+            elif user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
+                coll_ctrl.update_track_from_discogs(discogs_rel_found,
+                      args.track_to_add,
+                      track_no_suggest = coll_ctrl.first_track_on_release)
+            elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
+                pass
             else:
                 print_help(msg_use)
         else:

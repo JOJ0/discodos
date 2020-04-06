@@ -494,6 +494,8 @@ class User_int(object):
         self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = False
         self.WANTS_TO_EDIT_MIX = False
         self.DID_NOT_PROVIDE_COMMAND = False
+        self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = False
+        self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -509,6 +511,10 @@ class User_int(object):
                     self.WANTS_TO_ADD_TO_MIX = True
                 if self.args.add_to_mix !=0:
                     self.WANTS_TO_ADD_TO_MIX = True
+                if self.args.search_discogs_update !=0:
+                    self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
+                if self.args.search_brainz_update !=0:
+                    self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):
