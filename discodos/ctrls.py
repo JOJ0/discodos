@@ -262,7 +262,6 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Not online, can't pull from Discogs...")
             return False # exit method we are offline
 
-        start_time = time()
         if self.mix.id_existing:
             self.cli.p("Let's update current mixes tracks with info from Discogs...")
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
@@ -270,31 +269,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Let's update every track contained in any mix with info from Discogs...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
-        coll_ctrl.tracks_processed = len(mixed_tracks)
-        coll_ctrl.tracks_added = 0
-        coll_ctrl.tracks_db_errors = 0
-        coll_ctrl.tracks_not_found_errors = 0
-        for mix_track in mixed_tracks:
+        update_ret = coll_ctrl.update_tracks_from_discogs(mixed_tracks)
+        return update_ret
 
-            d_track_no = mix_track['d_track_no']
-            d_release_id = mix_track['d_release_id']
-            discogs_title = mix_track['discogs_title']
-            coll_ctrl.collection.rate_limit_slow_downer(remaining=20, sleep=3)
-
-            # this method updates exactely one track
-            fetch_ok = coll_ctrl.update_track_from_discogs(d_release_id, discogs_title,
-                    d_track_no)
-            if not fetch_ok:
-                continue
-
-        print('Processed: {}. Added Artist/Track info to DiscoBASE: {}.'.format(
-            coll_ctrl.tracks_processed, coll_ctrl.tracks_added))
-        print('Database errors: {}. Not found on Discogs errors: {}.'.format(
-            coll_ctrl.tracks_db_errors, coll_ctrl.tracks_not_found_errors))
-        print("") # space for readability
-
-        self.cli.duration_stats(start_time, 'Updating track info') # print time stats
-        return True # we did at least something and thus were successfull
 
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
           detail = 1):
@@ -887,34 +864,57 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
-    def update_track_from_discogs(self, d_release_id, discogs_title, d_track_no):
-        try: # we catch 404 here, and not via get_d_release, to save one request
-            name, artist = "", ""
-            d_tracklist = self.d.release(d_release_id).tracklist
-            name = self.collection.d_tracklist_parse(
-                  d_tracklist, d_track_no)
-            artist = self.collection.d_artists_parse(
-                  d_tracklist, d_track_no,
-                  self.d.release(d_release_id).artists)
-        except errors.HTTPError as HtErr:
-            log.error('Track {} on "{}" ({}) not existing on Discogs ({})'.format(
-                  d_track_no, discogs_title, d_release_id, HtErr))
-            print("") # space for readability
-            #continue # jump to next iteration, nothing more to do here
-            return False
+    def update_tracks_from_discogs(self, mixed_tracks):
+        '''takes a list of tracks and updates tracknames/artists from Discogs.
+           List has to contain fields: d_release_id, discogs_title, d_track_no
+        '''
+        start_time = time()
+        self.tracks_processed = len(mixed_tracks)
+        self.tracks_added = 0
+        self.tracks_db_errors = 0
+        self.tracks_not_found_errors = 0
+        for mix_track in mixed_tracks:
 
-        if name or artist:
-            print('Adding Track {} on "{}" ({})'.format(
-                  d_track_no, discogs_title, d_release_id))
-            print('{} - {}'.format(artist, name))
-            if self.collection.upsert_track(d_release_id,
-                  d_track_no, name, artist):
-                self.tracks_added += 1
+            d_track_no = mix_track['d_track_no']
+            d_release_id = mix_track['d_release_id']
+            discogs_title = mix_track['discogs_title']
+            self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
+
+            try: # we catch 404 here, and not via get_d_release, to save one request
+                name, artist = "", ""
+                d_tracklist = self.d.release(d_release_id).tracklist
+                name = self.collection.d_tracklist_parse(
+                      d_tracklist, d_track_no)
+                artist = self.collection.d_artists_parse(
+                      d_tracklist, d_track_no,
+                      self.d.release(d_release_id).artists)
+            except errors.HTTPError as HtErr:
+                log.error('Track {} on "{}" ({}) not existing on Discogs ({})'.format(
+                      d_track_no, discogs_title, d_release_id, HtErr))
+                print("") # space for readability
+                continue # jump to next iteration, nothing more to do here
+
+            if name or artist:
+                print('Adding Track {} on "{}" ({})'.format(
+                      d_track_no, discogs_title, d_release_id))
+                print('{} - {}'.format(artist, name))
+                if self.collection.upsert_track(d_release_id,
+                      d_track_no, name, artist):
+                    self.tracks_added += 1
+                else:
+                    self.tracks_db_errors += 1
+                print("") # space for readability
             else:
-                self.tracks_db_errors += 1
-            print("") # space for readability
-        else:
-            print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
-                  discogs_title, d_release_id, d_track_no))
-            self.tracks_not_found_errors += 1
-            print("") # space for readability
+                print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
+                      discogs_title, d_release_id, d_track_no))
+                self.tracks_not_found_errors += 1
+                print("") # space for readability
+
+        print('Processed: {}. Added Artist/Track info to DiscoBASE: {}.'.format(
+            self.tracks_processed, self.tracks_added))
+        print('Database errors: {}. Not found on Discogs errors: {}.'.format(
+            self.tracks_db_errors, self.tracks_not_found_errors))
+        print("") # space for readability
+
+        self.cli.duration_stats(start_time, 'Updating track info') # print time stats
+        return True # we did at least something and thus were successfull
