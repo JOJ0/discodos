@@ -500,8 +500,20 @@ class User_int(object):
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
             if "all" in self.args.release_search:
-                self.WANTS_TO_LIST_ALL_RELEASES = True
-                self.WANTS_ONLINE = False
+                if self.args.search_discogs_update == True:
+                    # discogs update all
+                    self.WANTS_ONLINE = True
+                    self.WANTS_TO_LIST_ALL_RELEASES = True
+                    self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
+                elif self.args.search_brainz_update == True:
+                    # brainz update all
+                    self.WANTS_ONLINE = True
+                    self.WANTS_TO_LIST_ALL_RELEASES = True
+                    self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
+                else:
+                    # just list all
+                    self.WANTS_ONLINE = False
+                    self.WANTS_TO_LIST_ALL_RELEASES = True
             else:
                 self.WANTS_TO_SEARCH_FOR_RELEASE = True
                 if (self.args.add_to_mix != 0 and self.args.track_to_add != 0
@@ -511,9 +523,10 @@ class User_int(object):
                     self.WANTS_TO_ADD_TO_MIX = True
                 if self.args.add_to_mix !=0:
                     self.WANTS_TO_ADD_TO_MIX = True
+
                 if self.args.search_discogs_update !=0:
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
-                if self.args.search_brainz_update !=0:
+                elif self.args.search_brainz_update !=0:
                     self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
 
         # MIX MODE

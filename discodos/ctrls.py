@@ -928,3 +928,29 @@ class Coll_ctrl_cli (Coll_ctrl_common):
               'd_track_no': track_no
         }]
         return self.update_tracks_from_discogs(tr_list)
+
+    def update_all_tracks_from_discogs(self):
+        #if not track_no:
+        #    track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
+        all_releases = self.collection.get_all_db_releases()
+        # now create new list with entry for each track acc. to discogs tracklist
+        #all_tracks = [dict(row) for row in mixes_data]
+        all_tracks = []
+        for release in all_releases:
+            self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
+            r_details = self.collection.get_d_release(release['discogs_id'],
+                                          catch = False)
+            try:
+                for track in r_details.tracklist:
+                    all_tracks.append({
+                       'd_release_id': release['discogs_id'],
+                       'discogs_title': release['discogs_title'],
+                       'd_track_no': track.position.upper()
+                    })
+            except Exception as Exc:
+                log.error("Exception: %s", Exc)
+                #raise Exc
+                #return False
+
+        print('This is the compiled track list: {}'.format(all_tracks))
+        return self.update_tracks_from_discogs(all_tracks)

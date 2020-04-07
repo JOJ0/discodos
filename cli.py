@@ -184,7 +184,12 @@ def main():
 
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
-        coll_ctrl.view_all_releases()
+        if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
+            coll_ctrl.update_all_tracks_from_discogs()
+        elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
+            pass
+        else:
+            coll_ctrl.view_all_releases()
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         if coll_ctrl.ONLINE:

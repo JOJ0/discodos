@@ -882,10 +882,11 @@ class Collection (Database):
                 log.error("MODEL: %s", e.args[0])
                 return False
 
-    def get_d_release(self, release_id):
+    def get_d_release(self, release_id, catch = True):
         try:
             r = self.d.release(release_id)
-            log.debug("try to access r here to catch err {}".format(r.title))
+            if catch == True:
+                log.debug("try to access r here to catch err {}".format(r.title))
             return r
         except errors.HTTPError as HtErr:
             log.error('Release not existing on Discogs ({})'.format(HtErr))
