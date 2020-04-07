@@ -199,9 +199,12 @@ def main():
                         args.add_at_pos,
                         track_no_suggest = coll_ctrl.first_track_on_release)
             elif user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
-                coll_ctrl.update_track_from_discogs(discogs_rel_found,
-                      args.track_to_add,
-                      track_no_suggest = coll_ctrl.first_track_on_release)
+                # online search gave us exactely one release in a list
+                #print(discogs_rel_found)
+                coll_ctrl.update_single_track_from_discogs(
+                      discogs_rel_found['id'],
+                      discogs_rel_found['title'],
+                      args.track_to_add)
             elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
                 pass
             else:
