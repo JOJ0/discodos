@@ -34,7 +34,7 @@ def argparser(argv):
                 put multiple words inside double quotes''')
     search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
     search_subp_excl_group.add_argument(
-        "-m", "--mix", type=str, dest='add_to_mix',
+        "-m", "--mix", type=str, dest='add_to_mix', metavar='MIX_NAME',
         help='''adds found release to given mix ID
                 (asks which track to add in case -t is missing)''',
         default=0)
@@ -51,10 +51,10 @@ def argparser(argv):
                 -z quick match,
                 -zz detailed match (takes longer, but more results)''')
     search_subparser.add_argument(
-        "-t", "--track", type=str, dest='track_to_add',
+        "-t", "--track", type=str, dest='track_to_add', metavar='TRACK_NUMBER',
         help='add this track number to mix (eg. A1, AA, B2, ...)', default=0)
     search_subparser.add_argument(
-        "-p", "--pos", type=str, dest='add_at_pos',
+        "-p", "--pos", type=str, dest='add_at_pos', metavar='POS_IN_MIX',
         help='insert track at specific position in mix (eg. 01, 14, ...), defaults to next',
         default=0)
     ### MIX subparser #############################################################
