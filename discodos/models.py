@@ -914,13 +914,14 @@ class Collection (Database):
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
         if int(self.d._fetcher.rate_limit_remaining) < remaining:
-            log.info("Discogs request rate limit is about to exceed,\
-                      let's wait a bit: %s\n",
-                         self.d._fetcher.rate_limit_remaining)
+            log.info(
+             "Discogs request rate limit is about to exceed, let's wait a little: %s",
+                          self.d._fetcher.rate_limit_remaining)
             #while int(self.d._fetcher.rate_limit_remaining) < remaining:
             time.sleep(sleep)
         else:
-            log.info("Discogs rate limit info: %s remaining.", self.d._fetcher.rate_limit_remaining)
+            log.info("Discogs rate limit: %s remaining.",
+                          self.d._fetcher.rate_limit_remaining)
 
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1

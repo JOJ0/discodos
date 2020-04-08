@@ -796,28 +796,79 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 self.cli.error_not_the_release()
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
-    def import_collection(self):
-        self.cli.exit_if_offline(self.collection.ONLINE)
-        self.cli.p(
-        "Gathering your Discogs collection and importing necessary fields into DiscoBASE")
+    def import_collection(self, tracks = False):
         start_time = time()
-        insert_count = 0
-        for r in self.collection.me.collection_folders[0].releases:
-            self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
-            artists = self.collection.d_artists_to_str(r.release.artists)
-            d_catno = self.collection.d_get_first_catno(r.release.labels)
-            print("Release :", r.release.id, "-", artists, "-",  r.release.title)
-            rowcount = self.collection.create_release(r.release.id, r.release.title,
-                    artists, d_catno, d_coll = True)
+        self.cli.exit_if_offline(self.collection.ONLINE)
+        self.releases_processed = 0
+        self.releases_added = 0
+        self.releases_db_errors = 0
+        if tracks:
+            self.cli.p("Importing Discogs collection into DiscoBASE (extended import - releases and tracks)")
+            self.tracks_processed = 0
+            self.tracks_added = 0
+            self.tracks_db_errors = 0
+            self.tracks_discogs_errors = 0
+        else:
+            self.cli.p("Importing Discogs collection into DiscoBASE (regular import - just releases)")
+
+        for item in self.collection.me.collection_folders[0].releases:
+            self.collection.rate_limit_slow_downer(remaining=15, sleep=3)
+            d_artists = item.release.artists # we'll need it again with tracks
+            artists = self.collection.d_artists_to_str(d_artists)
+            first_catno = self.collection.d_get_first_catno(item.release.labels)
+            print("Release :", item.release.id, "-", artists, "-",  item.release.title)
+            rel_created = self.collection.create_release(item.release.id,
+                  item.release.title, artists, first_catno, d_coll = True)
             # create_release will return False if unsuccessful
-            if rowcount:
-                insert_count = insert_count + 1
-                print("Created so far:", insert_count, "")
-                log.info("discogs-rate-limit-remaining: %s",
-                         self.collection.d._fetcher.rate_limit_remaining)
-                print()
+            if rel_created:
+                self.releases_added += 1
             else:
-                log.error("Something wrong while importing \"{}\"\n".format(r.release.title))
+                self.releases_db_errors += 1
+                log.error(
+                  'importing release "{}" Continuing anyway.'.format(
+                      item.release.title))
+            if tracks:
+                try:
+                    tracklist = item.release.tracklist
+                    for track in tracklist:
+                        tr_artists = self.collection.d_artists_parse(
+                          tracklist, track.position, d_artists)
+                        tr_title = track.title
+                        if self.collection.upsert_track(item.release.id,
+                              track.position, tr_title, tr_artists):
+                            self.tracks_added += 1
+                            msg_tr_add = 'Track "{}" - "{}"'.format(
+                                  tr_artists, tr_title)
+                            log.info(msg_tr_add)
+                            print(msg_tr_add)
+                        else:
+                            self.tracks_db_errors += 1
+                            log.error(
+                              'importing track. Continuing anyway.')
+                except Exception as Exc:
+                    self.tracks_discogs_errors += 1
+                    log.error("Exception: %s", Exc)
+
+            msg_rel_add="Releases so far: {}".format(
+                self.releases_added)
+            log.info(msg_rel_add)
+            print(msg_rel_add)
+            msg_trk_add="Tracks so far: {}".format(
+                self.tracks_added)
+            log.info(msg_trk_add)
+            print(msg_trk_add)
+            print() # leave space after a release and all its tracks
+            self.releases_processed += 1
+
+        print('Processed releases: {}. Imported releases to DiscoBASE: {}.'.format(
+            self.releases_processed, self.releases_added))
+        print('Database errors (release import): {}.'.format(
+            self.releases_db_errors))
+
+        print('Processed tracks: {}. Imported tracks to DiscoBASE: {}.'.format(
+            self.tracks_processed, self.tracks_added))
+        print('Database errors (track import): {}. Discogs errors (track import): {}.'.format(
+            self.tracks_db_errors, self.tracks_discogs_errors))
 
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
@@ -880,6 +931,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             discogs_title = mix_track['discogs_title']
             self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
 
+            # move this to method fetch_track_and_artist_from_discogs
             try: # we catch 404 here, and not via get_d_release, to save one request
                 name, artist = "", ""
                 d_tracklist = self.d.release(d_release_id).tracklist
@@ -928,29 +980,3 @@ class Coll_ctrl_cli (Coll_ctrl_common):
               'd_track_no': track_no
         }]
         return self.update_tracks_from_discogs(tr_list)
-
-    def update_all_tracks_from_discogs(self):
-        #if not track_no:
-        #    track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
-        all_releases = self.collection.get_all_db_releases()
-        # now create new list with entry for each track acc. to discogs tracklist
-        #all_tracks = [dict(row) for row in mixes_data]
-        all_tracks = []
-        for release in all_releases:
-            self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
-            r_details = self.collection.get_d_release(release['discogs_id'],
-                                          catch = False)
-            try:
-                for track in r_details.tracklist:
-                    all_tracks.append({
-                       'd_release_id': release['discogs_id'],
-                       'discogs_title': release['discogs_title'],
-                       'd_track_no': track.position.upper()
-                    })
-            except Exception as Exc:
-                log.error("Exception: %s", Exc)
-                #raise Exc
-                #return False
-
-        print('This is the compiled track list: {}'.format(all_tracks))
-        return self.update_tracks_from_discogs(all_tracks)

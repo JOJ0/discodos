@@ -185,7 +185,7 @@ def main():
     #### RELEASE MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
         if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
-            coll_ctrl.update_all_tracks_from_discogs()
+            coll_ctrl.import_collection(tracks = True)
         elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
             pass
         else:
