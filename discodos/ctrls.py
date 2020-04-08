@@ -816,7 +816,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             d_artists = item.release.artists # we'll need it again with tracks
             artists = self.collection.d_artists_to_str(d_artists)
             first_catno = self.collection.d_get_first_catno(item.release.labels)
-            print("Release :", item.release.id, "-", artists, "-",  item.release.title)
+            print('Release {} - "{}" - "{}"'.format(item.release.id, artists,
+                  item.release.title))
             rel_created = self.collection.create_release(item.release.id,
                   item.release.title, artists, first_catno, d_coll = True)
             # create_release will return False if unsuccessful
