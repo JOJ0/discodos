@@ -415,7 +415,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Let's update current mixes tracks with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
-            self.cli.p("Let's update ALL tracks in ALL mixes with info from AcousticBrainz...")
+            self.cli.p("Let's update every track contained in any mix with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
         processed, processed_total = 0, len(mixed_tracks)
