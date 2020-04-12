@@ -272,14 +272,12 @@ class Mix_ctrl_cli (Mix_ctrl_common):
         update_ret = coll_ctrl.update_tracks_from_discogs(mixed_tracks)
         return update_ret
 
-
     def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
           detail = 1):
         if not coll_ctrl.ONLINE:
             self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
 
-        start_time = time()
         if self.mix.id_existing:
             self.cli.p("Let's update current mixes tracks with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
@@ -287,142 +285,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Let's update every track contained in any mix with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
-        processed, processed_total = 0, len(mixed_tracks)
-        errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
-        added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
-        for mix_track in mixed_tracks:
-            release_mbid, rec_mbid = None, None # we are filling these
-            key, chords_key, bpm = None, None, None # searched later, in this order
-            d_release_id = mix_track['d_release_id']
-            d_track_no = mix_track['d_track_no']
-            user_rec_mbid = mix_track['m_rec_id_override']
-            processed += 1
+        match_ret = coll_ctrl.update_tracks_from_brainz(mixed_tracks)
+        return match_ret
 
-            log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
-                mix_track['d_release_id'], mix_track['discogs_title']))
-            d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
-            if not d_rel:
-                log.warning("Skipping. Cant't fetch Discogs release.")
-                coll_ctrl.cli.brainz_processed_so_far(processed, processed_total)
-                print('')
-                continue
-            else:
-                if not mix_track['d_track_name']: # no track name in db -> ask discogs
-                    d_rel = coll_ctrl.collection.get_d_release(d_release_id) # 404 is handled here
-                    d_track_name = coll_ctrl.collection.d_tracklist_parse(
-                        d_rel.tracklist, mix_track['d_track_no'])
-                    if not d_track_name:
-                        errors_not_found += 1
-                        log.warning(
-                          'Skipping. Track number {} not existing on release "{}"'.format(
-                           mix_track['d_track_no'], mix_track['discogs_title']))
-                        coll_ctrl.cli.brainz_processed_so_far(processed, processed_total)
-                        print('')
-                        continue # jump to next track. space for readability ^^
-                else:
-                    d_track_name = mix_track['d_track_name'] # trackname in db, good
-
-                if not mix_track['d_catno']: # no label name in db -> ask discogs
-                    d_catno = d_rel.labels[0].data['catno']
-                else:
-                    d_catno = mix_track['d_catno']
-
-                # get_discogs track number numerical
-                #print(dir(d_rel.tracklist[1]))
-                #d_rel_track_count = len(d_rel.tracklist)
-                d_track_numerical = coll_ctrl.collection.d_tracklist_parse_numerical(
-                    d_rel.tracklist, d_track_no)
-
-            # initialize the brainz match class here,
-            # we pass it the prepared track data we'd like to match,
-            # detailed modifications are done inside (strip spaces, etc)
-            bmatch = Brainz_match(coll_ctrl.brainz.musicbrainz_user,
-                                  coll_ctrl.brainz.musicbrainz_password,
-                                  coll_ctrl.brainz.musicbrainz_appid,
-              d_release_id, mix_track['discogs_title'], d_catno,
-              mix_track['d_artist'], d_track_name, d_track_no,
-              d_track_numerical)
-            # fetching of mb_releases controllable from outside
-            # (reruns with different settings)
-            bmatch.fetch_mb_releases(detail = detail)
-            release_mbid = bmatch.match_release()
-            if not release_mbid and not user_rec_mbid:
-                log.info('CTRL: No MusicBrainz release matches. Sorry dude!')
-            else: # Recording MBID search
-                if user_rec_mbid:
-                    rec_mbid = user_rec_mbid
-                else:
-                    bmatch.fetch_mb_matched_rel()
-                    rec_mbid = bmatch.match_recording()
-
-                if rec_mbid: # we where lucky...
-                    # get accousticbrainz info
-                    key = bmatch.get_accbr_key(rec_mbid)
-                    chords_key = bmatch.get_accbr_key(rec_mbid)
-                    bpm = bmatch.get_accbr_bpm(rec_mbid)
-                else:
-                    errors_no_rec += 1
-            # user reporting starts here, not in model anymore
-            # summary and save only when we have Release MBID or user_rec_mbid
-            if release_mbid or user_rec_mbid:
-                print("Adding Brainz info for track {} on {} ({})".format(
-                    mix_track['d_track_no'],  mix_track['discogs_title'],
-                    d_release_id))
-                print("{} - {}".format(mix_track['d_artist'], d_track_name))
-                if release_mbid:
-                    print("Release MBID: {}".format(release_mbid))
-                else:
-                    log.warning("No Release MBID found!!!")
-
-                if not rec_mbid:
-                    log.warning("No Recording MBID found!!!")
-                else:
-                    if user_rec_mbid:
-                        print("Recording MBID: {} (user override)".format(rec_mbid))
-                    else:
-                        print("Recording MBID: {}".format(rec_mbid))
-
-                print("Key: {}, Chords Key: {}, BPM: {}".format(
-                    key, chords_key, bpm))
-
-                # update release table
-                ok_release = coll_ctrl.collection.update_release_brainz(d_release_id,
-                    release_mbid, bmatch.release_match_method)
-                if ok_release:
-                    print('Release table updated successfully.')
-                    log.info('Release table updated successfully.')
-                    added_release += 1
-                else:
-                    log.error('while updating release table. Continuing anyway.')
-                    errors_db += 1
-
-                # update track and track_ext table
-                ok_rec = coll_ctrl.collection.upsert_track_brainz(d_release_id,
-                    mix_track['d_track_no'], rec_mbid, bmatch.rec_match_method,
-                    key, chords_key, bpm)
-
-                if ok_rec:
-                    if rec_mbid: added_rec += 1
-                    print('Track table updated successfully.')
-                    log.info('Track table updated successfully.')
-                    if key: added_key += 1
-                    if chords_key: added_chords_key += 1
-                    if bpm: added_bpm += 1
-                else:
-                    log.error('while updating track table. Continuing anyway.')
-                    errors_db += 1
-
-            else:
-                errors_no_release += 1
-                log.warning('No Release MBID found for track {} on Discogs release "{}"'.format(
-                        mix_track['d_track_no'], mix_track['discogs_title']))
-            coll_ctrl.cli.brainz_processed_so_far(processed, processed_total)
-            print('') # space for readability
-
-        coll_ctrl.cli.brainz_processed_report(processed_total, added_release, added_rec,
-          added_key, added_chords_key, added_bpm, errors_db, errors_not_found)
-        self.cli.duration_stats(start_time, 'Updating track info') # print time stats
-        return False # we are through all tracks in mix
 
     def copy_mix(self):
         self.cli.p("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
@@ -851,3 +716,150 @@ class Coll_ctrl_cli (Coll_ctrl_common):
               'd_track_no': track_no
         }]
         return self.update_tracks_from_discogs(tr_list)
+
+    def update_tracks_from_brainz(self, track_list, detail = 1):
+        start_time = time()
+        processed, processed_total = 0, len(track_list)
+        errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
+        added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
+        for track in track_list:
+            release_mbid, rec_mbid = None, None # we are filling these
+            key, chords_key, bpm = None, None, None # searched later, in this order
+            d_release_id = track['d_release_id']
+            d_track_no = track['d_track_no']
+            user_rec_mbid = track['m_rec_id_override']
+            processed += 1
+
+            log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
+                track['d_release_id'], track['discogs_title']))
+            d_rel = self.collection.get_d_release(d_release_id) # 404 is handled here
+            if not d_rel:
+                log.warning("Skipping. Cant't fetch Discogs release.")
+                self.cli.brainz_processed_so_far(processed, processed_total)
+                print('')
+                continue
+            else:
+                if not track['d_track_name']: # no track name in db -> ask discogs
+                    d_rel = self.collection.get_d_release(d_release_id) # 404 is handled here
+                    d_track_name = self.collection.d_tracklist_parse(
+                        d_rel.tracklist, track['d_track_no'])
+                    if not d_track_name:
+                        errors_not_found += 1
+                        log.warning(
+                          'Skipping. Track number {} not existing on release "{}"'.format(
+                           track['d_track_no'], track['discogs_title']))
+                        self.cli.brainz_processed_so_far(processed, processed_total)
+                        print('')
+                        continue # jump to next track. space for readability ^^
+                else:
+                    d_track_name = track['d_track_name'] # trackname in db, good
+
+                if not track['d_catno']: # no label name in db -> ask discogs
+                    d_catno = d_rel.labels[0].data['catno']
+                else:
+                    d_catno = track['d_catno']
+
+                # get_discogs track number numerical
+                #print(dir(d_rel.tracklist[1]))
+                #d_rel_track_count = len(d_rel.tracklist)
+                d_track_numerical = self.collection.d_tracklist_parse_numerical(
+                    d_rel.tracklist, d_track_no)
+
+            # initialize the brainz match class here,
+            # we pass it the prepared track data we'd like to match,
+            # detailed modifications are done inside (strip spaces, etc)
+            bmatch = Brainz_match(self.brainz.musicbrainz_user,
+                                  self.brainz.musicbrainz_password,
+                                  self.brainz.musicbrainz_appid,
+              d_release_id, track['discogs_title'], d_catno,
+              track['d_artist'], d_track_name, d_track_no,
+              d_track_numerical)
+            # fetching of mb_releases controllable from outside
+            # (reruns with different settings)
+            bmatch.fetch_mb_releases(detail = detail)
+            release_mbid = bmatch.match_release()
+            if not release_mbid and not user_rec_mbid:
+                log.info('CTRL: No MusicBrainz release matches. Sorry dude!')
+            else: # Recording MBID search
+                if user_rec_mbid:
+                    rec_mbid = user_rec_mbid
+                else:
+                    bmatch.fetch_mb_matched_rel()
+                    rec_mbid = bmatch.match_recording()
+
+                if rec_mbid: # we where lucky...
+                    # get accousticbrainz info
+                    key = bmatch.get_accbr_key(rec_mbid)
+                    chords_key = bmatch.get_accbr_key(rec_mbid)
+                    bpm = bmatch.get_accbr_bpm(rec_mbid)
+                else:
+                    errors_no_rec += 1
+            # user reporting starts here, not in model anymore
+            # summary and save only when we have Release MBID or user_rec_mbid
+            if release_mbid or user_rec_mbid:
+                print("Adding Brainz info for track {} on {} ({})".format(
+                    track['d_track_no'],  track['discogs_title'],
+                    d_release_id))
+                print("{} - {}".format(track['d_artist'], d_track_name))
+                if release_mbid:
+                    print("Release MBID: {}".format(release_mbid))
+                else:
+                    log.warning("No Release MBID found!!!")
+
+                if not rec_mbid:
+                    log.warning("No Recording MBID found!!!")
+                else:
+                    if user_rec_mbid:
+                        print("Recording MBID: {} (user override)".format(rec_mbid))
+                    else:
+                        print("Recording MBID: {}".format(rec_mbid))
+
+                print("Key: {}, Chords Key: {}, BPM: {}".format(
+                    key, chords_key, bpm))
+
+                # update release table
+                ok_release = self.collection.update_release_brainz(d_release_id,
+                    release_mbid, bmatch.release_match_method)
+                if ok_release:
+                    print('Release table updated successfully.')
+                    log.info('Release table updated successfully.')
+                    added_release += 1
+                else:
+                    log.error('while updating release table. Continuing anyway.')
+                    errors_db += 1
+
+                # update track and track_ext table
+                ok_rec = self.collection.upsert_track_brainz(d_release_id,
+                    track['d_track_no'], rec_mbid, bmatch.rec_match_method,
+                    key, chords_key, bpm)
+
+                if ok_rec:
+                    if rec_mbid: added_rec += 1
+                    print('Track table updated successfully.')
+                    log.info('Track table updated successfully.')
+                    if key: added_key += 1
+                    if chords_key: added_chords_key += 1
+                    if bpm: added_bpm += 1
+                else:
+                    log.error('while updating track table. Continuing anyway.')
+                    errors_db += 1
+
+            else:
+                errors_no_release += 1
+                log.warning('No Release MBID found for track {} on Discogs release "{}"'.format(
+                        track['d_track_no'], track['discogs_title']))
+            self.cli.brainz_processed_so_far(processed, processed_total)
+            print('') # space for readability
+
+        self.cli.brainz_processed_report(processed_total, added_release, added_rec,
+          added_key, added_chords_key, added_bpm, errors_db, errors_not_found)
+        self.cli.duration_stats(start_time, 'Updating track info') # print time stats
+        return True # we are through all tracks, in any way, this is a success
+
+    def update_all_tracks_from_brainz(self, detail = 1):
+        if not self.ONLINE:
+            self.cli.p("Not online, can't pull from AcousticBrainz...")
+            return False # exit method we are offline
+        tracks = self.collection.get_all_tracks_for_brainz_update()
+        match_ret = self.update_tracks_from_brainz(tracks)
+        return match_ret

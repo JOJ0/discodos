@@ -1120,6 +1120,20 @@ class Collection (Database):
             log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
         return catno_str
 
+    def get_all_tracks_for_brainz_update(self):
+        log.info(
+           "MODEL: Getting _all_ tracks in DiscoBASE. Preparing for AcousticBrainz update.")
+        tables = '''release
+                      LEFT OUTER JOIN track
+                      ON release.discogs_id = track.d_release_id
+                        LEFT OUTER JOIN track_ext
+                        ON track.d_release_id = track_ext.d_release_id
+                        AND track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track.d_release_id', 'discogs_title', 'd_catno',
+          'track.d_artist', 'track.d_track_name', 'track.d_track_no',
+          'track_ext.m_rec_id_override'], tables, condition=False,
+           fetchone=False, orderby='release.discogs_id')
+
 class Brainz (object):
 
     def __init__(self, musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
