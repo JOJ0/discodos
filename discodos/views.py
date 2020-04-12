@@ -368,21 +368,23 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
                 while not is_number(answers['track_pos']):
                     answers[db_field] = self.ask(
                           question.format(orig_data['track_pos']))
-                    if answers[db_field] == "":
+                    if (answers[db_field] == ""
+                          or int(answers[db_field]) == orig_data[db_field]):
                         log.info("Answer was empty, dropping item from update.")
                         del(answers[db_field])
                         break
-                move_to = int(answers['track_pos'])
-                if move_to < orig_data['track_pos']:
-                    mvmsg = 'Note: Tracks new position will be right _before_ '
-                    mvmsg+= 'current track {}'.format(move_to)
-                    log.debug(mvmsg)
-                    print(mvmsg)
-                elif move_to > orig_data['track_pos']:
-                    mvmsg = 'Note: Tracks new position will be right _after_ '
-                    mvmsg+= 'current track {}'.format(move_to)
-                    log.debug(mvmsg)
-                    print(mvmsg)
+                    else:
+                        move_to = int(answers['track_pos'])
+                        if move_to < orig_data['track_pos']:
+                            mvmsg = 'Note: Tracks new position will be right _before_ '
+                            mvmsg+= 'current track {}'.format(move_to)
+                            log.debug(mvmsg)
+                            print(mvmsg)
+                        elif move_to > orig_data['track_pos']:
+                            mvmsg = 'Note: Tracks new position will be right _after_ '
+                            mvmsg+= 'current track {}'.format(move_to)
+                            log.debug(mvmsg)
+                            print(mvmsg)
             else:
                 answers[db_field] = self.ask(
                                          question.format(orig_data[db_field]))
