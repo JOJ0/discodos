@@ -10,22 +10,27 @@ import pprint
 
 # argparser init
 def argparser(argv):
-    parser = argparse.ArgumentParser(
-                 formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser()
+                 #formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
-        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
+        help="increases log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
 		"-o", "--offline", dest="offline_mode",
         action="store_true",
-        help="doesn't connect to Discogs (most options work in on- and offline mode.")
+        help="""doesn't connect to Discogs (a lot of options work in on- and
+        offline mode. Some behave differently, depending on connection state.""")
     # basic subparser element:
     subparsers = parser.add_subparsers()
     ### SEARCH subparser #######################################################
     search_subparser = subparsers.add_parser(
         name='search',
-        help='search for a Discogs release or track and optionally add it to a mix')
+        help='''searches for Discogs releases and tracks. Several actions can be
+        executed on the found items, eg. adding to a mix, updating track info
+        from Discogs or fetching additional information from
+        MusicBrainz/AcousticBrainz.
+        View this subcommands help with "disco search -h"''')
     search_subparser.add_argument(
         dest='release_search', metavar='search_terms',
         help='''When offline, searches in release name or ID only.
@@ -52,15 +57,15 @@ def argparser(argv):
                 -zz detailed match (takes longer, but more results)''')
     search_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add', metavar='TRACK_NUMBER',
-        help='add this track number to mix (eg. A1, AA, B2, ...)', default=0)
+        help='adds this track number to mix (eg. A1, AA, B2, ...)', default=0)
     search_subparser.add_argument(
         "-p", "--pos", type=str, dest='add_at_pos', metavar='POS_IN_MIX',
-        help='insert track at specific position in mix (eg. 01, 14, ...), defaults to next',
+        help='inserts track at specific position in mix (eg. 01, 14, ...), defaults to next',
         default=0)
     ### MIX subparser #############################################################
     mix_subparser = subparsers.add_parser(
         name='mix',
-        help='manage your mixes')
+        help='manages your mixes. View this subcommands help with "disco mix -h')
     mix_subparser.add_argument(
         dest='mix_name',
         help='''current mix (mix name or mix ID that should be displayed, edited, created, ...), 
@@ -78,7 +83,7 @@ def argparser(argv):
     mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
     mix_subp_excl_group.add_argument(
         "-c", "--create-mix", action='store_true',
-        help='create a new mix')
+        help='creates a new mix')
     mix_subp_excl_group.add_argument(
         "-D", "--delete-mix", action='store_true',
         help='deletes a mix and all its contained tracks!')
@@ -86,7 +91,7 @@ def argparser(argv):
         "-e", "--edit", type=str,
         dest='edit_mix_track',
         metavar='POSITION',
-        help='add/edit rating, notes, key and other info of a track in a mix')
+        help='adds/edits rating, notes, key and other info of a track in a mix')
     mix_subp_excl_group.add_argument(
         "-E", "--edit-mix", action='store_true',
         help='edit general info about a mix (name, played date, venue)')
@@ -100,18 +105,18 @@ def argparser(argv):
         "-a", "--add-to-mix", type=str,
         dest='add_release_to_mix',
         metavar='SEARCH_TERM',
-        help='''search for release in collection and add it to current mix,
+        help='''searches for release in collection and adds it to current mix,
                 SEARCH_TERM can also be a Discogs release ID''')
     mix_subp_excl_group.add_argument(
         "-r", "--reorder-tracks", type=int,
         dest='reorder_from_pos',
         metavar='POSITION',
-        help='reorder tracks in current mix, starting at POSITION')
+        help='reorders tracks in current mix, starting at POSITION')
     mix_subp_excl_group.add_argument(
         "-d", "--delete-track", type=int,
         dest='delete_track_pos',
         metavar='POSITION',
-        help='delete a track in current mix')
+        help='deletes a track in current mix')
     mix_subp_excl_group.add_argument(
         "--copy", action='store_true',
         dest='copy_mix',
@@ -124,7 +129,7 @@ def argparser(argv):
         "-z", "--brainz-update", action="count", default=0,
         dest='brainz_update',
         help='''updates tracks in current mix with additional info from MusicBrainz and AcousticBrainz.
-        Leave out mix ID to update every track contained in a mix.
+        Leave out mix ID to update every track contained in any mix.
         -z quick match, -zz detailed match (takes longer, but more results)''')
     # mutually exclusive group ends here
     mix_subparser.add_argument(
@@ -134,9 +139,10 @@ def argparser(argv):
     ### SUGGEST subparser ##########################################################
     suggest_subparser = subparsers.add_parser(
         name='suggest',
-        help='suggests track-combinations based on what you\'ve played before, BPM range and musical key')
+        help='''suggests tracks based on what you\'ve played before, BPM range and musical key.
+        View this subcommands help with "disco suggest -h"''')
     suggest_subparser.add_argument(
-        dest='suggest_search',
+        dest='suggest_search', metavar='search_terms',
         help='track or release name you want to show a "track-combination report" for.',
         nargs='?',
         default='0')
@@ -148,6 +154,35 @@ def argparser(argv):
         "-k", "--key", type=str,
         dest='suggest_key', metavar="KEY",
         help='suggests tracks based on musical key')
+    ### IMPORT subparser ##########################################################
+    import_subparser = subparsers.add_parser(
+        name='import',
+        help='''imports your whole Discogs collection or single releases.
+        View this subcommands help with "disco import -h"''')
+    import_subparser.add_argument(
+        dest='release_id',
+        help='''the Discogs release ID you want to either "import to DiscoBASE"
+        or "add to Discogs collection _and_ import". If left empty,
+        the whole collection will be imported. ''',
+        nargs='?',
+        default='0')
+    import_subp_excl_group = import_subparser.add_mutually_exclusive_group()
+    import_subp_excl_group.add_argument(
+        '--tracks', '-u', dest='import_tracks', action='store_true',
+        help='''extends the Discogs import (releases and also tracks will
+        be downloaded) - takes siginficantly longer than the regular import.
+        Note: This is the same as "disco search all -u"''')
+    import_subp_excl_group.add_argument(
+        '--brainz', '-z', dest='import_brainz', action="count", default=0,
+        help='''imports additional information from MusicBrainz/AcousticBrainz.
+        This action takes a long time. -z quick match, -zz detailed match (takes
+        even longer, but more results).
+        Notes: This is the same as "disco search all -z". Prior to using this
+        option, an extended Discogs import is recommended (disco import --tracks).
+        Otherwise only tracks that were already downloaded to the DiscoBASE (eg
+        used in mixes and updated using "disco mix -u")
+        will be updated.
+        ''')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default".format(
