@@ -861,5 +861,5 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
         tracks = self.collection.get_all_tracks_for_brainz_update()
-        match_ret = self.update_tracks_from_brainz(tracks)
+        match_ret = self.update_tracks_from_brainz(tracks, detail)
         return match_ret

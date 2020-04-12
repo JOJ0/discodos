@@ -386,7 +386,8 @@ def main():
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS:
         coll_ctrl.import_collection(tracks=True)
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
-        coll_ctrl.update_all_tracks_from_brainz()
+        coll_ctrl.update_all_tracks_from_brainz(
+            detail=user.BRAINZ_SEARCH_DETAIL)
 
     if user.DID_NOT_PROVIDE_COMMAND:
         if not coll_ctrl.ONLINE:
