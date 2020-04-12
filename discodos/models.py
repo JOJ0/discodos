@@ -1134,6 +1134,22 @@ class Collection (Database):
           'track_ext.m_rec_id_override'], tables, condition=False,
            fetchone=False, orderby='release.discogs_id')
 
+    def get_track_for_brainz_update(self, rel_id, track_no):
+        log.info(
+           "MODEL: Getting track. Preparing for AcousticBrainz update.")
+        where = 'track.d_release_id == {} AND track.d_track_no == "{}"'.format(
+            rel_id, track_no)
+        tables = '''release
+                      LEFT OUTER JOIN track
+                      ON release.discogs_id = track.d_release_id
+                        LEFT OUTER JOIN track_ext
+                        ON track.d_release_id = track_ext.d_release_id
+                        AND track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track.d_release_id', 'discogs_title', 'd_catno',
+          'track.d_artist', 'track.d_track_name', 'track.d_track_no',
+          'track_ext.m_rec_id_override'], tables, condition=where,
+           fetchone=True, orderby='release.discogs_id')
+
 class Brainz (object):
 
     def __init__(self, musicbrainz_user, musicbrainz_pass, musicbrainz_appid):

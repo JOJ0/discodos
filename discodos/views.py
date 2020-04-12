@@ -533,6 +533,9 @@ class User_int(object):
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
                 elif self.args.search_brainz_update !=0:
                     self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
+                    self.BRAINZ_SEARCH_DETAIL = self.args.search_brainz_update
+                    if self.args.search_brainz_update > 1:
+                        self.BRAINZ_SEARCH_DETAIL = 2
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):
@@ -552,7 +555,7 @@ class User_int(object):
                 if self.args.brainz_update:
                     self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
-                    self.BRAINZ_SEARCH_DETAIL == self.args.brainz_update
+                    self.BRAINZ_SEARCH_DETAIL = self.args.brainz_update
                     if self.args.brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
             else:
@@ -596,7 +599,7 @@ class User_int(object):
                 if self.args.brainz_update:
                     self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
-                    self.BRAINZ_SEARCH_DETAIL == self.args.brainz_update
+                    self.BRAINZ_SEARCH_DETAIL = self.args.brainz_update
                     if self.args.brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
                 if self.args.edit_mix:
@@ -650,6 +653,9 @@ class User_int(object):
                     self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
                 elif self.args.import_brainz:
                     self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
+                    self.BRAINZ_SEARCH_DETAIL = self.args.import_brainz
+                    if self.args.import_brainz > 1:
+                        self.BRAINZ_SEARCH_DETAIL = 2
                 else:
                     self.WANTS_TO_IMPORT_COLLECTION = True
             else:

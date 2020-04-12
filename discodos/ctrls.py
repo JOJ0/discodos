@@ -285,7 +285,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Let's update every track contained in any mix with info from AcousticBrainz...")
             mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
 
-        match_ret = coll_ctrl.update_tracks_from_brainz(mixed_tracks)
+        match_ret = coll_ctrl.update_tracks_from_brainz(mixed_tracks, detail)
         return match_ret
 
 
@@ -719,6 +719,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
 
     def update_tracks_from_brainz(self, track_list, detail = 1):
         start_time = time()
+        log.debug('CTRL: update_track_from_brainz: match detail option is: {}'.format(
+              detail))
         processed, processed_total = 0, len(track_list)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
@@ -863,3 +865,10 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         tracks = self.collection.get_all_tracks_for_brainz_update()
         match_ret = self.update_tracks_from_brainz(tracks, detail)
         return match_ret
+
+    def update_single_track_from_brainz(self, rel_id, rel_title, track_no,
+          detail):
+        if not track_no:
+            track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
+        tr_list = [self.collection.get_track_for_brainz_update(rel_id, track_no)]
+        return self.update_tracks_from_brainz(tr_list, detail)
