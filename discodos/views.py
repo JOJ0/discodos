@@ -496,6 +496,11 @@ class User_int(object):
         self.DID_NOT_PROVIDE_COMMAND = False
         self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = False
         self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = False
+        self.WANTS_TO_IMPORT_COLLECTION = False
+        self.WANTS_TO_IMPORT_RELEASE = False
+        self.WANTS_TO_ADD_AND_IMPORT_RELEASE = False
+        self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = False
+        self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -631,9 +636,35 @@ class User_int(object):
             #log.error("track search not implemented yet.")
             #raise SystemExit(1)
 
+        # IMPORT MODE
+        if hasattr(self.args, 'import_id'):
+            log.debug("Entered import mode.")
+            if self.args.import_id != 0 and self.args.import_add_coll:
+                self.WANTS_TO_ADD_AND_IMPORT_RELEASE = True
+            elif self.args.import_id == 0 and self.args.import_add_coll:
+                log.error(
+                  "Release ID missing. Which release should we add to collection and import?")
+                raise SystemExit(1)
+            elif self.args.import_id == 0:
+                if self.args.import_tracks:
+                    self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
+                elif self.args.import_brainz:
+                    self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
+                else:
+                    self.WANTS_TO_IMPORT_COLLECTION = True
+            else:
+                if self.args.import_brainz or self.args.import_tracks:
+                    log.error(
+                      "You can't combine a single release import with -z or -u.")
+                    raise SystemExit(1)
+                else:
+                    self.WANTS_TO_IMPORT_RELEASE = True
+
+
         # NO COMMAND - SHOW HELP
         if ('mix_name' not in self.args and 'release_search' not in self.args
-                  and 'suggest_search' not in self.args):
+                  and 'suggest_search' not in self.args
+                  and 'import_id' not in self.args):
             self.DID_NOT_PROVIDE_COMMAND = True
 
         if self.args.offline_mode == True:

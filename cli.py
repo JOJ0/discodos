@@ -160,13 +160,32 @@ def argparser(argv):
         help='''imports your whole Discogs collection or single releases.
         View this subcommands help with "disco import -h"''')
     import_subparser.add_argument(
-        dest='release_id',
-        help='''the Discogs release ID you want to either "import to DiscoBASE"
-        or "add to Discogs collection _and_ import". If left empty,
-        the whole collection will be imported. ''',
+        dest='import_id', metavar='RELEASE ID', type=int,
+        help='''the Discogs release ID you want to import to DiscoBASE.
+        If left empty, the whole collection will be imported. If the additional
+        option -a is used, the release will be added to your Discogs collection
+        _and_ imported to DiscoBASE. Note that a regular import of a given
+        release ID is quite time consuming: We have to check wether or
+        not this release ID is already in the Discogs collection (we don't
+        want duplicates), thus we have to run through all of your releases
+        via the Discogs API. Unfortunately Discogs does not allow us to search
+        for release IDs in ones collection, we only can "iterate" through them.
+        Therefore the recommended way of adding newly gained releases is by
+        using the -a option.''',
         nargs='?',
         default='0')
     import_subp_excl_group = import_subparser.add_mutually_exclusive_group()
+    import_subp_excl_group.add_argument(
+        '--add-to-collection', '-a', dest='import_add_coll', action='store_true',
+        help='''This is the recommended (and fastest) way of adding newly gained
+        releases to your collection. The given release ID is added to your
+        Discogs collection (same as when you click an "Add to collection"
+        in the Discogs Webinterface.
+        Additionally the release is added to the DiscoBASE.
+        Note that for performances sake, we don't do a cumbersome check if the
+        release is already in your Discogs collection by asking the Discogs API,
+        we only do a quick check if the ID is in the local DiscoBASE already.
+        ''')
     import_subp_excl_group.add_argument(
         '--tracks', '-u', dest='import_tracks', action='store_true',
         help='''extends the Discogs import (releases and also tracks will
@@ -357,18 +376,30 @@ def main():
     if user.WANTS_SUGGEST_KEY_REPORT:
         coll_ctrl.key_report(args.suggest_key)
 
+    ### IMPORT MODE
+    if user.WANTS_TO_IMPORT_COLLECTION:
+        coll_ctrl.import_collection()
+    if user.WANTS_TO_IMPORT_RELEASE:
+        coll_ctrl.import_release(args.import_id)
+    if user.WANTS_TO_ADD_AND_IMPORT_RELEASE:
+        coll_ctrl.add_release(args.import_id)
+    if user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS:
+        coll_ctrl.import_collection(tracks=True)
+    if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
+        pass
+
     if user.DID_NOT_PROVIDE_COMMAND:
         if not coll_ctrl.ONLINE:
-            merr ='Connection to your Discogs Collection failed.'
+            merr ='Connection to your Discogs collection failed.'
             merr+='\nCheck your internet connection and DiscoDOS configuration (config.yaml)'
             merr+='\nBut anyway:'
             log.error(merr)
             coll_ctrl.cli.welcome_to_discodos()
             raise SystemExit(1)
         coll_ctrl.cli.welcome_to_discodos()
-        m ='Connection to your Discogs Collection is working, '
+        m ='Connection to your Discogs collection is working, '
         m+="but you didn't provide a command. Here are some things you could do:"
-        m+='\n\nImport your Collection:'
+        m+='\n\nImport your collection:'
         m+='\nsetup -i'
         m+='\n\nCreate a mix:'
         m+='\ndisco mix my_mix -c'

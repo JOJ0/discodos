@@ -850,14 +850,13 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     self.tracks_discogs_errors += 1
                     log.error("Exception: %s", Exc)
 
-            msg_rel_add="Releases so far: {}".format(
-                self.releases_added)
+            msg_rel_add="Releases so far: {}".format(self.releases_added)
             log.info(msg_rel_add)
             print(msg_rel_add)
-            msg_trk_add="Tracks so far: {}".format(
-                self.tracks_added)
-            log.info(msg_trk_add)
-            print(msg_trk_add)
+            if tracks:
+                msg_trk_add="Tracks so far: {}".format(self.tracks_added)
+                log.info(msg_trk_add)
+                print(msg_trk_add)
             print() # leave space after a release and all its tracks
             self.releases_processed += 1
 
