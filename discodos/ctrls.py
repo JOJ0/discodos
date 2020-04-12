@@ -915,20 +915,22 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
-    def update_tracks_from_discogs(self, mixed_tracks):
+    def update_tracks_from_discogs(self, track_list):
         '''takes a list of tracks and updates tracknames/artists from Discogs.
-           List has to contain fields: d_release_id, discogs_title, d_track_no
+           List has to contain fields: d_release_id, discogs_title, d_track_no.
+           Usually list items are slite Row objects, but could be dicts too.
+           Any iterable should work unless it doesn't have named keys!
         '''
         start_time = time()
-        self.tracks_processed = len(mixed_tracks)
+        self.tracks_processed = len(track_list)
         self.tracks_added = 0
         self.tracks_db_errors = 0
         self.tracks_not_found_errors = 0
-        for mix_track in mixed_tracks:
+        for track in track_list:
 
-            d_track_no = mix_track['d_track_no']
-            d_release_id = mix_track['d_release_id']
-            discogs_title = mix_track['discogs_title']
+            d_track_no = track['d_track_no']
+            d_release_id = track['d_release_id']
+            discogs_title = track['discogs_title']
             self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
 
             # move this to method fetch_track_and_artist_from_discogs
