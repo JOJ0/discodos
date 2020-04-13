@@ -838,16 +838,28 @@ class Collection (Database):
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         track_no = track_no.upper() # always save uppercase track numbers
-        tuple_tr = (release_id, track_no, track_artist, track_name,
-                                          track_artist, track_name)
-        sql_tr='''INSERT INTO track(d_release_id, d_track_no, d_artist,
-                    d_track_name, import_timestamp)
-                    VALUES(?, ?, ?, ?, datetime('now', 'localtime'))
-                    ON CONFLICT (d_release_id, d_track_no)
-                    DO UPDATE SET
-                    d_artist = ?, d_track_name = ?,
-                    import_timestamp=datetime('now', 'localtime');'''
-        return self.execute_sql(sql_tr, tuple_tr)
+        try:
+            sql_i='''INSERT INTO track(d_release_id, d_track_no, d_artist,
+                        d_track_name, import_timestamp)
+                        VALUES(?, ?, ?, ?, datetime('now', 'localtime'));'''
+            tuple_i = (release_id, track_no, track_artist, track_name)
+            return self.execute_sql(sql_i, tuple_i, raise_err=True)
+        except sqlerr as e:
+            if "UNIQUE constraint failed" in e.args[0]:
+                log.debug("Track already in DiscoBASE, updating ...")
+                try:
+                    sql_u='''UPDATE track SET
+                                d_artist = ?, d_track_name = ?,
+                                import_timestamp=datetime('now', 'localtime')
+                                WHERE d_release_id = ? AND d_track_no = ?;'''
+                    tuple_u = (track_artist, track_name, release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u, raise_err=True)
+                except sqlerr as e:
+                    log.error("MODEL: upsert_track: %s", e.args[0])
+                    return False
+            else:
+                log.error("MODEL: %s", e.args[0])
+                return False
 
     def search_release_id(self, release_id):
         return self._select_simple(['*'], 'release',
@@ -863,7 +875,7 @@ class Collection (Database):
             return self.execute_sql(insert_sql, in_tuple, raise_err = True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
-                log.warning("Release already in DiscoBASE, updating ...")
+                log.debug("Release already in DiscoBASE, updating ...")
                 try:
                     upd_sql = '''UPDATE release SET (discogs_title,
                         import_timestamp, d_artist, in_d_collection, d_catno)
