@@ -70,15 +70,14 @@ def main():
             sync.backup()
         elif args.restore:
             #await sync._async_init()
-            sync.print_revisions()
-            rev = ask_user('Which revision do you want to restore? ')
-            try:
-                sync.restore(rev)
-            except dropbox.stone_validators.ValidationError:
-                log.error('Revision not valid.')
+            #try:
+            #    sync.restore()
+            #except dropbox.stone_validators.ValidationError:
+            #    log.error('Revision not valid.')
+            sync.restore()
         elif args.show:
             #await sync._async_init()
-            sync.print_revisions()
+            sync.show_backups()
         else:
             log.error("Missing arguments.")
     else:
@@ -108,12 +107,26 @@ class Sync(object):
         month = re.split('[^\d]', filename)[-3]
         year = re.split('[^\d]', filename)[-4]
         filename_datepart = "{}{}{}{}".format(year, month, day, time)
-        #print(filename_datepart)
+        log.debug('Sync._times_tuple: filename_datepart: {}'.format(filename_datepart))
+        if not filename_datepart:
+            log.error(
+              'Not a valid DiscoBASE backup (Format not name_YYYY-MM-DD_hhmmss.db): {}. Quitting.')
+            raise SystemExit(1)
         mod_dt = datetime.strptime(filename_datepart, '%Y%m%d%H%M%S')
         mod_epoch = mod_dt.timestamp()
-        #print(mod_epoch)
+        log.debug('Sync._times_tuple: mod_epoch: {}'.format(mod_epoch))
         times_tuple = (mod_epoch, mod_epoch)
         return times_tuple
+
+    def _touch_to_backupdate(self, restore_file_name):
+        downloaded_file = Path(self.discobase) # ignore vscode error here
+        mod_acc_times = self._times_tuple(restore_file_name)
+        log.debug('Sync._touch_to_backupdate: mod_acc_times: {}'.format(mod_acc_times))
+        try:
+            utime(downloaded_file, mod_acc_times)
+        except:
+            log.error('Error setting timestamp of restored file to original backupdate!')
+
 
 
 class Dropbox_sync(Sync):
@@ -184,15 +197,14 @@ class Dropbox_sync(Sync):
 
     def backup(self):
         bak_file_name = self._filename_mtime(self.discobase)
-        full_bak_path = '{}/{}'.format(self.backuppath, self.discobase)
+        full_bak_path = '{}/{}'.format(self.backuppath, bak_file_name)
         print("Uploading as {} to {}".format(bak_file_name, self.backuppath))
-        if self.exists('{}/{}'.format(self.backuppath, self.discobase)):
+        if self.exists('{}/{}'.format(self.backuppath, bak_file_name)):
             log.warning('Backup existing. Won\'t overwrite "{}" '.format(
                     bak_file_name))
         else:
             print('Backup not existing yet, uploading ...')
             with open(self.discobase, 'rb') as f:
-                #print(dir(f))
                 try:
                     self.dbx.files_upload(f.read(), full_bak_path,
                           mode=WriteMode('overwrite'))
@@ -203,7 +215,7 @@ class Dropbox_sync(Sync):
                     # enough Dropbox space quota to upload this file
                     if (err.error.is_path() and
                             err.error.get_path().reason.is_insufficient_space()):
-                        log.error('Cannot back up; insufficient space.')
+                        log.error('Cannot back up; insufficient space. Quitting.')
                         raise SystemExit(1)
                     elif err.user_message_text:
                         print(err.user_message_text)
@@ -211,29 +223,46 @@ class Dropbox_sync(Sync):
                     else:
                         print(err)
                         raise SystemExit(1)
+            self.show_backups()
 
-    # Restore the local and Dropbox files to a certain revision
-    def restore(self, rev=None):
-        # Restore the file on Dropbox to a certain revision
-        #print("Restoring " + self.backuppath + " to revision " + rev + " on Dropbox...")
-        #self.dbx.files_restore(self.backuppath, rev)
+    def show_backups(self, restore=False):
+        if not restore:
+            print('\nExisting backups:')
+        all_files = self.dbx.files_list_folder(path=self.backuppath)
+        relevant_files = []
 
-        # Download the specific revision of the file at self.backuppath to self.discobase
-        print("Downloading " + self.backuppath + " from Dropbox, overwriting " + self.discobase + "...")
-        self.dbx.files_download_to_file(self.discobase, self.backuppath, rev)
+        for resource in all_files.entries:
+            relevant_files.append(resource)
 
-    # Look at all of the available revisions on Dropbox, and return the oldest one
-    def print_revisions(self):
-        # Get the revisions for a file (and sort by the datetime object, "server_modified")
-        print("Finding available revisions on Dropbox...")
-        entries = self.dbx.files_list_revisions(self.backuppath, limit=30).entries
-        revisions = sorted(entries, key=lambda entry: entry.server_modified)
+        for j, item in enumerate(relevant_files): 
+            file = '({}) - {}'.format(j, item.name)
+            print(file)
+            #print(item.client_modified)
+            #print(item.server_modified)
 
-        for revision in revisions:
-            print(revision.rev, revision.server_modified)
+        if restore:
+            restore_id = ask_user('Restore backup #: ')
+            try:
+                restore_file = relevant_files[int(restore_id)]
+            except ValueError:
+                log.warning('Nothing to restore!')
+                raise SystemExit
+            except IndexError:
+                log.warning('Non-existent ID. Nothing to restore!')
+                raise SystemExit
+            print('Restoring Backup {}...'.format(restore_file.name)) # name attribute
+            return restore_file # return the whole object here
+        print()
 
-        # Return the oldest revision (first entry, because revisions was sorted oldest:newest)
-        #return revisions[0].rev
+    def restore(self):
+        print('\nWhich backup would you like to restore?')
+        restore_file = self.show_backups(restore = True)
+        overwrite = ask_user("Download {} and overwrite local file {} (y/N)? ".format(
+              restore_file.name, self.discobase))
+        if overwrite.lower() == 'y':
+            self.dbx.files_download_to_file(restore_file.name, self.backuppath,
+                  restore_file.rev)
+            self._touch_to_backupdate(restore_file.name)
 
 
 class Webdav_sync(Sync):
@@ -313,7 +342,7 @@ class Webdav_sync(Sync):
             print(file)
 
         if restore:
-            restore_id = ask_user('Revision: ')
+            restore_id = ask_user('Restore backup #: ')
             try:
                 restore_file = relevant_files[int(restore_id)]
             except ValueError:
@@ -327,16 +356,14 @@ class Webdav_sync(Sync):
         print()
 
     def restore(self):
-        print('\nWhich revision would you like to restore?')
+        print('\nWhich backup would you like to restore?')
         restore_filename = self.show_backups(restore = True)
         overwrite = ask_user("Download {} and overwrite local file {} (n)? ".format(
             restore_filename, self.discobase))
         if overwrite.lower() == 'y':
             self.client.download_sync(remote_path='{}'.format(restore_filename),
                                       local_path='{}'.format(self.discobase))
-            downloaded_file = Path(self.discobase)
-            mod_acc_times = self._times_tuple(restore_filename)
-            utime(downloaded_file, mod_acc_times)
+            self._touch_to_backupdate(restore_filename)
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
