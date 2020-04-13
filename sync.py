@@ -124,8 +124,9 @@ class Sync(object):
         log.debug('Sync._touch_to_backupdate: mod_acc_times: {}'.format(mod_acc_times))
         try:
             utime(downloaded_file, mod_acc_times)
-        except:
-            log.error('Error setting timestamp of restored file to original backupdate!')
+        except Exception as exc:
+            log.error(
+              'Error setting timestamp of restored file to original backupdate! {}'.format(exc))
 
 
 
@@ -257,10 +258,11 @@ class Dropbox_sync(Sync):
     def restore(self):
         print('\nWhich backup would you like to restore?')
         restore_file = self.show_backups(restore = True)
-        overwrite = ask_user("Download {} and overwrite local file {} (y/N)? ".format(
-              restore_file.name, self.discobase))
+        full_bak_path = '{}/{}'.format(self.backuppath, restore_file.name)
+        overwrite = ask_user("Download backup and overwrite local file {} (y/N)? ".format(
+              self.discobase))
         if overwrite.lower() == 'y':
-            self.dbx.files_download_to_file(restore_file.name, self.backuppath,
+            self.dbx.files_download_to_file(self.discobase, full_bak_path,
                   restore_file.rev)
             self._touch_to_backupdate(restore_file.name)
 
@@ -358,8 +360,8 @@ class Webdav_sync(Sync):
     def restore(self):
         print('\nWhich backup would you like to restore?')
         restore_filename = self.show_backups(restore = True)
-        overwrite = ask_user("Download {} and overwrite local file {} (n)? ".format(
-            restore_filename, self.discobase))
+        overwrite = ask_user("Download backup and overwrite local file {} (n)? ".format(
+            self.discobase))
         if overwrite.lower() == 'y':
             self.client.download_sync(remote_path='{}'.format(restore_filename),
                                       local_path='{}'.format(self.discobase))
