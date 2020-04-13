@@ -110,7 +110,7 @@ class Sync(object):
         log.debug('Sync._times_tuple: filename_datepart: {}'.format(filename_datepart))
         if not filename_datepart:
             log.error(
-              'Not a valid DiscoBASE backup (Format not name_YYYY-MM-DD_hhmmss.db): {}. Quitting.')
+              'Not a valid DiscoBASE backup (Format not name_yyyy-mm-dd_HHMMSS.db). Quitting.')
             raise SystemExit(1)
         mod_dt = datetime.strptime(filename_datepart, '%Y%m%d%H%M%S')
         mod_epoch = mod_dt.timestamp()
