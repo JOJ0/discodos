@@ -190,10 +190,11 @@ class Config():
                 sysinst_sh.chmod(0o755)
                 hlpmsg ="Execute ./{} for systemwide installation".format(
                     sysinst_sh.name)
-                hlpmsg+="\n* makes disco command executable from everywhere."
-                hlpmsg+="\n* setup and sync commands still have to be executed "
+                hlpmsg+="\n* makes disco command executable from everywhere. After installation you'd just type:"
+                hlpmsg+="\ndisco"
+                hlpmsg+="\n* setup and sync commands will still have to be executed "
                 hlpmsg+="from inside discodos dir using: "
-                hlpmsg+="\n./disco"
+                hlpmsg+="\n./setup"
                 hlpmsg+="\n./sync"
                 print_help(hlpmsg)
         elif os.name == "nt":
