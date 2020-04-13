@@ -860,9 +860,7 @@ class Collection (Database):
                                     VALUES(?, ?, ?, ?, ?, ?)'''
             in_tuple = (release_id, release_title, datetime.today().isoformat(' ', 'seconds'),
                     release_artists, d_coll, d_catno)
-            rowcnt = self.execute_sql(insert_sql, in_tuple, raise_err = True)
-            log.info("MODEL: rowcount: %d", rowcnt)
-            return rowcnt
+            return self.execute_sql(insert_sql, in_tuple, raise_err = True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
                 log.warning("Release already in DiscoBASE, updating ...")
@@ -872,11 +870,9 @@ class Collection (Database):
                         = (?, ?, ?, ?, ?) WHERE discogs_id == ?;'''
                     upd_tuple = (release_title, datetime.today().isoformat(' ', 'seconds'),
                         release_artists, d_coll, d_catno, release_id)
-                    rowcnt = self.execute_sql(upd_sql, upd_tuple, raise_err = True)
-                    log.info("MODEL: rowcount: %d", rowcnt)
-                    return rowcnt
+                    return self.execute_sql(upd_sql, upd_tuple, raise_err = True)
                 except sqlerr as e:
-                    log.error("MODEL: %s", e.args[0])
+                    log.error("MODEL: create_release: %s", e.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
