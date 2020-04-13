@@ -427,7 +427,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 # FIXME this is bullshit, will never be reached FIXME
                 #    break
             except UnboundLocalError:
-                log.error("Discogs collection was not imported to DiscoBASE properly!")
+                log.error("Discogs collection was not imported to DiscoBASE. Use 'disco import' command!")
                 #raise unb
                 raise SystemExit(1)
         return False
