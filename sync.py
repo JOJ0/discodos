@@ -6,6 +6,8 @@ from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 from urllib3.exceptions import NewConnectionError
 from requests.exceptions import ConnectionError
+from socket import gaierror
+
 from discodos import log
 from discodos.utils import print_help, ask_user, is_number, Config
 import asyncio
@@ -57,26 +59,26 @@ def argparser(argv):
             log.handlers[0].level))
     return arguments
 
-async def main():
+def main():
     conf=Config()
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     args = argparser(argv)
-    if args.sync_type == 'dropbox':
+    if args.sync_type == 'dropbox' or args.sync_type == 'd':
         sync = Dropbox_sync(conf.dropbox_token, conf.discobase.name)
         if args.backup:
-            await sync._async_init()
-            await sync.backup()
+            #await sync._async_init()
+            sync.backup()
         elif args.restore:
-            await sync._async_init()
-            await sync.print_revisions()
+            #await sync._async_init()
+            sync.print_revisions()
             rev = ask_user('Which revision do you want to restore? ')
             try:
-                await sync.restore(rev)
+                sync.restore(rev)
             except dropbox.stone_validators.ValidationError:
                 log.error('Revision not valid.')
         elif args.show:
-            await sync._async_init()
-            await sync.print_revisions()
+            #await sync._async_init()
+            sync.print_revisions()
         else:
             log.error("Missing arguments.")
     else:
@@ -89,34 +91,58 @@ async def main():
         elif args.show:
             sync.show_backups()
 
+class Sync(object):
+    def _local_mtime(self, filename): # returns a file's formatted mtime
+        mod_local_dt = datetime.fromtimestamp(
+                          Path(filename).stat().st_mtime)
+        mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
+        return mod_local_str
 
-class Dropbox_sync(object):
+    def _filename_mtime(self, filename):
+        local_mtime = self._local_mtime(filename)
+        return '{}_{}'.format(filename, local_mtime)
+
+    def _times_tuple(self, filename): # get epoch from file someth_YYYY-MM-DD_HHMMMSS
+        time = re.split('[^\d]', filename)[-1]
+        day = re.split('[^\d]', filename)[-2]
+        month = re.split('[^\d]', filename)[-3]
+        year = re.split('[^\d]', filename)[-4]
+        filename_datepart = "{}{}{}{}".format(year, month, day, time)
+        #print(filename_datepart)
+        mod_dt = datetime.strptime(filename_datepart, '%Y%m%d%H%M%S')
+        mod_epoch = mod_dt.timestamp()
+        #print(mod_epoch)
+        times_tuple = (mod_epoch, mod_epoch)
+        return times_tuple
+
+
+class Dropbox_sync(Sync):
     def __init__(self, token, db_file):
+        super().__init__()
         log.info("We are in __init__")
         self.token = token
         self.discobase = db_file
-        self.backuppath = '/discodos/{}'.format(db_file)
+        # FIXME make configurable
+        self.backuppath = '/discodos'
+        self._login()
 
-    #def __await__(self):
+#    #def __await__(self):
     #    log.info("We are in __await__")
     #    return self._async_init().__await__()
 
-    async def _async_init(self):
-        log.info("We are in _async_init")
-        if (len(self.token) == 0): # Check for an access token
-            log.error("Looks like you didn't add your access token.")
-        await self._login()
-        return self
+    #async def _async_init(self):
+    #    log.info("We are in _async_init")
+    #    if (len(self.token) == 0): # Check for an access token
+    #        log.error("Looks like you didn't add your access token.")
+    #    await self._login()
+    #    return self
+#
 
-    async def _login(self):
+    def _login(self):
         log.info("We are in _login")
-        # Create an instance of a Dropbox class, which can make requests to the API.
         log.info("Creating a Dropbox object...")
-        try:
-            self.dbx = dropbox.Dropbox(self.token)
-        #except urllib3.exceptions.NewConnectionError:
-        except requests.exceptions.ConnectionError:
-            log.error("connecting to Dropbox.")
+        # doesn't have to be catched! doesn't connect!
+        self.dbx = dropbox.Dropbox(self.token)
         #print("One")
         #await asyncio.sleep(1)
         #print("Two")
@@ -129,31 +155,65 @@ class Dropbox_sync(object):
             log.error("ERROR: Invalid access token; try re-generating an "
                 "access token from the app console on the web.")
             return False
+        except NewConnectionError:
+            log.error("connecting to Dropbox. (NewConnectionError)")
+            raise SystemExit(1)
+        except ConnectionError:
+            log.error("connecting to Dropbox. (ConnectionError)")
+            raise SystemExit(1)
+        except gaierror:
+            log.error("connecting to Dropbox. (gaierror)")
+            raise SystemExit(1)
+        except:
+            log.error("connecting to Dropbox. (Uncatched exception)")
+            raise SystemExit(1)
 
-    # Uploads contents of self.discobase to Dropbox
-    async def backup(self):
-        with open(self.discobase, 'rb') as f:
-            # We use WriteMode=overwrite to make sure that the settings in the file
-            # are changed on upload
-            print("Uploading " + self.discobase + " to Dropbox as " + self.backuppath + "...")
-            try:
-                self.dbx.files_upload(f.read(), self.backuppath, mode=WriteMode('overwrite'))
-                log.info("File successfully backuped or already up to date.")
-            except ApiError as err:
-                # This checks for the specific error where a user doesn't have
-                # enough Dropbox space quota to upload this file
-                if (err.error.is_path() and
-                        err.error.get_path().reason.is_insufficient_space()):
-                    sys.exit("ERROR: Cannot back up; insufficient space.")
-                elif err.user_message_text:
-                    print(err.user_message_text)
-                    sys.exit()
-                else:
-                    print(err)
-                    sys.exit()
+    def exists(self, path):
+        try:
+            self.dbx.files_get_metadata(path)
+            return True
+        except ApiError as apierr:
+            #print(dir(apierr.error.get_path()))
+            if apierr.error.get_path().is_not_found() == True:
+                log.debug('Dropbox_sync.exits: File not yet existing.')
+                return False
+            log.error(
+              'Dropbox ApiError: Exception on file exists check: {}'.format(
+                apierr))
+            return True
+
+    def backup(self):
+        bak_file_name = self._filename_mtime(self.discobase)
+        full_bak_path = '{}/{}'.format(self.backuppath, self.discobase)
+        print("Uploading as {} to {}".format(bak_file_name, self.backuppath))
+        if self.exists('{}/{}'.format(self.backuppath, self.discobase)):
+            log.warning('Backup existing. Won\'t overwrite "{}" '.format(
+                    bak_file_name))
+        else:
+            print('Backup not existing yet, uploading ...')
+            with open(self.discobase, 'rb') as f:
+                #print(dir(f))
+                try:
+                    self.dbx.files_upload(f.read(), full_bak_path,
+                          mode=WriteMode('overwrite'))
+                    log.debug(
+                      "File successfully backuped or already up to date.")
+                except ApiError as err:
+                    # This checks for the specific error where a user doesn't have
+                    # enough Dropbox space quota to upload this file
+                    if (err.error.is_path() and
+                            err.error.get_path().reason.is_insufficient_space()):
+                        log.error('Cannot back up; insufficient space.')
+                        raise SystemExit(1)
+                    elif err.user_message_text:
+                        print(err.user_message_text)
+                        raise SystemExit(1)
+                    else:
+                        print(err)
+                        raise SystemExit(1)
 
     # Restore the local and Dropbox files to a certain revision
-    async def restore(self, rev=None):
+    def restore(self, rev=None):
         # Restore the file on Dropbox to a certain revision
         #print("Restoring " + self.backuppath + " to revision " + rev + " on Dropbox...")
         #self.dbx.files_restore(self.backuppath, rev)
@@ -163,7 +223,7 @@ class Dropbox_sync(object):
         self.dbx.files_download_to_file(self.discobase, self.backuppath, rev)
 
     # Look at all of the available revisions on Dropbox, and return the oldest one
-    async def print_revisions(self):
+    def print_revisions(self):
         # Get the revisions for a file (and sort by the datetime object, "server_modified")
         print("Finding available revisions on Dropbox...")
         entries = self.dbx.files_list_revisions(self.backuppath, limit=30).entries
@@ -176,8 +236,9 @@ class Dropbox_sync(object):
         #return revisions[0].rev
 
 
-class Webdav_sync(object):
+class Webdav_sync(Sync):
     def __init__(self, user, password, url, db_file):
+        super().__init__()
         log.info("We are in Webdav_sync.__init__")
         if user == '' or password == '' or url == '':
             log.error("Webdav config incomplete. Check config.yaml")
@@ -199,37 +260,14 @@ class Webdav_sync(object):
         #print(self.client.is_dir('discodos'))
         #print(self.client.check(self.discobase))
 
-    def _local_mtime(self, filename): # returns a file's formatted mtime
-        mod_local_dt = datetime.fromtimestamp(
-                          Path(filename).stat().st_mtime)
-        mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
-        return mod_local_str
-
     def _webdav_mtime(self, filename): # we currently don't need this, put to func anyway
-        mod_server_dt = parse(self.client.info(filenam)['modified'])
+        mod_server_dt = parse(self.client.info(filename)['modified'])
         mod_server_str = mod_server_dt.strftime('%Y-%m-%d_%H%M%S')
         #if mod_local_str != mod_server_str:
         #    print('Local and server discobase.db modification time diverge.')
         #    print(mod_local_str)
         #    print(mod_server_str)
         return mod_server_str
-
-    def _filename_mtime(self, filename):
-        local_mtime = self._local_mtime(filename)
-        return '{}_{}'.format(filename, local_mtime)
-
-    def _times_tuple(self, filename): # get epoch from file someth_YYYY-MM-DD_HHMMMSS
-        time = re.split('[^\d]', filename)[-1]
-        day = re.split('[^\d]', filename)[-2]
-        month = re.split('[^\d]', filename)[-3]
-        year = re.split('[^\d]', filename)[-4]
-        filename_datepart = "{}{}{}{}".format(year, month, day, time)
-        #print(filename_datepart)
-        mod_dt = datetime.strptime(filename_datepart, '%Y%m%d%H%M%S')
-        mod_epoch = mod_dt.timestamp()
-        #print(mod_epoch)
-        times_tuple = (mod_epoch, mod_epoch)
-        return times_tuple
 
     def backup(self):
         # check file stats on local machine
@@ -303,7 +341,7 @@ class Webdav_sync(object):
 # __MAIN try/except wrap
 if __name__ == "__main__":
     try:
-        #main()
-        asyncio.run(main())
+        main()
+        #asyncio.run(main())
     except KeyboardInterrupt:
         log.error('Program interrupted!')
