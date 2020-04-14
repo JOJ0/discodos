@@ -1064,24 +1064,32 @@ class Collection (Database):
     def upsert_track_brainz(self, release_id, track_no, rec_id,
           match_method, key, chords_key, bpm):
         track_no = track_no.upper() # always save uppercase track numbers
-        sql_track = '''INSERT INTO track(d_release_id, d_track_no,
-              m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
-              VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?)
-              ON CONFLICT (d_release_id, d_track_no)
-              DO UPDATE SET
-              d_release_id=?, d_track_no=?, m_rec_id=?,
-              m_match_method=?,
-              m_match_time=datetime('now', 'localtime'),
-              a_key=?, a_chords_key=?, a_bpm=?;
-              '''
-        tuple_track = (release_id, track_no, rec_id, match_method,
-                       key, chords_key, bpm,
-                       release_id, track_no, rec_id, match_method,
-                       key, chords_key, bpm)
-        ok_track = self.execute_sql(sql_track, tuple_track)
-        if ok_track:
-            return True
-        return False
+        try:
+            sql_i = '''INSERT INTO track(d_release_id, d_track_no,
+                  m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
+                  VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?);'''
+            tuple_i = (release_id, track_no, rec_id, match_method, key,
+                  chords_key, bpm)
+            return self.execute_sql(sql_i, tuple_i, raise_err=True)
+        except sqlerr as e:
+            if "UNIQUE constraint failed" in e.args[0]:
+                log.debug("Track already in DiscoBASE, updating ...")
+                try:
+                    sql_u = ''' UPDATE track SET
+                          m_rec_id=?, m_match_method=?,
+                          m_match_time=datetime('now', 'localtime'),
+                          a_key=?, a_chords_key=?, a_bpm=?
+                          WHERE d_release_id=? AND d_track_no=?; 
+                          '''
+                    tuple_u = (rec_id, match_method, key, chords_key, bpm,
+                          release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u)
+                except sqlerr as e:
+                    log.error("MODEL: create_release: %s", e.args[0])
+                    return False
+            else:
+                log.error("MODEL: %s", e.args[0])
+                return False
 
     def update_release_brainz(self, release_id, mbid, match_method):
         sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
