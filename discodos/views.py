@@ -560,8 +560,14 @@ class User_int(object):
                     self.WANTS_TO_ADD_TO_MIX = True
 
                 if self.args.search_discogs_update !=0:
+                    if self.args.offline_mode == True:
+                        log.error("You can't do that in offline mode!")
+                        raise SystemExit(1)
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
                 elif self.args.search_brainz_update !=0:
+                    if self.args.offline_mode == True:
+                        log.error("You can't do that in offline mode!")
+                        raise SystemExit(1)
                     self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
                     self.BRAINZ_SEARCH_DETAIL = self.args.search_brainz_update
                     if self.args.search_brainz_update > 1:
