@@ -428,9 +428,11 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
                 key_bpm_brainz+= tr['a_key'] + '*'
 
             if tr['a_key'] and tr['a_bpm']:
-                key_bpm_brainz+= '/' + str(tr['a_bpm']) + '*'
+                bpm_rnd = str(round(float(tr['a_bpm']),1))
+                key_bpm_brainz+= '/{}*'.format(bpm_rnd)
             elif tr['a_bpm']:
-                key_bpm_brainz+= str(tr['a_bpm']) + '*'
+                bpm_rnd = str(round(float(tr['a_bpm']),1))
+                key_bpm_brainz+= '{}*'.format(bpm_rnd)
             key_bpm_brainz += ')'
             if key_bpm_brainz == '()': # if empty, remove it completely
                 key_bpm_brainz = ''
