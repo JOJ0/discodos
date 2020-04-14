@@ -408,9 +408,37 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
           'label': 'Label', 'country': 'C', 'year': 'Year', 'format': 'Format'}))
 
     def online_search_results_tracklist(self, _tracklist):
-        for track in _tracklist:
-            print(track.position + "\t" + track.title)
-        print()
+        for tr in _tracklist:
+            # concatenate key and bpm together if existing:
+            key_bpm_user = "("
+            if tr['key']:
+                key_bpm_user+= tr['key']
+
+            if tr['key'] and tr['bpm']:
+                key_bpm_user+= "/" + str(tr['bpm'])
+            elif tr['bpm']:
+                key_bpm_user+= str(tr['bpm'])
+            key_bpm_user += ")"
+            if key_bpm_user == "()": # if empty, remove it completely
+                key_bpm_user = ""
+
+            # do the same for brainz values:
+            key_bpm_brainz = "("
+            if tr['a_key']:
+                key_bpm_brainz+= tr['a_key'] + '*'
+
+            if tr['a_key'] and tr['a_bpm']:
+                key_bpm_brainz+= '/' + str(tr['a_bpm']) + '*'
+            elif tr['a_bpm']:
+                key_bpm_brainz+= str(tr['a_bpm']) + '*'
+            key_bpm_brainz += ')'
+            if key_bpm_brainz == '()': # if empty, remove it completely
+                key_bpm_brainz = ''
+
+            # the final tracklist entry:
+            print("{}\t{} {} {}".format(tr['track_no'], tr['track_title'],
+                  key_bpm_user, key_bpm_brainz))
+        print('')
 
     def tab_all_releases(self, releases_data):
         #self.p(tab(releases_data, tablefmt="plain",

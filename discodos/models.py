@@ -774,6 +774,41 @@ class Collection (Database):
             rel_details))
         return rel_details
 
+    def prepare_tracklist_info(self, release_id, tracklist): # discogs_client tracklist object
+        '''takes a tracklist (just a list?) we received from a Discogs release
+            object and adds additional information from the database 
+            into the list'''
+        tl=[]
+        for i, track in enumerate(tracklist):
+            dbtrack = self.get_track(release_id, track.position)
+            #print(dbtrack)
+            tl.append({
+                'track_no': track.position,
+                'track_title': track.title,
+                'key': dbtrack['key'],
+                'key_notes': dbtrack['key_notes'],
+                'bpm': dbtrack['bpm'],
+                'notes': dbtrack['notes'],
+                'a_key': dbtrack['a_key'],
+                'a_chords_key': dbtrack['a_chords_key'],
+                'a_bpm': dbtrack['a_bpm']
+            })
+        return tl
+
+    def get_track(self, release_id, track_no):
+        log.info("MODEL: Returning collection track {} from release {}.".format(
+              track_no, release_id))
+        where = 'track.d_release_id == {} AND track.d_track_no == "{}"'.format(
+              release_id, track_no.upper()) # we always save track_nos uppercase
+        join = '''track LEFT OUTER JOIN track_ext
+                    ON track.d_release_id = track_ext.d_release_id
+                    AND track.d_track_no = track_ext.d_track_no'''
+        return self._select_simple(['track.d_track_no', 'track.d_release_id',
+          'd_track_name', 'key', 'key_notes', 'bpm', 'notes', 'm_rec_id_override',
+          'a_key', 'a_chords_key', 'a_bpm'],
+          join, fetchone = True, condition = where)
+
+
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
@@ -1165,6 +1200,7 @@ class Collection (Database):
           'track.d_artist', 'track.d_track_name', 'track.d_track_no',
           'track_ext.m_rec_id_override'], tables, condition=where,
            fetchone=True, orderby='release.discogs_id')
+
 
 class Brainz (object):
 

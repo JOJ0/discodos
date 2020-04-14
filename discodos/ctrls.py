@@ -414,9 +414,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 if result_item.id == dbr[0]:
                     self.cli.p("Good, first matching record in your collection is:")
                     release_details = self.collection.prepare_release_info(result_item)
+                    tracklist = self.collection.prepare_tracklist_info(
+                        result_item.id, result_item.tracklist)
                     # we need to pass a list in list here. we use tabulate to view
                     self.cli.tab_online_search_results([release_details])
-                    self.cli.online_search_results_tracklist(result_item.tracklist)
+                    self.cli.online_search_results_tracklist(tracklist)
                     self.first_track_on_release = result_item.tracklist[0].position
                     break
             try:
