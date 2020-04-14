@@ -227,7 +227,7 @@ def main():
 
     # IMPORT MODE, if we said so
     if args.release_id != False:
-        log.debug("args.release_id length: ".format(len(args.release_id)))
+        log.debug("args.release_id length: {}".format(len(args.release_id)))
         if len(args.release_id) == 0:
             # IMPORT OF WHOLE COLLECTION is the default
             coll_ctrl.import_collection()

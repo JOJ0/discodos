@@ -156,7 +156,7 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                                 #log.info("appending to bulk_questions list")
                                 bulk_questions.append(question)
                     log.debug("CTRL: bulk_questions: {}".format(bulk_questions))
-                    edit_answers = self._edit_track_ask_details(track_details,
+                    edit_answers = self.cli.edit_ask_details(track_details,
                         bulk_questions)
                     self.mix.update_mix_track_and_track_ext(track_details,
                           edit_answers)
@@ -443,7 +443,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         release = self.search_release(track_searchterm)
         if release:
             track_no = self.cli.ask_for_track(
-                suggest=self.cli.first_track_on_release)
+                suggest=self.first_track_on_release)
             if self.collection.ONLINE == True:
                 rel_id = release[0][0]
                 rel_name = release[0][2]
