@@ -375,7 +375,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                   search_results, _searchterm, db_releases)
             if compiled_results_list == None:
                 self.cli.error_not_the_release()
-                m = 'Try narrowing down or broadening your search terms!'
+                m = 'Try altering your search terms!'
                 log.info(m)
                 print(m)
                 raise SystemExit(1)
