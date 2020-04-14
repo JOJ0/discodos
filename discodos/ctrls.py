@@ -442,14 +442,15 @@ class Coll_ctrl_cli (Coll_ctrl_common):
     def track_report(self, track_searchterm):
         release = self.search_release(track_searchterm)
         if release:
-            track_no = self.cli.ask_for_track(
-                suggest=self.first_track_on_release)
             if self.collection.ONLINE == True:
-                rel_id = release[0][0]
-                rel_name = release[0][2]
+                track_no = self.cli.ask_for_track(
+                    suggest=self.first_track_on_release)
+                rel_id = release['id']
+                rel_name = release['title']
             else:
-                rel_id = release[0][0]
-                rel_name = release[0][1]
+                track_no = self.cli.ask_for_track()
+                rel_id = release[0]['discogs_id']
+                rel_name = release[0]['discogs_title']
             track_occurences = self.collection.track_report_occurences(rel_id, track_no)
             tr_sugg_msg = '\nTrack combo suggestions for {} on "{}".'.format(
                 track_no, rel_name)
