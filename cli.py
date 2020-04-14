@@ -246,11 +246,11 @@ def main():
             coll_ctrl.view_all_releases()
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
+        msg_use = "Nothing more to do. Use -m <mix> to add to a "
+        msg_use+= "mix, -u to update with Discogs information "
+        msg_use+= "or -zz to update with *Brainz information. "
+        msg_use+= "You can combine these options with -t too."
         if coll_ctrl.ONLINE:
-            msg_use = "Nothing more to do. Use -m <mix> to add to a "
-            msg_use+= "mix, -u to update with Discogs information "
-            msg_use+= "or -zz to update with *Brainz information. "
-            msg_use+= "You can combine these options with -t too."
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
@@ -271,15 +271,17 @@ def main():
                       args.track_to_add,
                       detail=user.BRAINZ_SEARCH_DETAIL)
             else:
+                #if discogs_rel_found: # prevents msg when nothing's found anyway
                 print_help(msg_use)
-        else:
+        else: # when OFFLINE
             database_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
                 mix_ctrl.add_offline_track(database_rel_found, args.track_to_add,
                         args.add_at_pos)
             else:
-                print_help(msg_use)
+                if database_rel_found: # prevents msg when nothing's found anyway
+                    print_help(msg_use)
 
 
     ##### MIX MODE ########################################################
