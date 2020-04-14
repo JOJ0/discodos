@@ -721,6 +721,10 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         return self.update_tracks_from_discogs(tr_list)
 
     def update_tracks_from_brainz(self, track_list, detail = 1):
+        # catch errors. this is a last resort check. prettier err-msgs earlier!
+        if track_list == [None] or track_list == [] or track_list == None:
+            log.error("Didn't get data for *Brainz update. Quitting.")
+            return False
         start_time = time()
         log.debug('CTRL: update_track_from_brainz: match detail option is: {}'.format(
               detail))
@@ -873,5 +877,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
           detail):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
-        tr_list = [self.collection.get_track_for_brainz_update(rel_id, track_no)]
+        track = self.collection.get_track_for_brainz_update(rel_id, track_no.upper())
+        if track == None:
+            log.error(
+             'Can\'t fetch "{}" on "{}". Track number correct?'.format(
+                 track_no, rel_title))
+            return False
+        tr_list = [track]
         return self.update_tracks_from_brainz(tr_list, detail)
