@@ -373,6 +373,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.print_and_return_first_d_release(
                   search_results, _searchterm, db_releases)
+            if compiled_results_list == None:
+                self.cli.error_not_the_release()
+                m = 'Try narrowing down or broadening your search terms!'
+                log.info(m)
+                print(m)
+                raise SystemExit(1)
             return compiled_results_list
 
         else:
@@ -426,13 +432,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     #return release_details[0]
                     log.info("Compiled Discogs release_details: {}".format(release_details))
                     return release_details
-                # FIXME this is bullshit, will never be reached FIXME
-                #    break
             except UnboundLocalError:
                 log.error("Discogs collection was not imported to DiscoBASE. Use 'disco import' command!")
                 #raise unb
                 raise SystemExit(1)
-        return False
+        return None
 
     def view_all_releases(self):
         self.cli.p("Showing all releases in DiscoBASE.")
