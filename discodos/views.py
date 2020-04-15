@@ -184,22 +184,8 @@ class View_common(ABC):
             times_str = join_sep(times, '\n')
             table[i]['times'] = times_str
 
-            links = []
-            if row['m_rel_id_override']:
-                links.append(self.link_to('musicbrainz release', row['m_rel_id_override']))
-            if row['m_rel_id']:
-                links.append(self.link_to('musicbrainz release', row['m_rel_id']))
-            if row['m_rec_id_override']:
-                links.append(self.link_to('musicbrainz recording', row['m_rec_id_override']))
-                links.append(self.link_to('acousticbrainz recording', row['m_rec_id_override']))
-            elif row['m_rec_id']:
-                links.append(self.link_to('musicbrainz recording', row['m_rec_id']))
-                links.append(self.link_to('acousticbrainz recording', row['m_rec_id']))
-            if row['discogs_id']:
-                links.append(self.link_to('discogs release', row['discogs_id']))
-            links_str = join_sep(links, '\n')
+            links_str = self._join_links_to_str(row)
             table[i]['links'] = links_str
-
 
             # del from list what we don't need anymore
             del(table[i]['m_rel_id_override'])
@@ -212,6 +198,28 @@ class View_common(ABC):
             del(table[i]['release_match_time'])
             del(table[i]['track_match_time'])
         return table
+
+    def join_links_to_str(self, row):
+        links = []
+        #print(row.keys())
+        if 'm_rel_id' in row.keys():
+            if row['m_rel_id_override']:
+                links.append(self.link_to('musicbrainz release', row['m_rel_id_override']))
+            elif row['m_rel_id']:
+                links.append(self.link_to('musicbrainz release', row['m_rel_id']))
+        if 'm_rec_id' in row.keys():
+            if row['m_rec_id_override']:
+                links.append(self.link_to('musicbrainz recording', row['m_rec_id_override']))
+                links.append(self.link_to('acousticbrainz recording', row['m_rec_id_override']))
+            elif row['m_rec_id']:
+                links.append(self.link_to('musicbrainz recording', row['m_rec_id']))
+                links.append(self.link_to('acousticbrainz recording', row['m_rec_id']))
+        if 'discogs_id' in row.keys():
+            if row['discogs_id']:
+                links.append(self.link_to('discogs release', row['discogs_id']))
+        links_str = join_sep(links, '\n')
+        return links_str
+
 
     def welcome_to_discodos(self):
         print(r'''
@@ -443,10 +451,20 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         print('')
 
     def tab_all_releases(self, releases_data):
-        #self.p(tab(releases_data, tablefmt="plain",
-        print(tab(releases_data, tablefmt="plain",
-            #headers=["Discogs ID", "Artist", "Release Title", "Last import", "in Collection"]))
-            headers=["Discogs ID", "Artist", "Release Title"]))
+        table = [dict(row) for row in releases_data]
+        for i, row in enumerate(table):
+            links_str = self.join_links_to_str(row)
+            row['artist_title_links'] = '{} - {}\n{}\n '.format(row['d_artist'],
+                  row['discogs_title'], links_str)
+            del(table[i]['m_rel_id_override'])
+            del(table[i]['m_rel_id'])
+            del(table[i]['discogs_id'])
+            del(table[i]['d_artist'])
+            del(table[i]['discogs_title'])
+        table = self.trim_table_fields(table, 40)
+        print(tab(table, tablefmt="grid",
+            headers={'d_catno': 'CatNo',
+              'artist_title_links': 'Release: Artist - Title - Links'}))
 
     def error_not_the_release(self):
         log.error("This is not the release you are looking for!")

@@ -417,18 +417,19 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         for result_item in discogs_results:
             self.cli.p("Checking " + str(result_item.id))
             for dbr in _db_releases:
-                if result_item.id == dbr[0]:
+                if result_item.id == dbr['discogs_id']:
                     self.cli.p("Good, first matching record in your collection is:")
                     release_details = self.collection.prepare_release_info(result_item)
                     tracklist = self.collection.prepare_tracklist_info(
                         result_item.id, result_item.tracklist)
+                    print('{}\n'.format(self.cli.join_links_to_str(dbr)))
                     # we need to pass a list in list here. we use tabulate to view
                     self.cli.tab_online_search_results([release_details])
                     self.cli.online_search_results_tracklist(tracklist)
                     self.first_track_on_release = result_item.tracklist[0].position
                     break
             try:
-                if result_item.id == dbr[0]:
+                if result_item.id == dbr['discogs_id']:
                     #return release_details[0]
                     log.info("Compiled Discogs release_details: {}".format(release_details))
                     return release_details
