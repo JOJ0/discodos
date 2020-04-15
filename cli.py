@@ -15,152 +15,185 @@ def argparser(argv):
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
-        help="increases log verbosity (-v -> INFO level, -vv DEBUG level)")
+        help='''increases output verbosity / shows what DiscoDOS is doing under
+        the hood (-v is INFO level, -vv is DEBUG level).''')
     parser.add_argument(
 		"-o", "--offline", dest="offline_mode",
         action="store_true",
-        help="""doesn't connect to Discogs (a lot of options work in on- and
+        help="""DiscoDOS checks for connectivity to online services
+        (Discogs, MusicBrainz, AcousticBrainz) itself. This option
+        forces offline mode. A lot of options work in on- and
         offline mode. Some behave differently, depending on connection state.""")
     # basic subparser element:
     subparsers = parser.add_subparsers()
     ### SEARCH subparser #######################################################
     search_subparser = subparsers.add_parser(
         name='search',
-        help='''searches for Discogs releases and tracks. Several actions can be
-        executed on the found items, eg. adding to a mix, updating track info
-        from Discogs or fetching additional information from
-        MusicBrainz/AcousticBrainz.
-        View this subcommands help with "disco search -h"''')
+        help='''searches for releases and tracks in the Discogs collection.
+        Several actions can be executed on the found items, eg. adding
+        to a mix, updating track info from Discogs or fetching additional
+        information from MusicBrainz/AcousticBrainz.
+        View this subcommand's help: "disco search -h".''')
     search_subparser.add_argument(
         dest='release_search', metavar='search_terms',
-        help='''When offline, searches in release name or ID only.
-                When online, Discogs API search engine is used:
-                also tracknames, artists, labels, catalog numbers allowed.
-                put multiple words inside double quotes''')
+        help='''The collection is searched for these terms. When offline, it
+        searches through all releases' artists/titles only (eg tracknames
+        not considered). When online, the Discogs API search
+        engine is used and also tracknames, artists, labels and
+        catalog numbers are looked through.
+        If your search term consists of multiple words, put them inside double
+        quotes (eg. "foo bar term"). If you instead put a number as your
+        search term, it is assumed you want to view exactly the Discogs
+        release with the given ID.''')
     search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
     search_subp_excl_group.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix', metavar='MIX_NAME',
-        help='''adds found release to given mix ID
-                (asks which track to add in case -t is missing)''',
+        help='''adds a track of the found release to the given mix ID
+                (asks which track to add in case -t is missing).''',
         default=0)
     search_subp_excl_group.add_argument(
         "-u", "--discogs-update", action='store_true',
         dest='search_discogs_update', default=0,
         help='''updates found release/track with Discogs track/artist details
-                (asks which track to update in case -t is missing)''')
+                (asks which track to update in case -t is missing).''')
     search_subp_excl_group.add_argument(
         "-z", "--brainz-update", action="count",
         dest='search_brainz_update', default=0,
         help='''updates found release/track with additional info from MusicBrainz
-                and AcousticBrainz. (asks which track to match in case -t is missing)
-                -z quick match,
-                -zz detailed match (takes longer, but more results)''')
+        and AcousticBrainz. (asks which track to update in case -t is missing)
+        -z quick match,
+        -zz detailed match (takes longer, but more results).''')
     search_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add', metavar='TRACK_NUMBER',
-        help='adds this track number to mix (eg. A1, AA, B2, ...)', default=0)
+        help='''in combination with -m this option adds the given track number
+        (eg. A1, AA, B2, ...) to the mix selected using -m;
+        in combination with -z or -u the given track is
+        the one being updated with *Brainz or Discogs details.''')
     search_subparser.add_argument(
         "-p", "--pos", type=str, dest='add_at_pos', metavar='POS_IN_MIX',
-        help='inserts track at specific position in mix (eg. 01, 14, ...), defaults to next',
+        help='''in combination with -m this option states that we'd like to
+        insert the track at the given position (eg. 1, 14, ...), rather than at the
+        end of the mix; in combination with -z or -u this option is ignored.''',
         default=0)
     ### MIX subparser #############################################################
     mix_subparser = subparsers.add_parser(
         name='mix',
-        help='manages your mixes. View this subcommands help with "disco mix -h')
+        help='manages your mixes. View this subcommand\'s help: "disco mix -h."')
     mix_subparser.add_argument(
         dest='mix_name',
-        help='''current mix (mix name or mix ID that should be displayed, edited, created, ...), 
-                omit this argument to show an overview of available mixes.''',
+        help='''mix name or mix ID being displayed, edited, created, copied,
+        deleted, etc. If mix_name is left out, a list of available mixes is
+        shown and all other arguments are ignored.''',
         nargs='?',
         default='all')
     mix_subparser.add_argument(
         "-v", "--verbose",
         action="count", default=0,
         dest='verbose_tracklist',
-        help='''mix tracklist shows more details (-v) or shows MusicBrainz
-                "matching information" (-vv) - this also gives you links to Discogs
-                releases, MusicBrainz releases/recordings and AccousticBrainz entries''')
+        help='''increases mix tracklist view detail. -v adds tracknames,
+        artists, transition rating/notes and general track notes.
+        -vv shows when and how MusicBrainz matching was done and also direct
+        weblinks to Discogs releases, MusicBrainz releases/recordings and
+        AccousticBrainz recordings.''')
     # only one of --create-mix OR --edit OR --add possible
     mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
     mix_subp_excl_group.add_argument(
         "-c", "--create-mix", action='store_true',
-        help='creates a new mix')
+        help='creates new mix (named as given in mix_name argument).')
     mix_subp_excl_group.add_argument(
         "-D", "--delete-mix", action='store_true',
-        help='deletes a mix and all its contained tracks!')
+        help='deletes the mix (given in mix_name) and all its contained tracks!')
     mix_subp_excl_group.add_argument(
         "-e", "--edit", type=str,
         dest='edit_mix_track',
         metavar='POSITION',
-        help='adds/edits rating, notes, key and other info of a track in a mix')
+        help='''edits/adds details of a track in a mix. (editable fields:
+        key, BPM, track number, position in mix, key notes, transition rating,
+        transition notes, general track notes, custom MusicBrainz recording ID).''')
     mix_subp_excl_group.add_argument(
         "-E", "--edit-mix", action='store_true',
-        help='edit general info about a mix (name, played date, venue)')
+        help='edits/adds general info about a mix (name, played date, venue).')
     mix_subp_excl_group.add_argument(
         "-b", "--bulk-edit", type=str,
         dest='bulk_edit',
-        metavar='FIELD_LIST',
-        help='''bulk-edit specific columns of whole mixes. Syntax of col list eg: <col1>,<col2>,...
-        possible cols: key,bpm,track_no,track_pos,key_notes,trans_rating,trans_notes,release_id,notes''')
+        metavar='FIELDS',
+        help='''bulk-edits specific fields of each track in mix.
+        Syntax of FIELDS argument: <field1>,<field2>,...
+        available fields: key,bpm,track_no,track_pos,key_notes,trans_rating,
+        trans_notes,notes.''')
     mix_subp_excl_group.add_argument(
         "-a", "--add-to-mix", type=str,
-        dest='add_release_to_mix',
-        metavar='SEARCH_TERM',
-        help='''searches for release in collection and adds it to current mix,
-                SEARCH_TERM can also be a Discogs release ID''')
+        dest='add_release_to_mix', metavar='SEARCH_TERMS',
+        help='''searches for release/track in collection and adds it to the mix,
+        This option is actually a shortcut to "disco search -m mix_name
+        search_term" and behaves identically. If SEARCH_TERMS is a number, it
+        is assumed being a Discogs release ID. A quick database check is done
+        and if non-existent yet, the release is 1) added to the Discogs collection
+        and 2) imported to DiscoBASE. This is a convenience function eg when trying
+        to quickly add a release to the mix that's not in the DiscoBASE yet (possibly
+        an only recently gained record?).''')
     mix_subp_excl_group.add_argument(
         "-r", "--reorder-tracks", type=int,
         dest='reorder_from_pos',
         metavar='POSITION',
-        help='reorders tracks in current mix, starting at POSITION')
+        help='''reorders tracks in current mix, starting at POSITION.
+        Note that this is a troubleshooting function and usually shouldn't
+        be necessary to use.''')
     mix_subp_excl_group.add_argument(
         "-d", "--delete-track", type=int,
         dest='delete_track_pos',
         metavar='POSITION',
-        help='deletes a track in current mix')
+        help='removes the track at the given position from the mix.')
     mix_subp_excl_group.add_argument(
         "--copy", action='store_true',
         dest='copy_mix',
-        help='creates new mix based on current mix_name (or ID)')
+        help='copies the mix given in mix_name argument. Asks for new name!')
     mix_subp_excl_group.add_argument(
         "-u", "--discogs-update", action='store_true',
         dest='discogs_update',
-        help='updates tracks in current mix with additional info from Discogs')
+        help='updates tracks in current mix with additional info from Discogs.')
     mix_subp_excl_group.add_argument(
         "-z", "--brainz-update", action="count", default=0,
         dest='brainz_update',
         help='''updates tracks in current mix with additional info from MusicBrainz and AcousticBrainz.
         Leave out mix ID to update every track contained in any mix.
-        -z quick match, -zz detailed match (takes longer, but more results)''')
+        -z quick match, -zz detailed match (takes longer, but more results).''')
     # mutually exclusive group ends here
     mix_subparser.add_argument(
         "-p", "--pos", type=int,
-        dest='mix_mode_add_at_pos',
-        help='add found release track at specific position in mix')
+        dest='mix_mode_add_at_pos', metavar='POSITION',
+        help='''in combination with -a this option adds the found release/track
+        at the given position in the mix (rather than at the end). In
+        combination with -u or -z the update process is started at the given
+        position in the mix.''')
     ### SUGGEST subparser ##########################################################
     suggest_subparser = subparsers.add_parser(
         name='suggest',
-        help='''suggests tracks based on what you\'ve played before, BPM range and musical key.
-        View this subcommands help with "disco suggest -h"''')
+        help='''suggests tracks based on what you\'ve played before or views
+        tracks based on BPM or musical key.
+        View this subcommand's help: "disco suggest -h".''')
     suggest_subparser.add_argument(
         dest='suggest_search', metavar='search_terms',
-        help='track or release name you want to show a "track-combination report" for.',
+        help='''track or release name you want to show a
+        "track-combination report" for.''',
         nargs='?',
         default='0')
     suggest_subparser.add_argument(
         "-b", "--bpm", type=int,
         dest='suggest_bpm', metavar="BPM",
-        help='suggests tracks based on BPM value, within a configurable pitch-range (default: +/-6 percent)')
+        help='''suggests tracks based on BPM value, within a
+        pitch-range of +/-6 percent.''')
     suggest_subparser.add_argument(
         "-k", "--key", type=str,
         dest='suggest_key', metavar="KEY",
-        help='suggests tracks based on musical key')
+        help='suggests tracks based on musical key.')
     ### IMPORT subparser ##########################################################
     import_subparser = subparsers.add_parser(
         name='import',
-        help='''imports your whole Discogs collection or single releases.
-        View this subcommands help with "disco import -h"''')
+        help='''imports your whole Discogs collection or just single releases.
+        View this subcommand's help: "disco import -h".''')
     import_subparser.add_argument(
-        dest='import_id', metavar='RELEASE ID', type=int,
+        dest='import_id', metavar='RELEASE_ID', type=int,
         help='''the Discogs release ID you want to import to DiscoBASE.
         If left empty, the whole collection will be imported. If the additional
         option -a is used, the release will be added to your Discogs collection
@@ -182,15 +215,15 @@ def argparser(argv):
         Discogs collection (same as when you click an "Add to collection"
         in the Discogs Webinterface.
         Additionally the release is added to the DiscoBASE.
-        Note that for performances sake, we don't do a cumbersome check if the
+        Note that for performance's sake, we don't do a time-consuming check if the
         release is already in your Discogs collection by asking the Discogs API,
-        we only do a quick check if the ID is in the local DiscoBASE already.
+        but only do a quick check if the ID is in the local DiscoBASE already.
         ''')
     import_subp_excl_group.add_argument(
         '--tracks', '-u', dest='import_tracks', action='store_true',
         help='''extends the Discogs import (releases and also tracks will
         be downloaded) - takes siginficantly longer than the regular import.
-        Note: This is the same as "disco search all -u"''')
+        Note: This is the same as "disco search all -u".''')
     import_subp_excl_group.add_argument(
         '--brainz', '-z', dest='import_brainz', action="count", default=0,
         help='''imports additional information from MusicBrainz/AcousticBrainz.
