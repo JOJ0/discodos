@@ -184,7 +184,7 @@ class View_common(ABC):
             times_str = join_sep(times, '\n')
             table[i]['times'] = times_str
 
-            links_str = self._join_links_to_str(row)
+            links_str = self.join_links_to_str(row)
             table[i]['links'] = links_str
 
             # del from list what we don't need anymore
