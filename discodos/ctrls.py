@@ -884,9 +884,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
         track = self.collection.get_track_for_brainz_update(rel_id, track_no.upper())
         if track == None:
-            log.error(
-             'Can\'t fetch "{}" on "{}". Track number correct?'.format(
-                 track_no, rel_title))
+            m = 'Can\'t fetch "{}" on "{}". '.format(track_no, rel_title)
+            m+= 'Either the track number is not existing on the release or the '
+            m+= 'track was not imported to DiscoBASE yet. Try '
+            m+= '"disco search ... -u" first, then re-run match-command.'
+            log.error(m)
             return False
         tr_list = [track]
         return self.update_tracks_from_brainz(tr_list, detail)
