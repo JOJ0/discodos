@@ -417,37 +417,41 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
 
     def online_search_results_tracklist(self, _tracklist):
         for tr in _tracklist:
-            # concatenate key and bpm together if existing:
-            key_bpm_user = "("
-            if tr['key']:
-                key_bpm_user+= tr['key']
+            try:
+                # concatenate key and bpm together if existing:
+                key_bpm_user = "("
+                if tr['key']:
+                    key_bpm_user+= tr['key']
 
-            if tr['key'] and tr['bpm']:
-                key_bpm_user+= "/" + str(tr['bpm'])
-            elif tr['bpm']:
-                key_bpm_user+= str(tr['bpm'])
-            key_bpm_user += ")"
-            if key_bpm_user == "()": # if empty, remove it completely
-                key_bpm_user = ""
+                if tr['key'] and tr['bpm']:
+                    key_bpm_user+= "/" + str(tr['bpm'])
+                elif tr['bpm']:
+                    key_bpm_user+= str(tr['bpm'])
+                key_bpm_user += ")"
+                if key_bpm_user == "()": # if empty, remove it completely
+                    key_bpm_user = ""
 
-            # do the same for brainz values:
-            key_bpm_brainz = "("
-            if tr['a_key']:
-                key_bpm_brainz+= tr['a_key'] + '*'
+                # do the same for brainz values:
+                key_bpm_brainz = "("
+                if tr['a_key']:
+                    key_bpm_brainz+= tr['a_key'] + '*'
 
-            if tr['a_key'] and tr['a_bpm']:
-                bpm_rnd = str(round(float(tr['a_bpm']),1))
-                key_bpm_brainz+= '/{}*'.format(bpm_rnd)
-            elif tr['a_bpm']:
-                bpm_rnd = str(round(float(tr['a_bpm']),1))
-                key_bpm_brainz+= '{}*'.format(bpm_rnd)
-            key_bpm_brainz += ')'
-            if key_bpm_brainz == '()': # if empty, remove it completely
-                key_bpm_brainz = ''
+                if tr['a_key'] and tr['a_bpm']:
+                    bpm_rnd = str(round(float(tr['a_bpm']),1))
+                    key_bpm_brainz+= '/{}*'.format(bpm_rnd)
+                elif tr['a_bpm']:
+                    bpm_rnd = str(round(float(tr['a_bpm']),1))
+                    key_bpm_brainz+= '{}*'.format(bpm_rnd)
+                key_bpm_brainz += ')'
+                if key_bpm_brainz == '()': # if empty, remove it completely
+                    key_bpm_brainz = ''
 
-            # the final tracklist entry:
-            print("{}\t{} {} {}".format(tr['track_no'], tr['track_title'],
-                  key_bpm_user, key_bpm_brainz))
+                # the final tracklist entry:
+                print("{}\t{} {} {}".format(tr['track_no'], tr['track_title'],
+                      key_bpm_user, key_bpm_brainz))
+            except KeyError:
+                # the final tracklist entry if track details not yet in DB:
+                print("{}\t{}".format(tr['track_no'], tr['track_title']))
         print('')
 
     def tab_all_releases(self, releases_data):

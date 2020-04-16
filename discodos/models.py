@@ -782,18 +782,25 @@ class Collection (Database):
         tl=[]
         for i, track in enumerate(tracklist):
             dbtrack = self.get_track(release_id, track.position)
-            #print(dbtrack)
-            tl.append({
-                'track_no': track.position,
-                'track_title': track.title,
-                'key': dbtrack['key'],
-                'key_notes': dbtrack['key_notes'],
-                'bpm': dbtrack['bpm'],
-                'notes': dbtrack['notes'],
-                'a_key': dbtrack['a_key'],
-                'a_chords_key': dbtrack['a_chords_key'],
-                'a_bpm': dbtrack['a_bpm']
-            })
+            if dbtrack == None:
+                log.debug(
+                 "prepare_tracklist_info: Track not in DB. Adding title/track_no only.")
+                tl.append({
+                    'track_no': track.position,
+                    'track_title': track.title
+                })
+            else:
+                tl.append({
+                    'track_no': track.position,
+                    'track_title': track.title,
+                    'key': dbtrack['key'],
+                    'key_notes': dbtrack['key_notes'],
+                    'bpm': dbtrack['bpm'],
+                    'notes': dbtrack['notes'],
+                    'a_key': dbtrack['a_key'],
+                    'a_chords_key': dbtrack['a_chords_key'],
+                    'a_bpm': dbtrack['a_bpm']
+                })
         return tl
 
     def get_track(self, release_id, track_no):
