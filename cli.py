@@ -437,42 +437,7 @@ def main():
             coll_ctrl.cli.welcome_to_discodos()
             raise SystemExit(1)
         coll_ctrl.cli.welcome_to_discodos()
-        m ='Connection to your Discogs collection is working, '
-        m+="but you didn't provide a command. Here are some things you could do:"
-        m+='\n\nImport your collection:'
-        m+='\nsetup -i'
-        m+='\n\nCreate a mix:'
-        m+='\ndisco mix my_mix -c'
-        m+='\n\nSearch in your collection and add tracks to the mix:'
-        m+='\ndisco mix my_mix -a "search terms"'
-        m+='\n\nView your mix. Leave out mix-name '
-        m+='to view all your mixes:'
-        m+='\ndisco mix my_mix'
-        m+='\n\nDiscoDOS by default is minimalistic. The initial import only '
-        m+='gave us release-titles/artists and CatNos. Now fetch track-names '
-        m+='and track-artists:'
-        m+='\ndisco mix my_mix -u'
-        m+='\n\nMatch the tracks with MusicBrainz/AcousticBrainz and get '
-        m+='BPM and musical key information (-z is quicker but not as accurate):'
-        m+='\ndisco mix my_mix -zz'
-        m+='\n\nIf you were lucky some tracks will show BPM and key information: '
-        m+='(-v is a more detailed view, it includes eg track-names, bpm, key)'
-        m+='\ndisco mix my_mix -v'
-        m+='\n\nView weblinks pointing directly to your Discogs & MusicBrainz releases, '
-        m+='find out more interesting details about your music via AcousticBrainz, '
-        m+='and see how the actual matching went:'
-        m+='\ndisco mix my_mix -vv'
-        m+="\n\nIf a track couldn't be matched automatically, you could head to "
-        m+='the MusicBrainz website, find a Recording MBID and put it in yourself:'
-        m+='\ndisco mix my_mix -e 1'
-        m+="\n\nThere's a lot more you can do. Each subcommand has it's own help command:"
-        m+='\ndisco mix -h'
-        m+='\ndisco search -h'
-        m+='\ndisco suggest -h'
-        m+="\nStill questions? Check out the README or open an issue on Github: "
-        m+='https://github.com/JOJ0/discodos'
-        print(m)
-
+        coll_ctrl.cli.view_tutorial()
 # __MAIN try/except wrap
 if __name__ == "__main__":
     try:

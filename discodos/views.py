@@ -221,18 +221,6 @@ class View_common(ABC):
         return links_str
 
 
-    def welcome_to_discodos(self):
-        print(r'''
-                            _______  _______ ________
-                           /       \        /       /
-                          /  ___   /  ___  /  _____/
-                         /  /  /  /  /  /  \____  \
-                        /  /__/  /  /__/  _____/  /
-Welcome to  D i s c o  /                /        /
-                      /_______/\_______/________/
-              ''')
-
-
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
 class Mix_view_common(ABC):
     def __init__(self):
@@ -317,6 +305,110 @@ class View_common_cli(View_common):
         log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
         log.info('CTRLS: {}'.format(msg_took))
         print(msg_took)
+
+    def view_tutorial(self):
+        m ='Connection to your Discogs collection is working, '
+        m+="but you didn't provide a command."
+        print(m)
+        tutorial_items = [
+        '\n\nFirst things first: Whenever DiscoDOS asks you a question, you '
+        'will be shown a default value in (brackets). If you '
+        'are fine with the default, just press enter.'
+        '\nWhen it\'s a yes/no question, the default will be presented as a '
+        'capital letter. Let\'s try this right now:',
+
+        '\n\nI will show a couple of basic commands now. Best you open a '
+        'second terminal window (MacOS/Linux) or discoshell.bat window (Windows), '
+        'so you can try out the commands over there, while watching this tutorial.',
+
+        '\n\nImport your collection (1000 releases take about a minute or two '
+        'to import):'
+        '\ndisco import',
+
+        '\n\nCreate a mix:'
+        '\ndisco mix my_mix -c',
+
+        '\n\nSearch in your collection and add tracks to the mix:\n'
+        'disco mix my_mix -a "search terms"',
+
+        '\n\nView your mix. Leave out mix-name '
+        'to view a list of all your mixes:'
+        '\ndisco mix my_mix',
+
+        '\n\nDiscoDOS by default is minimalistic. The initial import only '
+        'gave us release-titles/artists and CatNos. Now fetch track-names '
+        'and track-artists:'
+        '\ndisco mix my_mix -u',
+
+        '\n\nNow let\'s have a look into the tracklist again. '
+        '(-v enables a more detailed view, it includes eg '
+        'track-names, artists, transition rating, notes, etc.)'
+        '\ndisco mix my_mix -v',
+
+        '\n\nMatch the tracks with MusicBrainz/AcousticBrainz and get '
+        'BPM and musical key information (-z is quicker but not as accurate):'
+        '\ndisco mix my_mix -zz',
+
+        '\n\nIf we were lucky, some tracks will show BPM and key information. '
+        'Hint if you\'re new to CLI tools: We typed this command already, you '
+        'don\'t have to type or copy/paste it again, just use '
+        'your terminals command history, usually by hitting the "cursor up" key '
+        'until you see this command and just pressing enter:'
+        '\ndisco mix my_mix -v',
+
+        '\n\nView weblinks pointing directly to your Discogs & MusicBrainz releases, '
+        'find out interesting details about your music via AcousticBrainz, '
+        'and see how the actual matching went:'
+        '\ndisco mix my_mix -vv',
+
+        "\n\nIf a track couldn't be matched automatically, you could head over "
+        'to the MusicBrainz website yourself, find a Recording MBID and put it '
+        'into DiscoBASE by using the "edit track command" below. '
+        'If you\'re done with editing, re-run the match-command from above '
+        '(the one with -zz in the end ;-). Again: use the command history! '
+        '\ndisco mix my_mix -e 1',
+
+        '\n\nIf you\'re just interested in a tracks details and don\'t want to '
+        'add it to a mix, use the search command. You can also combine it with '
+        'the Discogs update or MusicBrainz update options.'
+        '\ndisco search "search terms"'
+        '\ndisco search "search terms" -u'
+        '\ndisco search "search terms" -zz',
+
+        "\n\nThere's a lot more you can do. Each subcommand has it's own help command:"
+        '\ndisco mix -h'
+        '\ndisco search -h'
+        '\ndisco suggest -h',
+
+        "\nStill questions? Check out the README or open an issue on Github: "
+        'https://github.com/JOJ0/discodos'
+        ]
+
+        view_tut = self.ask(
+        '\nDo you want to see a tutorial on how DiscoDOS basically works? (Y/n): ')
+        if view_tut.lower() == 'y' or view_tut == '':
+            #print(tutorial_items[0])
+            i = 0
+            while i < len(tutorial_items):
+                print(tutorial_items[i])
+                if i == len(tutorial_items) - 1:
+                    break
+                continue_tut = self.ask('\nContinue tutorial? (Y/n) ')
+                if continue_tut.lower() == 'n':
+                    break
+                i += 1
+
+    def welcome_to_discodos(self):
+        print(r'''
+                            _______  _______ ________
+                           /       \        /       /
+                          /  ___   /  ___  /  _____/
+                         /  /  /  /  /  /  \____  \
+                        /  /__/  /  /__/  _____/  /
+Welcome to  D i s c o  /                /        /
+                      /_______/\_______/________/
+              ''')
+
 
 # viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
