@@ -607,10 +607,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         print('Database errors (release import): {}.'.format(
             self.releases_db_errors))
 
-        print('Processed tracks: {}. Imported tracks to DiscoBASE: {}.'.format(
-            self.tracks_processed, self.tracks_added))
-        print('Database errors (track import): {}. Discogs errors (track import): {}.'.format(
-            self.tracks_db_errors, self.tracks_discogs_errors))
+        if tracks:
+            print('Processed tracks: {}. Imported tracks to DiscoBASE: {}.'.format(
+                self.tracks_processed, self.tracks_added))
+            print('Database errors (track import): {}. Discogs errors (track import): {}.'.format(
+                self.tracks_db_errors, self.tracks_discogs_errors))
 
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
