@@ -274,7 +274,8 @@ def main():
         if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
             coll_ctrl.import_collection(tracks = True)
         elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
-            pass
+            coll_ctrl.update_all_tracks_from_brainz(
+                detail=user.BRAINZ_SEARCH_DETAIL)
         else:
             coll_ctrl.view_all_releases()
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
