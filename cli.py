@@ -44,7 +44,12 @@ def argparser(argv):
         If your search term consists of multiple words, put them inside double
         quotes (eg. "foo bar term"). If you instead put a number as your
         search term, it is assumed you want to view exactly the Discogs
-        release with the given ID.''')
+        release with the given ID.
+        If search term is the special keyword "all",
+        a list of all releases in the DiscoBASE is shown (including weblinks to
+        Discogs/MusicBrainz release pages). In combination with -u, -z or -zz
+        respectively, all tracks are updated. Note that this is exactely the
+        same as "disco import" in combination with those options.''')
     search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
     search_subp_excl_group.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix', metavar='MIX_NAME',
@@ -73,7 +78,7 @@ def argparser(argv):
         "-p", "--pos", type=str, dest='add_at_pos', metavar='POS_IN_MIX',
         help='''in combination with -m this option states that we'd like to
         insert the track at the given position (eg. 1, 14, ...), rather than at the
-        end of the mix; in combination with -z or -u this option is ignored.''',
+        end of the mix; in combination with -z, -zz, -u or -e this option is ignored.''',
         default=0)
     ### MIX subparser #############################################################
     mix_subparser = subparsers.add_parser(
@@ -164,7 +169,7 @@ def argparser(argv):
         dest='mix_mode_add_at_pos', metavar='POSITION',
         help='''in combination with -a this option adds the found release/track
         at the given position in the mix (rather than at the end). In
-        combination with -u or -z the update process is started at the given
+        combination with -u, -z or -zz the update process is started at the given
         position in the mix.''')
     ### SUGGEST subparser ##########################################################
     suggest_subparser = subparsers.add_parser(
