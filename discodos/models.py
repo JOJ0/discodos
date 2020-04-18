@@ -534,7 +534,6 @@ class Mix (Database):
                      pos, direction))
         return self._updated_timestamp()
 
-
     def delete_track(self, pos):
         log.info("MODEL: Deleting track {} from {}.".format(pos, self.id))
         sql_del = 'DELETE FROM mix_track WHERE mix_id == ? AND track_pos == ?'
@@ -815,7 +814,6 @@ class Collection (Database):
           'd_track_name', 'key', 'key_notes', 'bpm', 'notes', 'm_rec_id_override',
           'a_key', 'a_chords_key', 'a_bpm'],
           join, fetchone = True, condition = where)
-
 
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
@@ -1208,6 +1206,70 @@ class Collection (Database):
           'track.d_artist', 'track.d_track_name', 'track.d_track_no',
           'track_ext.m_rec_id_override'], tables, condition=where,
            fetchone=True, orderby='release.discogs_id')
+
+    def upsert_track_ext(self, orig, edit_answers ):
+        track_no = orig['d_track_no'].upper() # always save uppercase track numbers
+        release_id = orig['d_release_id']
+        #key= orig['key']
+        #bpm = orig['bpm']
+        #key_notes = orig['key_notes']
+        #notes = orig['notes']
+        #m_rec_id_override = orig['m_rec_id_override']
+        edit_answers.pop('track_pos')
+
+        fields_ins = ''
+        fields_ins_vals = ''
+        fields_upd = ''
+        values_list = []
+        for key, answer in edit_answers.items():
+            log.debug('key: {}, value: {}'.format(key, answer))
+            # update fields key = ? snippets
+            if fields_upd == '':
+                fields_upd += "{} = ? ".format(key)
+            else:
+                fields_upd += ", {} = ? ".format(key)
+            # insert fields (keys) and values (list of ?)
+            fields_ins += ", {}".format(key)
+            fields_ins_vals += ", ?"
+            values_list.append(answer)
+
+        #if len(edit_answers) != 0: # only update if necessary
+        #    values_list_mix.append(answer)
+        #    values_mix += ", updated = datetime('now', 'localtime') "
+        #    final_update_mix = update_mix + values_mix + where_mix
+        #    log.info('MODEL: {}'.format(final_update_mix))
+        #    log.info(log.info('MODEL: {}'.format(tuple(values_list_mix))))
+        #    log.info("MODEL: Executing mix update...")
+        #    return self.execute_sql(final_update_mix, tuple(values_list_mix))
+        #else:
+        #    log.info("MODEL: Nothing changed - not executing mix update")
+        #    return True
+
+        if len(edit_answers) == 0: # only update if necessary
+            return True
+
+        try:
+            sql_i='''INSERT INTO track_ext(d_release_id, d_track_no{})
+                        VALUES(?, ?{});'''.format(fields_ins, fields_ins_vals)
+            #all_fields 
+            tuple_i = (release_id, track_no) + tuple(values_list)
+            return self.execute_sql(sql_i, tuple_i, raise_err=True)
+        except sqlerr as e:
+            if "UNIQUE constraint failed" in e.args[0]:
+                log.debug("Track already in DiscoBASE (track_ext), updating ...")
+                try:
+                    sql_u='''
+                     UPDATE track_ext SET {}
+                       WHERE d_release_id = ? AND d_track_no = ?;'''.format(
+                           fields_upd)
+                    tuple_u = tuple(values_list) + (release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u, raise_err=True)
+                except sqlerr as e:
+                    log.error("MODEL: upsert_track_ext: %s", e.args[0])
+                    return False
+            else:
+                log.error("MODEL: %s", e.args[0])
+                return False
 
 
 class Brainz (object):

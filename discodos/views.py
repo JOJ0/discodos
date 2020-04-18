@@ -249,7 +249,15 @@ class Mix_view_common(ABC):
 class Collection_view_common(ABC):
     def __init__(self):
         #super(Collection_view_cli, self).__init__()
-        pass
+        # list of questions a user is asked when searching and editing track
+        # first list item is the related db-field, second is the question
+        self._edit_track_questions = [
+            ["key", "Key ({}): "],
+            ["bpm", "BPM ({}): "],
+            ["key_notes", "Key notes/bassline/etc. ({}): "],
+            ["notes", "Other track notes: ({}): "],
+            ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
+        ]
 
 # common view utils, usable in CLI only
 class View_common_cli(View_common):
@@ -305,6 +313,43 @@ class View_common_cli(View_common):
         log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
         log.info('CTRLS: {}'.format(msg_took))
         print(msg_took)
+
+    def edit_ask_details(self, orig_data, edit_questions):
+        # collect answers from user input
+        answers = {}
+        answers['track_pos'] = "not a number"
+        for db_field, question in edit_questions:
+            # some special treatments for track_pos handling...
+            if db_field == 'track_pos':
+                while not is_number(answers['track_pos']):
+                    answers[db_field] = self.ask(
+                          question.format(orig_data['track_pos']))
+                    if (answers[db_field] == ""
+                          or int(answers[db_field]) == orig_data[db_field]):
+                        log.info("Answer was empty, dropping item from update.")
+                        del(answers[db_field])
+                        break
+                    else:
+                        move_to = int(answers['track_pos'])
+                        if move_to < orig_data['track_pos']:
+                            mvmsg = 'Note: Tracks new position will be right _before_ '
+                            mvmsg+= 'current track {}'.format(move_to)
+                            log.debug(mvmsg)
+                            print(mvmsg)
+                        elif move_to > orig_data['track_pos']:
+                            mvmsg = 'Note: Tracks new position will be right _after_ '
+                            mvmsg+= 'current track {}'.format(move_to)
+                            log.debug(mvmsg)
+                            print(mvmsg)
+            else:
+                answers[db_field] = self.ask(
+                                         question.format(orig_data[db_field]))
+                if answers[db_field] == "":
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers[db_field])
+
+        log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
+        return answers
 
     def view_tutorial(self):
         m ='Connection to your Discogs collection is working, '
@@ -458,43 +503,6 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
             return True
         return False
 
-    def edit_ask_details(self, orig_data, edit_questions):
-        # collect answers from user input
-        answers = {}
-        answers['track_pos'] = "not a number"
-        for db_field, question in edit_questions:
-            # some special treatments for track_pos handling...
-            if db_field == 'track_pos':
-                while not is_number(answers['track_pos']):
-                    answers[db_field] = self.ask(
-                          question.format(orig_data['track_pos']))
-                    if (answers[db_field] == ""
-                          or int(answers[db_field]) == orig_data[db_field]):
-                        log.info("Answer was empty, dropping item from update.")
-                        del(answers[db_field])
-                        break
-                    else:
-                        move_to = int(answers['track_pos'])
-                        if move_to < orig_data['track_pos']:
-                            mvmsg = 'Note: Tracks new position will be right _before_ '
-                            mvmsg+= 'current track {}'.format(move_to)
-                            log.debug(mvmsg)
-                            print(mvmsg)
-                        elif move_to > orig_data['track_pos']:
-                            mvmsg = 'Note: Tracks new position will be right _after_ '
-                            mvmsg+= 'current track {}'.format(move_to)
-                            log.debug(mvmsg)
-                            print(mvmsg)
-            else:
-                answers[db_field] = self.ask(
-                                         question.format(orig_data[db_field]))
-                if answers[db_field] == "":
-                    log.info("Answer was empty, dropping item from update.")
-                    del(answers[db_field])
-
-        log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
-        return answers
-
 
 
 # viewing collection (search) outputs in CLI mode:
@@ -647,6 +655,7 @@ class User_int(object):
         self.WANTS_TO_ADD_AND_IMPORT_RELEASE = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
+        self.WANTS_TO_SEARCH_AND_EDIT_TRACK = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -688,6 +697,8 @@ class User_int(object):
                     self.BRAINZ_SEARCH_DETAIL = self.args.search_brainz_update
                     if self.args.search_brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
+                elif self.args.search_edit_track == True:
+                    self.WANTS_TO_SEARCH_AND_EDIT_TRACK = True
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):

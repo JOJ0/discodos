@@ -68,12 +68,19 @@ def argparser(argv):
         and AcousticBrainz. (asks which track to update in case -t is missing)
         -z quick match,
         -zz detailed match (takes longer, but more results).''')
+    search_subp_excl_group.add_argument(
+        "-e", "--edit", action="store_true",
+        dest='search_edit_track',
+        help='''edits/adds details to a found release/track. Editable fields: key, BPM, key notes,
+        general track notes, custom MusicBrainz recording ID. (asks which
+        track to edit in case -t is missing).''')
     search_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add', metavar='TRACK_NUMBER',
         help='''in combination with -m this option adds the given track number
         (eg. A1, AA, B2, ...) to the mix selected using -m;
         in combination with -z or -u the given track is
-        the one being updated with *Brainz or Discogs details.''')
+        the one being updated with *Brainz or Discogs details; in combination
+        with -e the given track is to one to be edited.''')
     search_subparser.add_argument(
         "-p", "--pos", type=str, dest='add_at_pos', metavar='POS_IN_MIX',
         help='''in combination with -m this option states that we'd like to
@@ -112,7 +119,7 @@ def argparser(argv):
         "-e", "--edit", type=str,
         dest='edit_mix_track',
         metavar='POSITION',
-        help='''edits/adds details of a track in a mix. (editable fields:
+        help='''edits/adds details of a track in a mix (editable fields:
         key, BPM, track number, position in mix, key notes, transition rating,
         transition notes, general track notes, custom MusicBrainz recording ID).''')
     mix_subp_excl_group.add_argument(
@@ -274,7 +281,7 @@ def main():
     coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
             conf.discobase, conf.musicbrainz_user, conf.musicbrainz_password)
 
-    #### RELEASE MODE
+    #### SEARCH MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
         if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
             coll_ctrl.import_collection(tracks = True)
@@ -309,6 +316,11 @@ def main():
                       discogs_rel_found['title'],
                       args.track_to_add,
                       detail=user.BRAINZ_SEARCH_DETAIL)
+            elif user.WANTS_TO_SEARCH_AND_EDIT_TRACK:
+                coll_ctrl.edit_track(
+                      discogs_rel_found['id'],
+                      discogs_rel_found['title'],
+                      args.track_to_add)
             else:
                 #if discogs_rel_found: # prevents msg when nothing's found anyway
                 print_help(msg_use)

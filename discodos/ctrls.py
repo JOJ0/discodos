@@ -893,3 +893,35 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             return False
         tr_list = [track]
         return self.update_tracks_from_brainz(tr_list, detail)
+
+    def edit_track(self, rel_id, rel_title, track_no):
+        if not track_no:
+            track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
+        track_details = self.collection.get_track(rel_id, track_no.upper())
+        if track_details == None:
+            m = 'Can\'t fetch "{}" on "{}". '.format(track_no, rel_title)
+            m+= 'Either the track number is not existing on the release or the '
+            m+= 'track was not imported to DiscoBASE yet. Try '
+            m+= '"disco search ... -u" first, then re-run edit-command.'
+            log.error(m)
+            return False
+        msg_editing ='Editing track {} on "{}".\n'.format(track_no, rel_title)
+        msg_editing+='* to keep a value as is, press enter\n'
+        msg_editing+='* text in (braces) shows current value'
+        self.cli.p(msg_editing)
+        #track_details = self.mix.get_one_mix_track(edit_track)
+        self.cli.p("{} - {} - {}".format(
+                   rel_title,
+                   track_details['d_track_no'],
+                   track_details['d_track_name']))
+        log.info("current d_release_id: %s", track_details['d_release_id'])
+        edit_answers = self.cli.edit_ask_details(track_details,
+                self.cli._edit_track_questions)
+        for a in edit_answers.items():
+            log.info("answers: %s", str(a))
+        update_ok = self.collection.upsert_track_ext(track_details, edit_answers)
+        if update_ok:
+            self.cli.p("Track edit was successful.")
+        else:
+            log.error("Something went wrong on mix_track edit!")
+            raise SystemExit(1)
