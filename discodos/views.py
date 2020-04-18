@@ -317,30 +317,33 @@ class View_common_cli(View_common):
     def edit_ask_details(self, orig_data, edit_questions):
         # collect answers from user input
         answers = {}
-        answers['track_pos'] = "not a number"
         for db_field, question in edit_questions:
             # some special treatments for track_pos handling...
             if db_field == 'track_pos':
-                while not is_number(answers['track_pos']):
-                    answers[db_field] = self.ask(
-                          question.format(orig_data['track_pos']))
-                    if (answers[db_field] == ""
-                          or int(answers[db_field]) == orig_data[db_field]):
-                        log.info("Answer was empty, dropping item from update.")
-                        del(answers[db_field])
-                        break
-                    else:
-                        move_to = int(answers['track_pos'])
-                        if move_to < orig_data['track_pos']:
-                            mvmsg = 'Note: Tracks new position will be right _before_ '
-                            mvmsg+= 'current track {}'.format(move_to)
-                            log.debug(mvmsg)
-                            print(mvmsg)
-                        elif move_to > orig_data['track_pos']:
-                            mvmsg = 'Note: Tracks new position will be right _after_ '
-                            mvmsg+= 'current track {}'.format(move_to)
-                            log.debug(mvmsg)
-                            print(mvmsg)
+                answers['track_pos'] = self.ask(question.format(orig_data['track_pos']))
+                if answers['track_pos'] == "":
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers['track_pos'])
+                elif not is_number(answers['track_pos']):
+                    while not is_number(answers['track_pos']):
+                        log.warning("Answer was not a number, asking again.")
+                        if answers['track_pos'] == "":
+                            del(answers['track_pos'])
+                            break
+                        else:
+                            answers['track_pos'] = self.ask(question.format(orig_data['track_pos']))
+                else:
+                    move_to = int(answers['track_pos'])
+                    if move_to < orig_data['track_pos']:
+                        mvmsg = 'Note: Tracks new position will be right _before_ '
+                        mvmsg+= 'current track {}'.format(move_to)
+                        log.debug(mvmsg)
+                        print(mvmsg)
+                    elif move_to > orig_data['track_pos']:
+                        mvmsg = 'Note: Tracks new position will be right _after_ '
+                        mvmsg+= 'current track {}'.format(move_to)
+                        log.debug(mvmsg)
+                        print(mvmsg)
             else:
                 answers[db_field] = self.ask(
                                          question.format(orig_data[db_field]))

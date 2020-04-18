@@ -923,5 +923,5 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         if update_ok:
             self.cli.p("Track edit was successful.")
         else:
-            log.error("Something went wrong on mix_track edit!")
+            log.error("Something went wrong on track edit!")
             raise SystemExit(1)

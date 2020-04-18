@@ -324,9 +324,7 @@ class Mix (Database):
         values_list_track_ext = []
         cols_insert_track_ext = '' # track_ext insert
         values_insert_track_ext = '' # (the tuple is the same obviously)
-        if 'track_pos' in edit_answers: #filter out track_pos='not a number'
-            if edit_answers['track_pos'] == 'not a number':
-                edit_answers.pop('track_pos')
+
         mix_track_edit = False # decide if it's table mix_track or track_ext
         track_ext_edit = False
         updated_mix_track = False # save if we've updated mix_track table
@@ -628,9 +626,6 @@ class Mix (Database):
         log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
         values_mix = ''
         values_list_mix = []
-        if 'track_pos' in edit_answers: #filter out track_pos='not a number'
-            if edit_answers['track_pos'] == 'not a number':
-                edit_answers.pop('track_pos')
 
         update_mix = 'UPDATE mix SET '
         where_mix = 'WHERE mix_id == {}'.format(mix_details['mix_id'])
@@ -1210,12 +1205,6 @@ class Collection (Database):
     def upsert_track_ext(self, orig, edit_answers ):
         track_no = orig['d_track_no'].upper() # always save uppercase track numbers
         release_id = orig['d_release_id']
-        #key= orig['key']
-        #bpm = orig['bpm']
-        #key_notes = orig['key_notes']
-        #notes = orig['notes']
-        #m_rec_id_override = orig['m_rec_id_override']
-        edit_answers.pop('track_pos')
 
         fields_ins = ''
         fields_ins_vals = ''
@@ -1233,25 +1222,12 @@ class Collection (Database):
             fields_ins_vals += ", ?"
             values_list.append(answer)
 
-        #if len(edit_answers) != 0: # only update if necessary
-        #    values_list_mix.append(answer)
-        #    values_mix += ", updated = datetime('now', 'localtime') "
-        #    final_update_mix = update_mix + values_mix + where_mix
-        #    log.info('MODEL: {}'.format(final_update_mix))
-        #    log.info(log.info('MODEL: {}'.format(tuple(values_list_mix))))
-        #    log.info("MODEL: Executing mix update...")
-        #    return self.execute_sql(final_update_mix, tuple(values_list_mix))
-        #else:
-        #    log.info("MODEL: Nothing changed - not executing mix update")
-        #    return True
-
         if len(edit_answers) == 0: # only update if necessary
             return True
 
         try:
             sql_i='''INSERT INTO track_ext(d_release_id, d_track_no{})
                         VALUES(?, ?{});'''.format(fields_ins, fields_ins_vals)
-            #all_fields 
             tuple_i = (release_id, track_no) + tuple(values_list)
             return self.execute_sql(sql_i, tuple_i, raise_err=True)
         except sqlerr as e:
