@@ -1,6 +1,13 @@
-# The geekiest Vinyl DJ playlist tool on the planet
-
-This tool helps a Vinyl DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from one's [Discogs](https://www.discogs.com) records collection.
+```
+                _______  _______ ________
+               /       \        /       /
+              /  ___   /  ___  /  _____/
+             /  /  /  /  /  /  \____  \
+            /  /__/  /  /__/  _____/  /
+D i s c o  /                /        /  - The geekiest DJ tool on the planet
+          /_______/\_______/________/
+```
+helps a DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from a [Discogs](https://www.discogs.com) record [collection](https://support.discogs.com/hc/en-us/articles/360007331534-How-Does-The-Collection-Feature-Work-). Releases and tracks can be matched and linked with the [MusicBrainz](https://musicbrainz.org) database and thus receive additional data like BPM or musical key from [AcousticBrainz](https://acousticbrainz.org), a "crowd source based acoustic information database". DiscoDOS primarily aims at the Vinyl DJ but features like matching and linking to digital DJ software like Pioneer's Rekordbox are planned. DiscoDOS will then be able to answer questions like: "Do I have all those records in this particular set in digital format too, so I could play it in a digital-only situation?". Further feature plans include built-in contribution possibilites to AcousticBrainz, to help this useful resource grow.
 
 ## Prerequisites
 
