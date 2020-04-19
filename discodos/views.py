@@ -644,7 +644,7 @@ class User_int(object):
         self.WANTS_TO_BULK_EDIT = False
         self.WANTS_SUGGEST_BPM_REPORT = False
         self.WANTS_SUGGEST_KEY_REPORT = False
-        self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = False
+        self.WANTS_SUGGEST_KEY_AND_BPM_REPORT = False
         self.WANTS_TO_PULL_BRAINZ_INFO = False
         self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
         self.BRAINZ_SEARCH_DETAIL = 1
@@ -779,8 +779,8 @@ class User_int(object):
             log.debug("Entered suggestion mode.")
             if (self.args.suggest_bpm and self.args.suggest_search == "0"
                   and self.args.suggest_key):
-                log.debug("Entered BPM and key suggestion report.")
-                self.WANTS_SUGGEST_BPM_AND_KEY_REPORT = True
+                log.debug("Entered key and BPM suggestion report.")
+                self.WANTS_SUGGEST_KEY_AND_BPM_REPORT = True
             elif (self.args.suggest_bpm and self.args.suggest_search != "0"
                   and self.args.suggest_key):
                 log.error("You can't combine BPM and key with Track-combination report.")

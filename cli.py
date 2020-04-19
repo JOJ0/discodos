@@ -432,6 +432,8 @@ def main():
         coll_ctrl.bpm_report(args.suggest_bpm, 6)
     if user.WANTS_SUGGEST_KEY_REPORT:
         coll_ctrl.key_report(args.suggest_key)
+    if user.WANTS_SUGGEST_KEY_AND_BPM_REPORT:
+        coll_ctrl.key_and_bpm_report(args.suggest_key, args.suggest_bpm, 6)
 
     ### IMPORT MODE
     if user.WANTS_TO_IMPORT_COLLECTION:

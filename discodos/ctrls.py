@@ -658,6 +658,20 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                      tr['discogs_title'], tr['d_track_no']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
+    def key_and_bpm_report(self, key, bpm, pitch_range):
+        possible_tracks = self.collection.get_tracks_by_key_and_bpm(key, bpm, pitch_range)
+        tr_sugg_msg = '\nShowing tracks with key "{}" and a BPM around {}. Pitch range is +/- {}%.'.format(key, bpm, pitch_range)
+        self.cli.p(tr_sugg_msg)
+        if possible_tracks:
+            max_width = self.cli.get_max_width(possible_tracks,
+              ['key', 'bpm'], 3)
+            for tr in possible_tracks:
+                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
+                  ['key', 'bpm'], max_width)
+                self.cli.p('{}{} - {} [{} ({})]:'.format(
+                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
+                     tr['discogs_title'], tr['d_track_no']))
+
     def update_tracks_from_discogs(self, track_list):
         '''takes a list of tracks and updates tracknames/artists from Discogs.
            List has to contain fields: d_release_id, discogs_title, d_track_no.
@@ -909,7 +923,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         msg_editing+='* to keep a value as is, press enter\n'
         msg_editing+='* text in (braces) shows current value'
         self.cli.p(msg_editing)
-        #track_details = self.mix.get_one_mix_track(edit_track)
         self.cli.p("{} - {} - {}".format(
                    rel_title,
                    track_details['d_track_no'],
