@@ -13,7 +13,7 @@ class View_common(ABC):
     def shorten_timestamp(self, sqlite_date, text = False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         try:
-            date_only = datetime.fromisoformat(sqlite_date).date()
+            date_only = datetime.fromisoformat(self.none_replace(sqlite_date)).date()
             if text == True:
                 return str(date_only)
             return date_only
