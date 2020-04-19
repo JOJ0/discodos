@@ -461,6 +461,8 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        log.error('Program interrupted!')
+        msg_int = 'User canceled DiscoDOS by pressing Ctrl + C'
+        log.info(msg_int)
+        print(msg_int)
     #finally:
         #log.shutdown()
