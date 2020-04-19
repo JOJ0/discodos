@@ -1,3 +1,4 @@
+# DiscoDOS Manual
 ```
                 _______  _______ ________
                /       \        /       /
@@ -7,95 +8,17 @@
 D i s c o  /                /        /  - The geekiest DJ tool on the planet
           /_______/\_______/________/
 ```
-helps a DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from a [Discogs](https://www.discogs.com) record [collection](https://support.discogs.com/hc/en-us/articles/360007331534-How-Does-The-Collection-Feature-Work-). Releases and tracks can be matched and linked with the [MusicBrainz](https://musicbrainz.org) database and thus receive additional data like BPM or musical key from [AcousticBrainz](https://acousticbrainz.org), a "crowd source based acoustic information database". DiscoDOS primarily aims at the Vinyl DJ but features like matching and linking to digital DJ software like Pioneer's Rekordbox are planned. DiscoDOS will then be able to answer questions like: "Do I have all those records in this particular set in digital format too, so I could play it in a digital-only situation?". Further feature plans include built-in contribution possibilites to AcousticBrainz, to help this useful resource grow.
+helps a DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from a [Discogs](https://www.discogs.com) record [collection](https://support.discogs.com/hc/en-us/articles/360007331534-How-Does-The-Collection-Feature-Work-). Releases and tracks can be matched and linked with the [MusicBrainz](https://musicbrainz.org) database and thus receive additional data like BPM or musical key from [AcousticBrainz](https://acousticbrainz.org), a "crowd source based acoustic information database". 
 
-## Prerequisites
+DiscoDOS primarily aims at the Vinyl DJ but features for "Hybrid-Vinyl-Digital-DJs" like linking a Discogs collection to DJ software (eg Pioneer's Rekordbox) are planned. DiscoDOS will then be able to answer questions like: "Do I have all those records in this particular set in digital format too, so I could play it in a digital-only situation?". Further feature plans include built-in contribution possibilites to AcousticBrainz, to help this useful resource grow.
 
-You need to have these software packages installed
-* git
-* Python version 3.7 or higher
+DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite what the name implies it follows most standards of a typical shell utility you would find on a [UNIX-like operating system](https://en.wikipedia.org/wiki/Unix-like). It is aimed to support modern Linux, MacOS and Windows systems. This is how it looks like:
 
-Getting them differs according to your OS
+FIXME
 
-* Most Linux distributions have git and Python available within their package repositories.
-* On Windows download from here: https://git-scm.com/download, https://www.python.org/downloads
-* On MacOS I suggest getting both packages via homebrew: https://brew.sh/
-  (If homebrew seems overkill to you, just use the Windows links above)
+### Installation
 
-Make sure git and python can be executed from everywhere (adjust your PATH environment variable accordingly).
-
-During the Python setup on Windows choose "Customize installation" and select the following options:
-
-- pip
-- py launcher
-- Associate files with Python (requires the py launcher)
-- Add Python to environment variables
-
-
-## Initial Setup
-
-### Linux / MacOS
-
-_Skip this chapter if you are on a Windows OS!_
-
-Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
-
-```
-cd
-git clone https://github.com/JOJ0/discodos.git
-ls -l discodos
-```
-
-Create and activate a virtual Python environment! The environment will be saved inside a hidden subfolder of your homedirectory called .venvs/
-
-```
-python3 -m venv ~/.venvs/discodos
-source ~/.venvs/discodos/bin/activate
-```
-
-Double check if your environment is active and you are using the pip binary installed _inside_ your ~/.venvs/discodos/ directory.
-
-`pip --version`
-
-You should see something like this:
-
-`pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
-
-Install the necessary dependencies into your environment!
-
-`pip install -r ~/discodos/requirements.txt`
-
-
-### Windows
-
-Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
-
-Jump to your homedirectory, clone the repo and double check if the directory discodos has been created.
-
-```
-cd %HOMEPATH%
-git clone https://github.com/JOJ0/discodos.git
-dir discodos
-```
-
-Create and activate a virtual Python environment!
-
-```
-python -m venv "%HOMEPATH%/python-envs/discodos"
-"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
-```
-
-Double check if your environment is active and you are using the pip binary installed _inside_ your %HOMEPATH%/python-envs/discodos directory.
-
-`pip --version`
-
-You should see something like this:
-
-`pip 19.2.3 from c:\users\user\python-envs\discodos\lib\site-packages\pip (python 3.8)`
-
-Install the necessary dependencies into your environment!
-
-`pip install -r "%HOMEPATH%/discodos/requirements.txt"`
+Please head over to the [INSTALLATION](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md) document for step by step instructions on how to get DiscoDOS running on your machine.
 
 
 ### Configuring Discogs API access
