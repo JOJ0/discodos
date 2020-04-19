@@ -662,7 +662,7 @@ class User_int(object):
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
-            if "all" in self.args.release_search:
+            if self.args.release_search == "all":
                 if self.args.search_discogs_update == True:
                     # discogs update all
                     self.WANTS_ONLINE = True
