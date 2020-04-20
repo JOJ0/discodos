@@ -14,8 +14,12 @@ DiscoDOS primarily aims at the Vinyl DJ but features for "Hybrid-Vinyl-Digital-D
 
 DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite of what the name implies, it's just the look that is reminiscent of the 80s/90s operating system, its usability follows most standards of a typical [shell](https://en.wikipedia.org/wiki/Shell_(computing)#Unix-like_systems) utility you would find on a [UNIX-like operating system](https://en.wikipedia.org/wiki/Unix-like). It is aimed to support modern Linux, MacOS and Windows systems.
 
-This should give you an idea on how it looks and feels (you screen is not broken, these animated gifs are very low quality to make them load quickly):
-![demo gif 1](assets/intro_gif_v0.3_1-580_16col_960x600.gif)
+This should give you an idea on how it looks and feels (your screen is not broken, these animated gifs are very low quality to make them load quickly):
+
+##### Viewing mix details, searching and adding track:
+![demo gif 1](assets/intro_gif_v0.4_1-580_16col_960x600.gif)
+##### Updating track information from Discogs and MusicBrainz/AcousticBrainz:
+![demo gif 2](assets/intro_gif_v0.4_580-end_16col_960x600.gif)
 
 ### Installation
 
