@@ -12,9 +12,10 @@ helps a DJ remember and analyze what they played in their sets, or what they cou
 
 DiscoDOS primarily aims at the Vinyl DJ but features for "Hybrid-Vinyl-Digital-DJs" like linking a Discogs collection to DJ software (eg Pioneer's Rekordbox) are planned. DiscoDOS will then be able to answer questions like: "Do I have all those records in this particular set in digital format too, so I could play it in a digital-only situation?". Further feature plans include built-in contribution possibilites to AcousticBrainz, to help this useful resource grow.
 
-DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite what the name implies it follows most standards of a typical shell utility you would find on a [UNIX-like operating system](https://en.wikipedia.org/wiki/Unix-like). It is aimed to support modern Linux, MacOS and Windows systems. This is how it looks like:
+DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite of what the name implies, it's just the look that is reminiscent of the 80s/90s operating system, its usability follows most standards of a typical [shell](https://en.wikipedia.org/wiki/Shell_(computing)#Unix-like_systems) utility you would find on a [UNIX-like operating system](https://en.wikipedia.org/wiki/Unix-like). It is aimed to support modern Linux, MacOS and Windows systems.
 
-FIXME
+This should give you an idea on how it looks and feels (you screen is not broken, these animated gifs are very low quality to make them load quickly):
+![demo gif 1](assets/intro_gif_v0.3_1-580_16col_960x600.gif)
 
 ### Installation
 
