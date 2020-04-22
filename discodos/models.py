@@ -1352,14 +1352,27 @@ class Brainz (object):
     def _get_accousticbrainz(self, urlpart):
         headers={'Accept': 'application/json' }
         url="https://acousticbrainz.org/api/v1/{}".format(urlpart)
-        resp = requests.get(url, headers=headers, timeout=7)
+        try:
+            resp = requests.get(url, headers=headers, timeout=7)
+            resp.raise_for_status()
+        except reqerrors.HTTPError as errh:
+            log.debug("fetching AccousticBrainz MBID: %s (HTTPError)", errh)
+            if "Not found" in errh.response.text:
+                log.warning("AcousticBrainz doesn't have this recording yet. Consider submitting it!")
+        except reqerrors.ConnectionError as errc:
+            log.error("fetching AccousticBrainz MBID: %s (ConnectionError)", errc)
+        except reqerrors.Timeout as errt:
+            log.error("fetching AccousticBrainz MBID: %s (Timeout)", errt)
+        except reqerrors.RequestException as erre:
+            log.error("fetching AccousticBrainz MBID: %s (RequestException)", erre)
+
         if resp.ok:
             _json = json.loads(resp.content)
             return _json
         else:
-            log.info("MBID not in AccousticBrainz: %s", resp.status_code)
-            resp.raise_for_status()
-            #return False
+            log.debug("No valid AcousticBrainz response. Returning None.")
+            return None
+
 
     def _get_accbr_low_level(self, mb_id):
         low_level = self._get_accousticbrainz("{}/low-level".format(mb_id))
@@ -1391,13 +1404,16 @@ class Brainz (object):
             return None
 
     def get_accbr_chords_key(self, mb_id):
-        ab_return = self._get_accbr_low_level(mb_id)
-        if ab_return['tonal']['chords_scale'] == 'minor':
-            majmin = 'm'
-        else:
-            majmin = ''
-        chords_key = '{}{}'.format(ab_return['tonal']['chords_key'], majmin)
-        return chords_key
+        try:
+            ab_return = self._get_accbr_low_level(mb_id)
+            if ab_return['tonal']['chords_scale'] == 'minor':
+                majmin = 'm'
+            else:
+                majmin = ''
+            chords_key = '{}{}'.format(ab_return['tonal']['chords_key'], majmin)
+            return chords_key
+        except:
+            return None
 
 class Brainz_match (Brainz): # we are based on Brainz, but it's not online
     '''This class tries to match _one_ given release and/or recording with

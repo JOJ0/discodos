@@ -836,8 +836,12 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 if rec_mbid: # we where lucky...
                     # get accousticbrainz info
                     key = bmatch.get_accbr_key(rec_mbid)
-                    chords_key = bmatch.get_accbr_chords_key(rec_mbid)
-                    bpm = bmatch.get_accbr_bpm(rec_mbid)
+                    if key is not None: # Skip if Rec MBID not on AcBr yet
+                        chords_key = bmatch.get_accbr_chords_key(rec_mbid)
+                        bpm = bmatch.get_accbr_bpm(rec_mbid)
+                    else:
+                        chords_key = None
+                        bpm = None
                 else:
                     errors_no_rec += 1
             # user reporting starts here, not in model anymore
