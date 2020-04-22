@@ -766,7 +766,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             processed_total = len(track_list) + offset
         else:
             processed_total = len(track_list)
-        errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
+        errors_not_found, errors_db, errors_no_release = 0, 0, 0
+        errors_no_rec_MB, errors_no_rec_AB = 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
         for track in track_list:
             release_mbid, rec_mbid = None, None # we are filling these
@@ -842,8 +843,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     else:
                         chords_key = None
                         bpm = None
+                        errors_no_rec_AB += 1
                 else:
-                    errors_no_rec += 1
+                    errors_no_rec_MB += 1
             # user reporting starts here, not in model anymore
             # summary and save only when we have Release MBID or user_rec_mbid
             if release_mbid or user_rec_mbid:
@@ -901,8 +903,9 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             self.cli.brainz_processed_so_far(processed, processed_total)
             print('') # space for readability
 
-        self.cli.brainz_processed_report(processed_total, added_release, added_rec,
-          added_key, added_chords_key, added_bpm, errors_db, errors_not_found)
+        self.cli.brainz_processed_report(processed_total, added_release,
+          added_rec, added_key, added_chords_key, added_bpm, errors_db,
+          errors_not_found, errors_no_rec_AB)
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True # we are through all tracks, in any way, this is a success
 

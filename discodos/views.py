@@ -588,28 +588,32 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             log.error("Need to be ONLINE to do that!")
             raise SystemExit(3)
 
-    def brainz_processed_report(self, processed, added_release, added_rec,
-      added_key, added_chords_key, added_bpm, errors_db, errors_not_found):
+    def brainz_processed_report(self, processed, added_release, added_rec, added_key,
+      added_chords_key, added_bpm, errors_db, errors_not_found, errors_no_rec_AB):
         msg_mb = 'Processed: {}.\nAdded MusicBrainz info to DiscoBASE: '.format(processed)
         msg_mb+= 'Release MBIDs: {}, Recording MBIDs: {}\n'.format(
             added_release, added_rec)
-        msg_mb+= 'Added AccousticBrainz info: Key: {}, Chords Key: {}, BPM: {}'.format(
+        msg_mb+= 'Added AccousticBrainz info: Key: {}, Chords Key: {}, BPM: {}\n'.format(
             added_key, added_chords_key, added_bpm)
+        msg_mb+= 'No AcousticBrainz entries available yet: {} (consider submitting!)'.format(errors_no_rec_AB)
+
         msg_err = 'Database errors: {}. Not found on Discogs errors: {}.'.format(
             errors_db, errors_not_found)
-        msg_note = 'Note that some of your tracks might be from the same release. '
+
+        msg_note = 'Note in case you did an all-mix-tracks-match (disco mix -z): '
+        msg_note+= 'Some of the processed tracks might be on the same release. '
         msg_note+= 'Thus, the total release count added in reality might be less.'
         print(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
         log.info(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
         print("") # space for readability
 
         msg1 = "If DiscoDOS didn't find many Release MBIDs or Recording MBIDs "
-        msg1+= "and hence no key and BPM data, "
-        msg1+= "please investigate: Execute match command again "
-        msg1+= "with increased log-level: disco -v .. "
+        msg1+= "please help improving the matching algorithm and either: "
         print(msg1)
-        msg2 = "Help improving the matching algorithm: "
-        msg2+= "Open an issue on github.com/JOJ0/discodos"
+
+        msg2 = "* Investigate yourself: Execute match command again with increased log-level: disco -v ...\n"
+        msg2+= "* or just send the debug.log file (it's in your discodos folder)\n"
+        msg2+= "In any case, please report by opening an issue on github.com/JOJ0/discodos"
         print(msg2+'\n')
 
     def brainz_processed_so_far(self, processed, processed_total):
