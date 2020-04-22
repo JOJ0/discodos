@@ -2,8 +2,8 @@
 
 There are two ways of installing DiscoDOS:
 
-- Release versions (get a program that just works, is easy to install and well tested)
-- Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. I usually try to keep things stable in the master branch. I use it myself on my production database, so it just has to work. Seldomely there will be major bugs that really could corrupt our data but in any case make sure you use DiscoDOS' neet built-in backup feature!)
+- Release version (get a program that just works, is easy to install and well tested)
+- Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. I usually try to keep things stable in the master branch. I use it myself on my production database, so it just has to work. Seldomely there will be major bugs that really could corrupt your data. In any case make sure you use DiscoDOS' neet built-in backup/sync feature!)
 
 
 ## Release version
@@ -103,6 +103,75 @@ Install the necessary dependencies into your environment!
 
 `pip install -r "%HOMEPATH%/discodos/requirements.txt"`
 
+
+### Initialize the database and set up the CLI tools
+
+_Remove the ./ in front of the commands if you are on Windows! Also make sure you have the "py launcher" installed and .py files associated (see setup notes above)._
+
+On first launch, the setup script does several things:
+
+- it creates an empty database -> you should find a file named `discobase.db` in your discodos folder.
+- it sets up the DiscoDOS cli
+  - Linux/MacOS -> find the files `disco` and `install_cli_system.sh` in your discodos folder.
+  - Windows -> find the files `disco.bat` and `discoshell.bat`
+
+Now launch setup and carefully read the output.
+
+`./setup.py`
+
+Hint if setup throws an error: Make sure the python environment you created in the installation instructions above is loaded. On Windows it could happen that *py launcher* is not properly installed - Work around this issue by launching setup.py with python.exe:
+
+`python setup.py`
+
+On **Windows** your starting point to using DiscoDOS is double-clicking `discoshell.bat`. A new command prompt window named "DiscoDOS shell" is opened and the "Virtual Python Environment", DiscoDOS needs to function, is activated. Once inside the shell, execute cli commands via the disco.bat wrapper. As usual on Windows systems you can leave out the .bat ending and just type `disco`.
+
+On **Linux and MacOS** the workflow is slightly different. To execute DiscoDOS cli commands you just type `./disco`. This wrapper script also takes care of activating the "Virtual Python Environment". To conveniently use the `disco` command from everywhere on your system, copy it to a place that's being searched for according to your PATH variable - the provided script `install_cli_system.sh` does this for you and copies it to /usr/local/bin).
+
+_The following commands assume that, depending on your OS, you are either inside the DiscoDOS shell window or `disco` is being found via the PATH variable._
+
+ Check if the database is working by creating a new mix.
+
+`disco mix fat_mix -c`
+
+View your (empty) mix.
+
+`disco mix fat_mix`
+
+
+### Configure Discogs API access
+
+To access your Discogs collection you need to generate an API login token and put it into the configuration file.
+
+- Login to discogs.com
+- Click your avatar (top right)
+- Select _Settings_
+- Switch to section _Developers_
+- Click _Generate new token_
+- Open the file `config.yaml` (inside the discodos root dir, next to the files `setup.py` and `cli.py`) and copy/paste the generated Discogs token into it:
+
+ ```
+ discogs_token: 'XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH'
+ ```
+
+- Save and close the file
+
+Make sure you are still in the discodos application directory before you move on with setup.
+
+on Linux/Mac
+
+```
+cd
+cd discodos
+```
+
+on Windows
+
+```
+cd "%HOMEPATH%"
+cd discodos
+```
+
+
 ### What now?
 
-Now read on how to set up DiscoDOS on the [README](https://github.com/JOJ0/discodos/blob/master/README.md) page. The next steps would be to configure access to your Discogs collection and initialize the local database.
+Now read on in the [README](https://github.com/JOJ0/discodos/blob/master/README.md) document. The next steps would be to import your Discogs collection and walk through the "Basic Usage Tutorial".

@@ -26,77 +26,14 @@ This should give you an idea on how it looks and feels (your screen is not broke
 Please head over to the [INSTALLATION](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md) document for step by step instructions on how to get DiscoDOS running on your machine.
 
 
-### Configuring Discogs API access
-
-To access your Discogs collection you need to generate an API login token.
-
-- Login to discogs.com
-- Click your avatar (top right)
-- Select _Settings_
-- Switch to section _Developers_
-- Click _Generate new token_
-- Open the file `config.yaml` (inside the discodos root dir, next to the files `setup.py` and `cli.py`) and copy/paste the generated Discogs token into it:
-
- ```
- discogs_token: 'XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH'
- ```
-
-- Save and close the file
-
-Make sure you are still in the discodos application directory before you move on with setup.
-
-on Linux/Mac
-
-```
-cd
-cd discodos
-```
-
-on Windows
-
-```
-cd "%HOMEPATH%"
-cd discodos
-```
-
-
-### Initializing the database and setting up the cli tools 
-
-_Remove the ./ in front of the commands if you are on Windows! Also make sure you have the "py launcher" installed and .py files associated (see setup notes above)._
-
-On first launch, the setup script does several things:
-
-- it creates an empty database -> you should find a file named `discobase.db` in your discodos folder.
-- it sets up the DiscoDOS cli
-  - Linux/MacOS -> find the files `disco` and `install_cli_system.sh` in your discodos folder.
-  - Windows -> find the files `disco.bat` and `discoshell.bat`
-
-Now launch setup and carefully read the output.
-
-`./setup.py`
-
-On **Windows** your starting point to using DiscoDOS is double-clicking `discoshell.bat`. A new command prompt window named "DiscoDOS shell" is opened and the "Virtual Python Environment", DiscoDOS needs to function, is activated. Once inside the shell, execute cli commands via the disco.bat wrapper. As usual on Windows systems you can leave out the .bat ending and just type `disco`.
-
-On **Linux and MacOS** the workflow is slightly different. To execute DiscoDOS cli commands you just type `./disco`. This wrapper script also takes care of activating the "Virtual Python Environment". To conveniently use the `disco` command from everywhere on your system, copy it to a place that's being searched for according to your PATH variable - the provided script `install_cli_system.sh` does this for you and copies it to /usr/local/bin).
-
-_The following commands assume that, depending on your OS, you are either inside the DiscoDOS shell window or `disco` is being found via the PATH variable._
-
- Check if the database is working by creating a new mix.
-
-`disco mix fat_mix -c`
-
-View your (empty) mix.
-
-`disco mix fat_mix`
-
 ### Importing your Discogs collection
 
 To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the DiscoBASE.
 
-`./setup.py -i`
+`disco import`
 
 
-## Basic Usage
+## Basic Usage Tutorial
 
 When importing is through, try adding one of your collections tracks to the "mix" you just created.
 
@@ -138,14 +75,18 @@ If you leave out -p 3 (the track position option) you just go through all of you
 
 ## Update database from Discogs
 
-You can update your DiscoBASE from your Discogs collection at any time using
+You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
 
-`./setup.py -i`
+`disco import`
 
 Due to the Discogs API being not the fastest, it quite takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
 `disco mix fat_mix -a 123456`
 
-To add a release to your local database **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached.
+An alternative, if you are not about to add this new release to a mix and just want to add it to Discogs collection _and_ to the DiscoBASE (to have it available for future mixes) you can use the -a option whith the import subcommand:
 
-`./setup.py -i 123456`
+`disco import -a 123456`
+
+To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached. (Sidenote: Unfortunately this way it takes significantly longer because of drawbacks in how the API is accessible via the API):
+
+`disco import 123456`
