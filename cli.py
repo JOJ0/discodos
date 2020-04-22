@@ -87,6 +87,13 @@ def argparser(argv):
         insert the track at the given position (eg. 1, 14, ...), rather than at the
         end of the mix; in combination with -z, -zz, -u or -e this option is ignored.''',
         default=0)
+    search_subparser.add_argument(
+		"--resume", dest="search_offset", metavar='OFFSET',
+        type=int, default=0,
+        help='''resumes long-running processes at the given offset position
+        (expects a number). You can combine this option currently
+        with *Brainz matching operations only (-z, -zz)
+        ''')
     ### MIX subparser #############################################################
     mix_subparser = subparsers.add_parser(
         name='mix',
@@ -178,6 +185,14 @@ def argparser(argv):
         at the given position in the mix (rather than at the end). In
         combination with -u, -z or -zz the update process is started at the given
         position in the mix.''')
+    mix_subparser.add_argument(
+		"--resume", dest="mix_offset", metavar='OFFSET',
+        type=int, default=0,
+        help='''resumes long-running processes at the given offset position
+        (expects a number). You can combine this option currently
+        with the *Brainz matching _all_ tracks in mixes operation only
+        ("disco mix -z", "disco mix -zz")
+        ''')
     ### SUGGEST subparser ##########################################################
     suggest_subparser = subparsers.add_parser(
         name='suggest',
@@ -247,6 +262,14 @@ def argparser(argv):
         used in mixes and updated using "disco mix -u")
         will be updated.
         ''')
+    import_subparser.add_argument(
+		"--resume", dest="import_offset", metavar='OFFSET',
+        type=int, default=0,
+        help='''resumes long-running processes at the given offset position
+        (expects a number). You can combine this option currently
+        with the *Brainz matching import operation only
+        (-z, -zz)
+        ''')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default".format(
@@ -284,10 +307,11 @@ def main():
     #### SEARCH MODE
     if user.WANTS_TO_LIST_ALL_RELEASES:
         if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
-            coll_ctrl.import_collection(tracks = True)
+            coll_ctrl.import_collection(tracks=True)
         elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
             coll_ctrl.update_all_tracks_from_brainz(
-                detail=user.BRAINZ_SEARCH_DETAIL)
+                detail=user.BRAINZ_SEARCH_DETAIL,
+                offset=user.RESUME_OFFSET)
         else:
             coll_ctrl.view_all_releases()
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
@@ -341,10 +365,12 @@ def main():
         # we instantiate a mix controller object
         mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
+            mix_ctrl.pull_track_info_from_discogs(coll_ctrl,
+              offset=user.RESUME_OFFSET)
         elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
             mix_ctrl.update_track_info_from_brainz(coll_ctrl,
-              detail = user.BRAINZ_SEARCH_DETAIL)
+              detail=user.BRAINZ_SEARCH_DETAIL,
+              offset=user.RESUME_OFFSET)
         else:
             mix_ctrl.view_mixes_list()
 
@@ -446,7 +472,8 @@ def main():
         coll_ctrl.import_collection(tracks=True)
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
         coll_ctrl.update_all_tracks_from_brainz(
-            detail=user.BRAINZ_SEARCH_DETAIL)
+            detail=user.BRAINZ_SEARCH_DETAIL,
+            offset=user.RESUME_OFFSET)
 
     if user.DID_NOT_PROVIDE_COMMAND:
         if not coll_ctrl.ONLINE:

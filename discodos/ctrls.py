@@ -257,7 +257,8 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             self.cli.p("Mix ID {} is not existing yet.".format(self.mix.id))
             return False
 
-    def pull_track_info_from_discogs(self, coll_ctrl, start_pos = False):
+    def pull_track_info_from_discogs(self, coll_ctrl, start_pos=False,
+          offset=0):
         if not coll_ctrl.ONLINE:
             self.cli.p("Not online, can't pull from Discogs...")
             return False # exit method we are offline
@@ -267,25 +268,29 @@ class Mix_ctrl_cli (Mix_ctrl_common):
             mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
         else:
             self.cli.p("Let's update every track contained in any mix with info from Discogs...")
-            mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
+            mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update(offset)
 
-        update_ret = coll_ctrl.update_tracks_from_discogs(mixed_tracks)
+        update_ret = coll_ctrl.update_tracks_from_discogs(mixed_tracks,
+          offset)
         return update_ret
 
-    def update_track_info_from_brainz(self, coll_ctrl, start_pos = False,
-          detail = 1):
+    def update_track_info_from_brainz(self, coll_ctrl, start_pos=False,
+          detail=1, offset=0):
         if not coll_ctrl.ONLINE:
             self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
 
         if self.mix.id_existing:
             self.cli.p("Let's update current mixes tracks with info from AcousticBrainz...")
-            mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(start_pos)
+            mixed_tracks = self.mix.get_mix_tracks_for_brainz_update(
+                  start_pos)
         else:
             self.cli.p("Let's update every track contained in any mix with info from AcousticBrainz...")
-            mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update()
+            mixed_tracks = self.mix.get_all_mix_tracks_for_brainz_update(
+                  offset)
 
-        match_ret = coll_ctrl.update_tracks_from_brainz(mixed_tracks, detail)
+        match_ret = coll_ctrl.update_tracks_from_brainz(mixed_tracks,
+              detail, offset)
         return match_ret
 
 
@@ -538,7 +543,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 self.cli.error_not_the_release()
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
-    def import_collection(self, tracks = False):
+    def import_collection(self, tracks=False):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.releases_processed = 0
@@ -672,14 +677,18 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
 
-    def update_tracks_from_discogs(self, track_list):
+    def update_tracks_from_discogs(self, track_list, offset=0):
         '''takes a list of tracks and updates tracknames/artists from Discogs.
            List has to contain fields: d_release_id, discogs_title, d_track_no.
            Usually list items are slite Row objects, but could be dicts too.
            Any iterable should work unless it doesn't have named keys!
         '''
         start_time = time()
-        self.tracks_processed = len(track_list)
+        self.processed = offset
+        if offset:
+            self.processed_total = len(track_list) + offset
+        else:
+            self.processed_total = len(track_list)
         self.tracks_added = 0
         self.tracks_db_errors = 0
         self.tracks_not_found_errors = 0
@@ -688,6 +697,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             d_track_no = track['d_track_no']
             d_release_id = track['d_release_id']
             discogs_title = track['discogs_title']
+            self.processed += 1
             self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
 
             # move this to method fetch_track_and_artist_from_discogs
@@ -702,6 +712,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             except errors.HTTPError as HtErr:
                 log.error('Track {} on "{}" ({}) not existing on Discogs ({})'.format(
                       d_track_no, discogs_title, d_release_id, HtErr))
+                self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 print("") # space for readability
                 continue # jump to next iteration, nothing more to do here
 
@@ -714,15 +725,17 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                     self.tracks_added += 1
                 else:
                     self.tracks_db_errors += 1
+                self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 print("") # space for readability
             else:
                 print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
                       discogs_title, d_release_id, d_track_no))
                 self.tracks_not_found_errors += 1
+                self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 print("") # space for readability
 
         print('Processed: {}. Added Artist/Track info to DiscoBASE: {}.'.format(
-            self.tracks_processed, self.tracks_added))
+            self.processed_total, self.tracks_added))
         print('Database errors: {}. Not found on Discogs errors: {}.'.format(
             self.tracks_db_errors, self.tracks_not_found_errors))
         print("") # space for readability
@@ -740,7 +753,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         }]
         return self.update_tracks_from_discogs(tr_list)
 
-    def update_tracks_from_brainz(self, track_list, detail = 1):
+    def update_tracks_from_brainz(self, track_list, detail=1, offset=0):
         # catch errors. this is a last resort check. prettier err-msgs earlier!
         if track_list == [None] or track_list == [] or track_list == None:
             log.error("Didn't get data for *Brainz update. Quitting.")
@@ -748,7 +761,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         start_time = time()
         log.debug('CTRL: update_track_from_brainz: match detail option is: {}'.format(
               detail))
-        processed, processed_total = 0, len(track_list)
+        processed = offset
+        if offset:
+            processed_total = len(track_list) + offset
+        else:
+            processed_total = len(track_list)
         errors_not_found, errors_db, errors_no_release, errors_no_rec = 0, 0, 0, 0
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
         for track in track_list:
@@ -885,12 +902,14 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True # we are through all tracks, in any way, this is a success
 
-    def update_all_tracks_from_brainz(self, detail = 1):
+    def update_all_tracks_from_brainz(self, detail=1, offset=0):
         if not self.ONLINE:
             self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False # exit method we are offline
-        tracks = self.collection.get_all_tracks_for_brainz_update()
-        match_ret = self.update_tracks_from_brainz(tracks, detail)
+        tracks = self.collection.get_all_tracks_for_brainz_update(
+              offset=offset)
+        match_ret = self.update_tracks_from_brainz(tracks, detail,
+              offset=offset)
         return match_ret
 
     def update_single_track_from_brainz(self, rel_id, rel_title, track_no,

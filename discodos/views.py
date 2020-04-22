@@ -659,6 +659,7 @@ class User_int(object):
         self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
         self.WANTS_TO_SEARCH_AND_EDIT_TRACK = False
+        self.RESUME_OFFSET = 0
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -668,11 +669,15 @@ class User_int(object):
                     self.WANTS_ONLINE = True
                     self.WANTS_TO_LIST_ALL_RELEASES = True
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
+                    if self.args.search_offset > 0:
+                        self.RESUME_OFFSET = self.args.search_offset
                 elif self.args.search_brainz_update == True:
                     # brainz update all
                     self.WANTS_ONLINE = True
                     self.WANTS_TO_LIST_ALL_RELEASES = True
                     self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
+                    if self.args.search_offset > 0:
+                        self.RESUME_OFFSET = self.args.search_offset
                 else:
                     # just list all
                     self.WANTS_ONLINE = False
@@ -718,12 +723,16 @@ class User_int(object):
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
+                    if self.args.mix_offset > 0:
+                        self.RESUME_OFFSET = self.args.mix_offset
                 if self.args.brainz_update:
                     self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
                     self.BRAINZ_SEARCH_DETAIL = self.args.brainz_update
                     if self.args.brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
+                    if self.args.mix_offset > 0:
+                        self.RESUME_OFFSET = self.args.mix_offset
             else:
                 self.WANTS_TO_SHOW_MIX_TRACKLIST = True
                 self.WANTS_ONLINE = False
@@ -817,11 +826,15 @@ class User_int(object):
             elif self.args.import_id == 0:
                 if self.args.import_tracks:
                     self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
+                    if self.args.import_offset > 0:
+                        self.RESUME_OFFSET = self.args.import_offset
                 elif self.args.import_brainz:
                     self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
                     self.BRAINZ_SEARCH_DETAIL = self.args.import_brainz
                     if self.args.import_brainz > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
+                    if self.args.import_offset > 0:
+                        self.RESUME_OFFSET = self.args.import_offset
                 else:
                     self.WANTS_TO_IMPORT_COLLECTION = True
             else:

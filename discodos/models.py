@@ -79,8 +79,8 @@ class Database (object):
         settings = "PRAGMA foreign_keys = ON;"
         self.execute_sql(settings)
 
-    def _select_simple(self, fields_list, table, condition = False,
-      fetchone = False, orderby = False, distinct = False):
+    def _select_simple(self, fields_list, table, condition=False,
+      fetchone=False, orderby=False, distinct=False, offset=0):
         """This is a wrapper around the _select method.
            It puts together sql select statements as strings.
         """
@@ -103,8 +103,12 @@ class Database (object):
             select = 'SELECT DISTINCT'
         else:
             select = 'SELECT'
-        select_str = "{} {} FROM {} {} {};".format(select, fields_str, table,
-          where_or_not, orderby_or_not)
+        if offset:
+            limit = 'LIMIT -1 OFFSET {}'.format(offset)
+        else:
+            limit = ''
+        select_str = "{} {} FROM {} {} {} {};".format(select, fields_str, table,
+          where_or_not, orderby_or_not, limit)
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone = False):
@@ -669,7 +673,7 @@ class Mix (Database):
           'mix_track.d_track_no', 'm_rec_id_override'], tables, where,
            fetchone = False, orderby = 'mix_track.track_pos')
 
-    def get_all_mix_tracks_for_brainz_update(self):
+    def get_all_mix_tracks_for_brainz_update(self, offset=0):
         log.info("MODEL: Getting all tracks of all mix. Preparing for Discogs or AcousticBrainz update.")
         tables = '''mix_track
                       INNER JOIN release
@@ -682,9 +686,9 @@ class Mix (Database):
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
           'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
-          'mix_track.d_track_no', 'm_rec_id_override'], tables, fetchone = False,
-           orderby = 'mix_track.mix_id, mix_track.track_pos',
-           distinct = True)
+          'mix_track.d_track_no', 'm_rec_id_override'], tables, fetchone=False,
+           orderby='mix_track.mix_id, mix_track.track_pos',
+           distinct=True, offset=offset)
 
 # record collection class
 class Collection (Database):
@@ -1188,7 +1192,7 @@ class Collection (Database):
             log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
         return catno_str
 
-    def get_all_tracks_for_brainz_update(self):
+    def get_all_tracks_for_brainz_update(self, offset=0):
         log.info(
            "MODEL: Getting _all_ tracks in DiscoBASE. Preparing for AcousticBrainz update.")
         tables = '''release
@@ -1200,7 +1204,7 @@ class Collection (Database):
         return self._select_simple(['track.d_release_id', 'discogs_title', 'd_catno',
           'track.d_artist', 'track.d_track_name', 'track.d_track_no',
           'track_ext.m_rec_id_override'], tables, condition=False,
-           fetchone=False, orderby='release.discogs_id')
+           fetchone=False, orderby='release.discogs_id', offset=offset)
 
     def get_track_for_brainz_update(self, rel_id, track_no):
         log.info(
