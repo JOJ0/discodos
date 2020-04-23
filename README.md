@@ -181,11 +181,11 @@ You will see the Album's details and its contents.
 
 **Note: The online search is designed to just show you the "first match" it finds**
 
-So if you'd just put in an artist name as the search term, you will see the first found album of this artist only:
+So this search gives you the first found album of this artist only:
 
 `disco search "Amon Tobin"`
 
-So you have to be more specific in your search terms to find a particular album (as shown in the first example in this section)
+You have to be more specific to find a particular album!
 
 If you currently are not connected to the internet or you enable the "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in DiscoDOS first prototype version.
 
@@ -193,26 +193,26 @@ If you currently are not connected to the internet or you enable the "offline mo
 
 #### *search* command actions
 
-To "do" something with a track on the album you need to append "optional arguments" to the command, in short "options". This options will apply several actions on the found item(s). There are four actions available:
+To "do" something with a track on an album you need to append an "optional argument" to the command. The following actions can be applied to the found track:
 
-- "edit track" (-e)
-- "add track to mix" (-m)
-- "update from Discogs" (-u)
-- "update from *Brainz" (-z)
+- "edit track" (option -e)
+- "add track to mix" (option -m)
+- "update from Discogs" (option -u)
+- "update from *Brainz" (option -z)
 
-#### *search* "edit track" action
+#### *search* action "edit track"
 
-To edit the tracks details in the DiscoBASE you use:
+To edit the track's details in the DiscoBASE you use:
 
 `disco search "Amon Tobin Foley Room" -e`
 
-You will see the albums contents and be asked to put in a track number (eg A1, C2, ...). Then you will be walked through all the "editable" fields. It's pretty self-explanatory, but read the suggestions on the screen.
+You will see the album's contents and be asked to put in a track number (eg A1, C2, ...). Then you will be walked through all the "editable" fields. It's pretty self-explanatory, but read the hints on the screen.
 
-If you know which track number you'd like to edit already, provide it on the command line already. You won't be asked for the track number then:
+If you know which track number you'd like to edit already, provide it on the command line directly. You won't be asked for the track number then:
 
 `disco search "Amon Tobin Foley Room" -e -t B2`
 
-#### *search* "add track to mix" action
+#### *search* action "add track to mix"
 
 The track you select on the found release will be added to the given mix-name:
 
@@ -230,7 +230,7 @@ Certainly also here you can provide the track number on the command line already
 
 `disco search "Amon Tobin Foley Room" -m 27 -t A2`
 
-#### *search* "update from discogs" action
+#### *search* action "update from discogs"
 
 As already mentioned already, DiscoDOS is minimalistic by default. The default import command `disco import` just gets exactly this data from Discogs: release IDs, release titles, release artists, catalog numbers. To put track names of a particular track into the DiscoBASE as well you'd use:
 
@@ -248,15 +248,15 @@ To make **all** *track names* on **all** releases in your collection available o
 
 **Note: This is exactley the same as using `disco import --tracks` or in short: `disco import -u`.**
 
-#### *search* "update from brainz" action
+Read more on importing release and track information in the [import command section](#The-import-command)
+
+#### *search* action "update from brainz"
 
 To extend a tracks information with data from MusicBrainz and AcousticBrainz:
 
 `disco search "Amon Tobin Foley Room" -z`
 
-Matching a track out of your Discogs collection with a track in MusicBrainz is a tedious job for DiscoDOS and takes time (it has to search and compare a lot of things - differences in spelling/wording in catalog numbers, track names, artist names - just to name a few - cause the matching process to take its time).
-
-If you didn't find the track's name with the regular match command, try the "detailed match" command (It takes even more time, but gives more results):
+If the track couldn't be matched with the regular match command, try the "detailed match" command (takes more time, but chances on finding a match are higher):
 
 `disco search "Amon Tobin Foley Room" -zz`
 
@@ -264,20 +264,14 @@ or as usual with track name already in the command:
 
 `disco search "Amon Tobin Foley Room" -zz -t A2`
 
-Currently the following data will be put in the DiscoBASE for the given track(s): 
+If you've already imported all your *track's names* to the DiscoBASE, you could even try to update **all** tracks with MusicBrainz information (takes a couple of hours):
 
-- BPM
-- key
-- chords key
-- Release MusicBrainz ID (Release MBID)
-- Recording MusicBrainz ID (Recording MBID)
-- weblink to the MusicBrainz release
-- weblink to the MusicBrainz recording (A track is called a recording in "MusicBrainz speak")
-- weblink to the AcousticBrainz recording (AcousticBrainz uses the same recording MBID as MusicBrainz - this is the link between the two services!)
+```
+disco search all -z
+disco search all -zz
+```
 
-If you've already imported all your *track's names* to the DiscoBASE, you  could even try to update **all** tracks with MusicBrainz information:
-
-
+Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#The-import-command)
 
 
 ### The *mix* command
@@ -309,7 +303,7 @@ To import all releases including all tracks in your collection. (The --tracks op
 
 To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long: 
 
-**Note: This process will take hours. Best you let it run "over night"**
+**Note: This process will take hours. Best you let it run "overnight"**
 
 `disco import -z`
 
@@ -325,4 +319,13 @@ If for some reason you can't complete the run (connection problems, having to sw
 
 `disco import -zz` --resume 2500
 
+Currently the following data will be put in the DiscoBASE by the *Brainz match process:
 
+- BPM
+- key
+- chords key
+- Release MusicBrainz ID (Release MBID)
+- Recording MusicBrainz ID (Recording MBID)
+- weblink to the MusicBrainz release
+- weblink to the MusicBrainz recording (A track is called a recording in "MusicBrainz speak")
+- weblink to the AcousticBrainz recording (AcousticBrainz uses the same recording MBID as MusicBrainz - this is the link between the two services!)
