@@ -43,11 +43,11 @@ View your (empty) mix:
 
 `disco mix fat_mix`
 
-Try adding one of your collections tracks to the "mix" you just created.
+Try adding one of your collection's tracks to the "mix" you just created.
 
 `disco mix fat_mix -a "Amon Tobin Killer Vanilla"`
 
-Note that even though the tracks name actually is "The Killer's Vanilla" it will be found. If DiscoDOS realizes you are offline it will search in the local DiscoBASE only. Display of search results will vary!
+If DiscoDOS realizes you are offline it will search in the local database (the DiscoBASE) only. Only online search understands tracknames, offline search doesn't, it needs artists and/or release names. Learn why further below.
 
 Be precise when asked for the track number on the record: A1 is not the same as A.
 
@@ -57,29 +57,27 @@ View your mix again, your track should be there, verbose mode shows that track a
 
 Add some more tracks!
 
-Now update your mix's tracks with data pulled from the Discogs API. If track numbers are not precise (eg A vs A1) data won't be found!
+DiscoDOS by default is minimalistic. Only releases were imported, but not track titles. Now import them via the Discogs API. If track numbers are not precise (eg A vs A1) data won't be found!
 
 `disco mix fat_mix -u`
 
-Use the verbose mode to see all the details pulled from Discogs.
+Use the verbose mode to see all the details pulled from Discogs:
 
 `disco mix fat_mix -v`
 
-Ask what more you could do with your mix and its tracks (short option would be -h)
+Ask what more you could do with your mix and its tracks (short option would be -h):
 
 `disco mix fat_mix --help`
 
-You have two options to edit your mix's tracks. Eg to edit the third track in your mix you could either use
+Edit details of the third track in your mix:
 
 `disco mix fat_mix -e 3`
 
-which edits _all_ fields, or you could select specific fields using the bulk edit option
+There is also a bulk-edit option to edit specific fields of all track in mix. Read about it in the command reference section of [The mix command](#The-mix-command)
 
-`disco mix fat_mix -b trans_rating,bpm -p 3`
+Get additional data about your mixes tracks from MusicBrainz and AcousticBrainz (key, BPM, links):
 
-If you leave out -p 3 (the track position option) you just go through all of your mixes tracks and are asked to put data into the selected fields
-
-`disco mix fat_mix -b trans_rating,bpm`
+`disco mix fat_mix -zz`
 
 ## Common Workflows
 
@@ -179,7 +177,7 @@ To search an album of artist "Amon Tobin" you would type:
 
 You will see the Album's details and its contents.
 
-**Note: The online search is designed to just show you the "first match" it finds**
+_**Note: The online search is designed to just show you the "first match" it finds**_
 
 So this search gives you the first found album of this artist only:
 
@@ -189,7 +187,7 @@ You have to be more specific to find a particular album!
 
 If you currently are not connected to the internet or you enable the "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in DiscoDOS first prototype version.
 
-**Note: The offline search shows a "list of matching items"**
+_**Note: The offline search shows a "list of matching items"**_
 
 #### *search* command actions
 
@@ -240,13 +238,13 @@ Again, combination with -t is possible:
 
 `disco search "Amon Tobin Foley Room" -u t A2`
 
-**Note: Having track names in the DiscoBASE is a prerequisite to use the "update from *Brainz" action.**
+_**Note: Having track names in the DiscoBASE is a prerequisite to use the "update from *Brainz" action.**_
 
 To make **all** *track names* on **all** releases in your collection available offline, use:
 
 `disco search all -u`
 
-**Note: This is exactley the same as using `disco import --tracks` or in short: `disco import -u`.**
+_**Note: This is exactley the same as using `disco import --tracks` or in short: `disco import -u`.**_
 
 Read more on importing release and track information in the [import command section](#The-import-command)
 
@@ -276,6 +274,15 @@ Read more on the performance of the *Brainz match process and what exactely it i
 
 ### The *mix* command
 
+
+or you could select specific fields using the bulk edit option. The option -p 3 takes care of starting the process on the 3rd track in the mix. You'll be walked through the given fields of all the rest of the tracks too. Cancel at any time using Ctrl - c.
+
+`disco mix fat_mix -b trans_rating,bpm -p 3`
+
+Leaving out -p option starts on track 1 and goes through until the mix's last track.
+
+`disco mix fat_mix -b trans_rating,bpm`
+
 ### The *suggest* command
 
 ### The *import* command
@@ -283,13 +290,13 @@ Read more on the performance of the *Brainz match process and what exactely it i
 You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
 Due to the Discogs API being not the fastest, it takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously.
 
-**Note: This imports all your releases, but not the tracks on them**
+_**Note: This imports all your releases, but not the tracks on them**_
 
 `disco import`
 
 An quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
 
-**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**
+_**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**_
 
 `disco import -a 123456`
 
@@ -303,7 +310,7 @@ To import all releases including all tracks in your collection. (The --tracks op
 
 To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long: 
 
-**Note: This process will take hours. Best you let it run "overnight"**
+_**Note: This process will take hours. Best you let it run "overnight"**_
 
 `disco import -z`
 
@@ -319,7 +326,7 @@ If for some reason you can't complete the run (connection problems, having to sw
 
 `disco import -zz` --resume 2500
 
-Currently the following data will be put in the DiscoBASE by the *Brainz match process:
+The "*Brainz match process" puts in the the following data into the DiscoBASE:
 
 - BPM
 - key
