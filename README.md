@@ -85,16 +85,21 @@ Read more about the *Brainz update process here: [The import command](#The-impor
 
 ### I got a new record and want to get it into DiscoDOS
 
-Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
+Get the release ID by searching on discogs.com. Get the ID from the release pages URL (eg. https://discogs.com/release/123456) and import it:
 
+`disco import 123456`
 
-`disco mix fat_mix -a 123456`
-
+Get artist/title for each track
 
 `disco search 123456 -u`
 
+Get key and BPM from MusicBrainz/AcousticBrainz:
+
 `disco search 123456 -zz`
 
+There is another convenient way when you are in the process of writing down a mix, and realize you can't find the release because you didn't add it to the collection yet: Use the -a option of the mix subcommand. Then, instead of searching for a text-term, we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE. As expected with the `mix -a` commmand, the track will be added to your mix too:
+
+`disco mix fat_mix -a 123456`
 
 
 ## Command Reference
@@ -141,7 +146,7 @@ disco import -h
 
 ## *disco* global switches
 
-The general behaviour of `disco` can be altered by some switches:
+The general behaviour of `disco` can be altered by some "optional arguments":
 
 Enable INFO logging output or DEBUG logging output on your terminal (usually only relevant if you're investigating errors, are a developer or just want to know what DiscoDOS is doing under the hood):
 
@@ -169,13 +174,11 @@ You will see the Album's details and its contents.
 
 _**Note: The online search is designed to just show you the "first match" it finds**_
 
-So this search gives you the first found album of this artist only:
+So this gives you the first found "Amon Tobin" album in your collection only. You have to be more specific to find a particular album:
 
 `disco search "Amon Tobin"`
 
-You have to be more specific to find a particular album!
-
-If you currently are not connected to the internet or you enable the "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in DiscoDOS first prototype version.
+If you currently are not connected to the internet or you enable "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in DiscoDOS first prototype version.
 
 _**Note: The offline search shows a "list of matching items"**_
 
