@@ -51,13 +51,13 @@ If DiscoDOS realizes you are offline it will search in the local database (the D
 
 Be precise when asked for the track number on the record: A1 is not the same as A.
 
-View your mix again, your track should be there, verbose mode shows that track and artist names are still missing.
+View your mix again, your track should be there, verbose mode shows that track and artist names are still missing because DiscoDOS by default is minimalistic. Only releases were imported, but not track titles:
 
 `disco mix fat_mix -v`
 
 Add some more tracks!
 
-DiscoDOS by default is minimalistic. Only releases were imported, but not track titles. Now import them via the Discogs API. If track numbers are not precise (eg A vs A1) data won't be found!
+Now get track artist/titles for all the tracks in the mix. If track numbers are not precise (eg A vs A1) data won't be found!
 
 `disco mix fat_mix -u`
 
@@ -73,11 +73,13 @@ Edit details of the third track in your mix:
 
 `disco mix fat_mix -e 3`
 
-There is also a bulk-edit option to edit specific fields of all track in mix. Read about it in the command reference section of [The mix command](#The-mix-command)
+There is also a bulk-edit option to edit specific fields of all tracks in the mix. Read about it in the command reference section of [The mix command](#The-mix-command)
 
 Get additional data about your mixes tracks from MusicBrainz and AcousticBrainz (key, BPM, links):
 
 `disco mix fat_mix -zz`
+
+Read more about the *Brainz update process here: [The import command](#The-import-command)
 
 ## Common Workflows
 
