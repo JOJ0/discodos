@@ -35,7 +35,15 @@ To let DiscoDOS know about our Discogs record collection we have to import a sub
 
 ## Basic Usage Tutorial
 
-When importing is through, try adding one of your collections tracks to the "mix" you just created.
+When importing is through, create a new mix:
+
+`disco mix fat_mix -c`
+
+View your (empty) mix:
+
+`disco mix fat_mix`
+
+Try adding one of your collections tracks to the "mix" you just created.
 
 `disco mix fat_mix -a "Amon Tobin Killer Vanilla"`
 
@@ -75,23 +83,18 @@ If you leave out -p 3 (the track position option) you just go through all of you
 
 ## Common Workflows
 
-### Import/Update from Discogs
+### I got a new record and want to get it into DiscoDOS
 
-You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
+Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
-`disco import`
-
-Due to the Discogs API being not the fastest, it quite takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously. Check out the command below. First of all notice that we are in "mix mode" and use the -a option to add a release/track to a mix from there. Then, instead of searching for a text-term we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE.
 
 `disco mix fat_mix -a 123456`
 
-An alternative, if you are not about to add this new release to a mix and just want to add it to Discogs collection _and_ to the DiscoBASE (to have it available for future mixes) you can use the -a option whith the import subcommand:
 
-`disco import -a 123456`
+`disco search 123456 -u`
 
-To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached. (Sidenote: Unfortunately this way it takes significantly longer because of drawbacks in how the API is accessible via the API):
+`disco search 123456 -zz`
 
-`disco import 123456`
 
 
 ## Command Reference
@@ -282,5 +285,44 @@ If you've already imported all your *track's names* to the DiscoBASE, you  could
 ### The *suggest* command
 
 ### The *import* command
+
+You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
+Due to the Discogs API being not the fastest, it takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously.
+
+**Note: This imports all your releases, but not the tracks on them**
+
+`disco import`
+
+An quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
+
+**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**
+
+`disco import -a 123456`
+
+To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached. (Sidenote: Unfortunately this way takes significantly longer because of drawbacks in how the collection data is accessible via the API):
+
+`disco import 123456`
+
+To import all releases including all tracks in your collection. (The --tracks option can be replaced by its short form -u). 1000 records take about 20-30 minutes to import:
+
+`disco import --tracks`
+
+To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long: 
+
+**Note: This process will take hours. Best you let it run "over night"**
+
+`disco import -z`
+
+An even more detailed "matching" is done by "doubling the -z option". It takes significantly longer but you will get more results but still: Don't expect to find a match for all of your releases. Take some time to report back how the macthing went by opening a github issue:
+
+`disco import -zz`
+
+Also remember that it is unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth. Most definitely when it comes to Vinyl records.
+
+Also note that often it will happen that a MusicBrainz track can be "matched" but AcousticBrainz does not have an entry for it yet.
+
+If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
+
+`disco import -zz` --resume 2500
 
 
