@@ -105,21 +105,13 @@ This section is an in-detail explanation about everything you can do with DiscoD
 
 In case you don't use command line software much: `disco` is designed like a typical command line utiltiy and thus each option has a short form and a long form. For example the help output of the disco main command can be written two ways:
 
-`disco --help`
-
-or
-
-`disco -h`
+`disco --help` or `disco -h`
 
 another example:
 
-`disco suggest --bpm 123`
+`disco suggest --bpm 123` is the same as `disco suggest -b 123`
 
-is the same as
-
-`disco suggest -b 123`
-
-Throughout this command reference section, I will mostly use the short forms, but sometimes the long form as well because it's just more self-explanatory.
+Throughout this section, mostly the short forms are used, but sometimes the long forms too because they're just more self-explanatory.
 
 ### *disco* command
 
@@ -153,21 +145,17 @@ The general behaviour of `disco` can be altered by some switches:
 
 Enable INFO logging output or DEBUG logging output on your terminal (usually only relevant if you're investigating errors, are a developer or just want to know what DiscoDOS is doing under the hood):
 
-enable INFO logging output:
+enable INFO logging (-v) or DEBUG logging (-vv) output:
 
-`disco -v ...`
+`disco -v ...` or `disco -vv ...`
 
-or to enable DEBUG output too:
-
-`disco -vv ...`
-
-Stay in offline mode:
+DiscoDOS checks if it's online automatically but can be forced to stay in offline mode:
 
 `disco -o ...`
 
 ## The *disco* subcommands
 
-Each subcommand has it's typical purpose but note that some actions can be executed from more than one subcommend because it makes sense.
+Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
 ### The *search* command
 
