@@ -108,7 +108,7 @@ This section is an in-detail explanation about everything you can do with DiscoD
 
 ### General things about command line tools
 
-In case you don't use command line software much: `disco` is designed like a typical command line utiltiy and thus each option has a short form and a long form. For example the help output of the disco main command can be written two ways:
+In case you don't use command line tools much: `disco` is designed as such and thus each option has a short form and a long form. For example the help output of the disco main command can be written two ways:
 
 `disco --help` or `disco -h`
 
@@ -117,6 +117,20 @@ another example:
 `disco suggest --bpm 123` is the same as `disco suggest -b 123`
 
 Throughout this section, mostly the short forms are used, but sometimes the long forms too because they're just more self-explanatory.
+
+Also a common concept with command line tools is that "optional arguments" (the ones starting with a dash) can be put before or after "positional arguments (in this case the mix_name):
+
+`disco mix new_mix -c` is the same as `disco mix -c new_mix`
+
+Also the order of "optional arguments" is freely choosable most of the time:
+
+`disco search "search terms" -m new_mix -t A2`
+
+is the same as
+
+`disco search "search terms" -t A2 -m new_mix `
+
+
 
 ### *disco* command
 
@@ -266,14 +280,82 @@ Read more on the performance of the *Brainz match process and what exactely it i
 
 ### The *mix* command
 
+A mix is basically just a list of tracks in a specific order, a playlist, a track pool, you name it.
 
-or you could select specific fields using the bulk edit option. The option -p 3 takes care of starting the process on the 3rd track in the mix. You'll be walked through the given fields of all the rest of the tracks too. Cancel at any time using Ctrl - c.
+Create a mix. You will be asked to put in general info about the mix (venue, last played date). Make sure the played date is in the format YYYY-MM-DD:
 
-`disco mix fat_mix -b trans_rating,bpm -p 3`
+`disco mix my_mix -c`
 
-Leaving out -p option starts on track 1 and goes through until the mix's last track.
+Delete a mix (yes, it's a capital D):
 
-`disco mix fat_mix -b trans_rating,bpm`
+`disco mix my_mix -D`
+
+Copy a mix. You will be asked for the name of the copy. Note: --copy doesn't have a short form option):
+
+`disco mix my_mix --copy`
+
+Edit general mix info (venue, played date):
+
+`disco mix my_mix -E`
+
+Add a track to a mix. You will be asked for the track number on the found release. Note: Tracks can be added using the [search command](#search-action-add-track-to-mix) as well:
+
+`disco mix my_mix -a "search terms"`
+
+To add the track at a specific position in the mix, rather than at the end:
+
+`disco mix my_mix -a "search terms" -p 3`
+
+Edit details or 3rd track in the mix (key, key_notes, BPM, transition rating, transition notes, track notes, position in the mix, track number on the record, custom MusicBrainz recording ID):
+
+`disco mix my_mix -e 3`
+
+Delete 3rd track in the mix:
+
+`disco mix my_mix -d 3`
+
+Bulk-edit selected fields of all tracks in a mix. You can cancel editing without data loss by using ctrl - c. Data is saved after each track.
+
+`disco mix my_mix -b trans_rating,bpm,key`
+
+Available field names: *key,bpm,track_no,track_pos,key_notes,trans_rating,trans_notes,notes,m_rec_id_override* (_**Make sure your field list has only commas and no spaces in between!**_)
+
+To start bulk-editing at a specific track position rather than at track 1:
+
+`disco mix my_mix -b trans_rating,bpm,key -p 3`
+
+Get track names for whole mix from Discogs:
+
+`disco mix my_mix -u`
+
+Start getting track names at position 3 in the mix, rather than at track 1:
+
+`disco mix my_mix -u -p 3`
+
+Get additional track info for whole mix from MusicBrainz/AcousticBrainz (key, bpm, links):
+
+`disco mix my_mix -z`
+
+Start getting MusicBrainz/AcousticBrainz info at position 3 in the mix, rather than at track 1:
+
+`disco mix my_mix -z -p 3`
+
+Run a "detailed *Brainz match" (more likely to find matches but significantly slower)
+
+`disco mix my_mix -zz`
+
+Get track names for _all_ tracks in _all_ mixes from Discogs:
+
+`disco mix -u`
+
+Get MusicBrainz/AcousticBrainz info for _all_ tracks in _all_ mixes from Discogs. Do a "detailed *Brainz match" run:
+
+`disco mix -zz`
+
+*Brainz matching is a tedious process for DiscoDOS (more details on this [here](#the-import-command)), if you have to switch off your computer for any reason while it's running, cancel the process using ctrl-c and it later at the given position (in this example track number 150 in the list of *all* tracks in *all* mixes):
+
+`disco mix -zz --resume 150`
+
 
 ### The *suggest* command
 
@@ -286,7 +368,7 @@ _**Note: This imports all your releases, but not the tracks on them**_
 
 `disco import`
 
-An quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
+A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
 
 _**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**_
 
@@ -316,7 +398,7 @@ Also note that often it will happen that a MusicBrainz track can be "matched" bu
 
 If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
 
-`disco import -zz` --resume 2500
+`disco import -zz --resume 2500`
 
 The "*Brainz match process" currently adds the following data to releases:
 
