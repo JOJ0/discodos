@@ -1,4 +1,4 @@
-# DiscoDOS Manual
+# DiscoDOS
 ```
                 _______  _______ ________
                /       \        /       /
@@ -28,7 +28,7 @@ Please head over to the [INSTALLATION](https://github.com/JOJ0/discodos/blob/mas
 
 ## Importing your Discogs collection
 
-To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the DiscoBASE.
+To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the local database (the so-called DiscoBASE).
 
 `disco import`
 
@@ -47,11 +47,11 @@ Try adding one of your collection's tracks to the "mix" you just created.
 
 `disco mix fat_mix -a "Amon Tobin Killer Vanilla"`
 
-If DiscoDOS realizes you are offline it will search in the local database (the DiscoBASE) only. Only online search understands tracknames, offline search doesn't, it needs artists and/or release names. Learn why further below.
+If DiscoDOS realizes you are offline it will search in the local database only. Only online search understands track names, offline search doesn't, it needs artists and/or release names. Learn why, further below.
 
 Be precise when asked for the track number on the record: A1 is not the same as A.
 
-View your mix again, your track should be there, verbose mode shows that track and artist names are still missing because DiscoDOS by default is minimalistic. Only releases were imported, but not track titles:
+View your mix again, your track should be there. verbose view (-v) shows that track and artist names are still missing because DiscoDOS by default is minimalistic - the initial import command did not fetch this data yet:
 
 `disco mix fat_mix -v`
 
@@ -75,17 +75,17 @@ Edit details of the third track in your mix:
 
 There is also a bulk-edit option to edit specific fields of all tracks in the mix. Read about it in the command reference section of [The mix command](#The-mix-command)
 
-Get additional data about your mixes tracks from MusicBrainz and AcousticBrainz (key, BPM, links):
+Get additional data about your mix's tracks from MusicBrainz and AcousticBrainz (key, BPM, links):
 
 `disco mix fat_mix -zz`
 
 Read more about the *Brainz update process here: [The import command](#The-import-command)
 
-## Common Workflows
+## Common Tasks
 
-### I got a new record and want to get it into DiscoDOS
+### I got a new record and want to put it into DiscoDOS
 
-Get the release ID by searching on discogs.com. Get the ID from the release pages URL (eg. https://discogs.com/release/123456) and import it:
+Search for the record on discogs.com. Get the ID from the release pages URL (eg. https://discogs.com/release/123456) and import it:
 
 `disco import 123456`
 
@@ -124,12 +124,11 @@ DiscoDOS' main command is `disco`, to view it's help:
 
 `disco -h`
 
-`disco` consists of several subcommands, namely:
+It contains four subcommands, namely:
 
-- search
-- mix
-- suggest
-- import
+|        |      |         |        |
+| :----- | :--- | :------ | :----- |
+| search | mix  | suggest | import |
 
 To execute a subcommand you would eg type:
 
@@ -144,7 +143,7 @@ disco suggest -h
 disco import -h
 ```
 
-## *disco* global switches
+#### *disco* global switches
 
 The general behaviour of `disco` can be altered by some "optional arguments":
 
@@ -158,7 +157,7 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 `disco -o ...`
 
-## The *disco* subcommands
+### The *disco* subcommands
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
@@ -172,13 +171,13 @@ To search an album of artist "Amon Tobin" you would type:
 
 You will see the Album's details and its contents.
 
-_**Note: The online search is designed to just show you the "first match" it finds**_
+_**Note: The online search is designed "first match"**_
 
 So this gives you the first found "Amon Tobin" album in your collection only. You have to be more specific to find a particular album:
 
 `disco search "Amon Tobin"`
 
-If you currently are not connected to the internet or you enable "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in DiscoDOS first prototype version.
+If you currently are not connected to the internet or you enable "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in the first DiscoDOS prototype versions.
 
 _**Note: The offline search shows a "list of matching items"**_
 
