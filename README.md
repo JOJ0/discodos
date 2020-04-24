@@ -318,13 +318,16 @@ If for some reason you can't complete the run (connection problems, having to sw
 
 `disco import -zz` --resume 2500
 
-The "*Brainz match process" puts in the the following data into the DiscoBASE:
+The "*Brainz match process" currently adds the following data to releases:
+
+- Release MusicBrainz ID (Release MBID)
+- weblink to the MusicBrainz release
+
+and the following data to tracks:
 
 - BPM
 - key
 - chords key
-- Release MusicBrainz ID (Release MBID)
 - Recording MusicBrainz ID (Recording MBID)
-- weblink to the MusicBrainz release
 - weblink to the MusicBrainz recording (A track is called a recording in "MusicBrainz speak")
 - weblink to the AcousticBrainz recording (AcousticBrainz uses the same recording MBID as MusicBrainz - this is the link between the two services!)
