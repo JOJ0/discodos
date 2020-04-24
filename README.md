@@ -140,9 +140,9 @@ DiscoDOS' main command is `disco`, to view it's help:
 
 It contains four subcommands, namely:
 
-|        |      |         |        |
-| :----- | :--- | :------ | :----- |
-| search | mix  | suggest | import |
+|      |         |        |        |
+| :--- | :------ | :----- | :----- |
+| mix  | suggest | import | search |
 
 To execute a subcommand you would eg type:
 
@@ -151,10 +151,10 @@ To execute a subcommand you would eg type:
 Each subcommand has its own built-in help output:
 
 ```
-disco search -h
 disco mix -h
 disco suggest -h
 disco import -h
+disco search -h
 ```
 
 #### *disco* global switches
@@ -171,13 +171,167 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 `disco -o ...`
 
+
+
+
 ### The *disco* subcommands
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
+
+
+
+
+### The *mix* command
+
+A mix is basically just a list of tracks in a specific order, a playlist, a track pool, you name it.
+
+Create a mix. You will be asked to put in general info about the mix (venue, last played date). Make sure the played date is in the format YYYY-MM-DD:
+
+`disco mix my_mix -c`
+
+Delete a mix (yes, it's a capital D):
+
+`disco mix my_mix -D`
+
+Copy a mix. You will be asked for the name of the copy. Note: --copy doesn't have a short form option):
+
+`disco mix my_mix --copy`
+
+Edit general mix info (venue, played date):
+
+`disco mix my_mix -E`
+
+Add a track to a mix. You will be asked for the track number on the found release. Note: Tracks can be added using the [search command](#search-action-add-track-to-mix) as well:
+
+`disco mix my_mix -a "search terms"`
+
+To add the track at a specific position in the mix, rather than at the end:
+
+`disco mix my_mix -a "search terms" -p 3`
+
+Edit details or 3rd track in the mix (key, key_notes, BPM, transition rating, transition notes, track notes, position in the mix, track number on the record, custom MusicBrainz recording ID):
+
+`disco mix my_mix -e 3`
+
+Delete 3rd track in the mix:
+
+`disco mix my_mix -d 3`
+
+Bulk-edit selected fields of all tracks in a mix. You can cancel editing without data loss by using ctrl - c. Data is saved after each track.
+
+`disco mix my_mix -b trans_rating,bpm,key`
+
+Available field names: *key,bpm,track_no,track_pos,key_notes,trans_rating,trans_notes,notes,m_rec_id_override* (_**Make sure your field list has only commas and no spaces in between!**_)
+
+To start bulk-editing at a specific track position rather than at track 1:
+
+`disco mix my_mix -b trans_rating,bpm,key -p 3`
+
+Get track names for whole mix from Discogs:
+
+`disco mix my_mix -u`
+
+Start getting track names at position 3 in the mix, rather than at track 1:
+
+`disco mix my_mix -u -p 3`
+
+Get additional track info for whole mix from MusicBrainz/AcousticBrainz (key, bpm, links):
+
+`disco mix my_mix -z`
+
+Start getting MusicBrainz/AcousticBrainz info at position 3 in the mix, rather than at track 1:
+
+`disco mix my_mix -z -p 3`
+
+Run a "detailed *Brainz match" (more likely to find matches but significantly slower)
+
+`disco mix my_mix -zz`
+
+Get track names for _all_ tracks in _all_ mixes from Discogs:
+
+`disco mix -u`
+
+Get MusicBrainz/AcousticBrainz info for _all_ tracks in _all_ mixes from Discogs. Do a "detailed *Brainz match" run:
+
+`disco mix -zz`
+
+*Brainz matching is a tedious process for DiscoDOS (more details on this [here](#the-import-command)), if you have to switch off your computer for any reason while it's running, cancel the process using ctrl-c and it later at the given position (in this example track number 150 in the list of *all* tracks in *all* mixes):
+
+`disco mix -zz --resume 150`
+
+
+
+
+
+### The *suggest* command
+
+
+
+
+
+### The *import* command
+
+You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
+Due to the Discogs API being not the fastest, it takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously.
+
+_**Note: This imports all your releases, but not the tracks on them**_
+
+`disco import`
+
+A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
+
+_**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**_
+
+`disco import -a 123456`
+
+To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached. (Sidenote: Unfortunately this way takes significantly longer because of drawbacks in how the collection data is accessible via the API):
+
+`disco import 123456`
+
+To import all releases including all tracks in your collection. (The --tracks option can be replaced by its short form -u). 1000 records take about 20-30 minutes to import:
+
+`disco import --tracks`
+
+To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long: 
+
+_**Note: This process will take hours. Best you let it run "overnight"**_
+
+`disco import -z`
+
+An even more detailed "matching" is done by "doubling the -z option". It takes significantly longer but you will get more results but still: Don't expect to find a match for all of your releases. Take some time to report back how the macthing went by opening a github issue:
+
+`disco import -zz`
+
+Also remember that it is unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth. Most definitely when it comes to Vinyl records.
+
+Also note that often it will happen that a MusicBrainz track can be "matched" but AcousticBrainz does not have an entry for it yet.
+
+If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
+
+`disco import -zz --resume 2500`
+
+The "*Brainz match process" currently adds the following data to releases:
+
+- Release MusicBrainz ID (Release MBID)
+- weblink to the MusicBrainz release
+
+and the following data to tracks:
+
+- BPM
+- key
+- chords key
+- Recording MusicBrainz ID (Recording MBID)
+- weblink to the MusicBrainz recording (A track is called a recording in "MusicBrainz speak")
+- weblink to the AcousticBrainz recording (AcousticBrainz uses the same recording MBID as MusicBrainz - this is the link between the two services!)
+
+
+
+
+
 ### The *search* command
 
-As the name implies, this command can searches in your collection. By default it uses the Discogs API to search for release names, track names, track artists, catalog numbers and labels.
+As the name implies, this command searches in your collection. By default it uses the Discogs API to search for release names, track names, track artists, catalog numbers and labels.
 
 To search an album of artist "Amon Tobin" you would type:
 
@@ -278,138 +432,3 @@ disco search all -zz
 Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#The-import-command)
 
 
-### The *mix* command
-
-A mix is basically just a list of tracks in a specific order, a playlist, a track pool, you name it.
-
-Create a mix. You will be asked to put in general info about the mix (venue, last played date). Make sure the played date is in the format YYYY-MM-DD:
-
-`disco mix my_mix -c`
-
-Delete a mix (yes, it's a capital D):
-
-`disco mix my_mix -D`
-
-Copy a mix. You will be asked for the name of the copy. Note: --copy doesn't have a short form option):
-
-`disco mix my_mix --copy`
-
-Edit general mix info (venue, played date):
-
-`disco mix my_mix -E`
-
-Add a track to a mix. You will be asked for the track number on the found release. Note: Tracks can be added using the [search command](#search-action-add-track-to-mix) as well:
-
-`disco mix my_mix -a "search terms"`
-
-To add the track at a specific position in the mix, rather than at the end:
-
-`disco mix my_mix -a "search terms" -p 3`
-
-Edit details or 3rd track in the mix (key, key_notes, BPM, transition rating, transition notes, track notes, position in the mix, track number on the record, custom MusicBrainz recording ID):
-
-`disco mix my_mix -e 3`
-
-Delete 3rd track in the mix:
-
-`disco mix my_mix -d 3`
-
-Bulk-edit selected fields of all tracks in a mix. You can cancel editing without data loss by using ctrl - c. Data is saved after each track.
-
-`disco mix my_mix -b trans_rating,bpm,key`
-
-Available field names: *key,bpm,track_no,track_pos,key_notes,trans_rating,trans_notes,notes,m_rec_id_override* (_**Make sure your field list has only commas and no spaces in between!**_)
-
-To start bulk-editing at a specific track position rather than at track 1:
-
-`disco mix my_mix -b trans_rating,bpm,key -p 3`
-
-Get track names for whole mix from Discogs:
-
-`disco mix my_mix -u`
-
-Start getting track names at position 3 in the mix, rather than at track 1:
-
-`disco mix my_mix -u -p 3`
-
-Get additional track info for whole mix from MusicBrainz/AcousticBrainz (key, bpm, links):
-
-`disco mix my_mix -z`
-
-Start getting MusicBrainz/AcousticBrainz info at position 3 in the mix, rather than at track 1:
-
-`disco mix my_mix -z -p 3`
-
-Run a "detailed *Brainz match" (more likely to find matches but significantly slower)
-
-`disco mix my_mix -zz`
-
-Get track names for _all_ tracks in _all_ mixes from Discogs:
-
-`disco mix -u`
-
-Get MusicBrainz/AcousticBrainz info for _all_ tracks in _all_ mixes from Discogs. Do a "detailed *Brainz match" run:
-
-`disco mix -zz`
-
-*Brainz matching is a tedious process for DiscoDOS (more details on this [here](#the-import-command)), if you have to switch off your computer for any reason while it's running, cancel the process using ctrl-c and it later at the given position (in this example track number 150 in the list of *all* tracks in *all* mixes):
-
-`disco mix -zz --resume 150`
-
-
-### The *suggest* command
-
-### The *import* command
-
-You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
-Due to the Discogs API being not the fastest, it takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously.
-
-_**Note: This imports all your releases, but not the tracks on them**_
-
-`disco import`
-
-A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
-
-_**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**_
-
-`disco import -a 123456`
-
-To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached. (Sidenote: Unfortunately this way takes significantly longer because of drawbacks in how the collection data is accessible via the API):
-
-`disco import 123456`
-
-To import all releases including all tracks in your collection. (The --tracks option can be replaced by its short form -u). 1000 records take about 20-30 minutes to import:
-
-`disco import --tracks`
-
-To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long: 
-
-_**Note: This process will take hours. Best you let it run "overnight"**_
-
-`disco import -z`
-
-An even more detailed "matching" is done by "doubling the -z option". It takes significantly longer but you will get more results but still: Don't expect to find a match for all of your releases. Take some time to report back how the macthing went by opening a github issue:
-
-`disco import -zz`
-
-Also remember that it is unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth. Most definitely when it comes to Vinyl records.
-
-Also note that often it will happen that a MusicBrainz track can be "matched" but AcousticBrainz does not have an entry for it yet.
-
-If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
-
-`disco import -zz --resume 2500`
-
-The "*Brainz match process" currently adds the following data to releases:
-
-- Release MusicBrainz ID (Release MBID)
-- weblink to the MusicBrainz release
-
-and the following data to tracks:
-
-- BPM
-- key
-- chords key
-- Recording MusicBrainz ID (Recording MBID)
-- weblink to the MusicBrainz recording (A track is called a recording in "MusicBrainz speak")
-- weblink to the AcousticBrainz recording (AcousticBrainz uses the same recording MBID as MusicBrainz - this is the link between the two services!)
