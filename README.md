@@ -266,8 +266,38 @@ Get MusicBrainz/AcousticBrainz info for _all_ tracks in _all_ mixes from Discogs
 
 ### The *suggest* command
 
+The suggest command helps a DJ find possible track combinations by reporting how a track has been used in the past or by finding tracks fitting with certain criteria. Fun fact: These features were the initial ideas for writing a program like DiscoDOS.
+
+Find out in which combinations a track ever was played by looking through all your mixes. This command does a regular search in the collection, spits out a "first match" release and asks for a track number on the release. The presented output shows "snippets" of mixes, telling you exactly which tracks you have used _before_ and _after_ the selected track:
+
+`disco suggest "amon tobin kitchen sink"`
 
 
+Show all tracks in collection _**containing**_ "Dm" (D minor) either in the user-key or AcousticBrainz keys fields (key, chords_key).
+
+`disco suggest -k Dm`
+
+DiscoDOS allows a user to put in more than one key in the user-key field. Information like "Am/Dm/Gm" is allowed. To find this information the following search could be used. Note the _wildcard_ character being the percent sign (%):
+
+`disco suggest -k "Am%Gm"`
+
+Certainly the a record with "Am/Dm/Gm" in the user-key field would also be found by a simple search like this:
+
+`disco suggest -k Am`
+
+
+Find all tracks in collection with a BPM _**around**_ 120. The pitchrange of a typical turntable is taken into account. Currently this is hardcoded to +/-6 percent (this will be a user-configurable value in future DiscoDOS versions):
+
+`disco suggest -b 120`
+
+key and BPM search can be combined:
+
+`disco suggest -k Dm -b 120`
+
+
+**Note: The key and BPM suggest commands require sufficient information in the DiscoBASE. Either in the user-editable key and BPM fields or in the AcousticBrainz fields**
+
+Read how to automatically fill these fields with data from AcousticBrainz in the following section about the [import command](#the-import-command).
 
 
 ### The *import* command
@@ -404,7 +434,7 @@ To make **all** *track names* on **all** releases in your collection available o
 
 `disco search all -u`
 
-_**Note: This is exactley the same as using `disco import --tracks` or in short: `disco import -u`.**_
+_**Note: This is exactly the same as using `disco import --tracks` or in short: `disco import -u`.**_
 
 Read more on importing release and track information in the [import command section](#The-import-command)
 
