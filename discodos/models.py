@@ -1076,15 +1076,35 @@ class Collection (Database):
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
         max_bpm = bpm + (bpm / 100 * pitch_range)
-        sql_bpm = '''SELECT discogs_title, track.d_artist, d_track_name,
-                           track.d_track_no, key, bpm, key_notes, notes FROM
-                               release LEFT OUTER JOIN track
-                               ON release.discogs_id = track.d_release_id
-                                   INNER JOIN track_ext
-                                   ON track.d_release_id = track_ext.d_release_id
-                                   AND track.d_track_no = track_ext.d_track_no
-                       WHERE (track_ext.bpm >= "{}" AND track_ext.bpm <= "{}")
-                       ORDER BY track_ext.key, track_ext.bpm'''.format(min_bpm, max_bpm)
+        sql_bpm = '''
+          SELECT discogs_title, d_catno, track.d_artist, d_track_name,
+              track.d_track_no, key_notes, notes,
+            CASE
+                WHEN track_ext.bpm IS NOT NULL
+                    THEN track_ext.bpm
+                WHEN track.a_bpm IS NOT NULL
+                    THEN round(track.a_bpm)
+            END AS chosen_bpm,
+            CASE
+                WHEN track_ext.key IS NOT NULL
+                    THEN track_ext.key
+                WHEN track.a_key IS NOT NULL
+                    THEN track.a_key
+            END AS chosen_key,
+            CASE
+                WHEN track.a_chords_key IS NOT NULL
+                    THEN track.a_chords_key
+            END AS chosen_chords_key
+            FROM release LEFT OUTER JOIN track
+                 ON release.discogs_id = track.d_release_id
+                     INNER JOIN track_ext
+                     ON track.d_release_id = track_ext.d_release_id
+                     AND track.d_track_no = track_ext.d_track_no
+            WHERE
+                (chosen_bpm >= {} AND chosen_bpm <= {})
+                OR (chosen_bpm >= "{}" AND chosen_bpm <= "{}")
+            ORDER BY chosen_key, chosen_bpm'''.format(
+              min_bpm, max_bpm, min_bpm, max_bpm)
         return self._select(sql_bpm, fetchone = False)
 
     def get_tracks_by_key(self, key):

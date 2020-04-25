@@ -633,13 +633,14 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.p(tr_sugg_msg)
         if possible_tracks:
             max_width = self.cli.get_max_width(possible_tracks,
-              ['key', 'bpm'], 3)
+              ['chosen_key', 'chosen_bpm'], 3)
             for tr in possible_tracks:
                 key_bpm_and_space = self.cli.combine_fields_to_width(tr,
-                  ['key', 'bpm'], max_width)
-                self.cli.p('{}{} - {} [{} ({})]:'.format(
+                  ['chosen_key', 'chosen_bpm'], max_width)
+                catno = tr['d_catno'].replace(' ','')
+                self.cli.p('{}{} - {} [{} ({}) {}]'.format(
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
-                     tr['discogs_title'], tr['d_track_no']))
+                      catno, tr['d_track_no'], tr['discogs_title']))
                 #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
     def key_report(self, key):
