@@ -490,7 +490,7 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        msg_int = 'User canceled DiscoDOS by pressing Ctrl + C'
+        msg_int = 'DiscoDOS canceled (ctrl-c)'
         log.info(msg_int)
         print(msg_int)
     #finally:
