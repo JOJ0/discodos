@@ -37,15 +37,15 @@ To let DiscoDOS know about our Discogs record collection we have to import a sub
 
 When importing is through, create a new mix:
 
-`disco mix fat_mix -c`
+`disco mix my_mix -c`
 
 View your (empty) mix:
 
-`disco mix fat_mix`
+`disco mix my_mix`
 
 Try adding one of your collection's tracks to the "mix" you just created.
 
-`disco mix fat_mix -a "Amon Tobin Killer Vanilla"`
+`disco mix my_mix -a "Amon Tobin Killer Vanilla"`
 
 If DiscoDOS realizes you are offline it will search in the local database only. Only online search understands track names, offline search doesn't, it needs artists and/or release names. Learn why, further below.
 
@@ -53,31 +53,31 @@ Be precise when asked for the track number on the record: A1 is not the same as 
 
 View your mix again, your track should be there. verbose view (-v) shows that track and artist names are still missing because DiscoDOS by default is minimalistic - the initial import command did not fetch this data yet:
 
-`disco mix fat_mix -v`
+`disco mix my_mix -v`
 
 Add some more tracks!
 
 Now get track artist/titles for all the tracks in the mix. If track numbers are not precise (eg A vs A1) data won't be found!
 
-`disco mix fat_mix -u`
+`disco mix my_mix -u`
 
 Use the verbose mode to see all the details pulled from Discogs:
 
-`disco mix fat_mix -v`
+`disco mix my_mix -v`
 
 Ask what more you could do with your mix and its tracks (short option would be -h):
 
-`disco mix fat_mix --help`
+`disco mix my_mix --help`
 
 Edit details of the third track in your mix:
 
-`disco mix fat_mix -e 3`
+`disco mix my_mix -e 3`
 
 There is also a bulk-edit option to edit specific fields of all tracks in the mix. Read about it in the command reference section of [The mix command](#The-mix-command)
 
 Get additional data about your mix's tracks from MusicBrainz and AcousticBrainz (key, BPM, links):
 
-`disco mix fat_mix -zz`
+`disco mix my_mix -zz`
 
 Read more about the *Brainz update process here: [The import command](#The-import-command)
 
