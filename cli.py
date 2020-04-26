@@ -139,7 +139,7 @@ def argparser(argv):
         help='''bulk-edits specific fields of each track in mix.
         Syntax of FIELDS argument: <field1>,<field2>,...
         available fields: key,bpm,track_no,track_pos,key_notes,trans_rating,
-        trans_notes,notes.''')
+        trans_notes,notes,m_rec_id_override.''')
     mix_subp_excl_group.add_argument(
         "-a", "--add-to-mix", type=str,
         dest='add_release_to_mix', metavar='SEARCH_TERMS',
