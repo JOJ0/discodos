@@ -1081,9 +1081,9 @@ class Collection (Database):
               track.d_track_no, key_notes, notes,
             CASE
                 WHEN track_ext.bpm IS NOT NULL
-                    THEN track_ext.bpm
+                    THEN trim(track_ext.bpm, '.0')
                 WHEN track.a_bpm IS NOT NULL
-                    THEN round(track.a_bpm)
+                    THEN trim(round(track.a_bpm, 0), '.0')
             END AS chosen_bpm,
             CASE
                 WHEN track_ext.key IS NOT NULL
@@ -1093,7 +1093,7 @@ class Collection (Database):
             END AS chosen_key,
             CASE
                 WHEN track.a_chords_key IS NOT NULL
-                    THEN track.a_chords_key
+                    THEN trim(round(track.a_chords_key, 0), '.0')
             END AS chosen_chords_key
             FROM release LEFT OUTER JOIN track
                  ON release.discogs_id = track.d_release_id

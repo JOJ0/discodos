@@ -45,7 +45,7 @@ class View_common(ABC):
             width = 0
             if row_mutable[keys_list[0]] is None:
                 row_mutable[keys_list[0]] = "-"
-            if row_mutable[keys_list[1]] is None:
+            if row_mutable[keys_list[1]] is None: # this is chosen_bpm field
                 row_mutable[keys_list[1]] = "-"
             width = (len(row_mutable[keys_list[0]]) + len('/')
                 + len(str(row_mutable[keys_list[1]])))
@@ -62,7 +62,7 @@ class View_common(ABC):
         row_mut = dict(row) # make sqlite row tuple mutable
         if row_mut[keys_list[0]] is None:
             row_mut[keys_list[0]] = "-"
-        if row_mut[keys_list[1]] is None:
+        if row_mut[keys_list[1]] is None: # this is chosen_bpm field
             row_mut[keys_list[1]] = "-"
         combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
               str(row_mut[keys_list[1]]))
