@@ -1096,10 +1096,10 @@ class Collection (Database):
                     THEN round(track.a_chords_key, 1)
             END AS chosen_chords_key
             FROM release LEFT OUTER JOIN track
-                 ON release.discogs_id = track.d_release_id
-                     INNER JOIN track_ext
-                     ON track.d_release_id = track_ext.d_release_id
-                     AND track.d_track_no = track_ext.d_track_no
+                ON release.discogs_id = track.d_release_id
+                    INNER JOIN track_ext
+                    ON track.d_release_id = track_ext.d_release_id
+                    AND track.d_track_no = track_ext.d_track_no
             WHERE
                 (chosen_bpm >= {} AND chosen_bpm <= {})
                 OR (chosen_bpm >= "{}" AND chosen_bpm <= "{}")
@@ -1132,10 +1132,10 @@ class Collection (Database):
                     THEN round(track.a_chords_key, 1)
             END AS chosen_chords_key
                 FROM release LEFT OUTER JOIN track
-                     ON release.discogs_id = track.d_release_id
-                         INNER JOIN track_ext
-                         ON track.d_release_id = track_ext.d_release_id
-                         AND track.d_track_no = track_ext.d_track_no
+                    ON release.discogs_id = track.d_release_id
+                        INNER JOIN track_ext
+                        ON track.d_release_id = track_ext.d_release_id
+                        AND track.d_track_no = track_ext.d_track_no
             WHERE
                 chosen_key LIKE "%{}%"
             ORDER BY chosen_key, chosen_bpm'''.format(key)
