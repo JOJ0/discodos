@@ -231,6 +231,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                     if current_id:
                         log.info("Add track to mix successful, now reordering ...")
                         self.mix.reorder_tracks_squeeze_in(_pos, tracks_to_shift)
+                else:
+                    print("Track not added.")
+                    return True
             elif is_number(last_track[0]):
                 # no position was given, tracks already mix
                 if self.cli.really_add_track(track_to_add, _release_title,
@@ -238,6 +241,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
                     current_id = self.mix.add_track(_release_id,
                                                     track_to_add, track_pos = last_track[0] + 1)
+                else:
+                    print("Track not added.")
+                    return True
             else:
                 # no position and it's the first track ever added
                 if self.cli.really_add_track(track_to_add, _release_title,
@@ -245,6 +251,9 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
                     current_id = self.mix.add_track(_release_id,
                                                     track_to_add, track_pos = 1)
+                else:
+                    print("Track not added.")
+                    return True
             # FIXME untested if this is actually a proper sanity check
             log.debug("Value of current_id in add_offline_track: {}".format(current_id))
             if current_id:
