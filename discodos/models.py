@@ -1093,7 +1093,7 @@ class Collection (Database):
             END AS chosen_key,
             CASE
                 WHEN track.a_chords_key IS NOT NULL
-                    THEN trim(round(track.a_chords_key, 0), '.0')
+                    THEN round(track.a_chords_key, 1)
             END AS chosen_chords_key
             FROM release LEFT OUTER JOIN track
                  ON release.discogs_id = track.d_release_id
@@ -1129,7 +1129,7 @@ class Collection (Database):
             END AS chosen_key,
             CASE
                 WHEN track.a_chords_key IS NOT NULL
-                    THEN trim(round(track.a_chords_key, 0), '.0')
+                    THEN round(track.a_chords_key, 1)
             END AS chosen_chords_key
                 FROM release LEFT OUTER JOIN track
                      ON release.discogs_id = track.d_release_id
