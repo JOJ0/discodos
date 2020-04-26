@@ -1081,9 +1081,9 @@ class Collection (Database):
               track.d_track_no, key_notes, notes,
             CASE
                 WHEN track_ext.bpm IS NOT NULL
-                    THEN trim(track_ext.bpm, '.0')
+                    THEN round(track_ext.bpm, 1)
                 WHEN track.a_bpm IS NOT NULL
-                    THEN trim(round(track.a_bpm, 0), '.0')
+                    THEN round(track.a_bpm, 1)
             END AS chosen_bpm,
             CASE
                 WHEN track_ext.key IS NOT NULL
@@ -1105,6 +1105,8 @@ class Collection (Database):
                 OR (chosen_bpm >= "{}" AND chosen_bpm <= "{}")
             ORDER BY chosen_key, chosen_bpm'''.format(
               min_bpm, max_bpm, min_bpm, max_bpm)
+                    #THEN trim(track_ext.bpm, '.0')
+                    #THEN trim(round(track.a_bpm, 0), '.0')
         return self._select(sql_bpm, fetchone = False)
 
     def get_tracks_by_key(self, key):
