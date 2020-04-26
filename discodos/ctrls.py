@@ -621,13 +621,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.duration_stats(start_time, 'Discogs import') # print time stats
 
     def bpm_report(self, bpm, pitch_range):
-        #track_no = self.cli.self.cli.ask_for_track()
-        #if self.collection.ONLINE == True:
-        #    rel_id = release[0][0]
-        #    rel_name = release[0][2]
-        #else:
-        #    rel_id = release[0][0]
-        #    rel_name = release[0][1]
         possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
         tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
         self.cli.p(tr_sugg_msg)
@@ -641,15 +634,8 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 self.cli.p('{}{} - {} [{} ({}) {}]'.format(
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                       catno, tr['d_track_no'], tr['discogs_title']))
-                #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
     def key_report(self, key):
-        #if self.collection.ONLINE == True:
-        #    rel_id = release[0][0]
-        #    rel_name = release[0][2]
-        #else:
-        #    rel_id = release[0][0]
-        #    rel_name = release[0][1]
         possible_tracks = self.collection.get_tracks_by_key(key)
         tr_sugg_msg = '\nShowing tracks with key {}'.format(key)
         self.cli.p(tr_sugg_msg)
@@ -662,7 +648,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 self.cli.p('{}{} - {} [{} ({})]:'.format(
                      key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
                      tr['discogs_title'], tr['d_track_no']))
-                #self.cli.tab_mix_table(report_snippet, _verbose = True)
 
     def key_and_bpm_report(self, key, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_key_and_bpm(key, bpm, pitch_range)
