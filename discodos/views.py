@@ -693,11 +693,13 @@ class User_int(object):
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
                     if self.args.search_offset > 0:
                         self.RESUME_OFFSET = self.args.search_offset
-                elif self.args.search_brainz_update == True:
+                elif self.args.search_brainz_update != 0:
                     # brainz update all
                     self.WANTS_ONLINE = True
                     self.WANTS_TO_LIST_ALL_RELEASES = True
                     self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
+                    if self.args.search_brainz_update > 1:
+                        self.BRAINZ_SEARCH_DETAIL = 2
                     if self.args.search_offset > 0:
                         self.RESUME_OFFSET = self.args.search_offset
                 else:
