@@ -97,9 +97,44 @@ Get key and BPM from MusicBrainz/AcousticBrainz:
 
 `disco search 123456 -zz`
 
+_**Note: Certainly you can always find a tune in your collection by using search terms. You don't have to use the release ID. We use it here because we have it at hand already**_
+
+A regular search command and starting *Brainz matching:
+
+`disco search "new release new tune" -zz`
+
 There is another convenient way when you are in the process of writing down a mix, and realize you can't find the release because you didn't add it to the collection yet: Use the -a option of the mix subcommand. Then, instead of searching for a text-term, we hand over a Discogs release ID. DiscoDOS will look for this exact release ID and add it to your Discogs collection as well as to the local DiscoBASE. As expected with the `mix -a` commmand, the track will be added to your mix too:
 
 `disco mix fat_mix -a 123456`
+
+### I'm stuck in a mix
+
+You're in the process of compiling a mix for a gig. You just played this one tune that was really fitting well, but now you're stuck and don't know how to move on. You try out different records, nothing seems to work.
+
+DiscoDOS can tell you in what combinations you ever played this tune in the past:
+
+`disco suggest "search terms to find the tune"`
+
+Another option would be to let it show you a pool of tracks sharing similiar key and BPM:
+
+`disco suggest -k Am -b 123`
+
+_**Note: If your tune(s) do not have key and BPM data yet, let them "match" with MusicBrainz first, by using the [update from brainz](#search-action-update-from-brainz) search action**_
+
+### I'd like to quickly rate my transitions
+
+You are listening to a recording of a mix you have already documented into DiscoDOS and now would like to quickly rate your transitions, so you and DiscoDOS can learn from it.
+
+Use the bulk-edit function to change specific fields of your mix's tracks:
+
+`disco mix "the mix name" -b trans_rating,trans_notes`
+
+Learn more about this function in the [mix command section](#the-mix-command).
+
+_**Note: Currently DiscoDOS rating analysis system is not finished. This will be coming in future version. As a preparations for this feature, you only are allowed to put these character combinations into the trans_rating field: ++, +, ~, -, --**_
+
+
+
 
 
 ## Command Reference
@@ -428,8 +463,6 @@ Again, combination with -t is possible:
 
 `disco search "Amon Tobin Foley Room" -u t A2`
 
-_**Note: Having track names in the DiscoBASE is a prerequisite to use the "update from *Brainz" action.**_
-
 To make **all** *track names* on **all** releases in your collection available offline, use:
 
 `disco search all -u`
@@ -441,6 +474,8 @@ Read more on importing release and track information in the [import command sect
 #### *search* action "update from brainz"
 
 To extend a tracks information with data from MusicBrainz and AcousticBrainz:
+
+_**Note: To make this work, the track must have been updated from Discogs with track names already. See [update from Discogs](#search-action-update-from-discogs) action above.**_
 
 `disco search "Amon Tobin Foley Room" -z`
 
