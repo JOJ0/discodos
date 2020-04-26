@@ -350,7 +350,7 @@ _**Note: You don't have to click on the "Add to Collection" on discogs.com, Disc
 
 `disco import -a 123456`
 
-To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface) you just use the import command in the setup script with a release ID attached. (Sidenote: Unfortunately this way takes significantly longer because of drawbacks in how the collection data is accessible via the API):
+To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface), just use the import command with a release ID attached. (Note: Unfortunately this way it takes significantly longer because of drawbacks in how the collection data is accessible via the API):
 
 `disco import 123456`
 
@@ -358,7 +358,7 @@ To import all releases including all tracks in your collection. (The --tracks op
 
 `disco import --tracks`
 
-To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long: 
+To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
 
 _**Note: This process will take hours. Best you let it run "overnight"**_
 
