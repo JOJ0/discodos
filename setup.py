@@ -99,7 +99,7 @@ class Db_setup(Database):
                   d_track_no TEXT NOT NULL,
                   key TEXT,
                   key_notes TEXT,
-                  bpm INTEGER,
+                  bpm REAL,
                   notes TEXT,
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """}
@@ -112,7 +112,7 @@ class Db_setup(Database):
                 'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
                 'Add field track.a_key': 'ALTER TABLE track ADD a_key TEXT;',
                 'Add field track.a_chords_key': 'ALTER TABLE track ADD a_chords_key TEXT;',
-                'Add field track.a_bpm': 'ALTER TABLE track ADD a_bpm TEXT;',
+                'Add field track.a_bpm': 'ALTER TABLE track ADD a_bpm REAL;',
                 'Add field track_ext.m_rec_id_override': 'ALTER TABLE track_ext ADD m_rec_id_override TEXT;',
                 'Add field release.m_rel_id': 'ALTER TABLE release ADD m_rel_id TEXT;',
                 'Add field release.m_rel_id_override': 'ALTER TABLE release ADD m_rel_id_override TEXT;',
