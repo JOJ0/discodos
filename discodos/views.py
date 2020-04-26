@@ -321,13 +321,13 @@ class View_common_cli(View_common):
             # some special treatments for track_pos handling...
             if db_field == 'track_pos':
                 answers['track_pos'] = self.ask(question.format(orig_data['track_pos']))
-                if answers['track_pos'] == "":
+                if answers['track_pos'] == '':
                     log.info("Answer was empty, dropping item from update.")
                     del(answers['track_pos'])
                 elif not is_number(answers['track_pos']):
                     while not is_number(answers['track_pos']):
                         log.warning("Answer was not a number, asking again.")
-                        if answers['track_pos'] == "":
+                        if answers['track_pos'] == '':
                             del(answers['track_pos'])
                             break
                         else:
@@ -344,6 +344,22 @@ class View_common_cli(View_common):
                         mvmsg+= 'current track {}'.format(move_to)
                         log.debug(mvmsg)
                         print(mvmsg)
+            elif db_field == 'trans_rating':
+                allowed = ['++', '+', '~', '-', '--']
+                answers['trans_rating'] = self.ask(
+                      question.format(orig_data['trans_rating']))
+                if answers['trans_rating'] == '':
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers['trans_rating'])
+                else:
+                    while not answers['trans_rating'] in allowed:
+                        log.warning(
+                          "Please use one of the following: ++, +, ~, -, --")
+                        if answers['trans_rating'] == '':
+                            del(answers['trans_rating'])
+                            break
+                        else:
+                            answers['trans_rating'] = self.ask(question.format(orig_data['trans_rating']))
             else:
                 answers[db_field] = self.ask(
                                          question.format(orig_data[db_field]))
