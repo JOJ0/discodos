@@ -641,13 +641,15 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         self.cli.p(tr_sugg_msg)
         if possible_tracks:
             max_width = self.cli.get_max_width(possible_tracks,
-              ['key', 'bpm'], 3)
+              ['chosen_key', 'chosen_bpm'], 3)
             for tr in possible_tracks:
+                #print("in key_report: {}".format(tr['chosen_key']))
+                #print("in key report: {}".format(tr['chosen_bpm']))
                 key_bpm_and_space = self.cli.combine_fields_to_width(tr,
-                  ['key', 'bpm'], max_width)
-                self.cli.p('{}{} - {} [{} ({})]:'.format(
-                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
-                     tr['discogs_title'], tr['d_track_no']))
+                  ['chosen_key', 'chosen_bpm'], max_width)
+                self.cli.p('{}{} - {} [{} ({}) {}]:'.format(
+                  key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
+                  tr['d_catno'], tr['d_track_no'], tr['discogs_title']))
 
     def key_and_bpm_report(self, key, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_key_and_bpm(key, bpm, pitch_range)

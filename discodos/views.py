@@ -60,6 +60,8 @@ class View_common(ABC):
         '''takes sqlite row and keys_list, combines and fills with
            spaces up to set_width. FIXME: Only supports exactly 2 keys.'''
         row_mut = dict(row) # make sqlite row tuple mutable
+        #print(row_mut[keys_list[0]])
+        #print(row_mut[keys_list[1]])
         if row_mut[keys_list[0]] is None:
             row_mut[keys_list[0]] = "-"
         if row_mut[keys_list[1]] is None: # this is chosen_bpm field
@@ -67,7 +69,7 @@ class View_common(ABC):
         combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
               str(row_mut[keys_list[1]]))
         combined_with_space = combined_key_bpm.ljust(set_width)
-        #log.warning("Combined string: {}".format(combined_str))
+        #log.warning("Combined string: {}".format(combined_with_space))
         return combined_with_space
 
     def none_replace(self, value_to_check):

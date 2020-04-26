@@ -1110,15 +1110,35 @@ class Collection (Database):
     def get_tracks_by_key(self, key):
         #prev_key = "" # future music ;-) when we have key-translation-table
         #next_key = ""
-        sql_key = '''SELECT discogs_title, track.d_artist, d_track_name,
-                           track.d_track_no, key, bpm, key_notes, notes FROM
-                               release LEFT OUTER JOIN track
-                               ON release.discogs_id = track.d_release_id
-                                   INNER JOIN track_ext
-                                   ON track.d_release_id = track_ext.d_release_id
-                                   AND track.d_track_no = track_ext.d_track_no
-                       WHERE (track_ext.key LIKE "%{}%")
-                       ORDER BY track_ext.key, track_ext.bpm'''.format(key)
+        sql_key = '''
+          SELECT discogs_title, d_catno, track.d_artist, d_track_name,
+            track.d_track_no, key_notes, notes,
+            CASE
+                WHEN track_ext.bpm IS NOT NULL
+                    THEN round(track_ext.bpm, 1)
+                WHEN track.a_bpm IS NOT NULL
+                    THEN round(track.a_bpm, 1)
+            END AS chosen_bpm,
+            CASE
+                WHEN track_ext.key IS NOT NULL
+                    THEN track_ext.key
+                WHEN track.a_key IS NOT NULL
+                    THEN track.a_key
+            END AS chosen_key,
+            CASE
+                WHEN track.a_chords_key IS NOT NULL
+                    THEN trim(round(track.a_chords_key, 0), '.0')
+            END AS chosen_chords_key
+                FROM release LEFT OUTER JOIN track
+                     ON release.discogs_id = track.d_release_id
+                         INNER JOIN track_ext
+                         ON track.d_release_id = track_ext.d_release_id
+                         AND track.d_track_no = track_ext.d_track_no
+            WHERE
+                chosen_key LIKE "%{}%"
+            ORDER BY chosen_key, chosen_bpm'''.format(key)
+                   # THEN trim(round(track.a_bpm, 0), '.0')
+                   # THEN round(track_ext.bpm, 0)
         return self._select(sql_key, fetchone = False)
 
     def get_tracks_by_key_and_bpm(self, key, bpm, pitch_range):
