@@ -170,13 +170,17 @@ def argparser(argv):
     mix_subp_excl_group.add_argument(
         "-u", "--discogs-update", action='store_true',
         dest='discogs_update',
-        help='updates tracks in current mix with additional info from Discogs.')
+        help='''updates tracks in current mix with additional info from Discogs.
+        Can be combined with -p when mix ID provided or with --resume when mix ID
+        not provided (all tracks in mixes update).''')
     mix_subp_excl_group.add_argument(
         "-z", "--brainz-update", action="count", default=0,
         dest='brainz_update',
         help='''updates tracks in current mix with additional info from MusicBrainz and AcousticBrainz.
         Leave out mix ID to update every track contained in any mix.
-        -z quick match, -zz detailed match (takes longer, but more results).''')
+        -z quick match, -zz detailed match (takes longer, but more results).
+        Can be combined with -p when mix ID provided or with --resume when mix ID
+        not provided (all tracks in mixes *Brainz matching).''')
     # mutually exclusive group ends here
     mix_subparser.add_argument(
         "-p", "--pos", type=int,
@@ -190,8 +194,8 @@ def argparser(argv):
         type=int, default=0,
         help='''resumes long-running processes at the given offset position
         (expects a number). You can combine this option currently
-        with the *Brainz matching _all_ tracks in mixes operation only
-        ("disco mix -z", "disco mix -zz")
+        with "all tracks in mixes Discogs update" (disco mix -u) or with
+        "all tracks in mixes *Brainz matching" (disco mix -z, disco mix -zz).
         ''')
     ### SUGGEST subparser ##########################################################
     suggest_subparser = subparsers.add_parser(
