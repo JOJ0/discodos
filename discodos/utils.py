@@ -137,18 +137,28 @@ class Config():
             sysinst_sh_contents+= 'systemwide installation of disco cli command: " '
             sysinst_sh_contents+=  'cp {} /usr/local/bin\n'.format(disco_wrapper)
         elif os.name == 'nt':
+            # cli.py wrapper - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
-            disco_contents = '@echo off\n'
-            disco_contents+= 'rem This is the DiscoDOS cli wrapper.\n'
-            disco_contents+= 'setlocal enableextensions\n'
-            disco_contents+= '"{}" %*\n'.format(self.discodos_root / 'cli.py')
-            disco_contents+= 'endlocal\n'
+            disco_py = self.discodos_root / 'cli.py'
+            disco_contents = self._win_wrapper(disco_py,
+                  'rem This is the DiscoDOS cli wrapper.')
+            # setup.py wrapper - setup.bat
+            setup_wrapper = self.discodos_root / 'setup.bat'
+            setup_py = self.discodos_root / 'setup.py'
+            setup_contents = self._win_wrapper(setup_py,
+                  'rem This is the DiscoDOS setup script wrapper.')
+            # sync.py wrapper - sync.bat
+            sync_wrapper = self.discodos_root / 'sync.bat'
+            sync_py = self.discodos_root / 'sync.py'
+            sync_contents = self._win_wrapper(sync_py,
+                  'rem This is the DiscoDOS sync/backup script wrapper.')
+            # discoshell.bat
             discoshell = self.discodos_root / 'discoshell.bat'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
             discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
                 self.discodos_root, venv_act)
         else:
-            log.warn("Config.cli: Unknown OS - not creating disco CLI wrapper.")
+            log.warn("Config.cli: Unknown OS - not creating CLI wrappers.")
             return True
 
         # file installation part starts here
@@ -198,15 +208,38 @@ class Config():
                 hlpmsg+="\n./sync"
                 print_help(hlpmsg)
         elif os.name == "nt":
+            # INSTALL disco.bat
             if disco_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: DiscoDOS cli wrapper is already existing: {}".format(
+                log.info("Config.cli: CLI wrapper is already existing: {}".format(
                     disco_wrapper))
             else:
                 msg_discoinst = ("\nInstalling DiscoDOS CLI wrapper: {}".format(
                       disco_wrapper))
                 print(msg_discoinst)
-                log.info(msg_discoinst)
                 self._write_textfile(disco_contents, disco_wrapper)
+
+            # INSTALL setup.bat
+            if setup_wrapper.is_file(): # install only if non-existent
+                log.info("Config.cli: setup wrapper is already existing: {}".format(
+                    setup_wrapper))
+            else:
+                msg_setupinst = ("\nInstalling DiscoDOS setup wrapper: {}".format(
+                      setup_wrapper))
+                print(msg_setupinst)
+                self._write_textfile(setup_contents, setup_wrapper)
+
+            # INSTALL sync.bat
+            if sync_wrapper.is_file(): # install only if non-existent
+                log.info("Config.cli: sync wrapper is already existing: {}".format(
+                    sync_wrapper))
+            else:
+                msg_syncinst = ("\nInstalling DiscoDOS sync wrapper: {}".format(
+                      sync_wrapper))
+                print(msg_syncinst)
+                self._write_textfile(sync_contents, sync_wrapper)
+
+            # INSTALL discoshell.bat
+            # FIXME if
                 print_help('Installing DiscoDOS shell: {}'.format(discoshell))
                 self._write_textfile(discoshell_contents, discoshell)
                 hlpshmsg = 'Usage: '
@@ -217,6 +250,7 @@ class Config():
                 hlpshmsg+= '\ndisco mix -h'
                 hlpshmsg+= '\ndisco search -h'
                 hlpshmsg+= '\ndisco suggest -h'
+                hlpshmsg+= '\ndisco import -h'
                 hlpshmsg+= '\nsetup -h'
                 hlpshmsg+= '\nsync -h'
                 print_help(hlpshmsg)
@@ -227,6 +261,15 @@ class Config():
         contents+= '{}\n'.format(comment)
         contents+= 'source "{}"\n'.format(venv_activate)
         contents+= '"{}" "$@"\n'.format(filename)
+        return contents
+
+    def _win_wrapper(self, filename, comment):
+        '''return some lines forming a basic windows batch wrapper'''
+        contents = '@echo off\n'
+        contents+= '{}\n'.format(comment)
+        contents+= 'setlocal enableextensions\n'
+        contents+= 'python "{}" %*\n'.format(filename)
+        contents+= 'endlocal\n'
         return contents
 
     # write a textile (eg. shell script)
