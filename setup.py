@@ -23,17 +23,9 @@ def argparser(argv):
         help="stay in offline mode, don't connect to Discogs")
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
-		"-i", "--import", dest="release_id",
-        type=int, default=False, nargs="*",
-        help="import release ID from Discogs, default is _all_ releases")
-    parser_group1.add_argument(
 		"--upgrade-db-schema", dest="upgrade_db_schema",
         action='store_true',
         help="force upgrade database schema - only use if you know what you are doing.")
-    parser_group1.add_argument(
-		"-a", "--add_to_collection", dest="add_release_id",
-        type=int,
-        help="add release ID to collection (on Discogs and in the DiscoBase)")
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default.".format(
         log.handlers[0].level))
@@ -194,21 +186,20 @@ def main():
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     # ARGPARSER INIT
     args=argparser(argv)
-    # INSTALL CLI if not there yet
-    conf.install_cli()
+    log.info(vars(args))
 
     # INFORM USER what this script does
     if len(argv) <= 1:
         print_help(
-          "This script sets up the DiscoBASE and/or imports data from Discogs.")
-        print("Run setup.py -i to import your whole Discogs collection.")
-        print("Run setup.py -i <ID> to import only one release.")
-        print("Run setup.py -a <ID> to add a release to your collection.\n")
-    log.info(vars(args))
+          "This is DiscoDOS setup. If you don't see any output below, there was nothing to do.")
 
+    # SETUP DB
     setup = Db_setup(conf.discobase)
     setup.create_tables()
     setup.upgrade_schema()
+
+    # INSTALL CLI if not there yet
+    conf.install_cli()
 
     if args.upgrade_db_schema:
         setup.create_tables()
@@ -216,82 +207,9 @@ def main():
     # in INFO level show args object again after longish create_table msgs
     log.info(vars(args))
 
-    # PREPARE DISCOGS API and USER INTERACTION classes
-    user = User_int(args)
-    coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token,
-            conf.discogs_appid, _db_file = conf.discobase)
-
-    # ADD RELEASE TO DISCOGS COLLECTION
-    if args.add_release_id:
-        coll_ctrl.add_release(args.add_release_id)
-
-    # IMPORT MODE, if we said so
-    if args.release_id != False:
-        log.debug("args.release_id length: {}".format(len(args.release_id)))
-        if len(args.release_id) == 0:
-            # IMPORT OF WHOLE COLLECTION is the default
-            coll_ctrl.import_collection()
-        else:
-            # IMPORT SPECIFIC RELEASE ID
-            coll_ctrl.import_release(args.release_id[0])
-
 # __main__ try/except wrap
 if __name__ == "__main__":
     try:
         main()
-        #db_obj.close_conn()
     except KeyboardInterrupt:
-        log.error('Program interrupted!')
-
-
-################# old stuff leave for reference ####################
-def old_fold_away():
-    print("crap")
-    #itemsInCollection = [r.release for r in me.collection_folders[0].releases]
-    #rows = []
-
-    #print("Crunching data...")
-    #for r in itemsInCollection:
-    #    row = {}
-    #
-    ##    try:
-    #    row['primaryGenre'] = r.genres[0]
-    #    if len(r.genres) > 1:
-    #        row['secondaryGenres'] = ", ".join(r.genres[1:])
-    #
-    #    row['primaryStyle'] = r.styles[0]
-    #    if len(r.styles) > 1:
-    #        row['secondaryStyles'] = ", ".join(r.styles[1:])
-    #
-    #    row['catalogNumber'] = r.labels[0].data['catno']
-    #    row['artists'] = ", ".join(a.name for a in r.artists)
-    #    row['format'] = r.formats[0]['descriptions'][0]
-    #
-    #    rows.append(row)
-
-    #    except (IndexError, TypeError):
-    #        None
-    #        # @todo: normally these exceptions only happen if there's missing data
-    #        # but ideally the program should check if values are missing, rather than
-    #        # ignoring any exception resulting from trying
-    #
-    #    row['title'] = r.title
-    #
-    #    if r.year > 0:
-    #        row['year'] = r.year
-    #
-    #    rows.append(row)
-
-    #print("Writing CSV...")
-    ## Write to CSV
-    #with open('collection.csv', 'w') as csvfile:
-    #    csvfile.write('\ufeff')  # utf8 BOM needed by Excel
-    #
-    #    fieldnames = ['format', 'primaryGenre', 'primaryStyle', 'secondaryGenres',
-    #                  'secondaryStyles', 'catalogNumber', 'artists', 'title', 'year']
-    #    writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval='')
-    #
-    #    writer.writeheader()
-    #    for row in rows:
-    #        writer.writerow(row)
-
+        log.error('DiscoDOS setup canceled (ctrl-c)')
