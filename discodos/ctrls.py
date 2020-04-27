@@ -681,10 +681,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
            Any iterable should work unless it doesn't have named keys!
         '''
         start_time = time()
-        self.processed = offset
         if offset:
+            self.processed = offset
             self.processed_total = len(track_list) + offset
         else:
+            self.processed = 1
             self.processed_total = len(track_list)
         self.tracks_added = 0
         self.tracks_db_errors = 0
@@ -694,7 +695,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             d_track_no = track['d_track_no']
             d_release_id = track['d_release_id']
             discogs_title = track['discogs_title']
-            self.processed += 1
             self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
 
             # move this to method fetch_track_and_artist_from_discogs
@@ -729,6 +729,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                       discogs_title, d_release_id, d_track_no))
                 self.tracks_not_found_errors += 1
                 self.cli.brainz_processed_so_far(self.processed, self.processed_total)
+                self.processed += 1
                 print("") # space for readability
 
         print('Processed: {}. Added Artist/Track info to DiscoBASE: {}.'.format(
@@ -758,10 +759,11 @@ class Coll_ctrl_cli (Coll_ctrl_common):
         start_time = time()
         log.debug('CTRL: update_track_from_brainz: match detail option is: {}'.format(
               detail))
-        processed = offset
         if offset:
+            processed = offset
             processed_total = len(track_list) + offset
         else:
+            processed = 1
             processed_total = len(track_list)
         errors_not_found, errors_db, errors_no_release = 0, 0, 0
         errors_no_rec_MB, errors_no_rec_AB = 0, 0
@@ -772,7 +774,6 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             d_release_id = track['d_release_id']
             d_track_no = track['d_track_no']
             user_rec_mbid = track['m_rec_id_override']
-            processed += 1
 
             log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
                 track['d_release_id'], track['discogs_title']))
@@ -898,6 +899,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 log.warning('No Release MBID found for track {} on Discogs release "{}"'.format(
                         track['d_track_no'], track['discogs_title']))
             self.cli.brainz_processed_so_far(processed, processed_total)
+            processed += 1
             print('') # space for readability
 
         self.cli.brainz_processed_report(processed_total, added_release,
