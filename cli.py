@@ -321,7 +321,7 @@ def main():
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
         searchterm = args.release_search
         msg_use = "Nothing more to do. Use -m <mix> to add to a "
-        msg_use+= "mix, -u to update with Discogs information "
+        msg_use+= "mix, -e to edit, -u to update with Discogs information "
         msg_use+= "or -zz to update with *Brainz information. "
         msg_use+= "You can combine these options with -t too."
         if coll_ctrl.ONLINE:
