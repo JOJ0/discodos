@@ -369,6 +369,7 @@ class Coll_ctrl_cli (Coll_ctrl_common):
             else: # only try to initialize brainz if discogs is online already
                 self.brainz = Brainz(_musicbrainz_user, _musicbrainz_pass, _appIdentifier)
         log.info("CTRL: Initial ONLINE status is %s", self.ONLINE)
+        self.first_track_on_release = ""
 
     @property
     def ONLINE(self):
@@ -416,23 +417,23 @@ class Coll_ctrl_cli (Coll_ctrl_common):
                 self.cli.p('Nothing found.')
                 return False
             else:
-                if len(search_results) == 1:
-                    self.cli.p('Found release: {} - {}'.format(search_results[0][3],
-                                                          search_results[0][1]))
-                    return search_results
+                #if len(search_results) == 1:
+                #    self.cli.p('Found release: {} - {}'.format(search_results[0][3],
+                #                                          search_results[0][1]))
+                #    return search_results
+                #else:
+                self.cli.p('Found releases:')
+                for cnt,release in enumerate(search_results):
+                    self.cli.p('({}) {} - {}'.format(cnt, release[3], release[1]))
+                #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
+                #print(num_search_results)
+                answ = self.cli.ask('Which release? (0) ')
+                if answ == '':
+                    answ = 0
                 else:
-                    self.cli.p('Found several releases:')
-                    for cnt,release in enumerate(search_results):
-                        self.cli.p('({}) {} - {}'.format(cnt, release[3], release[1]))
-                    #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
-                    #print(num_search_results)
-                    answ = self.cli.ask('Which release? (0) ')
-                    if answ == '':
-                        answ = 0
-                    else:
-                        answ = int(answ)
-                    return [search_results[answ]]
-                    #return num_search_results[answ][0]
+                    answ = int(answ)
+                return [search_results[answ]]
+                #return num_search_results[answ][0]
 
     def print_and_return_first_d_release(self, discogs_results, _searchterm, _db_releases):
         ''' formatted output _and return of Discogs release search results'''

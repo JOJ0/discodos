@@ -358,6 +358,11 @@ def main():
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
                 mix_ctrl.add_offline_track(database_rel_found, args.track_to_add,
                         args.add_at_pos)
+            elif user.WANTS_TO_SEARCH_AND_EDIT_TRACK:
+                coll_ctrl.edit_track(
+                      database_rel_found[0]['discogs_id'],
+                      database_rel_found[0]['discogs_title'],
+                      args.track_to_add)
             else:
                 if database_rel_found: # prevents msg when nothing's found anyway
                     print_help(msg_use)
