@@ -116,43 +116,50 @@ class Config():
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
         if os.name == 'posix':
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate'
+
             # cli.py wrapper
             disco_wrapper = self.discodos_root / 'disco'
             disco_py = self.discodos_root / 'cli.py'
             disco_contents = self._posix_wrapper(disco_py, venv_act,
                   '# This is the DiscoDOS cli wrapper.')
+
             # setup.py wrapper
             setup_wrapper = self.discodos_root / 'setup'
             setup_py = self.discodos_root / 'setup.py'
             setup_contents = self._posix_wrapper(setup_py, venv_act,
                   '# This is the DiscoDOS setup script wrapper.')
+
             # sync.py wrapper
             sync_wrapper = self.discodos_root / 'sync'
             sync_py = self.discodos_root / 'sync.py'
             sync_contents = self._posix_wrapper(sync_py, venv_act,
                   '# This is the DiscoDOS sync/backup script wrapper.')
+
             # install systemwide
             sysinst_sh = self.discodos_root / 'install_systemwide.sh'
             sysinst_sh_contents = 'sudo -p "Need your users password to allow '
             sysinst_sh_contents+= 'systemwide installation of disco cli command: " '
             sysinst_sh_contents+=  'cp {} /usr/local/bin\n'.format(disco_wrapper)
         elif os.name == 'nt':
-            # cli.py wrapper - disco.bat
+            # WRAPPER cli.py - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
             disco_py = self.discodos_root / 'cli.py'
             disco_contents = self._win_wrapper(disco_py,
                   'rem This is the DiscoDOS cli wrapper.')
-            # setup.py wrapper - setup.bat
+
+            # WRAPPER setup.py - setup.bat
             setup_wrapper = self.discodos_root / 'setup.bat'
             setup_py = self.discodos_root / 'setup.py'
             setup_contents = self._win_wrapper(setup_py,
                   'rem This is the DiscoDOS setup script wrapper.')
-            # sync.py wrapper - sync.bat
+
+            # WRAPPER sync.py - sync.bat
             sync_wrapper = self.discodos_root / 'sync.bat'
             sync_py = self.discodos_root / 'sync.py'
             sync_contents = self._win_wrapper(sync_py,
                   'rem This is the DiscoDOS sync/backup script wrapper.')
-            # discoshell.bat
+
+            # WRAPPER discoshell.bat
             discoshell = self.discodos_root / 'discoshell.bat'
             venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
             discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
@@ -164,6 +171,7 @@ class Config():
         # file installation part starts here
         if os.name == "posix":
             log.info('Config.cli: Installing DiscoDOS wrappers.')
+
             # install cli wrapper
             if disco_wrapper.is_file(): # install only if non-existent
                 log.info("Config.cli: CLI wrapper is already existing: {}".format(
@@ -173,6 +181,7 @@ class Config():
                 self._write_textfile(disco_contents, disco_wrapper)
                 disco_wrapper.chmod(0o755)
                 print("You can now use the DiscoDOS CLI using ./disco\n")
+
             # install setup wrapper
             if setup_wrapper.is_file(): # install only if non-existent
                 log.info("Config.cli: setup wrapper is already existing: {}".format(
@@ -182,6 +191,7 @@ class Config():
                 self._write_textfile(setup_contents, setup_wrapper)
                 setup_wrapper.chmod(0o755)
                 print("You can now use DiscoDOS setup using ./setup\n")
+
             # install sync wrapper
             if sync_wrapper.is_file(): # install only if non-existent
                 log.info("Config.cli: sync wrapper is already existing: {}".format(
@@ -191,6 +201,7 @@ class Config():
                 self._write_textfile(sync_contents, sync_wrapper)
                 sync_wrapper.chmod(0o755)
                 print("You can now use DiscoDOS sync using ./sync\n")
+
             # systemwide installation handling
             if sysinst_sh.is_file(): # install only if non-existent
                 log.info("Config.cli: install_systemwide.sh is already existing: {}".format(
@@ -240,6 +251,10 @@ class Config():
 
             # INSTALL discoshell.bat
             # FIXME if
+            if discoshell.is_file(): # install only if non-existent
+                log.info("Config.cli: discoshell.bat is already existing: {}".format(
+                    discoshell))
+            else:
                 print_help('Installing DiscoDOS shell: {}'.format(discoshell))
                 self._write_textfile(discoshell_contents, discoshell)
                 hlpshmsg = 'Usage: '

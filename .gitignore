@@ -16,3 +16,5 @@ disco
 install_cli_system.sh
 disco.bat
 discoshell.bat
+setup.bat
+sync.bat
