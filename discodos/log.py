@@ -7,7 +7,7 @@ def logger_init():
     debug_log = discodos_lib.parents[0] / "debug.log"
     log = logging.getLogger('discodos')
     log.setLevel(logging.DEBUG) # level of logger itself
-    f_handle = logging.FileHandler(debug_log) # create file handler
+    f_handle = logging.FileHandler(debug_log, encoding='utf-8') # create file handler
     f_handle.setLevel(logging.DEBUG) # which logs even debug messages
     c_handle = logging.StreamHandler() # console handler with a higher log level
     c_handle.setLevel(logging.WARNING) # level of the console handler
