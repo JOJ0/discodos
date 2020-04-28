@@ -373,4 +373,4 @@ if __name__ == "__main__":
         main()
         #asyncio.run(main())
     except KeyboardInterrupt:
-        log.error('Program interrupted!')
+        log.error('DiscoDOS sync canceled (ctrl-c)')
