@@ -3,6 +3,7 @@ import time
 import yaml
 from pathlib import Path
 import os
+import sys
 
 # util: checks for numbers
 def is_number(s):
@@ -57,8 +58,16 @@ def join_sep(iterator, seperator):
 class Config():
     def __init__(self):
         # path handling
-        discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
-        self.discodos_root = discodos_lib.parents[0]
+        # determine if application is a script file or frozen exe
+        if getattr(sys, 'frozen', False):
+            self.frozen = True
+            log.debug("Config.frozen: Running as a bundled executable.")
+            self.discodos_root = Path(os.path.dirname(sys.executable))
+        else:
+            log.debug("Config.frozen: Running as a Python script.")
+            self.frozen = False
+            discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
+            self.discodos_root = discodos_lib.parents[0]
         log.info("Config.discodos_root: {}".format(self.discodos_root))
         # config.yaml handling
         self.conf = read_yaml( self.discodos_root / "config.yaml")
