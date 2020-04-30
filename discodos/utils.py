@@ -202,8 +202,8 @@ class Config():
                 discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
                     self.discodos_root, venv_act)
             else:
-                echo_hints = 'echo Launch disco.bat to view a usage tutorial'
-                discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
+                echo_hints = 'Launch disco.bat to view a usage tutorial'
+                discoshell_contents = 'start "DiscoDOS shell" /D "{}" echo "{}"\n'.format(
                     self.discodos_root, echo_hints)
         else:
             log.warn("Config.cli: Unknown OS - not creating CLI wrappers.")
