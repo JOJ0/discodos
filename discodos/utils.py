@@ -180,19 +180,16 @@ class Config():
 
             # WRAPPER cli.py - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
-            disco_py = self.discodos_root / 'cli.py'
             disco_contents = self._win_wrapper(disco_py,
                   'rem This is the DiscoDOS cli wrapper.')
 
             # WRAPPER setup.py - discosetup.bat
             setup_wrapper = self.discodos_root / 'discosetup.bat'
-            setup_py = self.discodos_root / 'setup.py'
             setup_contents = self._win_wrapper(setup_py,
                   'rem This is the DiscoDOS setup script wrapper.')
 
             # WRAPPER sync.py - discosync.bat
             sync_wrapper = self.discodos_root / 'discosync.bat'
-            sync_py = self.discodos_root / 'sync.py'
             sync_contents = self._win_wrapper(sync_py,
                   'rem This is the DiscoDOS sync/backup script wrapper.')
 
