@@ -360,7 +360,8 @@ class Config():
             'webdav_url': '',
             'discobase_file': 'discobase.db'
         }
-        create_msg = '\nCreating config file...'
+        create_msg = '\nSeems like you are running DiscoDOS for the first time, '
+        create_msg+= 'creating config file...'
         log.info(create_msg)
         print(create_msg)
         written = self._write_yaml(config, self.discodos_root / 'config.yaml')
@@ -369,7 +370,8 @@ class Config():
             written_msg+= 'https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
             written_msg+= '* open the file config.yaml using a '
             written_msg+= 'texteditor and set your token:  discogs_token: \'xyz\'\n'
-            written_msg+= "* Save the file and re-run DiscoDOS!"
+            written_msg+= '* Save the file and run DiscoDOS setup '
+            written_msg+= '(winconfig.exe on Windows, setup on Linux/MacOS, setup.py if dev-version)'
             log.info(written_msg)
             print_help(written_msg)
 
