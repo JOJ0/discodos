@@ -1,10 +1,16 @@
 import logging
 from pathlib import Path
 import os
+import sys
 
 def logger_init():
-    discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
-    debug_log = discodos_lib.parents[0] / "debug.log"
+    # logger is not relying on Config class and handles paths itself
+    if getattr(sys, 'frozen', False):
+        discodos_root = Path(os.path.dirname(sys.executable))
+    else:
+        discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
+        discodos_root = discodos_lib.parents[0]
+    debug_log = discodos_root / "debug.log"
     log = logging.getLogger('discodos')
     log.setLevel(logging.DEBUG) # level of logger itself
     f_handle = logging.FileHandler(debug_log, encoding='utf-8') # create file handler
