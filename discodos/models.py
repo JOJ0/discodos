@@ -41,8 +41,10 @@ class Database (object):
             return conn
         except sqlerr as e:
             if e.args[0] == 'unable to open database file':
-                log.error(
-                  "DB-NEW: Database {} can't be opened, launch setup.py!".format(db_file))
+                e = "DB-NEW: Database {} can't be opened, launch ".format(db_file)
+                e+= "DiscoDOS setup (winconfig.exe on Windows, setup on Linux/MacOSX, "
+                e+= "setup.py if dev-version)"
+                log.error(e)
                 raise SystemExit(5) # 5 = no db error
             else:
                 log.error("DB-NEW: Connection error: %s", e)
