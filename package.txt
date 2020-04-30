@@ -28,7 +28,7 @@ pip install -r requirements.txt
 pip install pyinstaller
 
 pyinstaller cli.py --onefile --clean -y 
-pyinstaller setup.py --onefile --clean -y --nowindowed 
+pyinstaller setup.py --name winconfig --onefile --clean -y
 pyinstaller sync.py --onefile --clean -y 
 
 
