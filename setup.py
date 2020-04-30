@@ -164,14 +164,14 @@ class Db_setup(Database):
                             failure = True
 
             if failure:
-                msg_fail='DiscoBASE schema upgrade failed, open an issue on Github!'
+                msg_fail='DiscoBASE schema upgrade failed, open an issue on Github!\n'
                 log.info(msg_fail)
                 print(msg_fail)
                 self.configure_db() # this sets foreign_keys = ON again
                 return False
             else:
                 self.execute_sql('PRAGMA user_version = {}'.format(latest_schema))
-                msg_done='DiscoBASE schema upgrade done!'
+                msg_done='DiscoBASE schema upgrade done!\n'
                 log.info(msg_done)
                 print(msg_done)
                 self.configure_db() # this sets foreign_keys = ON again
