@@ -159,7 +159,7 @@ class Config():
             sysinst_sh_contents+= 'cp -v {} ~/bin\n'.format(sync_wrapper)
             sysinst_sh_contents+= 'echo "Adding $HOME/bin to your PATH by appending a line to $HOME/.bashrc"\n'
             sysinst_sh_contents+= 'echo \'export PATH=~/bin:$PATH\' >> ~/.bashrc\n'
-            sysinst_sh_contents+= 'read -p "Reload ~/.bashrc to activate changes? (y/N)" RELOAD\n'
+            sysinst_sh_contents+= 'read -p "Reload ~/.bashrc to activate changes? (y/N) " RELOAD\n'
             sysinst_sh_contents+= 'if [[ $RELOAD == "y" || $RELOAD == "Y" ]]; then\n'
             sysinst_sh_contents+= '    source ~/.bashrc\n'
             sysinst_sh_contents+= 'else\n'
