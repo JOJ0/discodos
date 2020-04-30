@@ -139,7 +139,7 @@ _**Note: Currently DiscoDOS rating analysis system is not finished. This will be
 
 ## Command Reference
 
-This section is an in-detail explanation about everything you can do with DiscoDOS. If you'd like to see how to do typical day to day tasks, jump to the [Common Workflows](#Common-Workflows) section, and come back here later.
+This section is an in-detail explanation about everything you can do with DiscoDOS. If you'd like to see how to do typical day to day tasks, jump to the [Common Tasks](#common-tasks) section, and come back here later.
 
 ### General things about command line tools
 
@@ -346,7 +346,7 @@ _**Note: This imports all your releases, but not the tracks on them**_
 
 A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
 
-_**Note: You don't have to click on the "Add to Collection" on discogs.com, DiscoDOS does this for you**_
+_**Note: You don't have to click "Add to Collection" on discogs.com, DiscoDOS does this for you**_
 
 `disco import -a 123456`
 
@@ -354,7 +354,7 @@ To add a release to DiscoBASE **only** (because it's been already added to your 
 
 `disco import 123456`
 
-To import all releases including all tracks in your collection. (The --tracks option can be replaced by its short form -u). 1000 records take about 20-30 minutes to import:
+To import all releases including all tracks in your collection use the --tracks option (can be replaced by its short form -u). 1000 records take about 20-30 minutes to import:
 
 `disco import --tracks`
 
