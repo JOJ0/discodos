@@ -4,6 +4,7 @@ import sys
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
+from dropbox.dropbox import BadInputException
 from urllib3.exceptions import NewConnectionError
 from requests.exceptions import ConnectionError
 from socket import gaierror
@@ -156,7 +157,11 @@ class Dropbox_sync(Sync):
         log.info("We are in _login")
         log.info("Creating a Dropbox object...")
         # doesn't have to be catched! doesn't connect!
-        self.dbx = dropbox.Dropbox(self.token)
+        try:
+            self.dbx = dropbox.Dropbox(self.token)
+        except BadInputException:
+            log.error("Dropbox token is missing in config.yaml.")
+            raise SystemExit(1)
         #print("One")
         #await asyncio.sleep(1)
         #print("Two")
