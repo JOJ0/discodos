@@ -170,7 +170,7 @@ class Config():
             if self.frozen: # packaged
                 venv_act = False
                 disco_py = self.discodos_root / 'cli.exe'
-                setup_py = self.discodos_root / 'setup.exe'
+                setup_py = self.discodos_root / 'winconfig.exe'
                 sync_py = self.discodos_root / 'sync.exe'
             else: # not packaged
                 venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
@@ -181,17 +181,17 @@ class Config():
             # WRAPPER cli.py - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
             disco_contents = self._win_wrapper(disco_py,
-                  'rem This is the DiscoDOS cli wrapper.')
+                  'rem This is the DiscoDOS cli wrapper.', self.frozen)
 
             # WRAPPER setup.py - discosetup.bat
             setup_wrapper = self.discodos_root / 'discosetup.bat'
             setup_contents = self._win_wrapper(setup_py,
-                  'rem This is the DiscoDOS setup script wrapper.')
+                  'rem This is the DiscoDOS setup script wrapper.', self.frozen)
 
             # WRAPPER sync.py - discosync.bat
             sync_wrapper = self.discodos_root / 'discosync.bat'
             sync_contents = self._win_wrapper(sync_py,
-                  'rem This is the DiscoDOS sync/backup script wrapper.')
+                  'rem This is the DiscoDOS sync/backup script wrapper.', self.frozen)
 
             # WRAPPER discoshell.bat
             discoshell = self.discodos_root / 'discoshell.bat'
@@ -319,12 +319,15 @@ class Config():
         contents+= '"{}" "$@"\n'.format(filename)
         return contents
 
-    def _win_wrapper(self, filename, comment):
+    def _win_wrapper(self, filename, comment, frozen):
         '''return some lines forming a basic windows batch wrapper'''
         contents = '@echo off\n'
         contents+= '{}\n'.format(comment)
         contents+= 'setlocal enableextensions\n'
-        contents+= 'python "{}" %*\n'.format(filename)
+        if frozen:
+            contents+= '"{}" %*\n'.format(filename)
+        else:
+            contents+= 'python "{}" %*\n'.format(filename)
         contents+= 'endlocal\n'
         return contents
 
