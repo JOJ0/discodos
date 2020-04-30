@@ -365,11 +365,11 @@ class Config():
         print(create_msg)
         written = self._write_yaml(config, self.discodos_root / 'config.yaml')
         if written:
-            written_msg = 'Open the file config.yaml using a '
-            written_msg+= 'texteditor and set a value for discogs_token!\n'
-            written_msg+= 'Read how to get a Discogs token here: '
+            written_msg = '* get a Discogs API access token as described here:\n'
             written_msg+= 'https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
-            written_msg+= "Then re-run DiscoDOS!"
+            written_msg+= '* open the file config.yaml using a '
+            written_msg+= 'texteditor and set your token:  discogs_token: \'xyz\'\n'
+            written_msg+= "* Save the file and re-run DiscoDOS!"
             log.info(written_msg)
             print_help(written_msg)
 
