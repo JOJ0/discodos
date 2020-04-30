@@ -167,29 +167,44 @@ class Config():
             sysinst_sh_contents+= 'fi\n'
 
         elif os.name == 'nt':
+            if self.frozen: # packaged
+                venv_act = False
+                disco_py = self.discodos_root / 'cli.exe'
+                setup_py = self.discodos_root / 'setup.exe'
+                sync_py = self.discodos_root / 'sync.exe'
+            else: # not packaged
+                venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
+                disco_py = self.discodos_root / 'cli.py'
+                setup_py = self.discodos_root / 'setup.py'
+                sync_py = self.discodos_root / 'sync.py'
+
             # WRAPPER cli.py - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
             disco_py = self.discodos_root / 'cli.py'
             disco_contents = self._win_wrapper(disco_py,
                   'rem This is the DiscoDOS cli wrapper.')
 
-            # WRAPPER setup.py - setup.bat
-            setup_wrapper = self.discodos_root / 'setup.bat'
+            # WRAPPER setup.py - discosetup.bat
+            setup_wrapper = self.discodos_root / 'discosetup.bat'
             setup_py = self.discodos_root / 'setup.py'
             setup_contents = self._win_wrapper(setup_py,
                   'rem This is the DiscoDOS setup script wrapper.')
 
-            # WRAPPER sync.py - sync.bat
-            sync_wrapper = self.discodos_root / 'sync.bat'
+            # WRAPPER sync.py - discosync.bat
+            sync_wrapper = self.discodos_root / 'discosync.bat'
             sync_py = self.discodos_root / 'sync.py'
             sync_contents = self._win_wrapper(sync_py,
                   'rem This is the DiscoDOS sync/backup script wrapper.')
 
             # WRAPPER discoshell.bat
             discoshell = self.discodos_root / 'discoshell.bat'
-            venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
-            discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
-                self.discodos_root, venv_act)
+            if venv_act:
+                discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
+                    self.discodos_root, venv_act)
+            else:
+                echo_hints = 'echo Launch disco.bat to view a usage tutorial'
+                discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
+                    self.discodos_root, echo_hints)
         else:
             log.warn("Config.cli: Unknown OS - not creating CLI wrappers.")
             return True
@@ -249,30 +264,33 @@ class Config():
                 log.info("Config.cli: CLI wrapper is already existing: {}".format(
                     disco_wrapper))
             else:
-                msg_discoinst = ("\nInstalling DiscoDOS CLI wrapper: {}".format(
+                msg_discoinst = ("Installing DiscoDOS CLI wrapper: {}".format(
                       disco_wrapper))
                 print(msg_discoinst)
                 self._write_textfile(disco_contents, disco_wrapper)
+                print("You can now use the DiscoDOS CLI using disco.bat\n")
 
-            # INSTALL setup.bat
+            # INSTALL discosetup.bat
             if setup_wrapper.is_file(): # install only if non-existent
                 log.info("Config.cli: setup wrapper is already existing: {}".format(
                     setup_wrapper))
             else:
-                msg_setupinst = ("\nInstalling DiscoDOS setup wrapper: {}".format(
+                msg_setupinst = ("Installing DiscoDOS setup wrapper: {}".format(
                       setup_wrapper))
                 print(msg_setupinst)
                 self._write_textfile(setup_contents, setup_wrapper)
+                print("You can now use DiscoDOS setup using discosetup.bat\n")
 
-            # INSTALL sync.bat
+            # INSTALL discosync.bat
             if sync_wrapper.is_file(): # install only if non-existent
                 log.info("Config.cli: sync wrapper is already existing: {}".format(
                     sync_wrapper))
             else:
-                msg_syncinst = ("\nInstalling DiscoDOS sync wrapper: {}".format(
+                msg_syncinst = ("Installing DiscoDOS sync wrapper: {}".format(
                       sync_wrapper))
                 print(msg_syncinst)
                 self._write_textfile(sync_contents, sync_wrapper)
+                print("You can now use DiscoDOS sync using discosync.bat\n")
 
             # INSTALL discoshell.bat
             # FIXME if
@@ -285,14 +303,14 @@ class Config():
                 hlpshmsg = 'Usage: '
                 hlpshmsg = 'Double click discoshell.bat to open the "DiscoDOS shell," '
                 hlpshmsg+= '\nThen put DiscoDOS commands in there.'
-                hlpshmsg+= '\nView available commands:'
+                hlpshmsg+= '\nTo view help for available commands:'
                 hlpshmsg+= '\ndisco -h'
                 hlpshmsg+= '\ndisco mix -h'
                 hlpshmsg+= '\ndisco search -h'
                 hlpshmsg+= '\ndisco suggest -h'
                 hlpshmsg+= '\ndisco import -h'
-                hlpshmsg+= '\nsetup -h'
-                hlpshmsg+= '\nsync -h'
+                hlpshmsg+= '\ndiscosetup -h'
+                hlpshmsg+= '\ndiscosync -h\n'
                 print_help(hlpshmsg)
 
     def _posix_wrapper(self, filename, venv_activate, comment):
