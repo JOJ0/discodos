@@ -12,14 +12,14 @@ fi
 
 source ~/.venvs/discodos_pack/bin/activate
 
+if [[ $1 == '--clean' ]]; then
+    rm -rf dist
+fi
+
 pyinstaller cli.py --onefile --name cli --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
 
 pyinstaller setup.py --onefile --name setup --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
 
 pyinstaller sync.py --onefile --name sync --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
-
-if [[ $1 == '--clean' ]]; then
-    rm -rf dist
-fi
 
 tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/cli dist/setup dist/sync
