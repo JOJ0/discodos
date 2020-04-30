@@ -4,8 +4,10 @@ VERSION='1.0-rc0'
 
 if [[ $OSTYPE == "darwin"* ]]; then
     OS="MacOSX"
+    SED_OPT="-s '/^dist/discodos/'"
 else
     OS="Linux" # FIXME check for family (eg ubuntu 18 alike)
+    SED_OPT="--transform s/^dist/discodos/"
 fi
 
 source ~/.venvs/discodos_pack/bin/activate
@@ -20,4 +22,4 @@ if [[ $1 == '--clean' ]]; then
     rm -rf dist
 fi
 
-tar -zcvf discodos-${VERSION}-${OS}.tar.gz -s '/^dist/discodos/' dist/cli dist/setup dist/sync
+tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/cli dist/setup dist/sync
