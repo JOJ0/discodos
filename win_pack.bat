@@ -1,6 +1,6 @@
 @echo on
-echo Activating Python venv
-start /B "%HOMEPATH%/python-envs/discodos_pack/Scripts/activate.bat"
+rem echo Activating Python venv
+rem start /B "%HOMEPATH%/python-envs/discodos_pack/Scripts/activate.bat"
 
 echo Packaging...
 pyinstaller cli.py --onefile --clean -y
@@ -13,15 +13,9 @@ md discodos
 copy /y cli.exe discodos
 copy /y winconfig.exe discodos
 copy /y sync.exe discodos
-echo ''
-echo ''
-echo ''
 
 echo Zipping....
 zip -r discodos.zip discodos
 cd ..
 move dist\discodos.zip .
-
-
-
 
