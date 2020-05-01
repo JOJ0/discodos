@@ -3,7 +3,7 @@
 VERSION='1.0-rc0'
 
 if [[ $OSTYPE == "darwin"* ]]; then
-    OS="MacOSX"
+    OS="macOS"
     SED_OPT="-s /^dist/discodos/"
 else
     OS="Linux" # FIXME check for family (eg ubuntu 18 alike)
