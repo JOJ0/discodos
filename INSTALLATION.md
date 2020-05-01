@@ -5,6 +5,7 @@ There are two ways of installing DiscoDOS:
 - Release version (get a program that just works, is easy to install and well tested)
 - Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. I usually try to keep things stable in the master branch. I use it myself on my production database, so it just has to work. Seldomely there will be major bugs that really could corrupt your data. In any case make sure you use DiscoDOS' neet built-in backup/sync feature!)
 
+
 ## Install a release version
 
 basically the steps on every OS are similar:
@@ -17,7 +18,46 @@ basically the steps on every OS are similar:
   * a local database will be initialized (the DiscoBASE)
   * DiscoDOS CLI tools will be set up for your user environment
 
+
 ### Windows
+
+download the latest Windows package from the
+[release page](https://github.com/JOJ0/discodos/releases)
+
+unpack - it contains a folder named `discodos`.
+
+You can move the `discodos` folder whereever you like on your sytem. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home" (`c:\Users\your_name\discodos`). It sometimes is assumed to be at this place in the DiscoDOS documentation and it's easy to navigate into it: Fire up cmd.exe - you are in your home - cd into discodos folder.
+
+Assuming your discodos folder resides directly in your home folder - start a command prompt window (start button - cmd.exe - enter). Change into the discodos folder and see what's in there:
+
+```
+cd discodos
+dir
+```
+
+You should see 3 files: `cli.exe`, `winconfig.exe` and `sync.exe`
+
+Launch DiscoDOS setup (winconfig.exe) - carefully read the output - a file named config.yaml should have been created for you:
+
+```
+winconfig
+dir
+```
+
+Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access)
+
+Launch DiscoDOS setup again - a local database will be created for you and the command line tools created:
+
+`./winconfig`
+
+Start using DiscoDOS by double clicking the newly created batch file `discoshell.bat` - make a shortcut to it on your Desktop.
+
+If you have any troubles or questions arise, please read chapter [Initialize the database and set up the CLI tools](#initialize-the-database-and-set-up-the-cli-tools), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
+
+Launch the `disco` command - if the connection to your Discogs collection is working it will ask you to launch a little tutorial teaching you how it works - answer the question with "y" and follow the steps.
+
+Your starting point for further documentation is the [README](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection) page.
+
 
 ### macOS/Linux
 
@@ -29,11 +69,11 @@ unpack - on a Mac just double click the tar.gz file, it will extract a folder na
 ```
 cd Downloads
 ls -l discodos*
-tar xvzf discodos-1.0-rc1-macOS.tar.gz 
+tar xvzf discodos-1.0-rc1-macOS.tar.gz
 ls -l discodos
 ```
 
-You can move the `discodos` folder whereever you like on your sytem. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home" (on a Mac: `/Users/your_name/discodos`). It sometimes is assumed to be at this place in the DiscoDOS documentation and it's easy to navigate into it: Fire up terminal app - you are in your home - cd into discodos folder. 
+You can move the `discodos` folder whereever you like on your sytem. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home" (on a Mac: `/Users/your_name/discodos`). It sometimes is assumed to be at this place in the DiscoDOS documentation and it's easy to navigate into it: Fire up terminal app - you are in your home - cd into discodos folder.
 
 If you'd like to quickly move it using the terminal, do something like this (assuming you are still in your `Downloads` folder - see commands above). Then also change right into the discodos dir to get started:
 
@@ -121,6 +161,7 @@ There is two more commands you should be able to run by now:
 
 To finally really make DiscoDOS useful continue with the (final) setup chapter below.
 
+
 ## Configure Discogs API access
 
 To access your Discogs collection you need to generate an API login token and put it into the configuration file.
@@ -139,7 +180,6 @@ To access your Discogs collection you need to generate an API login token and pu
 - Save and close the file
 
 If you've made it through here, [start using DiscoDOS](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection)
-
 
 
 ## Install a development version
@@ -170,6 +210,7 @@ During the Python setup on Windows choose "Customize installation" and select th
 - py launcher
 - Associate files with Python (requires the py launcher)
 - Add Python to environment variables
+
 
 ### Windows
 
