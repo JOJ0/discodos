@@ -13,19 +13,70 @@ basically the steps on every OS are similar:
 * unpack
 * launch DiscoDOS setup - a config file will be created
 * configure Discogs API access
-* launch DiscoDOS setup again to
+* launch DiscoDOS setup again
   * a local database will be initialized (the DiscoBASE)
   * DiscoDOS CLI tools will be set up for your user environment
 
-### MacOS/Linux
-
 ### Windows
+
+### macOS/Linux
+
+download the latest macOS or Linux package from the
+[release page](https://github.com/JOJ0/discodos/releases)
+
+unpack - on a Mac just double click the tar.gz file, it will extract a folder named `discodos`. If you would like to do it on the terminal, do something like this:
+
+```
+cd Downloads
+ls -l discodos*
+tar xvzf discodos-1.0-rc1-macOS.tar.gz 
+ls -l discodos
+```
+
+You can move the `discodos` folder whereever you like on your sytem. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home" (on a Mac: `/Users/your_name/discodos`). It sometimes is assumed to be at this place in the DiscoDOS documentation and it's easy to navigate into it: Fire up terminal app - you are in your home - cd into discodos folder. 
+
+If you'd like to quickly move it using the terminal, do something like this (assuming you are still in your `Downloads` folder - see commands above). Then also change right into the discodos dir to get started:
+
+```
+mv discodos ~/
+cd
+cd discodos
+ls -l
+```
+
+You should see 3 files: `cli`, `setup` and `sync`
+
+Launch setup - carefully read the output - a file named config.yaml should have been created for you:
+
+```
+./setup
+ls -l
+```
+
+Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access)
+
+Launch setup again - a local database will be created for you and the command line tools created:
+
+`./setup`
+
+As a last step, execute the following provided script to customize the CLI tools for your user environment:
+
+`./install_wrappers_to_path.sh`
+
+If you have any troubles or questions arise, please read chapter [Initialize the database and set up the CLI tools](#initialize-the-database-and-set-up-the-cli-tools), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
+
+If everything seems fine, launch the `disco` command - if the connection to your Discogs collection is working it will ask you to launch a little tutorial teaching you how it works - answer the question with "y" and follow the steps.
+
+Your starting point for further documentation is the [README](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection) page.
+
 
 ## Initialize the database and set up the CLI tools
 
+If you have followed the installation steps in above chapters already, you don't have to read through this chapter. It points out what exactly the DiscoDOS setup script does and explains operating system differences. If you had any troubles with above installation steps, it makes sense your read through here though.
+
 _**Make sure you are in DiscoDOS' root folder (usually: `your_homefolder/discodos`)**_
 
-Now launch setup and carefully read the output (add .py if installing development version).
+Launch setup and carefully read the output (add .py if installing development version).
 
 `./setup`
 
@@ -37,7 +88,9 @@ Hints if you are about to set up the development version:
 * Also on Windows it could happen that *py launcher* is not properly installed - Work around this issue by launching setup.py with python.exe:
   `python setup.py`
 
-On first launch, the setup script does several things:
+On first launch the setup script just creates a config file for you named `config.yaml`
+
+On second launch it does several things:
 
 - it creates an empty database -> you should find a file named `discobase.db` in your discodos folder.
 - it sets up the DiscoDOS CLI commands
@@ -120,7 +173,7 @@ During the Python setup on Windows choose "Customize installation" and select th
 
 ### Windows
 
-_Skip this chapter if you are on MacOS X or Linux!_
+_Skip this chapter if you are on macOS or Linux!_
 
 Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
 
