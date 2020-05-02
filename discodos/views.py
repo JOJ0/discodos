@@ -316,8 +316,7 @@ class View_common_cli(View_common):
                        'key': 'Key', 'bpm': 'BPM'}))
 
     def duration_stats(self, start_time, msg):
-        #took_seconds = time() - start_time
-        took_seconds = 87445
+        took_seconds = time() - start_time
         if took_seconds >= 86400:
             days_part = "{days} days "
         else:
