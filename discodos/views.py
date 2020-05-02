@@ -6,6 +6,7 @@ import pprint
 from datetime import datetime
 from datetime import date
 from time import time
+from datetime import timedelta
 
 
 # common view utils, usable in CLI and GUI
@@ -222,6 +223,12 @@ class View_common(ABC):
         links_str = join_sep(links, '\n')
         return links_str
 
+    def strfdelta(self, tdelta, fmt):
+        d = {"days": tdelta.days}
+        d["hours"], rem = divmod(tdelta.seconds, 3600)
+        d["minutes"], d["seconds"] = divmod(rem, 60)
+        return fmt.format(**d)
+
 
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
 class Mix_view_common(ABC):
@@ -309,8 +316,14 @@ class View_common_cli(View_common):
                        'key': 'Key', 'bpm': 'BPM'}))
 
     def duration_stats(self, start_time, msg):
-        took_seconds = time() - start_time
-        took_str = datetime.fromtimestamp(took_seconds).strftime('%Mm %Ss')
+        #took_seconds = time() - start_time
+        took_seconds = 87445
+        if took_seconds >= 86400:
+            days_part = "{days} days "
+        else:
+            days_part = ""
+        took_str = self.strfdelta(timedelta(seconds=took_seconds),
+          days_part+"{hours} hours {minutes} minutes {seconds} seconds")
         msg_took = "{} took {}".format(msg, took_str)
         log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
         log.info('CTRLS: {}'.format(msg_took))
