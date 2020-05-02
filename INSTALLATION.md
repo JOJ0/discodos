@@ -35,18 +35,11 @@ cd discodos
 dir
 ```
 
-You should see 3 files: `cli.exe`, `winconfig.exe` and `sync.exe`
-
-Launch DiscoDOS setup (winconfig.exe) - carefully read the output - a file named config.yaml should have been created for you:
-
-```
-winconfig
-dir
-```
+You should see 4 files: `cli.exe`, `winconfig.exe`, `sync.exe` and `config.yaml`
 
 Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access)
 
-Launch DiscoDOS setup again - a local database will be created for you and the command line tools created:
+Launch DiscoDOS setup - a local database will be created for you and the command line tools created:
 
 `./winconfig`
 
@@ -84,18 +77,11 @@ cd discodos
 ls -l
 ```
 
-You should see 3 files: `cli`, `setup` and `sync`
-
-Launch setup - carefully read the output - a file named config.yaml should have been created for you:
-
-```
-./setup
-ls -l
-```
+You should see 3 files: `cli`, `setup`, `sync` and `config.yaml`
 
 Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access)
 
-Launch setup again - a local database will be created for you and the command line tools created:
+Launch DiscoDOS setup - a local database will be created for you and the command line tools created:
 
 `./setup`
 
@@ -147,9 +133,9 @@ Hints if you are about to set up the development version:
 * Also on Windows it could happen that *py launcher* is not properly installed - Work around this issue by launching setup.py with python.exe:
   `python setup.py`
 
-On first launch the setup script just creates a config file for you named `config.yaml`
+On **first launch** the setup script just creates a config file for you named `config.yaml (release versions have `config.yaml` included already in the package, so this step doesn't apply and step two below immediatly happens!`)
 
-On second launch it does several things:
+On **second launch** it does several things:
 
 - it creates an empty database -> you should find a file named `discobase.db` in your discodos folder.
 - it sets up the DiscoDOS CLI commands
