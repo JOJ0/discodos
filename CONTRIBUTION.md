@@ -1,7 +1,7 @@
 
 # DiscoDOS Contribution
 
-If you'd like to contribute to DiscoDOS deveopment you will most likely want to install the development version.
+If you'd like to contribute to DiscoDOS development or just want the most "bleeding edge" version, you will most likely want to install it tracking this repos master branch or your forks master branch. Follow the guides in this document to achieve that.
 
 ## Install a development version
 
