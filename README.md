@@ -1,5 +1,5 @@
+# DiscoDOS README
 ```
-DiscoDOS README
                 _______  _______ ________
                /       \        /       /
               /  ___   /  ___  /  _____/
