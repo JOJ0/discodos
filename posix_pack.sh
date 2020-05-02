@@ -22,4 +22,7 @@ pyinstaller setup.py --onefile --name setup --clean -y -p ~/.venvs/discodos_pack
 
 pyinstaller sync.py --onefile --name sync --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
 
-tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/cli dist/setup dist/sync
+# run _once_ to create config.yaml
+dist/cli
+
+tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/cli dist/setup dist/sync dist/config.yaml
