@@ -133,8 +133,39 @@ Learn more about this function in the [mix command section](#the-mix-command).
 
 _**Note: Currently DiscoDOS rating analysis system is not finished. This will be coming in future version. As a preparations for this feature, you only are allowed to put these character combinations into the trans_rating field: ++, +, ~, -, --**_
 
+### I'd like to get as much information about my music as possible - in one go!
 
+As you've probably learned already, DiscoDOS doesn't import all information about a record collection at once but rather "on user request". Eg. single tracks or whole mixes can be asked to be filled in with additional data from Discogs or AcousticBrainz. When dealing with record collections containing hundreds or even thousands of records, obviously working through all of them via the APIs of online information services takes a lot of time, but certainly DiscoDOS can be asked to do it:
 
+To make a full import of your whole record collection from Discogs (all releases INCLUDING all tracks on them) execute:
+
+`disco import --tracks`
+
+_**Note: This command can also be used for an initial import (you just started using DiscoDOS - DiscoBASE is still empty).**_
+
+_**1000 records including a total of 3000 tracks complete in about 20 minutes**_
+
+To get additional data from MusicBrainz and AcousticBrainz (key, BPM, weblinks to release- and recordingpages), execute:
+
+`disco import --zz`
+
+_**Note: This command requires the import-tracks command above, being completed already.**_
+
+_**This process will take hours and hours, depending on the size of your collection**_
+
+Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](#The-import-command). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
+
+Here's a trick to execute both commands one after the other. We use the "command concatination" features of our shell:
+
+On Windows, do:
+
+`disco import --tracks  &  disco import -zz`
+
+on macOS or Linux it's:
+
+`disco import --tracks  &&  disco import -zz`
+
+Leave this running "overnight" - You will see a final summary after each of the commands completes, telling you the exact time it was running and how much information was processed and imported. If you'd like to help improve this manual, copy/paste your stats into a [Github issue](https://github.com/JOJ0/discodos/issues), it would help me a lot to state more accurate estimates here.
 
 
 ## Command Reference
