@@ -41,11 +41,11 @@ Configure access to your Discogs collection as described in chapter [Configure D
 
 Launch DiscoDOS setup - a local database will be created for you and the command line tools created:
 
-`./winconfig`
+`winconfig`
 
 Start using DiscoDOS by double clicking the newly created batch file `discoshell.bat` - make a shortcut to it on your Desktop.
 
-If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup-troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
+If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
 
 Launch the `disco` command - if the connection to your Discogs collection is working it will ask you to launch a little tutorial teaching you how it works - answer the question with "y" and follow the steps.
 
@@ -89,7 +89,7 @@ As a last step, execute the following provided script to customize the CLI tools
 
 `./install_wrappers_to_path.sh`
 
-If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup-troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
+If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
 
 If everything seems fine, launch the `disco` command - if the connection to your Discogs collection is working it will ask you to launch a little tutorial teaching you how it works - answer the question with "y" and follow the steps.
 
@@ -107,13 +107,18 @@ To access your Discogs collection you need to generate an API login token and pu
 - Switch to section _Developers_
 - Click _Generate new token_
 - Open the file `config.yaml` (inside the discodos root folder, next to the files `setup.py` and `cli.py`) and copy/paste the generated Discogs token into it:
+  - on Windows right click the file - select "Open With" - choose "Notepad" - paste token to the right place (as shown below).
+  - on Mac secondary click/tab (two fingers) - select "Open With" - chooose "TextEdit.app" - paste token to the right place (as shown below).
+
+The line in config.yaml should look something like this then (watch out for the surrounding quotes):
 
  ```
  discogs_token: 'XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH'
  ```
 
 - Save and close the file
-
+- Jump back to [Windows installation chapter](#windows)
+- Jump back to [macOS/Linux installation chapter](#macoslinux)
 
 ## DiscoDOS Setup - Troubleshooting
 

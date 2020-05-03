@@ -66,7 +66,7 @@ Install the necessary dependencies into your environment!
 
 `pip install -r "%HOMEPATH%/discodos/requirements.txt"`
 
-Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#initialize-the-database-and-set-up-the-cli-tools), then [configure Discogs API access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access)
+Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs API access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access)
 
 
 ### Linux / MacOS
@@ -98,5 +98,5 @@ Install the necessary dependencies into your environment!
 
 `pip install -r ~/discodos/requirements.txt`
 
-Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#initialize-the-database-and-set-up-the-cli-tools), then [configure Discogs API access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access)
+Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs API access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access)
 
