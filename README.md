@@ -1,4 +1,5 @@
-# DiscoDOS README
+<!-- omit in toc -->
+# DiscoDOS Readme and User's Manual
 ```
                 _______  _______ ________
                /       \        /       /
@@ -16,10 +17,42 @@ DiscoDOS currently is available as a command line tool only, though prototypes o
 
 This should give you an idea on how it looks and feels (your screen is not broken, these animated gifs are very low quality to make them load quickly):
 
+
+
+<!-- omit in toc -->
 ##### Viewing mix details, searching and adding track:
 ![demo gif 1](assets/intro_gif_v0.4_1-580_16col_960x600.gif)
+<!-- omit in toc -->
 ##### Updating track information from Discogs and MusicBrainz/AcousticBrainz:
 ![demo gif 2](assets/intro_gif_v0.4_580-end_16col_960x600.gif)
+
+
+
+- [Installation](#installation)
+- [Importing your Discogs collection](#importing-your-discogs-collection)
+- [Basic Usage Tutorial](#basic-usage-tutorial)
+- [Common Tasks](#common-tasks)
+  - [I got a new record and want to put it into DiscoDOS](#i-got-a-new-record-and-want-to-put-it-into-discodos)
+  - [I'm stuck in a mix](#im-stuck-in-a-mix)
+  - [I'd like to quickly rate my transitions](#id-like-to-quickly-rate-my-transitions)
+  - [I'd like to get as much information about my music as possible - in one go!](#id-like-to-get-as-much-information-about-my-music-as-possible---in-one-go)
+- [Command Reference](#command-reference)
+  - [General things about command line tools](#general-things-about-command-line-tools)
+  - [*disco* command](#disco-command)
+    - [*disco* global switches](#disco-global-switches)
+  - [The *disco* subcommands](#the-disco-subcommands)
+  - [The *mix* command](#the-mix-command)
+  - [The *suggest* command](#the-suggest-command)
+  - [The *import* command](#the-import-command)
+  - [The *search* command](#the-search-command)
+    - [*search* command actions](#search-command-actions)
+    - [*search* action "edit track"](#search-action-edit-track)
+    - [*search* action "add track to mix"](#search-action-add-track-to-mix)
+    - [*search* action "update from discogs"](#search-action-update-from-discogs)
+    - [*search* action "update from brainz"](#search-action-update-from-brainz)
+
+
+
 
 ## Installation
 
