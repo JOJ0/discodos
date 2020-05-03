@@ -36,6 +36,7 @@ This should give you an idea on how it looks and feels (your screen is not broke
   - [I'm stuck in a mix](#im-stuck-in-a-mix)
   - [I'd like to quickly rate my transitions](#id-like-to-quickly-rate-my-transitions)
   - [I'd like to get as much information about my music as possible - in one go!](#id-like-to-get-as-much-information-about-my-music-as-possible---in-one-go)
+  - [I'd like to use my DiscoBASE on multiple computers](#id-like-to-use-my-discobase-on-multiple-computers)
 - [Command Reference](#command-reference)
   - [General things about command line tools](#general-things-about-command-line-tools)
   - [*disco* command](#disco-command)
@@ -199,6 +200,51 @@ on macOS or Linux it's:
 `disco import --tracks  &&  disco import -zz`
 
 Leave this running "overnight" - You will see a final summary after each of the commands completes, telling you the exact time it was running and how much information was processed and imported. If you'd like to help improve this manual, copy/paste your stats into a [Github issue](https://github.com/JOJ0/discodos/issues), it would help me a lot to state more accurate estimates here.
+
+### I'd like to use my DiscoBASE on multiple computers
+
+DiscoDOS includes a built-in backup and restore feature that can also be used to sync a DiscoBASE between multiple computers. Currently the backup process is not fully automatic, this will be improved in future releases.
+
+We need a place to store our discobase.db file online. Currently there are two options:
+- Dropbox
+- A webdav-enabled folder on a webserver
+
+This section will describe how to use Dropbox only, find the webserver option documented here: FIXME
+
+To allow DiscoDOS access to your Dropbox account you need an access token. To obtain it do the following:
+
+- We need to create a new "Dropbbox App" in your account: https://www.dropbox.com/developers/apps/create
+- Step 1: "Choose an API" - select "Dropbox API"
+- Step 2: "Choose the type of access you need" - select "App folder"
+- Step 3: "Name your app" - enter "discodos"
+- Click "Create app"
+- Scroll down to section "OAuth 2" - Click the "Generate" button right below "Generated access token"
+- Double click and copy the token to the clipboard
+- Put the token into the config.yaml file on all the computers you would like to use this DiscoBASE.
+  - open with TextEdit.app on Mac
+  - open with Notepad on Windows.
+
+The line in config.yaml should then look something like this (watch out for the surrounding quotes):
+
+```
+dropbox_token: 'abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz'
+```
+
+To backup your DiscoBASE, execute:
+
+`discosync --backup` or in short `discosync -b`
+
+To restore it on another computer, execute:
+
+`discosync --restore` or in short `discosync -r`
+
+The sync feature works with timestamps in the background. It will never backup a file that has been already backuped up. Even if the file has been shared to another computer, it will only be overwritten if its contents has been changed. This is to reduce the amount of (useless) backup files in your dropbox account.
+
+Certainly you can also access these files via the Dropbox webinterface - Click the "discodos" app on the home screen - you will find a subfolder "discodos" containing all your backed up DiscoBASE files. The format of files always is "database_name_YYYY-MM-DD_HHMM.db"
+
+_**Note: Certainly you can use this feature to backup and restore your DiscoBASE on one computer only. The commands are the same**_
+
+
 
 
 ## Command Reference
