@@ -126,9 +126,13 @@ If you have followed the installation steps in above chapters already, you don't
 
 _**Make sure you are in DiscoDOS' root folder (usually: `your_homefolder/discodos`)**_
 
-Launch setup and carefully read the output (add .py if installing development version).
+Launch DiscoDOS setup and carefully read the output (add .py if installing development version)
 
 `./setup`
+
+On Windows, DiscoDOS setup is launched like this:
+
+`winconfig.exe`
 
 Hints if you are about to set up the development version:
 
@@ -138,21 +142,20 @@ Hints if you are about to set up the development version:
 * Also on Windows it could happen that *py launcher* is not properly installed - Work around this issue by launching setup.py with python.exe:
   `python setup.py`
 
-On **first launch** the setup script just creates a config file for you named `config.yaml (release versions have `config.yaml` included already in the package, so this step doesn't apply and step two below immediatly happens!`)
+On **first launch**, setup just creates a config file for you named `config.yaml` (release versions have this file included already in the package, so this step doesn't apply and step two below immediately happens!`)
 
-On **second launch** it does several things:
+On **second launch**, it does several things:
 
 - it creates an empty database -> you should find a file named `discobase.db` in your discodos folder.
 - it sets up the DiscoDOS CLI commands
   - Linux/MacOS -> files `disco` `discosetup`, `discosync` and `install_wrappers_to_path.sh` in your discodos folder.
   - Windows -> files `disco.bat`, `discosetup.bat`, `discosync.bat` and `discoshell.bat`
-- a configuration file will be created -> `config.yaml`
 
 _**If setup ran through you can try launching `disco` for the first time :-)**_
 
 On **Windows** your starting point always is double-clicking `discoshell.bat` first. A new command prompt window named "DiscoDOS shell" is opened and the "Virtual Python Environment", DiscoDOS needs to function, is activated. Once inside the shell, execute CLI commands via the `disco.bat` wrapper. As usual on Windows systems you can leave out the `.bat` ending and just type `disco`.
 
-On **Linux and MacOS** the workflow is slightly different: To execute DiscoDOS commands, fire up your favorite terminal application and just type `./disco`. (Note if using the development version: This wrapper script also takes care of activating the "Virtual Python Environment"). To conveniently use the `disco` command from everywhere on your system, execute the provided script `./install_wrappers_to_path.sh`
+On **Linux and macOS** the workflow is slightly different: To execute DiscoDOS commands, fire up your favorite terminal application and just type `./disco`. (Note if using the development version: This wrapper script also takes care of activating the "Virtual Python Environment"). To conveniently use the `disco` command from everywhere on your system, execute the provided script `./install_wrappers_to_path.sh`
 
 _The following commands assume that, depending on your OS, you are either inside the DiscoDOS shell window or `disco` is being found via the PATH variable (because you've launched `installed_wrappers_to_path.sh` already)._
 
@@ -167,7 +170,7 @@ View your (empty) mix.
 There is two more commands you should be able to run by now:
 
 * `discosetup` - this is just a wrapper to the setup script you just executed above, you will use it seldomly, it's used for future DiscoDOS updates and fixing things.
-* `discosync` - this is the DiscoDOS backup script - you can also use it to sync the database file between different computers (either via dropbox or a webdav enabled folder on a webserver)
+* `discosync` - this is the DiscoDOS backup & sync tool - you can also use it to sync the database file between different computers (either via dropbox or a webdav enabled folder on a webserver)
 
 
 
