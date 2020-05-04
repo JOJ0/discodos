@@ -173,6 +173,38 @@ There is two more commands you should be able to run by now:
 * `discosync` - this is the DiscoDOS backup & sync tool - you can also use it to sync the database file between different computers (either via dropbox or a webdav enabled folder on a webserver)
 
 
+## _discosync_ - The DiscoDOS backup & sync tool
 
+discosync is used to save the DiscoBASE in the cloud and restore it if something went wrong. It also can be used to share a DiscoBASE between multiple computers. There are currently two options, the backups can be saved to:
 
+* Dropbbox
+* A folder on a webserver (webdav must be enabled)
 
+### Configure Dropbox Access for _discosync_
+
+To prepare your Dropbox account and DiscoDOS configuration, do the following:
+
+- We need to create a new "Dropbbox App" in your account: https://www.dropbox.com/developers/apps/create
+- Step 1: "Choose an API" - select "Dropbox API"
+- Step 2: "Choose the type of access you need" - select "App folder"
+- Step 3: "Name your app" - enter "discodos"
+- Click "Create app"
+- Scroll down to section "OAuth 2" - Click the "Generate" button right below "Generated access token"
+- Double click and copy the token to the clipboard
+- Put the token into the config.yaml file on all the computers you would like to use this DiscoBASE.
+  - open with TextEdit.app on Mac
+  - open with Notepad on Windows.
+
+The line in config.yaml should then look something like this (watch out for the surrounding quotes):
+
+```
+dropbox_token: 'abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz'
+```
+
+- Jump back to [I'd like to use my DiscoBASE on multiple computers](README.md#id-like-to-use-my-discobase-on-multiple-computers)
+
+If you want to delete your Dropbox app again or generate a new token because you lost it, go to the [Dropbox app console](https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps).
+
+The sync feature works with timestamps in the background. It will never backup a file that has been already backuped up. Even if the file has been shared to another computer, it will only be overwritten if its contents has been changed. This is to reduce the amount of (useless) backup files in your dropbox account.
+
+Certainly you can also access these files via the Dropbox webinterface - Click the "discodos" app on the home screen - you will find a subfolder "discodos" containing all your backed up DiscoBASE files. The format of files always is "database_name_YYYY-MM-DD_HHMM.db"

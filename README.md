@@ -203,32 +203,15 @@ Leave this running "overnight" - You will see a final summary after each of the 
 
 ### I'd like to use my DiscoBASE on multiple computers
 
-DiscoDOS includes a built-in backup and restore feature that can also be used to sync a DiscoBASE between multiple computers. Currently the backup process is not fully automatic, this will be improved in future releases.
+DiscoDOS includes a built-in backup and restore feature that can also be used to sync a DiscoBASE between multiple computers.
 
 We need a place to store our discobase.db file online. Currently there are two options:
 - Dropbox
-- A webdav-enabled folder on a webserver
+- A folder on a webserver
 
 This section will describe how to use Dropbox only, find the webserver option documented here: FIXME
 
-To allow DiscoDOS access to your Dropbox account you need an access token. To obtain it do the following:
-
-- We need to create a new "Dropbbox App" in your account: https://www.dropbox.com/developers/apps/create
-- Step 1: "Choose an API" - select "Dropbox API"
-- Step 2: "Choose the type of access you need" - select "App folder"
-- Step 3: "Name your app" - enter "discodos"
-- Click "Create app"
-- Scroll down to section "OAuth 2" - Click the "Generate" button right below "Generated access token"
-- Double click and copy the token to the clipboard
-- Put the token into the config.yaml file on all the computers you would like to use this DiscoBASE.
-  - open with TextEdit.app on Mac
-  - open with Notepad on Windows.
-
-The line in config.yaml should then look something like this (watch out for the surrounding quotes):
-
-```
-dropbox_token: 'abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz'
-```
+To allow DiscoDOS access to your Dropbox account you need an access token. To obtain it follow the steps in chapter [Configure Dropbox Access for _discosync_](INSTALLATION.md#configure-dropbox-access-for-discosync), then come back here.
 
 To backup your DiscoBASE, execute:
 
@@ -237,10 +220,6 @@ To backup your DiscoBASE, execute:
 To restore it on another computer, execute:
 
 `discosync --restore` or in short `discosync -r`
-
-The sync feature works with timestamps in the background. It will never backup a file that has been already backuped up. Even if the file has been shared to another computer, it will only be overwritten if its contents has been changed. This is to reduce the amount of (useless) backup files in your dropbox account.
-
-Certainly you can also access these files via the Dropbox webinterface - Click the "discodos" app on the home screen - you will find a subfolder "discodos" containing all your backed up DiscoBASE files. The format of files always is "database_name_YYYY-MM-DD_HHMM.db"
 
 _**Note: Certainly you can use this feature to backup and restore your DiscoBASE on one computer only. The commands are the same**_
 
