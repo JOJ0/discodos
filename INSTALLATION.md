@@ -20,8 +20,7 @@ basically the steps on every OS are similar:
 
 ### Windows
 
-download the latest Windows package from the
-[release page](https://github.com/JOJ0/discodos/releases)
+download the latest Windows package from the [release page](https://github.com/JOJ0/discodos/releases)
 
 unpack - it contains a folder named `discodos`.
 
@@ -48,7 +47,7 @@ Launch the `disco` command - if the connection to your Discogs collection is wor
 
 If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script (winconfig.exe) does and what differences there are between operating systems.
 
-Further documentation about how to use DiscoDOS is found in the [README and User's manual page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection) page. Your next step will be to import your Discogs collection.
+Your starting point for further documentation is the [Readme and User's manual page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next step will be to import your Discogs collection.
 
 
 ### macOS/Linux
@@ -56,44 +55,39 @@ Further documentation about how to use DiscoDOS is found in the [README and User
 download the latest macOS or Linux package from the
 [release page](https://github.com/JOJ0/discodos/releases)
 
-unpack - on a Mac just double click the tar.gz file, it will extract a folder named `discodos`. If you would like to do it on the terminal, do something like this:
+unpack - on a Mac just double click the tar.gz file, it will extract a folder named `discodos`. On Linux do something like this:
 
 ```
-cd Downloads
-ls -l discodos*
 tar xvzf discodos-1.0-rc1-macOS.tar.gz
 ls -l discodos
 ```
 
-You can move the `discodos` folder whereever you like on your sytem. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home" (on a Mac: `/Users/your_name/discodos`). It sometimes is assumed to be at this place in the DiscoDOS documentation and it's easy to navigate into it: Fire up terminal app - you are in your home - cd into discodos folder.
+You can move the `discodos` folder whereever you like on your sytem. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home folder" (on a Mac: `/Users/your_name/discodos`).
 
-If you'd like to quickly move it using the terminal, do something like this (assuming you are still in your `Downloads` folder - see commands above). Then also change right into the discodos dir to get started:
+Assuming your discodos folder resides directly in your home folder, start a terminal, if you haven't already (on Mac: Applications - Utilities - Terminal.app). Jump right into the discodos folder and see what's in there:
 
 ```
-mv discodos ~/
-cd
 cd discodos
 ls -l
 ```
 
 You should see 3 files: `cli`, `setup`, `sync` and `config.yaml`
 
-Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access)
-
-Launch DiscoDOS setup - a local database will be created for you and the command line tools created:
+Launch DiscoDOS setup - a local **database** (the so-called DiscoBASE) and **some additional files** (the so-called DiscoDOS command line tools) will be created. Type the following into your terminal window:
 
 `./setup`
 
-As a last step, execute the following provided script to customize the CLI tools for your user environment:
+Execute the following provided script to customize the CLI tools for your user environment:
 
 `./install_wrappers_to_path.sh`
 
-If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
+Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access), then come back here!
 
 If everything seems fine, launch the `disco` command - if the connection to your Discogs collection is working it will ask you to launch a little tutorial teaching you how it works - answer the question with "y" and follow the steps.
 
-Your starting point for further documentation is the [README](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection) page.
+If you have any troubles or questions arise, please read chapter [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting), it is an in-detail explanation of what the DiscoDOS setup script does and what differences there are between operating systems.
 
+Your starting point for further documentation is the [Readme and User's manual page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next step will be to import your Discogs collection.
 
 
 ## Configure Discogs API access
