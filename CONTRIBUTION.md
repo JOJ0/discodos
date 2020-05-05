@@ -1,9 +1,15 @@
-
+<!-- omit in toc -->
 # DiscoDOS Contribution
+
+- [Install development version](#install-development-version)
+  - [Prerequisites](#prerequisites)
+  - [Windows](#windows)
+  - [Linux / MacOS](#linux--macos)
+
 
 If you'd like to contribute to DiscoDOS development or just want the most "bleeding edge" version, you will most likely want to install it tracking this repos master branch or your forks master branch. Follow the guides in this document to achieve that.
 
-## Install a development version
+## Install development version
 
 DiscoDOS is written entirely in Python. The majority of time, it was coded on a MacOS X 10.13 machine with Python installed via homebrew, thus it's tested well on this platform. There are some users happily using it on Winodws 10 already. I myself also regularily use it on Linux machines too, and it seems to work as good as on my Mac.
 
@@ -66,7 +72,7 @@ Install the necessary dependencies into your environment!
 
 `pip install -r "%HOMEPATH%/discodos/requirements.txt"`
 
-Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs API access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access)
+Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs collection access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-collection-access)
 
 
 ### Linux / MacOS
@@ -98,5 +104,5 @@ Install the necessary dependencies into your environment!
 
 `pip install -r ~/discodos/requirements.txt`
 
-Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs API access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access)
+Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs collection access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-collection-access)
 

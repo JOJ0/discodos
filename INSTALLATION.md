@@ -1,12 +1,27 @@
+<!-- omit in toc -->
 # DiscoDOS Installation
+
+- [Install released version](#install-released-version)
+  - [Windows](#windows)
+  - [macOS/Linux](#macoslinux)
+- [Configure Discogs collection access](#configure-discogs-collection-access)
+- [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting)
+- [_discosync_ - The DiscoDOS backup & sync tool](#discosync---the-discodos-backup--sync-tool)
+  - [Configure Dropbox Access for _discosync_](#configure-dropbox-access-for-discosync)
+  - [Configure a webserver folder for _discosync_](#configure-a-webserver-folder-for-discosync)
+  - [Using _discosync_](#using-discosync)
+    - [Backup](#backup)
+    - [Viewing existing backups](#viewing-existing-backups)
+    - [Restore](#restore)
+
 
 There are two ways of installing DiscoDOS:
 
-- Release version (get a program that just works, is easy to install and well tested)
-- Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. I usually try to keep things stable in the master branch. I use it myself on my production database, so it just has to work. Seldomely there will be major bugs that really could corrupt your data. In any case make sure you use DiscoDOS' neet built-in backup/sync feature!). There is a separate document about [installing the dev-version](https://github.com/JOJ0/discodos/blob/master/CONTRIBUTION.md).
+- Released version (get a program that just works, is easy to install and well tested)
+- Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. I usually try to keep things stable in the master branch. I use it myself on my production database, so it just has to work. Seldomely there will be major bugs that really could corrupt your data. In any case make sure you use DiscoDOS' neet built-in backup/sync feature!). There is a separate document about [installing the development version](https://github.com/JOJ0/discodos/blob/master/CONTRIBUTION.md).
 
 
-## Install a release version
+## Install released version
 
 basically the steps on every OS are similar:
 
@@ -15,7 +30,7 @@ basically the steps on every OS are similar:
 * launch DiscoDOS setup
   * a local database will be initialized (the DiscoBASE)
   * the DiscoDOS CLI tools will be set up for your user environment
-* configure Discogs API access
+* configure Discogs collection access
 
 
 ### Windows
@@ -39,7 +54,7 @@ Launch DiscoDOS setup - a local **database** (the so-called DiscoBASE) and **som
 
 `winconfig`
 
-Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access), then come back here!
+Configure access to your Discogs collection as described in chapter [Configure Discogs collection Access](#configure-discogs-collection-access), then come back here!
 
 Start using DiscoDOS by double clicking the newly created batch file `discoshell.bat` - make a shortcut to it on your Desktop.
 
@@ -81,7 +96,7 @@ Execute the following provided script to customize the CLI tools for your user e
 
 `./install_wrappers_to_path.sh`
 
-Configure access to your Discogs collection as described in chapter [Configure Discogs API Access](#configure-discogs-api-access), then come back here!
+Configure access to your Discogs collection as described in chapter [Configure Discogs collection access](#configure-discogs-collection-access), then come back here!
 
 If everything seems fine, launch the `disco` command - if the connection to your Discogs collection is working it will ask you to launch a little tutorial teaching you how it works - answer the question with "y" and follow the steps.
 
@@ -90,7 +105,7 @@ If you have any troubles or questions arise, please read chapter [DiscoDOS Setup
 Your starting point for further documentation is the [Readme and User's manual page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next step will be to import your Discogs collection.
 
 
-## Configure Discogs API access
+## Configure Discogs collection access
 
 To access your Discogs collection you need to generate an API login token and put it into the configuration file.
 
@@ -255,13 +270,17 @@ webdav_url: 'https://www.yourdomain.com/discodos/'
 
 Depending of your chosen way of saving backups (Dropbox or WebDAV) you have to launch `discosync` differently; Option -t selects which type of server should be accessed:
 
-`discosync -t dropbox ...`
-`discosync -t webdav ...`
+```
+discosync -t dropbox ...
+discosync -t webdav ...
+```
 
 The "types" can be abbreviated:
 
-`discosync -t d ...`
-`discosync -t w ...`
+```
+discosync -t d ...
+discosync -t w ...
+```
 
 
 #### Backup
@@ -270,20 +289,18 @@ The backup command is straight forward and does not require any user-interaction
 
 To backup to your **Dropbox**:
 
-`discosync -t d --backup` or short form  `discosync -t d -b`
+`discosync -t d --backup` or short form `discosync -t d -b`
 
 Dropbox currently is the hardcoded **default** "server type", so actually it's sufficient to run:
 
 `discosync -b`
 
-**Note: The default backup type might be configurable in future DiscoDOS releases**
+_**Note: The default backup type might be configurable in future DiscoDOS releases**_
 
 To backup to a **WebDAV folder**:
 
-`discosync -t w --backup` or short form  `discosync -t w -b`
+`discosync -t w --backup` or short form `discosync -t w -b`
 
-
-**Note: The default backup type might be configurable in future DiscoDOS releases**
 
 #### Viewing existing backups
 
