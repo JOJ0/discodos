@@ -113,6 +113,7 @@ The line in config.yaml should look something like this then (watch out for the 
 - Jump back to [Windows installation chapter](#windows)
 - Jump back to [macOS/Linux installation chapter](#macoslinux)
 
+
 ## DiscoDOS Setup - Troubleshooting
 
 If you have followed the installation steps in above chapters already, you don't have to read through this chapter. It points out what exactly the DiscoDOS setup script does and explains operating system differences. If you had any troubles with above installation steps, it makes sense your read through here though.
@@ -166,12 +167,19 @@ There is two more commands you should be able to run by now:
 * `discosync` - this is the DiscoDOS backup & sync tool - you can also use it to sync the database file between different computers (either via dropbox or a webdav enabled folder on a webserver)
 
 
+
+
 ## _discosync_ - The DiscoDOS backup & sync tool
 
-discosync is used to save the DiscoBASE in the cloud and restore it if something went wrong. It also can be used to share a DiscoBASE between multiple computers. There are currently two options, the backups can be saved to:
+`discosync` is used to save the DiscoBASE in the cloud and restore it if something went wrong. It also can be used to share it between multiple computers. There are currently two options, for storing the backups:
 
 * Dropbbox
 * A folder on a webserver (webdav must be enabled)
+
+`discosync` works with timestamps (local modification time) of the database file. It will never backup a file that has been already backuped up. Even if the file has been shared to another computer, it will only be overwritten if its contents was changed. This is to reduce the amount of (useless) backup files in your dropbox account or on your webserver.
+
+The format of files always is "database_name_YYYY-MM-DD_HHMMSS.db"
+
 
 ### Configure Dropbox Access for _discosync_
 
@@ -198,6 +206,106 @@ dropbox_token: 'abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz'
 
 If you want to delete your Dropbox app again or generate a new token because you lost it, go to the [Dropbox app console](https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps).
 
-The sync feature works with timestamps in the background. It will never backup a file that has been already backuped up. Even if the file has been shared to another computer, it will only be overwritten if its contents has been changed. This is to reduce the amount of (useless) backup files in your dropbox account.
+Certainly you can also access the backup files via the Dropbox webinterface - Click the "discodos" app on the home screen - you will find a subfolder "discodos" containing all your backed up DiscoBASE files.
 
-Certainly you can also access these files via the Dropbox webinterface - Click the "discodos" app on the home screen - you will find a subfolder "discodos" containing all your backed up DiscoBASE files. The format of files always is "database_name_YYYY-MM-DD_HHMM.db"
+
+### Configure a webserver folder for _discosync_
+
+If you don't like saving your stuff to Dropbox and happen to have your own personal webspace somewhere, `discosync` can use it to save backups. The folder needs to have these features enabled:
+
+- [WebDAV](#https://en.wikipedia.org/wiki/WebDAV)
+- Password restriction (HTTP Basic Access Authentication)
+
+Even though it is not mandatory, it is highly recommended to securily transport your password over the connection:
+
+- Webserver running SSL (https://...)
+
+Configuration steps may vary, if you can't do above configurations in your webhosters "configuration console" try contacting their support.
+
+If you have (root) access to your server and it's an Apache webserver, configuration of a suitable folder looks like this:
+
+```
+   <Directory /var/www/discodos/>
+      AllowOverride None
+      DAV On
+      AuthType "Basic"
+      AuthName "Restricted Area"
+      AuthBasicProvider file
+      AuthUserFile "/etc/apache2/.htaccess_discodos"
+      Require user my_discosync_user
+   </Directory>
+```
+
+To create the password file:
+
+```
+htpasswd -c /etc/apache2/.htaccess_discodos my_discosync_user
+```
+
+Test if access using username/password is working. Put the complete URL to your webserver folder into your webbrowers address bar: https://www.yourdomain.com/discodos/
+
+If everything's fine adjust your DiscoDOS configuration file (`config.yaml`)
+
+webdav_user: 'my_discosync_user'
+webdav_password: 'secret123'
+webdav_url: 'https://www.yourdomain.com/discodos/'
+
+
+### Using _discosync_
+
+Depending of your chosen way of saving backups (Dropbox or WebDAV) you have to launch `discosync` differently; Option -t selects which type of server should be accessed:
+
+`discosync -t dropbox ...`
+`discosync -t webdav ...`
+
+The "types" can be abbreviated:
+
+`discosync -t d ...`
+`discosync -t w ...`
+
+
+#### Backup
+
+The backup command is straight forward and does not require any user-interaction after launching:
+
+To backup to your **Dropbox**:
+
+`discosync -t d --backup` or short form  `discosync -t d -b`
+
+Dropbox currently is the hardcoded **default** "server type", so actually it's sufficient to run:
+
+`discosync -b`
+
+**Note: The default backup type might be configurable in future DiscoDOS releases**
+
+To backup to a **WebDAV folder**:
+
+`discosync -t w --backup` or short form  `discosync -t w -b`
+
+
+**Note: The default backup type might be configurable in future DiscoDOS releases**
+
+#### Viewing existing backups
+
+Dropbox:
+
+`discosync --show` or `discosync -s`
+
+WebDAV:
+
+`discosync -t w --show` or `discosync -t w -s`
+
+
+#### Restore
+
+Restoring your database from a backup is an interactive process - you will be asked which backup you'd like to restore and warned that your local discobase.db file would be overwritten.
+
+Dropbox:
+
+`discosync --restore` or `discosync -r`
+
+WebDAV:
+
+`discosync -t w --restore` or `discosync -t w -r`
+
+
