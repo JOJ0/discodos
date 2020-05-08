@@ -94,6 +94,9 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
+This chart gives some examples of what each subcommand can do:
+
+![Commands Chart](assets/discodos_cmds_v0.1.png)
 
 
 
@@ -110,7 +113,7 @@ Delete a mix (yes, it's a capital D):
 
 `disco mix my_mix -D`
 
-Copy a mix. You will be asked for the name of the copy. Note: --copy doesn't have a short form option):
+Copy a mix. You will be asked for the name of the copy. (Note: --copy doesn't have a short form option):
 
 `disco mix my_mix --copy`
 
@@ -134,7 +137,7 @@ Delete 3rd track in the mix:
 
 `disco mix my_mix -d 3`
 
-Bulk-edit selected fields of all tracks in a mix. You can cancel editing without data loss by using ctrl - c. Data is saved after each track.
+Bulk-edit selected fields of all tracks in a mix. You can cancel editing without data loss by pressing ctrl-c. Data is saved after each track.
 
 `disco mix my_mix -b trans_rating,bpm,key`
 
