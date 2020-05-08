@@ -108,13 +108,13 @@ Edit details of the third track in your mix:
 
 `disco mix my_mix -e 3`
 
-There is also a bulk-edit option to edit specific fields of all tracks in the mix. Read about it in the command reference section of [The mix command](#The-mix-command)
+There is also a bulk-edit option to edit specific fields of all tracks in the mix. Read about it in the command reference section of [The mix command](MANUAL.md#The-mix-command)
 
 Get additional data about your mix's tracks from MusicBrainz and AcousticBrainz (key, BPM, links):
 
 `disco mix my_mix -zz`
 
-Read more about the *Brainz update process here: [The import command](#The-import-command)
+Read more about the *Brainz update process here: [The import command](MANUAL.md#The-import-command)
 
 ## Common Tasks
 
@@ -131,7 +131,7 @@ Another option would be to let it show you a pool of tracks sharing similiar key
 
 `disco suggest -k Am -b 123`
 
-_**Note: If your tune(s) do not have key and BPM data yet, let them "match" with MusicBrainz first, by using the [update from brainz](#search-action-update-from-brainz) search action**_
+_**Note: If your tune(s) do not have key and BPM data yet, let them "match" with MusicBrainz first, by using the [update from brainz](MANUAL.md#search-action-update-from-brainz) search action**_
 
 ### I'd like to quickly rate my transitions
 
@@ -141,7 +141,7 @@ Use the bulk-edit function to change specific fields of your mix's tracks:
 
 `disco mix "the mix name" -b trans_rating,trans_notes`
 
-Learn more about this function in the [mix command section](#the-mix-command).
+Learn more about this function in the [mix command section](MANUAL.md#the-mix-command).
 
 _**Note: Currently DiscoDOS rating analysis system is not finished. This will be coming in future version. As a preparations for this feature, you only are allowed to put these character combinations into the trans_rating field: ++, +, ~, -, --**_
 
@@ -191,7 +191,7 @@ _**Note: This command requires the import-tracks command above, being completed 
 
 _**This process will take hours and hours, depending on the size of your collection**_
 
-Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](#The-import-command). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
+Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](MANUAL.md#The-import-command). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
 
 Here's a trick to execute both commands one after the other. We use the "command concatination" features of our shell:
 
