@@ -6,13 +6,9 @@
   - [macOS/Linux](#macoslinux)
 - [Configure Discogs collection access](#configure-discogs-collection-access)
 - [DiscoDOS Setup - Troubleshooting](#discodos-setup---troubleshooting)
-- [_discosync_ - The DiscoDOS backup & sync tool](#discosync---the-discodos-backup--sync-tool)
+- [Configure _discosync_ - The DiscoDOS backup & sync tool](#configure-discosync---the-discodos-backup--sync-tool)
   - [Configure Dropbox Access for _discosync_](#configure-dropbox-access-for-discosync)
   - [Configure a webserver folder for _discosync_](#configure-a-webserver-folder-for-discosync)
-  - [Using _discosync_](#using-discosync)
-    - [Backup](#backup)
-    - [Viewing existing backups](#viewing-existing-backups)
-    - [Restore](#restore)
 
 
 There are two ways of installing DiscoDOS:
@@ -184,12 +180,8 @@ There is two more commands you should be able to run by now:
 
 
 
-## _discosync_ - The DiscoDOS backup & sync tool
 
-`discosync` is used to save the DiscoBASE in the cloud and restore it if something went wrong. It also can be used to share it between multiple computers. There are currently two options, for storing the backups:
-
-* Dropbbox
-* A folder on a webserver (webdav must be enabled)
+## Configure _discosync_ - The DiscoDOS backup & sync tool
 
 `discosync` works with timestamps (local modification time) of the database file. It will never backup a file that has been already backuped up. Even if the file has been shared to another computer, it will only be overwritten if its contents was changed. This is to reduce the amount of (useless) backup files in your dropbox account or on your webserver.
 
@@ -229,9 +221,9 @@ Certainly you can also access the backup files via the Dropbox webinterface - Cl
 If you don't like saving your stuff to Dropbox and happen to have your own personal webspace somewhere, `discosync` can use it to save backups. The folder needs to have these features enabled:
 
 - [WebDAV](#https://en.wikipedia.org/wiki/WebDAV)
-- Password restriction (HTTP Basic Access Authentication)
+- Password restriction ([HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication))
 
-Even though it is not mandatory, it is highly recommended to securily transport your password over the connection:
+Even though it is not mandatory, the following is highly recommended to securly transport your password over the wire:
 
 - Webserver running SSL (https://...)
 
@@ -257,72 +249,12 @@ To create the password file:
 htpasswd -c /etc/apache2/.htaccess_discodos my_discosync_user
 ```
 
-Test if access using username/password is working. Put the complete URL to your webserver folder into your webbrowers address bar: https://www.yourdomain.com/discodos/
+Test if accessing your backup space is working with your webbrowser: https://www.yourdomain.com/discodos/. Usually a popup asks you for your credentials.
 
 If everything's fine adjust your DiscoDOS configuration file (`config.yaml`)
 
+```
 webdav_user: 'my_discosync_user'
 webdav_password: 'secret123'
 webdav_url: 'https://www.yourdomain.com/discodos/'
-
-
-### Using _discosync_
-
-Depending of your chosen way of saving backups (Dropbox or WebDAV) you have to launch `discosync` differently; Option -t selects which type of server should be accessed:
-
 ```
-discosync -t dropbox ...
-discosync -t webdav ...
-```
-
-The "types" can be abbreviated:
-
-```
-discosync -t d ...
-discosync -t w ...
-```
-
-
-#### Backup
-
-The backup command is straight forward and does not require any user-interaction after launching:
-
-To backup to your **Dropbox**:
-
-`discosync -t d --backup` or short form `discosync -t d -b`
-
-Dropbox currently is the hardcoded **default** "server type", so actually it's sufficient to run:
-
-`discosync -b`
-
-_**Note: The default backup type might be configurable in future DiscoDOS releases**_
-
-To backup to a **WebDAV folder**:
-
-`discosync -t w --backup` or short form `discosync -t w -b`
-
-
-#### Viewing existing backups
-
-Dropbox:
-
-`discosync --show` or `discosync -s`
-
-WebDAV:
-
-`discosync -t w --show` or `discosync -t w -s`
-
-
-#### Restore
-
-Restoring your database from a backup is an interactive process - you will be asked which backup you'd like to restore and warned that your local discobase.db file would be overwritten.
-
-Dropbox:
-
-`discosync --restore` or `discosync -r`
-
-WebDAV:
-
-`discosync -t w --restore` or `discosync -t w -r`
-
-

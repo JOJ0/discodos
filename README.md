@@ -51,6 +51,10 @@ This should give you an idea on how it looks and feels (your screen is not broke
     - [*search* action "add track to mix"](#search-action-add-track-to-mix)
     - [*search* action "update from discogs"](#search-action-update-from-discogs)
     - [*search* action "update from brainz"](#search-action-update-from-brainz)
+  - [_discosync_ - The DiscoDOS backup & sync tool](#discosync---the-discodos-backup--sync-tool)
+    - [Backup](#backup)
+    - [Viewing existing backups](#viewing-existing-backups)
+    - [Restore](#restore)
 
 
 
@@ -585,4 +589,85 @@ disco search all -zz
 
 Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#The-import-command)
 
+
+
+
+### _discosync_ - The DiscoDOS backup & sync tool
+
+`discosync` is used to save the DiscoBASE to the cloud and restore it if something went wrong. It also can be used to share it between multiple computers. There are currently two options, for storing the backups:
+
+* Dropbbox
+* A folder on a webserver
+
+A little configuration hast to be done. Follow the steps in the [Dropbox configuration chapter](INSTALLATION.md#configure-dropbox-access-for-discosync) or the [Webserver configuration chapter](INSTALLATION.md#configure-a-webserver-folder-for-discosync)
+
+
+Depending of your chosen way of saving backups you have to launch `discosync` differently; Option -t selects which type of storage should be accessed:
+
+```
+discosync -t dropbox ...
+discosync -t webdav ...
+```
+
+The "types" can be abbreviated:
+
+```
+discosync -t d ...
+discosync -t w ...
+```
+
+
+#### Backup
+
+The backup command is straight forward and does not require any user-interaction after launching:
+
+To backup to your **Dropbox**:
+
+`discosync -t d --backup`
+
+or use its short form: `discosync -t d -b`
+
+Dropbox currently is the hardcoded **default** "storage type", so actually it's sufficient to run:
+
+`discosync -b`
+
+_**Note: The default backup storage type might be configurable in future DiscoDOS releases**_
+
+To backup to a **WebDAV folder**:
+
+`discosync -t w --backup`
+
+short form: `discosync -t w -b`
+
+
+#### Viewing existing backups
+
+Dropbox:
+
+`discosync --show`
+
+or short: `discosync -s`
+
+WebDAV:
+
+`discosync -t w --show`
+
+or: `discosync -t w -s`
+
+
+#### Restore
+
+Restoring your database from a backup is an interactive process - you will be asked which backup you'd like to restore and warned that your local discobase.db file would be overwritten.
+
+Dropbox:
+
+`discosync --restore`
+
+or short: `discosync -r`
+
+WebDAV:
+
+`discosync -t w --restore`
+
+or short: `discosync -t w -r`
 
