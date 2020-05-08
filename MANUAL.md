@@ -248,13 +248,13 @@ _**Note: This process will take hours. Best you let it run "overnight"**_
 
 `disco import -z`
 
-An even more detailed "matching" is done by "doubling the -z option". It takes significantly longer but you will get more results but still: Don't expect to find a match for all of your releases. Take some time to report back how the macthing went by opening a github issue:
+An even more detailed "matching" is done by "doubling the -z option". It takes significantly longer and you will get more results but still: Don't expect to find a match for all of your releases. Please take a minute and report back how the matching went by opening a [github issue](https://github.com/JOJ0/discodos/issues):
 
 `disco import -zz`
 
-Also remember that it is unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth. Most definitely when it comes to Vinyl records.
+Also remember that it's unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth compared to others. Most definitely when it comes to Vinyl records.
 
-Also note that often it will happen that a MusicBrainz track can be "matched" but AcousticBrainz does not have an entry for it yet.
+Also note that often it happens that a MusicBrainz track _can_ be "matched" but AcousticBrainz does not have an entry for it yet.
 
 If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
 
