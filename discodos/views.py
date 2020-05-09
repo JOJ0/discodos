@@ -374,6 +374,19 @@ class View_common_cli(View_common):
                             break
                         else:
                             answers['trans_rating'] = self.ask(question.format(orig_data['trans_rating']))
+            elif db_field == 'name':
+                # initial user question
+                answers['name'] = self.ask(
+                      question.format(orig_data['name']))
+                # sanity checking loop
+                while answers['name'] == orig_data['name']:
+                    log.warning("Just press enter if you want to leave as-is.")
+                    answers['name'] = self.ask(question.format(orig_data['name']))
+                # after loop we know that existing and new are different
+                # if answer is empty, leave as-is (no empty mixname allowed)
+                if answers['name'] == '':
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers['name'])
             else:
                 answers[db_field] = self.ask(
                                          question.format(orig_data[db_field]))

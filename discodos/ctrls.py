@@ -121,15 +121,23 @@ class Mix_ctrl_cli (Mix_ctrl_common):
                            mix_details['venue']))
                 edit_answers = self.cli.edit_ask_details(mix_details,
                         self.cli._edit_mix_questions)
-                for a in edit_answers.items():
-                    log.info("answers: %s", str(a))
+                check_name = None
+                for key,a in edit_answers.items():
+                    log.info("answers: %s:%s", key, str(a))
+                    if key == 'name':
+                        check_name = self.mix._get_mix_id(a)
+                if check_name != None:
+                    log.warning("Name already taken. Dropping name-edit from update.")
+                    del(edit_answers['name'])
                 update_ok = self.mix.update_mix_info(mix_details, edit_answers)
                 if update_ok:
                     self.cli.p("Mix edit was successful.")
                 else:
                     log.error("Something went wrong on mix edit!")
                     raise SystemExit(1)
-                self.view_mixes_list()
+                # on dup-name err, don't show mixes list, user should see warning
+                if check_name == None:
+                    self.view_mixes_list()
             else:
                 self.cli.p("Mix details couldn't be fetched.")
         else:

@@ -635,17 +635,17 @@ class Mix (Database):
         where_mix = 'WHERE mix_id == {}'.format(mix_details['mix_id'])
         for key, answer in edit_answers.items():
             log.debug('key: {}, value: {}'.format(key, answer))
+            # handle slq col = ?
             if values_mix == '':
                 values_mix += "{} = ? ".format(key)
             else:
                 values_mix += ", {} = ? ".format(key)
-
-        if len(edit_answers) != 0: # only update if necessary
+            # handle values list (later tuple)
             values_list_mix.append(answer)
             values_mix += ", updated = datetime('now', 'localtime') "
+
+        if len(edit_answers) != 0: # only update if necessary
             final_update_mix = update_mix + values_mix + where_mix
-            log.info('MODEL: {}'.format(final_update_mix))
-            log.info(log.info('MODEL: {}'.format(tuple(values_list_mix))))
             log.info("MODEL: Executing mix update...")
             return self.execute_sql(final_update_mix, tuple(values_list_mix))
         else:
