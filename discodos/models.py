@@ -204,8 +204,6 @@ class Mix (Database):
                     self.id_existing = True
                     self.name_existing = True
                     # load basic mix-info from DB
-                    # FIXME info should also be available as single attrs: created, venue, etc.
-                    # FIXME or okay? here we assume mix is existing and id could be fetched
                     try:
                         self.info = self.get_mix_info()
                         self.name = self.info[1]

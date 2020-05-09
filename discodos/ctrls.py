@@ -23,14 +23,16 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
     def create(self):
         if is_number(self.mix.name_or_id):
-            log.error("Mix name can't be a number!") # log is everywhere, also in view
+            log.error("Mix name can't be a number!")
         else:
-            self.cli.p("Creating new mix \"{}\".".format(self.mix.name)) # view
-            answers = self._create_ask_details() # view with questions from common
-            created_id = self.mix.create(answers['played'], answers['venue']) # model
-            self.mix.db_conn.commit() # model
-            self.cli.p("New mix created with ID {}.".format(created_id)) # view
-            self.view_mixes_list() # view
+            if self.mix.name_existing:
+                log.error('Mix "{}" already existing.'.format(self.mix.name))
+                raise SystemExit(1)
+            self.cli.p('Creating new mix "{}".'.format(self.mix.name))
+            answers = self._create_ask_details()
+            created_id = self.mix.create(answers['played'], answers['venue'])
+            self.cli.p('New mix created with ID {}.'.format(created_id))
+            self.view_mixes_list()
 
     def _create_ask_details(self):
         played = self.cli.ask("When did you (last) play it? eg 2018-01-01 ")
