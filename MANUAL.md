@@ -13,7 +13,7 @@
   - [*search* action "edit track"](#search-action-edit-track)
   - [*search* action "add track to mix"](#search-action-add-track-to-mix)
   - [*search* action "update from discogs"](#search-action-update-from-discogs)
-  - [*search* action "update from brainz"](#search-action-update-from-brainz)
+  - [*search* action "update from *Brainz"](#search-action-update-from-brainz)
 - [_discosync_ - The DiscoDOS backup & sync tool](#discosync---the-discodos-backup--sync-tool)
   - [Backup](#backup)
   - [Viewing existing backups](#viewing-existing-backups)
@@ -355,7 +355,7 @@ _**Note: This is exactly the same as using `disco import --tracks` or in short: 
 
 Read more on importing release and track information in the [import command section](#The-import-command)
 
-#### *search* action "update from brainz"
+#### *search* action "update from *Brainz"
 
 To extend a tracks information with data from MusicBrainz and AcousticBrainz:
 
