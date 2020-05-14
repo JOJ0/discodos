@@ -29,10 +29,10 @@ This should give you an idea on how it looks and feels (your screen is not broke
 
 <!-- omit in toc -->
 ##### Viewing mix details, searching and adding track:
-![demo gif 1](assets/intro_gif_v0.4_1-580_16col_960x600.gif)
+![demo gif 1](assets/intro_gif_v0.4_1-580_16col_960x581.gif)
 <!-- omit in toc -->
 ##### Updating track information from Discogs and MusicBrainz/AcousticBrainz:
-![demo gif 2](assets/intro_gif_v0.4_580-end_16col_960x600.gif)
+![demo gif 2](assets/intro_gif_v0.4_580-end_16col_960x581.gif)
 
 
 
