@@ -142,7 +142,7 @@ On Windows, DiscoDOS setup is launched like this:
 Hints if you are about to set up the development version:
 
 * double check the setup command - it's slightly different: `./setup.py`
-* Make sure the Python environment you created in the [Development version installation instructions](#development-version) is activated.
+* Make sure the Python environment you created in the [Development version installation instructions](CONTRIBUTION.md#development-version) is activated.
 * On Windows make sure you have the "py launcher" installed and .py files associated (see setup notes above).
 * Also on Windows it could happen that *py launcher* is not properly installed - Work around this issue by launching setup.py with python.exe:
   `python setup.py`
