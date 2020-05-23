@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0-rc1'
+VERSION='1.0~rc2'
 
 if [[ $OSTYPE == "darwin"* ]]; then
     OS="macOS"
@@ -16,13 +16,13 @@ if [[ $1 == '--clean' ]]; then
     rm -rf dist
 fi
 
-pyinstaller cli.py --onefile --name cli --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
+pyinstaller discodos/cmd/cli.py --onefile --name disco --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
 
-pyinstaller setup.py --onefile --name setup --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
+pyinstaller discodos/cmd/config.py --onefile --name discosetup --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
 
-pyinstaller sync.py --onefile --name sync --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
+pyinstaller discodos/cmd/sync.py --onefile --name discosync --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
 
 # run _once_ to create config.yaml
-dist/cli
+dist/disco
 
-tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/cli dist/setup dist/sync dist/config.yaml
+tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/disco dist/discosetup dist/discosync dist/config.yaml
