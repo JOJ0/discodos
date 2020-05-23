@@ -1,12 +1,14 @@
 from discodos.utils import is_number, join_sep
 from abc import ABC, abstractmethod
-from discodos import log
+import logging
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
 from datetime import datetime
 from datetime import date
 from time import time
 from datetime import timedelta
+
+log = logging.getLogger('discodos')
 
 
 # common view utils, usable in CLI and GUI

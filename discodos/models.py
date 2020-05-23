@@ -1,6 +1,6 @@
 from discodos.utils import is_number # most of this should only be in view
 from abc import ABC, abstractmethod
-from discodos import log
+import logging
 import pprint
 import discogs_client
 import discogs_client.exceptions as errors
@@ -15,6 +15,8 @@ from musicbrainzngs import WebServiceError
 import requests
 import json
 import re
+
+log = logging.getLogger('discodos')
 
 class Database (object):
 
