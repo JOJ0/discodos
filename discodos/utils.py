@@ -1,9 +1,12 @@
-from discodos import log
+#from discodos import log
+import logging
 import time
 import yaml
 from pathlib import Path
 import os
 import sys
+
+log = logging.getLogger('discodos')
 
 # util: checks for numbers
 def is_number(s):
@@ -55,6 +58,20 @@ def join_sep(iterator, seperator):
         string += seperator + s
     return string
 
+def create_data_dir(discodos_root):
+    home = Path(os.getenv('HOME'))
+    # create discodos_data dir
+    if os.name == 'posix':
+        Path.mkdir(home / '.discodos/', exist_ok=True)
+        discodos_data = home / '.discodos'
+    elif os.name == 'nt':
+        Path.mkdir(home / 'discodos_data/', exist_ok=True)
+        discodos_data = home / 'discodos_data'
+    else:
+        log.warn("Config: Unknown OS - using discodos_root as data dir too.")
+        discodos_data = discodos_root
+    return discodos_data
+
 class Config():
     def __init__(self):
         # path handling
@@ -63,22 +80,37 @@ class Config():
             self.frozen = True
             log.debug("Config.frozen: Running as a bundled executable.")
             self.discodos_root = Path(os.path.dirname(sys.executable))
+            # data and wrappers in the same location in bundled installs
+            self.discodos_data = self.discodos_root
         else:
             log.debug("Config.frozen: Running as a Python script.")
             self.frozen = False
+            # where is our library? how are we running?
             discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
-            self.discodos_root = discodos_lib.parents[0]
+            log.info('Config: discodos package is in: {}'.format(discodos_lib))
+            # discodos_root is where our wrappers should be placed in
+            # but we only want them when running frozen
+            self.discodos_root = discodos_lib
+            self.venv = os.getenv('VIRTUAL_ENV')
+            # in unfrozen we need to find proper place for data_dir
+            self.discodos_data = create_data_dir(self.discodos_root)
+            # currently no difference if in venv or not - leave this for now
+            if self.venv == None:
+                log.info('Config: We are _not_ in a venv.')
+            else:
+                log.info('Config: We are running in a venv: {}'.format(self.venv))
         log.info("Config.discodos_root: {}".format(self.discodos_root))
+        log.info("Config.discodos_data: {}".format(self.discodos_data))
         # config.yaml handling
-        self.conf = read_yaml( self.discodos_root / "config.yaml")
+        self.conf = read_yaml( self.discodos_data / "config.yaml")
         if not self.conf:
             self.create_conf()
             raise SystemExit()
         # db file handling
         db_file = self._get_config_entry('discobase_file') # maybe configured?
-        if not db_file: # if not set default value
+        if not db_file: # if not set, use default value
             db_file = 'discobase.db'
-        self.discobase = self.discodos_root / db_file
+        self.discobase = self.discodos_data / db_file
         log.info("Config.discobase: {}".format(self.discobase))
 
         try: # optional setting log_level
@@ -129,11 +161,11 @@ class Config():
                 disco_py = self.discodos_root / 'cli'
                 setup_py = self.discodos_root / 'setup'
                 sync_py = self.discodos_root / 'sync'
-            else: # not packaged
-                venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'bin' / 'activate'
-                disco_py = self.discodos_root / 'cli.py'
-                setup_py = self.discodos_root / 'setup.py'
-                sync_py = self.discodos_root / 'sync.py'
+            else: # not packaged and in a venv (checked in config.py main())
+                venv_act = Path(self.venv) / 'bin' / 'activate'
+                disco_py = self.discodos_root / 'cmd' / 'cli.py'
+                setup_py = self.discodos_root / 'cmd' / 'setup.py'
+                sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
             # cli.py wrapper
             disco_wrapper = self.discodos_root / 'disco'
@@ -172,16 +204,16 @@ class Config():
                 disco_py = self.discodos_root / 'cli.exe'
                 setup_py = self.discodos_root / 'winconfig.exe'
                 sync_py = self.discodos_root / 'sync.exe'
-            else: # not packaged
-                venv_act = Path(os.getenv('VIRTUAL_ENV')) / 'Scripts' / 'activate.bat'
-                disco_py = self.discodos_root / 'cli.py'
-                setup_py = self.discodos_root / 'setup.py'
-                sync_py = self.discodos_root / 'sync.py'
+            else: # not packaged and in a venv (checked in config.py main())
+                venv_act = Path(self.venv) / 'Scripts' / 'activate.bat'
+                disco_py = self.discodos_root / 'cmd' / 'cli.py'
+                setup_py = self.discodos_root / 'cmd' / 'setup.py'
+                sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
             # WRAPPER cli.py - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
             disco_contents = self._win_wrapper(disco_py,
-                  'rem This is the DiscoDOS cli wrapper.', self.frozen)
+                  'rem This is the DiscoDOS CLI wrapper.', self.frozen)
 
             # WRAPPER setup.py - discosetup.bat
             setup_wrapper = self.discodos_root / 'discosetup.bat'
@@ -364,7 +396,7 @@ class Config():
         create_msg+= 'creating config file...'
         log.info(create_msg)
         print(create_msg)
-        written = self._write_yaml(config, self.discodos_root / 'config.yaml')
+        written = self._write_yaml(config, self.discodos_data / 'config.yaml')
         if written:
             written_msg = '* get a Discogs API access token as described here:\n'
             written_msg+= 'https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'

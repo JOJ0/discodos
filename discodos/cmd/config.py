@@ -4,11 +4,14 @@ import argparse
 from sys import argv
 import pprint
 # setup.py is kind of a controller - it inits the db and uses some Coll_ctrl methods
-from discodos import log
+#from discodos import log
+import logging
 from discodos.utils import print_help, ask_user, Config, read_yaml
 from discodos.models import Database, sqlerr, Collection
 from discodos.views import User_int
 from discodos.ctrls import Coll_ctrl_cli
+
+log = logging.getLogger('discodos')
 
 # argparser init
 def argparser(argv):
@@ -177,10 +180,16 @@ class Db_setup(Database):
                 self.configure_db() # this sets foreign_keys = ON again
                 return True
 
-
-
-# main program
 def main():
+    try:
+        _main()
+    except KeyboardInterrupt:
+        msg_int = 'DiscoDOS setup canceled (ctrl-c)'
+        log.info(msg_int)
+        print(msg_int)
+
+
+def _main():
     # CONFIGURATOR INIT / DISCOGS API conf
     conf = Config()
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
@@ -198,8 +207,9 @@ def main():
     setup.create_tables()
     setup.upgrade_schema()
 
-    # INSTALL CLI if not there yet
-    conf.install_cli()
+    # INSTALL CLI if not there yet (only in self-contained package)
+    if conf.frozen:
+        conf.install_cli()
 
     if args.upgrade_db_schema:
         setup.create_tables()
@@ -209,7 +219,4 @@ def main():
 
 # __main__ try/except wrap
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        log.error('DiscoDOS setup canceled (ctrl-c)')
+    main()

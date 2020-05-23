@@ -9,7 +9,8 @@ from urllib3.exceptions import NewConnectionError
 from requests.exceptions import ConnectionError
 from socket import gaierror
 
-from discodos import log
+#from discodos import log
+import logging
 from discodos.utils import print_help, ask_user, is_number, Config
 import asyncio
 #from codetiming import Timer
@@ -23,6 +24,8 @@ from shutil import copy2
 from pathlib import Path
 import re
 from os import utime
+
+log = logging.getLogger('discodos')
 
 
 def argparser(argv):
@@ -61,6 +64,15 @@ def argparser(argv):
     return arguments
 
 def main():
+    try:
+        _main()
+        #asyncio.run(_main())
+    except KeyboardInterrupt:
+        msg_int = 'DiscoDOS sync canceled (ctrl-c)'
+        log.info(msg_int)
+        print(msg_int)
+
+def _main():
     conf=Config()
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     args = argparser(argv)
@@ -374,8 +386,4 @@ class Webdav_sync(Sync):
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
-    try:
-        main()
-        #asyncio.run(main())
-    except KeyboardInterrupt:
-        log.error('DiscoDOS sync canceled (ctrl-c)')
+    main()

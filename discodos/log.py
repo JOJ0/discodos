@@ -1,3 +1,4 @@
+from discodos.utils import create_data_dir
 import logging
 from pathlib import Path
 import os
@@ -7,10 +8,15 @@ def logger_init():
     # logger is not relying on Config class and handles paths itself
     if getattr(sys, 'frozen', False):
         discodos_root = Path(os.path.dirname(sys.executable))
+        discodos_data = discodos_root
     else:
-        discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
-        discodos_root = discodos_lib.parents[0]
-    debug_log = discodos_root / "debug.log"
+    #    discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
+    #    discodos_root = discodos_lib.parents[0]
+    #debug_log = discodos_root / "debug.log"
+        discodos_root = Path(os.path.dirname(os.path.abspath(__file__)))
+        discodos_data = create_data_dir(discodos_root)
+    debug_log = discodos_data / "debug.log"
+
     log = logging.getLogger('discodos')
     log.setLevel(logging.DEBUG) # level of logger itself
     f_handle = logging.FileHandler(debug_log, encoding='utf-8') # create file handler

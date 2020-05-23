@@ -3,10 +3,13 @@
 from discodos.utils import ask_user, print_help, Config
 from discodos.views import User_int
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
-from discodos import log
+#from discodos import log
+import logging
 import argparse
 import sys
 import pprint
+
+log = logging.getLogger('discodos')
 
 # argparser init
 def argparser(argv):
@@ -286,10 +289,15 @@ def argparser(argv):
             log.handlers[0].level))
     return arguments 
 
-
-
-# MAIN
 def main():
+    try:
+        _main()
+    except KeyboardInterrupt:
+        msg_int = 'DiscoDOS canceled (ctrl-c)'
+        log.info(msg_int)
+        print(msg_int)
+
+def _main():
     # CONFIGURATOR INIT / DISCOGS API conf
     conf = Config()
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
@@ -496,11 +504,4 @@ def main():
         coll_ctrl.cli.view_tutorial()
 # __MAIN try/except wrap
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        msg_int = 'DiscoDOS canceled (ctrl-c)'
-        log.info(msg_int)
-        print(msg_int)
-    #finally:
-        #log.shutdown()
+    main()
