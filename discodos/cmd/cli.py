@@ -3,7 +3,7 @@
 from discodos.utils import ask_user, print_help, Config
 from discodos.views import User_int
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
-#from discodos import log
+from discodos.config import Db_setup
 import logging
 import argparse
 import sys
@@ -270,13 +270,21 @@ def argparser(argv):
         will be updated.
         ''')
     import_subparser.add_argument(
-		"--resume", dest="import_offset", metavar='OFFSET',
+        "--resume", dest="import_offset", metavar='OFFSET',
         type=int, default=0,
         help='''resumes long-running processes at the given offset position
         (expects a number). You can combine this option currently
         with the *Brainz matching import operation only
         (-z, -zz)
         ''')
+    setup_subparser = subparsers.add_parser(
+        name='setup',
+        help='''sets up the DiscoBASE and handles database schema upgrades.
+        View this subcommand's help: "disco setup -h".''')
+    setup_subparser.add_argument(
+        "--force", dest="force_upgrade_schema", action='store_true',
+        help='''force upgrade database schema - only use if you know what
+        you are doing.''')
     # only the main parser goes into a variable
     arguments = parser.parse_args(argv[1:])
     log.info("Console log_level currently set to {} via config.yaml or default".format(
@@ -491,6 +499,25 @@ def _main():
         coll_ctrl.update_all_tracks_from_brainz(
             detail=user.BRAINZ_SEARCH_DETAIL,
             offset=user.RESUME_OFFSET)
+
+
+    if user.WANTS_TO_LAUNCH_SETUP:
+        # INFORM USER what this subcommand does
+        print_help(
+          "This is DiscoDOS setup. If you don't see any output below, there was nothing to do.")
+        # SETUP DB
+        setup = Db_setup(conf.discobase)
+        setup.create_tables()
+        if user.WANTS_TO_FORCE_UPGRADE_SCHEMA:
+            setup.upgrade_schema(force_upgrade = True)
+        else:
+            setup.upgrade_schema()
+        # INSTALL CLI if not there yet (only in self-contained package)
+        if conf.frozen:
+            conf.install_cli()
+
+
+
 
     if user.DID_NOT_PROVIDE_COMMAND:
         if not coll_ctrl.ONLINE:

@@ -709,6 +709,8 @@ class User_int(object):
         self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
         self.WANTS_TO_SEARCH_AND_EDIT_TRACK = False
         self.RESUME_OFFSET = 0
+        self.WANTS_TO_LAUNCH_SETUP = False
+        self.WANTS_TO_FORCE_UPGRADE_SCHEMA = False
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -895,6 +897,13 @@ class User_int(object):
                     raise SystemExit(1)
                 else:
                     self.WANTS_TO_IMPORT_RELEASE = True
+
+        # SETUP MODE
+        if hasattr(self.args, 'setup'):
+            log.debug("Entered setup mode.")
+            self.WANTS_TO_LAUNCH_SETUP = True
+            if self.args.force_upgrade_schema == True:
+                self.WANTS_TO_FORCE_UPGRADE_SCHEMA = True
 
 
         # NO COMMAND - SHOW HELP

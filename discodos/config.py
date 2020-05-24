@@ -1,44 +1,14 @@
 #!/usr/bin/env python
 
-import argparse
-from sys import argv
 import pprint
-# setup.py is kind of a controller - it inits the db and uses some Coll_ctrl methods
-#from discodos import log
+# config.py is kind of a controller - it inits the db and uses some Coll_ctrl methods
 import logging
-from discodos.utils import print_help, ask_user, Config, read_yaml
-from discodos.models import Database, sqlerr, Collection
+#from discodos.utils import Config
+from discodos.models import Database, sqlerr
 from discodos.views import User_int
-from discodos.ctrls import Coll_ctrl_cli
+#from discodos.ctrls import Coll_ctrl_cli
 
 log = logging.getLogger('discodos')
-
-# argparser init
-def argparser(argv):
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-		"-v", "--verbose", dest="verbose_count",
-        action="count", default=0,
-        help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
-    parser.add_argument(
-		"-o", "--offline", dest="offline_mode",
-        action="store_true",
-        help="stay in offline mode, don't connect to Discogs")
-    parser_group1 = parser.add_mutually_exclusive_group()
-    parser_group1.add_argument(
-		"--upgrade-db-schema", dest="upgrade_db_schema",
-        action='store_true',
-        help="force upgrade database schema - only use if you know what you are doing.")
-    arguments = parser.parse_args(argv[1:])
-    log.info("Console log_level currently set to {} via config.yaml or default.".format(
-        log.handlers[0].level))
-    # Sets log level to WARN going more verbose for each new -v.
-    cli_level = max(3 - arguments.verbose_count, 0) * 10
-    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
-        log.handlers[0].setLevel(cli_level)
-        log.warning("Console log_level override via cli. Now set to {}.".format(
-            log.handlers[0].level))
-    return arguments 
 
 class Db_setup(Database):
     def __init__(self, _db_file):
@@ -179,44 +149,3 @@ class Db_setup(Database):
                 print(msg_done)
                 self.configure_db() # this sets foreign_keys = ON again
                 return True
-
-def main():
-    try:
-        _main()
-    except KeyboardInterrupt:
-        msg_int = 'DiscoDOS setup canceled (ctrl-c)'
-        log.info(msg_int)
-        print(msg_int)
-
-
-def _main():
-    # CONFIGURATOR INIT / DISCOGS API conf
-    conf = Config()
-    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
-    # ARGPARSER INIT
-    args=argparser(argv)
-    log.info(vars(args))
-
-    # INFORM USER what this script does
-    if len(argv) <= 1:
-        print_help(
-          "This is DiscoDOS setup. If you don't see any output below, there was nothing to do.")
-
-    # SETUP DB
-    setup = Db_setup(conf.discobase)
-    setup.create_tables()
-    setup.upgrade_schema()
-
-    # INSTALL CLI if not there yet (only in self-contained package)
-    if conf.frozen:
-        conf.install_cli()
-
-    if args.upgrade_db_schema:
-        setup.create_tables()
-        setup.upgrade_schema(force_upgrade = True)
-    # in INFO level show args object again after longish create_table msgs
-    log.info(vars(args))
-
-# __main__ try/except wrap
-if __name__ == "__main__":
-    main()
