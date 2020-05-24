@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from discodos.utils import ask_user, print_help, Config
+from discodos.utils import ask_user, print_help
 from discodos.views import User_int
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
-from discodos.config import Db_setup
+from discodos.config import Db_setup, Config
 import logging
 import argparse
 import sys

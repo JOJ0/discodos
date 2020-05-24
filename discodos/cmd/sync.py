@@ -11,7 +11,8 @@ from socket import gaierror
 
 #from discodos import log
 import logging
-from discodos.utils import print_help, ask_user, is_number, Config
+from discodos.utils import print_help, ask_user, is_number
+from discodos.config import Config
 import asyncio
 #from codetiming import Timer
 import argparse

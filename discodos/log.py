@@ -1,4 +1,5 @@
-from discodos.utils import create_data_dir
+#from discodos.utils import create_data_dir
+from discodos.config import create_data_dir
 import logging
 from pathlib import Path
 import os
