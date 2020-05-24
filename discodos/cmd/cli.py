@@ -28,7 +28,7 @@ def argparser(argv):
         forces offline mode. A lot of options work in on- and
         offline mode. Some behave differently, depending on connection state.""")
     # basic subparser element:
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='command')
     ### SEARCH subparser #######################################################
     search_subparser = subparsers.add_parser(
         name='search',

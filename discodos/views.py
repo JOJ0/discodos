@@ -712,6 +712,7 @@ class User_int(object):
         self.WANTS_TO_LAUNCH_SETUP = False
         self.WANTS_TO_FORCE_UPGRADE_SCHEMA = False
 
+
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
             if self.args.release_search == "all":
@@ -760,6 +761,7 @@ class User_int(object):
                         self.BRAINZ_SEARCH_DETAIL = 2
                 elif self.args.search_edit_track == True:
                     self.WANTS_TO_SEARCH_AND_EDIT_TRACK = True
+
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):
@@ -867,6 +869,7 @@ class User_int(object):
             #log.error("track search not implemented yet.")
             #raise SystemExit(1)
 
+
         # IMPORT MODE
         if hasattr(self.args, 'import_id'):
             log.debug("Entered import mode.")
@@ -898,8 +901,9 @@ class User_int(object):
                 else:
                     self.WANTS_TO_IMPORT_RELEASE = True
 
+
         # SETUP MODE
-        if hasattr(self.args, 'setup'):
+        if self.args.command == 'setup':
             log.debug("Entered setup mode.")
             self.WANTS_TO_LAUNCH_SETUP = True
             if self.args.force_upgrade_schema == True:
@@ -907,9 +911,7 @@ class User_int(object):
 
 
         # NO COMMAND - SHOW HELP
-        if ('mix_name' not in self.args and 'release_search' not in self.args
-                  and 'suggest_search' not in self.args
-                  and 'import_id' not in self.args):
+        if self.args.command == None:
             self.DID_NOT_PROVIDE_COMMAND = True
 
         if self.args.offline_mode == True:

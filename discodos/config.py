@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import pprint
-# config.py is kind of a controller - it inits the db and uses some Coll_ctrl methods
+# config.py is kind of a controller - it inits the db
 import logging
 #from discodos.utils import Config
 from discodos.models import Database, sqlerr
