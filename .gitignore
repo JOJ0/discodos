@@ -18,6 +18,10 @@ disco.bat
 discoshell.bat
 setup.bat
 sync.bat
+build/
+dist/
+discodos-*tar.gz
 discodos.egg-info/
+.eggs/
 ChangeLog
 AUTHORS
