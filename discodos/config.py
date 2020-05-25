@@ -499,8 +499,9 @@ class Config():
             written_msg+= 'https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
             written_msg+= '* open the file config.yaml using a '
             written_msg+= 'texteditor and set your token:  discogs_token: \'xyz\'\n'
-            written_msg+= '* Save the file and run DiscoDOS setup '
-            written_msg+= '(winconfig.exe on Windows, setup on Linux/MacOS, setup.py if dev-version)'
+            written_msg+= '* Save the file and run disco again - a database file will be created '
+            written_msg+= 'and connection to Discogs will be verified.\n'
+            written_msg+= '* Learn how to import your collection and use DiscoDOS: https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection\n'
             log.info(written_msg)
             print_help(written_msg)
 
