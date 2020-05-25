@@ -7,11 +7,13 @@
   - [Linux / MacOS](#linux--macos)
 
 
-If you'd like to contribute to DiscoDOS development or just want the most "bleeding edge" version, you will most likely want to install it tracking this repos master branch or your forks master branch. Follow the guides in this document to achieve that.
-
 ## Install development version
 
-DiscoDOS is written entirely in Python. The majority of time, it was coded on a MacOS X 10.13 machine with Python installed via homebrew, thus it's tested well on this platform. There are some users happily using it on Winodws 10 already. I myself also regularily use it on Linux machines too, and it seems to work as good as on my Mac.
+If you'd like to contribute to DiscoDOS development or just want the most "bleeding edge" version, you'll most likely want to install it tracking this repos master branch or your fork's feature branch. Follow the guides in this document to achieve that.
+
+I usually try to keep things stable in the master branch. I use it myself on my production database, so it just has to work. Seldomely there will be major bugs that could corrupt your data. In any case make sure you use DiscoDOS' neet built-in backup/sync feature!).
+
+DiscoDOS is written entirely in Python. The majority of time, it was coded on a MacOS X 10.13 machine with Python installed via homebrew, thus it's tested well on this platform. There are some users happily using it on Winodws 10 already. I myself develop and use it on Linux machines too, and it seems to work as good as on my Mac.
 
 Basically it will run on any OS as long as the following prerequisites are met. Please report back in any case, wether it's working fine or you find things that seem unusual on your OS. Thanks a lot!
 
@@ -20,7 +22,7 @@ Basically it will run on any OS as long as the following prerequisites are met. 
 
 You need to have these software packages installed
 * git
-* Python version 3.7 or higher
+* Python version 3.6 or higher
 
 Getting them differs according to your OS
 
