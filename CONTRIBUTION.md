@@ -4,7 +4,7 @@
 - [Install development version](#install-development-version)
   - [Prerequisites](#prerequisites)
   - [Windows](#windows)
-  - [Linux / MacOS](#linux--macos)
+  - [macOS/Linux](#macoslinux)
 
 
 ## Install development version
@@ -43,7 +43,7 @@ During the Python setup on Windows choose "Customize installation" and select th
 
 ### Windows
 
-_Skip this chapter if you are on macOS or Linux!_
+_[Skip this chapter](#macoslinux) if you are on macOS or Linux!_
 
 Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
 
@@ -70,14 +70,20 @@ You should see something like this:
 
 `pip 19.2.3 from c:\users\user\python-envs\discodos\lib\site-packages\pip (python 3.8)`
 
-Install the necessary dependencies into your environment!
+Install the necessary dependencies into your environment:
 
-`pip install -r "%HOMEPATH%/discodos/requirements.txt"`
+`python3 setup.py develop`
 
-Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs collection access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-collection-access)
+Launch DiscoDOS' main command and follow the steps shown:
+
+`disco`
+
+_**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
+
+`"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"`
 
 
-### Linux / MacOS
+### macOS/Linux
 
 Jump to your homedirectory, clone the repo and change into the cloned repo directory.
 
@@ -102,9 +108,21 @@ You should see something like this:
 
 `pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
 
-Install the necessary dependencies into your environment!
+Install the necessary dependencies into your virtual environment:
 
-`pip install -r ~/discodos/requirements.txt`
+`python3 setup.py develop`
 
-Now [initialize the database and set up the CLI tools](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#discodos-setup---troubleshooting), then [configure Discogs collection access](https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-collection-access)
+Some command wrappers should have been installed too. Verify if they exist inside your `~/.venvs/discodos/bin` directory:
 
+```
+which disco
+which discosync
+```
+
+Launch DiscoDOS' main command and follow the steps shown:
+
+`disco`
+
+_**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
+
+`source ~/.venvs/discodos/bin/activate`
