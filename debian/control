@@ -1,0 +1,36 @@
+Source: discodos
+Section: sound
+Priority: optional
+Maintainer: Python Applications Packaging Team <python-apps-team@lists.alioth.debian.org>
+Uploaders:
+ J0J0 T <jt@peek-a-boo.at>,
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 11),
+ dh-python,
+ python3-all,
+ python3-musicbrainzngs,
+ python3-setuptools,
+Standards-Version: 4.1.2
+Vcs-Git: https://salsa.debian.org/python-team/applications/discodos.git
+Vcs-Browser: https://salsa.debian.org/python-team/applications/discodos
+Homepage: https://github.com/joj0/discodos
+
+Package: discodos
+Architecture: all
+Depends:
+ python3-dateutil,
+ python3-dropbox,
+ python3-musicbrainzngs,
+ python3-pkg-resources,
+ python3-tabulate,
+ python3-yaml,
+ ${misc:Depends},
+ ${python3:Depends},
+Description: remember and analyze your DJ sets based on Discogs and AcousticBrainz data
+ DiscoDOS helps a DJ remember and analyze what they played in their sets, or
+ what they could possibly play in the future. It's based on data pulled from
+ a users Discogs record collection. Tracks can be organized into playlists and
+ mix-transitions rated. Additionally the collection can be linked to MusicBrainz
+ and AcousticBrainz, thus further information (like musical key and BPM) is
+ made available to the user.
