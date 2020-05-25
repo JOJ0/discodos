@@ -1,12 +1,24 @@
 from discodos.utils import is_number, join_sep
+from discodos.config import Db_setup
 from discodos.models import Mix, Collection, Brainz, Brainz_match
 from discodos.views import Mix_view_cli, Collection_view_cli
 from abc import ABC, abstractmethod
-from discodos import log
+import logging
 import discogs_client.exceptions as errors
 import pprint as p
 import re
 from time import time
+
+log = logging.getLogger('discodos')
+
+class Ctrl_common (ABC):
+    def __init__(self):
+        pass
+
+    def setup_db(self, db_file):
+        db_setup = Db_setup(db_file)
+        db_setup.create_tables()
+        db_setup.upgrade_schema()
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
@@ -14,12 +26,16 @@ class Mix_ctrl_common (ABC):
         pass
 
 # mix controller class CLI implementation
-class Mix_ctrl_cli (Mix_ctrl_common):
+class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
 
     def __init__(self, db_conn, mix_name_or_id, _user_int, db_file = False):
-        self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
-        self.cli = Mix_view_cli() # instantiatie the Mix view class (the CLI)
         self.user = _user_int # take an instance of the User_int class and set as attribute
+        self.cli = Mix_view_cli() # instantiatie the Mix view class (the CLI)
+        self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
+        if self.mix.db_not_found == True:
+            self.cli.ask('Setting up DiscoBASE, press enter...')
+            super(Mix_ctrl_cli, self).setup_db(db_file)
+            self.mix = Mix(db_conn, db_file)
 
     def create(self):
         if is_number(self.mix.name_or_id):
@@ -360,20 +376,23 @@ class Mix_ctrl_cli (Mix_ctrl_common):
 
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
-
     def __init__(self):
         pass
 
 # Collection controller class
-class Coll_ctrl_cli (Coll_ctrl_common):
+class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
     '''manages the record collection, offline and with help of discogs data'''
 
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
             _db_file = False, _musicbrainz_user = False, _musicbrainz_pass = False):
         self.user = _user_int # take an instance of the User_int class and set as attribute
-        self.collection = Collection(_db_conn, _db_file)
         self.cli = Collection_view_cli() # instantiate cli frontend class 
-        if self.user.WANTS_ONLINE:
+        self.collection = Collection(_db_conn, _db_file)
+        if self.collection.db_not_found == True:
+            self.cli.ask('Setting up DiscoBASE, press enter...')
+            super(Coll_ctrl_cli, self).setup_db(_db_file)
+            self.collection = Collection(_db_conn, _db_file)
+        if self.user.WANTS_ONLINE and self.user.DID_NOT_PROVIDE_COMMAND == False:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
             else: # only try to initialize brainz if discogs is online already

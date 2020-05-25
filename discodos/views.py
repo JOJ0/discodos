@@ -1,12 +1,14 @@
 from discodos.utils import is_number, join_sep
 from abc import ABC, abstractmethod
-from discodos import log
+import logging
 from tabulate import tabulate as tab # should be only in views.py
 import pprint
 from datetime import datetime
 from datetime import date
 from time import time
 from datetime import timedelta
+
+log = logging.getLogger('discodos')
 
 
 # common view utils, usable in CLI and GUI
@@ -707,6 +709,9 @@ class User_int(object):
         self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
         self.WANTS_TO_SEARCH_AND_EDIT_TRACK = False
         self.RESUME_OFFSET = 0
+        self.WANTS_TO_LAUNCH_SETUP = False
+        self.WANTS_TO_FORCE_UPGRADE_SCHEMA = False
+
 
         # RELEASE MODE:
         if hasattr(self.args, 'release_search'):
@@ -756,6 +761,7 @@ class User_int(object):
                         self.BRAINZ_SEARCH_DETAIL = 2
                 elif self.args.search_edit_track == True:
                     self.WANTS_TO_SEARCH_AND_EDIT_TRACK = True
+
 
         # MIX MODE
         if hasattr(self.args, 'mix_name'):
@@ -863,6 +869,7 @@ class User_int(object):
             #log.error("track search not implemented yet.")
             #raise SystemExit(1)
 
+
         # IMPORT MODE
         if hasattr(self.args, 'import_id'):
             log.debug("Entered import mode.")
@@ -895,10 +902,16 @@ class User_int(object):
                     self.WANTS_TO_IMPORT_RELEASE = True
 
 
+        # SETUP MODE
+        if self.args.command == 'setup':
+            log.debug("Entered setup mode.")
+            self.WANTS_TO_LAUNCH_SETUP = True
+            if self.args.force_upgrade_schema == True:
+                self.WANTS_TO_FORCE_UPGRADE_SCHEMA = True
+
+
         # NO COMMAND - SHOW HELP
-        if ('mix_name' not in self.args and 'release_search' not in self.args
-                  and 'suggest_search' not in self.args
-                  and 'import_id' not in self.args):
+        if self.args.command == None:
             self.DID_NOT_PROVIDE_COMMAND = True
 
         if self.args.offline_mode == True:

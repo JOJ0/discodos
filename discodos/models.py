@@ -1,6 +1,6 @@
 from discodos.utils import is_number # most of this should only be in view
 from abc import ABC, abstractmethod
-from discodos import log
+import logging
 import pprint
 import discogs_client
 import discogs_client.exceptions as errors
@@ -16,9 +16,12 @@ import requests
 import json
 import re
 
+log = logging.getLogger('discodos')
+
 class Database (object):
 
     def __init__(self, db_conn=False, db_file=False, setup=False):
+        self.db_not_found = False
         if db_conn:
             log.debug("DB-NEW: db_conn argument was handed over.")
             self.db_conn = db_conn
@@ -28,6 +31,9 @@ class Database (object):
                 log.debug("DB-NEW: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file, setup) # setup=True creates empty db
+            if self.db_conn == None:
+                log.debug("DB-NEW: Creating database.")
+                self.db_conn = self.create_conn(db_file, setup=True)
         self.db_conn.row_factory = sqlite3.Row # also this was in each db.function before
         self.cur = self.db_conn.cursor() # we had this in each db function before
         self.configure_db() # set PRAGMA options
@@ -41,11 +47,10 @@ class Database (object):
             return conn
         except sqlerr as e:
             if e.args[0] == 'unable to open database file':
-                e = "DB-NEW: Database {} can't be opened, launch ".format(db_file)
-                e+= "DiscoDOS setup (winconfig.exe on Windows, setup on Linux/MacOSX, "
-                e+= "setup.py if dev-version)"
-                log.error(e)
-                raise SystemExit(5) # 5 = no db error
+                e = "DB-NEW: create_conn: Database {} can't be opened.".format(db_file)
+                log.debug(e)
+                self.db_not_found = True
+                return None
             else:
                 log.error("DB-NEW: Connection error: %s", e)
                 raise SystemExit(4) # 4 = other db error. will SystemExit break gui?
@@ -693,7 +698,7 @@ class Mix (Database):
 # record collection class
 class Collection (Database):
 
-    def __init__(self, db_conn, db_file = False):
+    def __init__(self, db_conn, db_file=False):
         super(Collection, self).__init__(db_conn, db_file)
         # discogs api objects are online set when discogs_connect method is called
         self.d = False

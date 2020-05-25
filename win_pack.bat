@@ -2,24 +2,33 @@
 rem echo Activating Python venv
 rem start /B "%HOMEPATH%/python-envs/discodos_pack/Scripts/activate.bat"
 
-echo Packaging...
-pyinstaller cli.py --onefile --clean -y
-pyinstaller setup.py --name winconfig --onefile --clean -y
-pyinstaller sync.py --onefile --clean -y
+set VERSION="1.0~rc2"
 
-echo Running _once_ to create config.yaml
-dist\cli.exe
+if "%1"=="clean" (
+    del /q dist\discodos
+    rmdir dist\discodos
+    del /q dist
+)
+
+echo Packaging...
+pyinstaller discodos\cmd\cli.py --name disco --onefile --clean -y
+pyinstaller discodos\cmd\config.py --name discosetup --onefile --clean -y
+pyinstaller discodos\cmd\sync.py --name discosync --onefile --clean -y
+
+echo Running _once_ to create config.yaml...
+dist\disco.exe
 
 echo Copying to discodos dir...
 cd dist
 md discodos
-copy /y cli.exe discodos
-copy /y winconfig.exe discodos
-copy /y sync.exe discodos
+copy /y disco.exe discodos
+copy /y discosetup.exe discodos
+copy /y discosync.exe discodos
 copy /y config.yaml discodos
 
-echo Zipping....
-zip -r discodos.zip discodos
+echo Zipping...
+set ZIPNAME=discodos-%VERSION%-Win.zip
+zip -r %ZIPNAME% discodos
 cd ..
-move dist\discodos.zip .
+move dist\%ZIPNAME% .
 
