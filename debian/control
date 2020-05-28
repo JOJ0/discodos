@@ -10,6 +10,7 @@ Build-Depends:
  debhelper-compat (= 11),
  dh-python,
  python3-all,
+ python3-pbr,
  python3-setuptools,
 Standards-Version: 4.1.2
 Vcs-Git: https://salsa.debian.org/python-team/applications/discodos.git
