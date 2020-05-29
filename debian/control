@@ -20,10 +20,12 @@ Package: discodos
 Architecture: all
 Depends:
  python3-dateutil,
+ python3-discogs-client,
  python3-dropbox,
  python3-musicbrainzngs,
  python3-pkg-resources,
  python3-tabulate,
+ python3-webdavclient,
  python3-yaml,
  ${misc:Depends},
  ${python3:Depends},
