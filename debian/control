@@ -11,7 +11,7 @@ Build-Depends:
  python3-all,
  python3-pbr,
  python3-setuptools,
-Standards-Version: 4.1.2
+Standards-Version: 4.5.0
 Vcs-Git: https://salsa.debian.org/python-team/applications/discodos.git
 Vcs-Browser: https://salsa.debian.org/python-team/applications/discodos
 Homepage: https://github.com/joj0/discodos
