@@ -78,7 +78,7 @@ def _main():
     log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
     args = argparser(argv)
     if args.sync_type == 'dropbox' or args.sync_type == 'd':
-        sync = Dropbox_sync(conf.dropbox_token, conf.discobase.name)
+        sync = Dropbox_sync(conf.dropbox_token, conf.discobase)
         if args.backup:
             #await sync._async_init()
             sync.backup()
@@ -96,7 +96,7 @@ def _main():
             log.error("Missing arguments.")
     else:
         sync = Webdav_sync(conf.webdav_user, conf.webdav_password,
-          conf.webdav_url, conf.discobase.name)
+          conf.webdav_url, conf.discobase)
         if args.backup:
             sync.backup()
         elif args.restore:
@@ -105,36 +105,36 @@ def _main():
             sync.show_backups()
 
 class Sync(object):
-    def _local_mtime(self, filename): # returns a file's formatted mtime
+    def _get_local_mtime(self, fileobj): # returns a file's formatted mtime
         mod_local_dt = datetime.fromtimestamp(
-                          Path(filename).stat().st_mtime)
+                          fileobj.stat().st_mtime)
         mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
         return mod_local_str
 
-    def _filename_mtime(self, filename):
-        local_mtime = self._local_mtime(filename)
-        return '{}_{}'.format(filename, local_mtime)
+    def _get_fileobj_mtime(self, fileobj):
+        local_mtime = self._get_local_mtime(fileobj)
+        return '{}_{}'.format(fileobj.name, local_mtime)
 
-    def _times_tuple(self, filename): # get epoch from file someth_YYYY-MM-DD_HHMMMSS
-        time = re.split('[^\d]', filename)[-1]
-        day = re.split('[^\d]', filename)[-2]
-        month = re.split('[^\d]', filename)[-3]
-        year = re.split('[^\d]', filename)[-4]
-        filename_datepart = "{}{}{}{}".format(year, month, day, time)
-        log.debug('Sync._times_tuple: filename_datepart: {}'.format(filename_datepart))
-        if not filename_datepart:
+    def _get_times_tuple(self, filestr): # get epoch from string someth_YYYY-MM-DD_HHMMMSS
+        time = re.split('[^\d]', filestr)[-1]
+        day = re.split('[^\d]', filestr)[-2]
+        month = re.split('[^\d]', filestr)[-3]
+        year = re.split('[^\d]', filestr)[-4]
+        filestr_date_digits = "{}{}{}{}".format(year, month, day, time)
+        log.debug('Sync._get_times_tuple: filestr_date_digits: {}'.format(filestr_date_digits))
+        if not filestr_date_digits:
             log.error(
               'Not a valid DiscoBASE backup (Format not name_yyyy-mm-dd_HHMMSS.db). Quitting.')
             raise SystemExit(1)
-        mod_dt = datetime.strptime(filename_datepart, '%Y%m%d%H%M%S')
+        mod_dt = datetime.strptime(filestr_date_digits, '%Y%m%d%H%M%S')
         mod_epoch = mod_dt.timestamp()
-        log.debug('Sync._times_tuple: mod_epoch: {}'.format(mod_epoch))
+        log.debug('Sync._get_times_tuple: mod_epoch: {}'.format(mod_epoch))
         times_tuple = (mod_epoch, mod_epoch)
         return times_tuple
 
-    def _touch_to_backupdate(self, restore_file_name):
-        downloaded_file = Path(self.discobase) # ignore vscode error here
-        mod_acc_times = self._times_tuple(restore_file_name)
+    def _touch_to_backupdate(self, restore_filenamestr):
+        downloaded_file = self.discobase # ignore vscode error here
+        mod_acc_times = self._get_times_tuple(restore_filenamestr)
         log.debug('Sync._touch_to_backupdate: mod_acc_times: {}'.format(mod_acc_times))
         try:
             utime(downloaded_file, mod_acc_times)
@@ -215,7 +215,7 @@ class Dropbox_sync(Sync):
             return True
 
     def backup(self):
-        bak_file_name = self._filename_mtime(self.discobase)
+        bak_file_name = self._get_fileobj_mtime(self.discobase)
         full_bak_path = '{}/{}'.format(self.backuppath, bak_file_name)
         print("Uploading as {} to {}".format(bak_file_name, self.backuppath))
         if self.exists('{}/{}'.format(self.backuppath, bak_file_name)):
@@ -242,7 +242,9 @@ class Dropbox_sync(Sync):
                     else:
                         print(err)
                         raise SystemExit(1)
-            self.show_backups()
+        # in any case, show list of existing backups
+        self.show_backups()
+        return True
 
     def show_backups(self, restore=False):
         if not restore:
@@ -269,7 +271,7 @@ class Dropbox_sync(Sync):
             except IndexError:
                 log.warning('Non-existent ID. Nothing to restore!')
                 raise SystemExit
-            print('Restoring Backup {}...'.format(restore_file.name)) # name attribute
+            print('Restoring backup {}...'.format(restore_file.name)) # name attribute
             return restore_file # return the whole object here
         print()
 
@@ -320,7 +322,7 @@ class Webdav_sync(Sync):
 
     def backup(self):
         # check file stats on local machine
-        bak_file_name = self._filename_mtime(self.discobase)
+        bak_file_name = self._get_fileobj_mtime(self.discobase)
         print("Uploading as {} to {}".format(bak_file_name, self.url))
         existing = False
         try:
@@ -340,6 +342,7 @@ class Webdav_sync(Sync):
             self.client.upload_sync(remote_path='{}'.format(bak_file_name),
                                     local_path='{}'.format(self.discobase))
 
+        # in any case, show list of existing backups
         self.show_backups()
         return True
 
@@ -371,7 +374,7 @@ class Webdav_sync(Sync):
             except IndexError:
                 log.warning('Non-existent ID. Nothing to restore!')
                 raise SystemExit
-            print('Restoring Backup {}...'.format(restore_file))
+            print('Restoring backup {}...'.format(restore_file))
             return restore_file
         print()
 
