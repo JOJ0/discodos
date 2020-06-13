@@ -18,7 +18,7 @@ import asyncio
 import argparse
 from sys import argv
 from webdav3.client import Client
-from webdav3.client import WebDavException
+from webdav3.exceptions import WebDavException
 from datetime import datetime
 from dateutil.parser import parse
 from shutil import copy2
