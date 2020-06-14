@@ -242,6 +242,21 @@ class Dropbox_sync(Sync):
                     else:
                         print(err)
                         raise SystemExit(1)
+
+                try:
+                    # make a copy of the just uploaded file, named without date!
+                    # this eases accessing the latest discobase for other apps
+                    log.info("Dropbox_sync.backup: Deleting {}.".format(
+                          self.discobase.name))
+                    self.dbx.files_delete_v2('{}/{}'.format(
+                          self.backuppath, self.discobase.name))
+                    log.info("Dropbox_sync.backup: Copying {} to {}.".format(
+                          bak_file_name, self.discobase.name))
+                    self.dbx.files_copy_v2(full_bak_path, '{}/{}'.format(
+                          self.backuppath, self.discobase.name))
+                except ApiError as err:
+                    # just info log error - don't bother user, it's a future feature
+                    log.info(err)
         # in any case, show list of existing backups
         self.show_backups()
         return True
