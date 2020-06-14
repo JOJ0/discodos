@@ -111,6 +111,11 @@ class Sync(object):
         mod_local_str = mod_local_dt.strftime('%Y-%m-%d_%H%M%S')
         return mod_local_str
 
+    def _get_local_mtime_dt(self, fileobj): # returns file's mtime as datetime obj
+        mod_local_dt = datetime.fromtimestamp(
+                          fileobj.stat().st_mtime)
+        return mod_local_dt
+
     def _get_fileobj_mtime(self, fileobj):
         local_mtime = self._get_local_mtime(fileobj)
         return '{}_{}'.format(fileobj.name, local_mtime)
@@ -221,12 +226,15 @@ class Dropbox_sync(Sync):
         if self.exists('{}/{}'.format(self.backuppath, bak_file_name)):
             log.warning('Backup existing. Won\'t overwrite "{}" '.format(
                     bak_file_name))
+            #log.info('Exixting backup metadata: {}'.format(
+            #    self.dbx.files_get_metadata(full_bak_path)))
         else:
             print('Backup not existing yet, uploading ...')
             with open(self.discobase, 'rb') as f:
                 try:
                     self.dbx.files_upload(f.read(), full_bak_path,
-                          mode=WriteMode('overwrite'))
+                      mode=WriteMode('overwrite'),
+                      client_modified=self._get_local_mtime_dt(self.discobase))
                     log.debug(
                       "File successfully backuped or already up to date.")
                 except ApiError as err:
@@ -243,13 +251,18 @@ class Dropbox_sync(Sync):
                         print(err)
                         raise SystemExit(1)
 
+                # make a copy of the just uploaded file, named without date!
+                # this eases accessing the latest discobase for other apps
                 try:
-                    # make a copy of the just uploaded file, named without date!
-                    # this eases accessing the latest discobase for other apps
                     log.info("Dropbox_sync.backup: Deleting {}.".format(
                           self.discobase.name))
                     self.dbx.files_delete_v2('{}/{}'.format(
                           self.backuppath, self.discobase.name))
+                except ApiError as err:
+                    # just info log error - don't bother user, it's a future feature
+                    log.info(err)
+
+                try:
                     log.info("Dropbox_sync.backup: Copying {} to {}.".format(
                           bak_file_name, self.discobase.name))
                     self.dbx.files_copy_v2(full_bak_path, '{}/{}'.format(
