@@ -212,16 +212,49 @@ class Dropbox_sync(Sync):
         except ApiError as apierr:
             #print(dir(apierr.error.get_path()))
             if apierr.error.get_path().is_not_found() == True:
-                log.debug('Dropbox_sync.exits: File not yet existing.')
+                #log.debug('Dropbox_sync.exits: File not yet existing.')
                 return False
             log.error(
               'Dropbox ApiError: Exception on file exists check: {}'.format(
                 apierr))
             return True
 
+    def get_client_modified(self, path):
+        try:
+            mod_time = self.dbx.files_get_metadata(path).client_modified
+            log.debug('Dropbox_sync.get_client_modified: {}.'.format(mod_time))
+            return mod_time
+        except ApiError as apierr:
+            #print(dir(apierr.error.get_path()))
+            if apierr.error.get_path().is_not_found() == True:
+                log.debug('Dropbox_sync.get_client_modified: File not yet existing.')
+            log.error(
+              'Dropbox ApiError: Exception while getting client mod time {}'.format(
+                apierr))
+            return None
+
+    def delete(self, target_file):
+        try:
+            log.info("Dropbox_sync.delete: Deleting {}.".format(
+                  target_file))
+            self.dbx.files_delete_v2(target_file)
+        except ApiError as err:
+            # just info log error - don't bother user, it's a future feature
+            log.info(err)
+
+    def copy(self, source_file, target_file):
+        try:
+            log.info("Dropbox_sync.copy: Copying {} to {}.".format(
+                  source_file, target_file))
+            self.dbx.files_copy_v2(source_file, target_file)
+        except ApiError as err:
+            # just info log error - don't bother user, it's a future feature
+            log.info(err)
+
     def backup(self):
         bak_file_name = self._get_fileobj_mtime(self.discobase)
         full_bak_path = '{}/{}'.format(self.backuppath, bak_file_name)
+        copy_file_path = '{}/{}'.format(self.backuppath, self.discobase.name)
         print("Uploading as {} to {}".format(bak_file_name, self.backuppath))
         if self.exists('{}/{}'.format(self.backuppath, bak_file_name)):
             log.warning('Backup existing. Won\'t overwrite "{}" '.format(
@@ -235,8 +268,9 @@ class Dropbox_sync(Sync):
                     self.dbx.files_upload(f.read(), full_bak_path,
                       mode=WriteMode('overwrite'),
                       client_modified=self._get_local_mtime_dt(self.discobase))
-                    log.debug(
-                      "File successfully backuped or already up to date.")
+                    m_success = 'Dropbox_sync.backup: File successfully backuped '
+                    m_success+= 'or already up to date.'
+                    log.debug(m_success)
                 except ApiError as err:
                     # This checks for the specific error where a user doesn't have
                     # enough Dropbox space quota to upload this file
@@ -253,23 +287,28 @@ class Dropbox_sync(Sync):
 
                 # make a copy of the just uploaded file, named without date!
                 # this eases accessing the latest discobase for other apps
-                try:
-                    log.info("Dropbox_sync.backup: Deleting {}.".format(
-                          self.discobase.name))
-                    self.dbx.files_delete_v2('{}/{}'.format(
-                          self.backuppath, self.discobase.name))
-                except ApiError as err:
-                    # just info log error - don't bother user, it's a future feature
-                    log.info(err)
-
-                try:
-                    log.info("Dropbox_sync.backup: Copying {} to {}.".format(
-                          bak_file_name, self.discobase.name))
-                    self.dbx.files_copy_v2(full_bak_path, '{}/{}'.format(
-                          self.backuppath, self.discobase.name))
-                except ApiError as err:
-                    # just info log error - don't bother user, it's a future feature
-                    log.info(err)
+                if self.exists(copy_file_path):
+                    m_exists = 'Dropbox_sync.backup: Latest discobase file '
+                    m_exists+= 'already existing, checking client_modified times.'
+                    log.info(m_exists)
+                    mod_time_bak = self.get_client_modified(full_bak_path)
+                    mod_time_copy = self.get_client_modified(copy_file_path)
+                    if mod_time_bak <= mod_time_copy:
+                        m_newer = 'Dropbox_sync.backup: Timestamp of latest discobase '
+                        m_newer+= 'file is newer than or the same as just uploaded file. '
+                        m_newer+= 'Not overwriting.'
+                        log.info(m_newer)
+                    else:
+                        m_older = 'Dropbox_sync.backup: Timestamp of latest discobase '
+                        m_older+= 'file is older than just uploaded file. Overwriting!'
+                        log.info(m_older)
+                        self.delete(copy_file_path)
+                        self.copy(full_bak_path, copy_file_path)
+                else:
+                    m_not_existing = 'Dropbox_sync.backup: Latest discobase '
+                    m_not_existing+= 'file is not existing yet, copying.'
+                    log.info(m_not_existing)
+                    self.copy(full_bak_path, copy_file_path)
         # in any case, show list of existing backups
         self.show_backups()
         return True
@@ -281,7 +320,8 @@ class Dropbox_sync(Sync):
         relevant_files = []
 
         for resource in all_files.entries:
-            relevant_files.append(resource)
+            if re.search('_(\d+)-(\d+)-(\d+)_(\d+)$', resource.name):
+                relevant_files.append(resource)
 
         for j, item in enumerate(relevant_files): 
             file = '({}) - {}'.format(j, item.name)
