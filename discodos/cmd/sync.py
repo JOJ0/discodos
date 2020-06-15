@@ -30,7 +30,7 @@ log = logging.getLogger('discodos')
 
 
 def argparser(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='the DiscoDOS backup & sync tool.')
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
         action="count", default=0,
