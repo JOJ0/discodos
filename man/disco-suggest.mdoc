@@ -1,0 +1,64 @@
+.Dd June 15, 2020
+.Dt DISCO-SUGGEST 1
+.Os DiscoDOS
+.Sh NAME
+.Nm
+.Cm disco-suggest
+.Nd suggests DiscoDOS tracks based on various criteria
+
+.Sh SYNOPSIS
+.Nm disco
+.Ar suggest
+.Op Fl -help
+.Op Fl -bpm
+.Op Fl -key
+.Op Ar search_terms
+...
+
+.Sh DESCRIPTION
+the
+.Cm suggest
+command suggests tracks based on what you've played before or
+views tracks based on
+.Ar BPM
+or musical
+.Ar KEY.
+...
+
+.Sh ARGUMENTS
+.Bl -tag -width Ds
+.It Op Ar search_terms
+track or release name you want to show a "track-combination report" for.
+.Op Ar search_terms
+must be left out when
+.Fl b
+or
+.Fl k
+is used.
+.El
+...
+
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+show this help message and exit
+.It Fl b Ar BPM , Fl -bpm Ar BPM
+suggests tracks based on
+.Ar BPM
+value, within a pitch-range of +/-6 percent.
+.It Fl k Ar KEY , Fl -key Ar KEY
+suggests tracks based on musical key.
+.El
+
+.Sh AUTHORS
+J0J0 T <jt@peek-a-boo.at>
+.Pp
+Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise for motivation and a GUI draft and most of all to Gold Fish for her patience while Doogie Howser wrote in his diary!
+...
+
+.Sh SEE ALSO
+.Xr disco-search 1 , 
+.Xr disco-import 1 , 
+.Xr disco-mix 1 , 
+.Xr disco 1
+.Xr discosync 1 , 
