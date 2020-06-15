@@ -25,8 +25,8 @@ if [ "$1" == 'doit' ]; then
     #man_disco > man/disco.mdoc
     #man_disco_mix > man/disco-mix.mdoc
     #man_disco_suggest > man/disco-suggest.mdoc
-    man_disco_import > man/disco-import.mdoc
-    #man_disco_search > man/disco-search.mdoc
+    #man_disco_import > man/disco-import.mdoc
+    man_disco_search > man/disco-search.mdoc
     #man_discosync > man/discosync.mdoc
     echo "5 files written to man/"
     echo "Now fix stuff manually"
@@ -34,8 +34,8 @@ else
     #man_disco -m
     #man_disco_mix -m
     #man_disco_suggest -m
-    man_disco_import -m
-    #man_disco_search -m
+    #man_disco_import -m
+    man_disco_search -m
     #man_discosync -m
 fi
 
