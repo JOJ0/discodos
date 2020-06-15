@@ -3,19 +3,46 @@
 .Os Linux
 .Sh NAME
 .Nm disco
-.Nd the discodos cli
+.Nd the DiscoDOS CLI
 .Sh SYNOPSIS
 .Nm disco
 .Op Fl -help
 .Op Fl -verbose
 .Op Fl -offline
 .Ar {search,mix,suggest,import,setup} Ar ...
+
 .Sh DESCRIPTION
 .Pp
 DiscoDOS helps a DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from a users Discogs record collection. Tracks can be organized into playlists and mix-transitions rated. Additionally the collection can be linked to the online music information services MusicBrainz and AcousticBrainz, thus further information (like musical key and BPM) is made available to the user.
 .Pp
 DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite of what the name implies, it's just the look that is reminiscent of the 80s/90s operating system, its usability follows most standards of a typical shell utility you would find on a UNIX-like operating system. It is aimed to support modern Linux, MacOS and Windows systems.
 ...
+
+.Sh SUBCOMMANDS
+.Cm search
+searches for releases and tracks in the Discogs
+collection. Several actions can be executed on the
+found items, eg. adding to a mix, updating track info
+from Discogs or fetching additional information from
+MusicBrainz/AcousticBrainz. View this subcommand's
+help: "disco search -h".
+.Cm mix
+manages your mixes. View this subcommand's help:
+"disco mix -h."
+.Cm suggest
+suggests tracks based on what you've played before or
+views tracks based on BPM or musical key. View this
+subcommand's help: "disco suggest -h".
+.Cm import
+imports your whole Discogs collection or just single
+releases. View this subcommand's help: "disco import
+-h".
+.Cm setup
+sets up the DiscoBASE and handles database schema
+upgrades. View this subcommand's help: "disco setup
+-h".
+...
+
 .Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl h , Fl -help
@@ -27,11 +54,13 @@ is INFO level, -vv is DEBUG level).
 .It Fl o , Fl -offline
 DiscoDOS checks for connectivity to online services (Discogs, MusicBrainz, AcousticBrainz) itself. This option forces offline mode. A lot of options work in on- and offline mode. Some behave differently, depending on connection state.
 .El
+
 .Sh AUTHORS
 J0J0 T <jt@peek-a-boo.at>
 .Pp
 Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise for motivation and a GUI draft and most of all to Gold Fish for her patience while Doogie Howser wrote in his diary!
 ...
+
 .Sh SEE ALSO
 .Xr disco_mix 1 , 
 .Xr disco-search 1 , 
