@@ -13,7 +13,8 @@ log = logging.getLogger('discodos')
 
 # argparser init
 def argparser(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+      description='the DiscoDOS CLI.')
                  #formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
 		"-v", "--verbose", dest="verbose_count",
