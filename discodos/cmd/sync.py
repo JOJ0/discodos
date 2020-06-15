@@ -322,6 +322,12 @@ class Dropbox_sync(Sync):
         for resource in all_files.entries:
             if re.search('_(\d+)-(\d+)-(\d+)_(\d+)$', resource.name):
                 relevant_files.append(resource)
+            else:
+                log.debug('Sync: Skipping resource: {}'.format(resource.name))
+
+        # FIXME sorting as in webdav: just by title
+        #relevant_files.sort() # sorts by name
+        #print(dir(relevant_files))
 
         for j, item in enumerate(relevant_files): 
             file = '({}) - {}'.format(j, item.name)
