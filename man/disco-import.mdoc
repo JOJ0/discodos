@@ -1,0 +1,99 @@
+.Dd June 15, 2020
+.Dt DISCO-IMPORT 1
+.Os DiscoDOS
+.Sh NAME
+.Nm
+.Cm disco-import
+.Nd import and update DiscoDOS releases and tracks
+
+.Sh SYNOPSIS
+.Nm disco
+.Ar import
+.Op Fl -help
+.Op Fl -add-to-collection | Fl -tracks | Fl -brainz
+.Op Fl -resume
+.Op Ar RELEASE_ID
+...
+
+.Sh DESCRIPTION
+the
+.Cm import
+command imports your whole Discogs collection or just single releases and tracks. It is also used to get extended track information from Discogs, MusicBrainz and AcousticBrainz (BPM, musical key, links to MusicBrainz releases and recordings, links to AcousticBrainz recordings).
+...
+
+.Sh ARGUMENTS
+.sp 1
+RELEASE_ID            the Discogs release ID you want to import to
+.sp 1
+.sp 1
+DiscoBASE. If left empty, the whole collection will be
+.sp 1
+.sp 1
+imported. If the additional option
+.Fl a
+is used, the
+.sp 1
+.sp 1
+release will be added to your Discogs collection _and_
+.sp 1
+.sp 1
+imported to DiscoBASE. Note that a regular import of a
+.sp 1
+.sp 1
+given release ID is quite time consuming: We have to
+.sp 1
+.sp 1
+check wether or not this release ID is already in the
+.sp 1
+.sp 1
+Discogs collection (we don't want duplicates), thus we
+.sp 1
+.sp 1
+have to run through all of your releases via the
+.sp 1
+.sp 1
+Discogs API. Unfortunately Discogs does not allow us
+.sp 1
+.sp 1
+to search for release IDs in ones collection, we only
+.sp 1
+.sp 1
+can "iterate" through them. Therefore the recommended
+.sp 1
+.sp 1
+way of adding newly gained releases is by using the -a
+.sp 1
+.sp 1
+option.
+.sp 1
+
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+show this help message and exit
+.It Fl a , Fl -add-to-collection
+This is the recommended (and fastest) way of adding newly gained releases to your collection. The given release ID is added to your Discogs collection (same as when you click an "Add to collection" in the Discogs Webinterface. Additionally the release is added to the DiscoBASE. Note that for performance's sake, we don't do a time-consuming check if the release is already in your Discogs collection by asking the Discogs API, but only do a quick check if the ID is in the local DiscoBASE already.
+.It Fl u , Fl -tracks
+extends the Discogs import (releases and also tracks will be downloaded) - takes siginficantly longer than the regular import. Note: This is the same as "disco search all -u".
+.It Fl z , Fl -brainz
+imports additional information from MusicBrainz/AcousticBrainz. This action takes a long time.
+.Fl z
+quick match, -zz detailed match (takes even longer, but more results). Notes: This is the same as "disco search all -z". Prior to using this option, an extended Discogs import is recommended (disco import --tracks). Otherwise only tracks that were already downloaded to the DiscoBASE (eg used in mixes and updated using "disco mix -u") will be updated.
+.It Fl -resume Ar OFFSET
+resumes long-running processes at the given offset position (expects a number). You can combine this option currently with the *Brainz matching import operation only (-z, -zz)
+.El
+...
+
+.Sh AUTHORS
+J0J0 T <jt@peek-a-boo.at>
+.Pp
+Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise for motivation and a GUI draft and most of all to Gold Fish for her patience while Doogie Howser wrote in his diary!
+...
+
+.Sh SEE ALSO
+.Xr disco-search 1 , 
+.Xr disco-suggest 1 , 
+.Xr disco-mix 1 , 
+.Xr disco 1
+.Xr discosync 1 , 
+...
