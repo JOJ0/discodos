@@ -419,14 +419,13 @@ class Webdav_sync(Sync):
             print('\nExisting backups:')
         #relevant_files = self.client.list()[1:] # leave out first item, it's the containing folder
         all_files = self.client.list()
+        all_files.sort() # sorts by name
         relevant_files = []
         for i, resource in enumerate(all_files):
-            re_result = re.search('.*/$', resource)
-            log.debug('Sync: Folder regex matched: {}'.format(re_result))
-            if re_result: # skip all folders
-                log.debug('Sync: Skipping resource: {}'.format(all_files[i]))
-            else: # add files to new list
+            if re.search('_(\d+)-(\d+)-(\d+)_(\d+)$', resource):
                 relevant_files.append(resource)
+            else:
+                log.debug('Sync: Skipping resource: {}'.format(all_files[i]))
 
         for j, file in enumerate(relevant_files):
             file = '({}) - {}'.format(j, file)
