@@ -1,5 +1,7 @@
 usage: discosync [-h] [-v] [-t {dropbox,webdav,d,w}] [-b | -r | -s]
 
+the DiscoDOS backup & sync tool.
+
 optional arguments:
   -h, --help            show this help message and exit
   -v, --verbose         increase log verbosity (-v -> INFO level, -vv DEBUG

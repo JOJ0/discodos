@@ -1,0 +1,58 @@
+.Dd June 15, 2020
+.Dt DISCOSYNC 1
+.Os DiscoDOS
+.Sh NAME
+.Nm discosync
+.Nd the DiscoDOS backup & sync tool
+.Sh SYNOPSIS
+.Nm discosync
+.Op Fl -help
+.Op Fl -verbose
+.Op Fl -type
+.Op Fl -backup | Fl -restore | Fl -show
+.Sh DESCRIPTION
+.Pp
+.Pp
+.Cm discosync
+is used to save the DiscoBASE to the cloud and restore it if something went wrong. It also can be used to share it between multiple computers. There are currently two options for storing the backups:
+.Pp
+.Bl -bullet -compact
+.It
+Dropbox
+.It
+A folder on a webserver
+.El
+.Pp
+To initially set up
+.Cm discosync
+please follow the configuration steps in the DiscoDOS manual:
+.Lk https://github.com/JOJ0/discodos/blob/master/MANUAL.md#discosync---the-discodos-backup--sync-tool
+
+...
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+show this help message and exit
+.It Fl v , Fl -verbose
+increase log verbosity (
+.Fl v
+-> INFO level, 
+.Fl vv
+-> DEBUG level)
+.It Fl t Ar {dropbox} , Fl -type Ar {dropbox}
+select synchronisation type: dropbox (default) or webdav; or just in short: d or w
+.It Fl b , Fl -backup
+.It Fl r , Fl -restore
+.It Fl s , Fl -show
+.El
+.Sh AUTHORS
+J0J0 T <jt@peek-a-boo.at>
+.Pp
+Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise for motivation and a GUI draft and most of all to Gold Fish for her patience while Doogie Howser wrote in his diary!
+...
+.Sh SEE ALSO
+.Xr disco-search 1 , 
+.Xr disco-import 1 , 
+.Xr disco-suggest 1 , 
+.Xr disco-mix 1 , 
+.Xr disco 1

@@ -16,21 +16,26 @@ function man_disco_import() {
 function man_disco_search() {
     cli2man -i man/disco_search_help.txt --see-also disco,disco-mix,disco-suggest,disco-import --os DiscoDOS --include man/disco_sub_add.mdoc $1
 }
+function man_discosync() {
+    cli2man -i man/discosync_help.txt --see-also disco,disco-mix,disco-suggest,disco-import,disco-search --os DiscoDOS --include man/discosync_add.mdoc $1
+}
 
 if [ "$1" == 'doit' ]; then
     #man_disco > man/disco.mdoc
-    man_disco_mix > man/disco-mix.mdoc
-    man_disco_suggest > man/disco-suggest.mdoc
-    man_disco_import > man/disco-import.mdoc
-    man_disco_search > man/disco-search.mdoc
+    #man_disco_mix > man/disco-mix.mdoc
+    #man_disco_suggest > man/disco-suggest.mdoc
+    #man_disco_import > man/disco-import.mdoc
+    #man_disco_search > man/disco-search.mdoc
+    man_discosync > man/discosync.mdoc
     echo "5 files written to man/"
     echo "Now fix stuff manually"
 else
     #man_disco -m
-    man_disco_mix -m
+    #man_disco_mix -m
     #man_disco_suggest -m
     #man_disco_import -m
     #man_disco_search -m
+    man_discosync -m
 fi
 
 
