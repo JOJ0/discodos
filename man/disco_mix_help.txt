@@ -1,0 +1,77 @@
+usage: disco mix [-h] [-v]
+                 [-c | -D | -e POSITION | -E | -b FIELDS | -a SEARCH_TERMS | -r POSITION | -d POSITION | --copy | -u | -z]
+                 [-p POSITION] [--resume OFFSET]
+                 [mix_name]
+
+positional arguments:
+  mix_name              mix name or mix ID being displayed, edited, created,
+                        copied, deleted, etc. If mix_name is left out, a list
+                        of available mixes is shown and all other arguments
+                        are ignored.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         increases mix tracklist view detail. -v adds
+                        tracknames, artists, transition rating/notes and
+                        general track notes. -vv shows when and how
+                        MusicBrainz matching was done and also direct weblinks
+                        to Discogs releases, MusicBrainz releases/recordings
+                        and AccousticBrainz recordings.
+  -c, --create-mix      creates new mix (named as given in mix_name argument).
+  -D, --delete-mix      deletes the mix (given in mix_name) and all its
+                        contained tracks!
+  -e POSITION, --edit POSITION
+                        edits/adds details of a track in a mix (editable
+                        fields: key, BPM, track number, position in mix, key
+                        notes, transition rating, transition notes, general
+                        track notes, custom MusicBrainz recording ID).
+  -E, --edit-mix        edits/adds general info about a mix (name, played
+                        date, venue).
+  -b FIELDS, --bulk-edit FIELDS
+                        bulk-edits specific fields of each track in mix.
+                        Syntax of FIELDS argument: <field1>,<field2>,...
+                        available fields:
+                        key,bpm,track_no,track_pos,key_notes,trans_rating,
+                        trans_notes,notes,m_rec_id_override.
+  -a SEARCH_TERMS, --add-to-mix SEARCH_TERMS
+                        searches for release/track in collection and adds it
+                        to the mix, This option is actually a shortcut to
+                        "disco search -m mix_name search_term" and behaves
+                        identically. If SEARCH_TERMS is a number, it is
+                        assumed being a Discogs release ID. A quick database
+                        check is done and if non-existent yet, the release is
+                        1) added to the Discogs collection and 2) imported to
+                        DiscoBASE. This is a convenience function eg when
+                        trying to quickly add a release to the mix that's not
+                        in the DiscoBASE yet (possibly an only recently gained
+                        record?).
+  -r POSITION, --reorder-tracks POSITION
+                        reorders tracks in current mix, starting at POSITION.
+                        Note that this is a troubleshooting function and
+                        usually shouldn't be necessary to use.
+  -d POSITION, --delete-track POSITION
+                        removes the track at the given position from the mix.
+  --copy                copies the mix given in mix_name argument. Asks for
+                        new name!
+  -u, --discogs-update  updates tracks in current mix with additional info
+                        from Discogs. Can be combined with -p when mix ID
+                        provided or with --resume when mix ID not provided
+                        (all tracks in mixes update).
+  -z, --brainz-update   updates tracks in current mix with additional info
+                        from MusicBrainz and AcousticBrainz. Leave out mix ID
+                        to update every track contained in any mix. -z quick
+                        match, -zz detailed match (takes longer, but more
+                        results). Can be combined with -p when mix ID provided
+                        or with --resume when mix ID not provided (all tracks
+                        in mixes *Brainz matching).
+  -p POSITION, --pos POSITION
+                        in combination with -a this option adds the found
+                        release/track at the given position in the mix (rather
+                        than at the end). In combination with -u, -z or -zz
+                        the update process is started at the given position in
+                        the mix.
+  --resume OFFSET       resumes long-running processes at the given offset
+                        position (expects a number). You can combine this
+                        option currently with "all tracks in mixes Discogs
+                        update" (disco mix -u) or with "all tracks in mixes
+                        *Brainz matching" (disco mix -z, disco mix -zz).

@@ -1,0 +1,55 @@
+usage: disco search [-h] [-m MIX_NAME | -u | -z | -e] [-t TRACK_NUMBER]
+                    [-p POS_IN_MIX] [--resume OFFSET]
+                    search_terms
+
+positional arguments:
+  search_terms          The collection is searched for these terms. When
+                        offline, it searches through all releases'
+                        artists/titles only (eg tracknames not considered).
+                        When online, the Discogs API search engine is used and
+                        also tracknames, artists, labels and catalog numbers
+                        are looked through. If your search term consists of
+                        multiple words, put them inside double quotes (eg.
+                        "foo bar term"). If you instead put a number as your
+                        search term, it is assumed you want to view exactly
+                        the Discogs release with the given ID. If search term
+                        is the special keyword "all", a list of all releases
+                        in the DiscoBASE is shown (including weblinks to
+                        Discogs/MusicBrainz release pages). In combination
+                        with -u, -z or -zz respectively, all tracks are
+                        updated. Note that this is exactely the same as "disco
+                        import" in combination with those options.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m MIX_NAME, --mix MIX_NAME
+                        adds a track of the found release to the given mix ID
+                        (asks which track to add in case -t is missing).
+  -u, --discogs-update  updates found release/track with Discogs track/artist
+                        details (asks which track to update in case -t is
+                        missing).
+  -z, --brainz-update   updates found release/track with additional info from
+                        MusicBrainz and AcousticBrainz. (asks which track to
+                        update in case -t is missing) -z quick match, -zz
+                        detailed match (takes longer, but more results).
+  -e, --edit            edits/adds details to a found release/track. Editable
+                        fields: key, BPM, key notes, general track notes,
+                        custom MusicBrainz recording ID. (asks which track to
+                        edit in case -t is missing).
+  -t TRACK_NUMBER, --track TRACK_NUMBER
+                        in combination with -m this option adds the given
+                        track number (eg. A1, AA, B2, ...) to the mix selected
+                        using -m; in combination with -z or -u the given track
+                        is the one being updated with *Brainz or Discogs
+                        details; in combination with -e the given track is to
+                        one to be edited.
+  -p POS_IN_MIX, --pos POS_IN_MIX
+                        in combination with -m this option states that we'd
+                        like to insert the track at the given position (eg. 1,
+                        14, ...), rather than at the end of the mix; in
+                        combination with -z, -zz, -u or -e this option is
+                        ignored.
+  --resume OFFSET       resumes long-running processes at the given offset
+                        position (expects a number). You can combine this
+                        option currently with *Brainz matching operations only
+                        (-z, -zz)

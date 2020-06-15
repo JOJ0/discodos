@@ -1,0 +1,11 @@
+usage: disco suggest [-h] [-b BPM] [-k KEY] [search_terms]
+
+positional arguments:
+  search_terms       track or release name you want to show a "track-
+                     combination report" for.
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -b BPM, --bpm BPM  suggests tracks based on BPM value, within a pitch-range
+                     of +/-6 percent.
+  -k KEY, --key KEY  suggests tracks based on musical key.

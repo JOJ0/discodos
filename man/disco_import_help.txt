@@ -1,0 +1,50 @@
+usage: disco import [-h] [--add-to-collection | --tracks | --brainz]
+                    [--resume OFFSET]
+                    [RELEASE_ID]
+
+positional arguments:
+  RELEASE_ID            the Discogs release ID you want to import to
+                        DiscoBASE. If left empty, the whole collection will be
+                        imported. If the additional option -a is used, the
+                        release will be added to your Discogs collection _and_
+                        imported to DiscoBASE. Note that a regular import of a
+                        given release ID is quite time consuming: We have to
+                        check wether or not this release ID is already in the
+                        Discogs collection (we don't want duplicates), thus we
+                        have to run through all of your releases via the
+                        Discogs API. Unfortunately Discogs does not allow us
+                        to search for release IDs in ones collection, we only
+                        can "iterate" through them. Therefore the recommended
+                        way of adding newly gained releases is by using the -a
+                        option.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --add-to-collection, -a
+                        This is the recommended (and fastest) way of adding
+                        newly gained releases to your collection. The given
+                        release ID is added to your Discogs collection (same
+                        as when you click an "Add to collection" in the
+                        Discogs Webinterface. Additionally the release is
+                        added to the DiscoBASE. Note that for performance's
+                        sake, we don't do a time-consuming check if the
+                        release is already in your Discogs collection by
+                        asking the Discogs API, but only do a quick check if
+                        the ID is in the local DiscoBASE already.
+  --tracks, -u          extends the Discogs import (releases and also tracks
+                        will be downloaded) - takes siginficantly longer than
+                        the regular import. Note: This is the same as "disco
+                        search all -u".
+  --brainz, -z          imports additional information from
+                        MusicBrainz/AcousticBrainz. This action takes a long
+                        time. -z quick match, -zz detailed match (takes even
+                        longer, but more results). Notes: This is the same as
+                        "disco search all -z". Prior to using this option, an
+                        extended Discogs import is recommended (disco import
+                        --tracks). Otherwise only tracks that were already
+                        downloaded to the DiscoBASE (eg used in mixes and
+                        updated using "disco mix -u") will be updated.
+  --resume OFFSET       resumes long-running processes at the given offset
+                        position (expects a number). You can combine this
+                        option currently with the *Brainz matching import
+                        operation only (-z, -zz)

@@ -1,0 +1,12 @@
+usage: discosync [-h] [-v] [-t {dropbox,webdav,d,w}] [-b | -r | -s]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         increase log verbosity (-v -> INFO level, -vv DEBUG
+                        level)
+  -t {dropbox,webdav,d,w}, --type {dropbox,webdav,d,w}
+                        select synchronisation type: dropbox (default) or
+                        webdav; or just in short: d or w
+  -b, --backup
+  -r, --restore
+  -s, --show

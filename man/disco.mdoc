@@ -1,0 +1,39 @@
+.Dd June 15, 2020
+.Dt DISCO 1
+.Os Linux
+.Sh NAME
+.Nm disco
+.Nd the discodos cli
+.Sh SYNOPSIS
+.Nm disco
+.Op Fl -help
+.Op Fl -verbose
+.Op Fl -offline
+.Ar {search,mix,suggest,import,setup} Ar ...
+.Sh DESCRIPTION
+.Pp
+DiscoDOS helps a DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from a users Discogs record collection. Tracks can be organized into playlists and mix-transitions rated. Additionally the collection can be linked to the online music information services MusicBrainz and AcousticBrainz, thus further information (like musical key and BPM) is made available to the user.
+.Pp
+DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite of what the name implies, it's just the look that is reminiscent of the 80s/90s operating system, its usability follows most standards of a typical shell utility you would find on a UNIX-like operating system. It is aimed to support modern Linux, MacOS and Windows systems.
+...
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+show this help message and exit
+.It Fl v , Fl -verbose
+increases output verbosity / shows what DiscoDOS is doing under the hood (
+.Fl v
+is INFO level, -vv is DEBUG level).
+.It Fl o , Fl -offline
+DiscoDOS checks for connectivity to online services (Discogs, MusicBrainz, AcousticBrainz) itself. This option forces offline mode. A lot of options work in on- and offline mode. Some behave differently, depending on connection state.
+.El
+.Sh AUTHORS
+J0J0 T <jt@peek-a-boo.at>
+.Pp
+Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise for motivation and a GUI draft and most of all to Gold Fish for her patience while Doogie Howser wrote in his diary!
+...
+.Sh SEE ALSO
+.Xr disco_mix 1 , 
+.Xr disco-search 1 , 
+.Xr disco-import 1 , 
+.Xr disco-suggest 1

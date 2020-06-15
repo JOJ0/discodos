@@ -1,0 +1,15 @@
+usage: disco [-h] [-v] [-o] {search,mix,suggest,import,setup} ...
+
+the DiscoDOS CLI.
+
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         increases output verbosity / shows what DiscoDOS is
+                        doing under the hood (-v is INFO level, -vv is DEBUG
+                        level).
+  -o, --offline         DiscoDOS checks for connectivity to online services
+                        (Discogs, MusicBrainz, AcousticBrainz) itself. This
+                        option forces offline mode. A lot of options work in
+                        on- and offline mode. Some behave differently,
+                        depending on connection state.
