@@ -3,6 +3,16 @@
 .Os DiscoDOS
 .Sh NAME
 disco-search \- search, edit and update DiscoDOS releases and tracks
+.Sh SYNOPSIS
+.Nm disco
+.Ar search
+.Op Fl -help
+.Op Fl -mix | Fl -discogs-update | Fl -brainz-update | Fl -edit
+.Op Fl -track
+.Op Fl -pos
+.Op Fl -resume
+.Ar search_terms
+...
 .Sh DESCRIPTION
 the
 .Cm search
@@ -14,16 +24,6 @@ from Discogs or fetching additional information from
 MusicBrainz/AcousticBrainz or simply adding track information by
 hand (user-defined BPM/key, track notes, user-defined
 AcousticBrainz recording ID).
-...
-.Sh SYNOPSIS
-.Nm disco
-.Ar search
-.Op Fl -help
-.Op Fl -mix | Fl -discogs-update | Fl -brainz-update | Fl -edit
-.Op Fl -track
-.Op Fl -pos
-.Op Fl -resume
-.Ar search_terms
 ...
 .Sh ARGUMENTS
 .Bl -tag -width Ds
