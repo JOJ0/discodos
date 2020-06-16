@@ -65,6 +65,17 @@ is INFO level, -vv is DEBUG level).
 DiscoDOS checks for connectivity to online services (Discogs, MusicBrainz, AcousticBrainz) itself. This option forces offline mode. A lot of options work in on- and offline mode. Some behave differently, depending on connection state.
 .El
 
+.Sh FILES
+.Pp
+.Bl -tag -width Ds
+.It ~/.discodos/config.yaml
+the DiscoDOS configuration file.
+.It ~/.discodos/discobase.db
+the DiscoDOS database file (aka the DiscoBASE).
+.It ~/.discodos/debug.log
+the DiscoDOS log file.
+...
+
 .Sh EXAMPLES
 .Pp
 Step by step tutorials and in-detail explanations of all DiscoDOS commands can be found on the README and User's Manual pages:
@@ -79,8 +90,8 @@ Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise 
 ...
 
 .Sh SEE ALSO
-.Xr disco_mix 1 , 
-.Xr disco-search 1 , 
-.Xr disco-import 1 , 
+.Xr disco_mix 1 ,
+.Xr disco-search 1 ,
+.Xr disco-import 1 ,
 .Xr disco-suggest 1
 .Xr discosync 1
