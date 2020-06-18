@@ -21,7 +21,6 @@ echo Copying to discodos dir...
 cd dist
 md discodos
 copy /y disco.exe discodos
-copy /y discosetup.exe discodos
 copy /y discosync.exe discodos
 copy /y config.yaml discodos
 

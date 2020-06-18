@@ -23,4 +23,4 @@ pyinstaller discodos/cmd/sync.py --onefile --name discosync --clean -y -p ~/.ven
 # run _once_ to create config.yaml
 dist/disco
 
-tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/disco dist/discosetup dist/discosync dist/config.yaml
+tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/disco dist/discosync dist/config.yaml
