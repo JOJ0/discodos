@@ -2,7 +2,7 @@
 rem echo Activating Python venv
 rem start /B "%HOMEPATH%/python-envs/discodos_pack/Scripts/activate.bat"
 
-set VERSION="1.0~rc2"
+set VERSION="1.0_rc2"
 
 if "%1"=="clean" (
     del /q dist\discodos
