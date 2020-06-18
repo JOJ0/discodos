@@ -12,7 +12,6 @@ if "%1"=="clean" (
 
 echo Packaging...
 pyinstaller discodos\cmd\cli.py --name disco --onefile --clean -y
-pyinstaller discodos\cmd\config.py --name discosetup --onefile --clean -y
 pyinstaller discodos\cmd\sync.py --name discosync --onefile --clean -y
 
 echo Running _once_ to create config.yaml...
