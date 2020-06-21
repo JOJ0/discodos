@@ -1,7 +1,7 @@
 #!/bin/bash
 # package for windows running git-bash
 echo Activating Python venv
-. "$HOME/.venvs/discodos_fresh/Scripts/activate"
+. "$HOME/python-envs/discodos_fresh/Scripts/activate"
 
 
 VERSION='1.0_rc2'
@@ -11,9 +11,9 @@ if [[ $1 == '--clean' ]]; then
 fi
 
 echo Packaging disco...
-pyinstaller discodos/cmd/cli.py --name disco --onefile --clean -y -p ~/.venvs/discodos_fresh/Lib/site-packages/ -p  ~/.venvs/discodos_fresh/src/python3-discogs-client/
+pyinstaller discodos/cmd/cli.py --name disco --onefile --clean -y -p ~/python-envs/discodos_fresh/Lib/site-packages/ -p  ~/python-envs/discodos_fresh/src/python3-discogs-client/
 echo Packaging discosync...
-pyinstaller discodos/cmd/sync.py --name discosync --onefile --clean -y -p ~/.venvs/discodos_fresh/Lib/site-packages/ -p  ~/.venvs/discodos_fresh/src/python3-discogs-client/
+pyinstaller discodos/cmd/sync.py --name discosync --onefile --clean -y -p ~/python-envs/discodos_fresh/Lib/site-packages/ -p  ~/python-envs/discodos_fresh/src/python3-discogs-client/
 
 echo Running _once_ to create config.yaml...
 dist/disco.exe
