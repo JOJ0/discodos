@@ -14,14 +14,25 @@ import sys
 log = logging.getLogger('discodos')
 
 def create_data_dir(discodos_root):
-    home = Path(os.getenv('HOME'))
     # create discodos_data dir
     if os.name == 'posix':
+        home = Path(os.getenv('HOME'))
         Path.mkdir(home / '.discodos/', exist_ok=True)
         discodos_data = home / '.discodos'
     elif os.name == 'nt':
-        Path.mkdir(home / 'discodos_data/', exist_ok=True)
-        discodos_data = home / 'discodos_data'
+        #import win32com.client
+        #from win32 import win32api
+        #oShell = win32com.client.Dispatch("Wscript.Shell")
+        #mydocs = oShell.SpecialFolders("MyDocuments")
+        #discodos_data = mydocs / 'discodos'
+        import ctypes.wintypes
+        CSIDL_PERSONAL=5
+        SHGFP_TYPE_CURRENT= 0
+        buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(0, CSIDL_PERSONAL, 0, SHGFP_TYPE_CURRENT, buf)
+        mydocs = Path(buf.value)
+        Path.mkdir(mydocs / 'DiscoDOS/', exist_ok=True)
+        discodos_data = mydocs / 'DiscoDOS'
     else:
         log.warn("Config: Unknown OS - using discodos_root as data dir too.")
         discodos_data = discodos_root
@@ -171,6 +182,8 @@ class Db_setup(Database):
 
 class Config():
     def __init__(self):
+        # is set to true on initial run and config create
+        self.config_created = False
         # path handling
         # determine if application is a script file or frozen exe
         if getattr(sys, 'frozen', False):
@@ -199,7 +212,8 @@ class Config():
         log.info("Config.discodos_root: {}".format(self.discodos_root))
         log.info("Config.discodos_data: {}".format(self.discodos_data))
         # config.yaml handling
-        self.conf = read_yaml( self.discodos_data / "config.yaml")
+        self.file = self.discodos_data / "config.yaml"
+        self.conf = read_yaml(self.file)
         if not self.conf:
             self.create_conf()
             raise SystemExit()
@@ -490,7 +504,7 @@ class Config():
             'discobase_file': 'discobase.db'
         }
         create_msg = '\nSeems like you are running DiscoDOS for the first time, '
-        create_msg+= 'creating config file...'
+        create_msg+= 'a config file will be created...'
         log.info(create_msg)
         print(create_msg)
         written = self._write_yaml(config, self.discodos_data / 'config.yaml')
@@ -502,6 +516,7 @@ class Config():
             written_msg+= '* Save the file and run disco again - a database file will be created '
             written_msg+= 'and connection to Discogs will be verified.\n'
             written_msg+= '* Learn how to import your collection and use DiscoDOS: https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection\n'
+            self.config_created = True
             log.info(written_msg)
             print_help(written_msg)
 
