@@ -222,7 +222,7 @@ class Config():
             if self.no_create_conf and os.name == "nt":
                 import ctypes  # An included library with Python install.
                 ctypes.windll.user32.MessageBoxW(0,
-                  "No configuration file existing yet, please run DiscoDOS first!", "DiscoDOS", 1)
+                  "No configuration file existing yet, please run DiscoDOS first!", "DiscoDOS", 0)
                 raise SystemExit()
             else:
                 self.create_conf()
