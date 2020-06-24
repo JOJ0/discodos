@@ -181,9 +181,10 @@ class Db_setup(Database):
 
 
 class Config():
-    def __init__(self):
+    def __init__(self, no_create_conf=False):
         # is set to true on initial run and config create
         self.config_created = False
+        self.no_create_conf = no_create_conf
         # path handling
         # determine if application is a script file or frozen exe
         if getattr(sys, 'frozen', False):
@@ -214,9 +215,18 @@ class Config():
         # config.yaml handling
         self.file = self.discodos_data / "config.yaml"
         self.conf = read_yaml(self.file)
+        # on a shell we just create config and show steps,
+        # on windows when user clicks Startmenu "Edit Conf...",
+        # we show a popup and ask for rerun
         if not self.conf:
-            self.create_conf()
-            raise SystemExit()
+            if self.no_create_conf and os.name == "nt":
+                import ctypes  # An included library with Python install.
+                ctypes.windll.user32.MessageBoxW(0,
+                  "No configuration file existing yet, please run DiscoDOS first!", "DiscoDOS", 1)
+                raise SystemExit()
+            else:
+                self.create_conf()
+                raise SystemExit()
         # db file handling
         db_file = self._get_config_entry('discobase_file') # maybe configured?
         if not db_file: # if not set, use default value
