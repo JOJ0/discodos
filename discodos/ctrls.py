@@ -392,7 +392,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             self.cli.ask('Setting up DiscoBASE, press enter...')
             super(Coll_ctrl_cli, self).setup_db(_db_file)
             self.collection = Collection(_db_conn, _db_file)
-        if self.user.WANTS_ONLINE and self.user.DID_NOT_PROVIDE_COMMAND == False:
+        if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
             else: # only try to initialize brainz if discogs is online already
