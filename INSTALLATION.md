@@ -4,7 +4,7 @@
 - [Install released version](#install-released-version)
   - [Windows](#windows)
   - [macOS/Linux](#macoslinux)
-- [Configure Discogs collection access](#configure-discogs-collection-access)
+- [Configure Discogs API access](#configure-discogs-api-access)
 - [Configure _discosync_ - The DiscoDOS backup & sync tool](#configure-discosync---the-discodos-backup--sync-tool)
   - [Configure Dropbox Access for _discosync_](#configure-dropbox-access-for-discosync)
   - [Configure a webserver folder for _discosync_](#configure-a-webserver-folder-for-discosync)
@@ -25,7 +25,7 @@ basically the steps on every OS are similar:
 * launch DiscoDOS' main command `disco`
   * a local database will be initialized (the DiscoBASE)
   * the DiscoDOS CLI tools will be set up for your user environment
-* configure Discogs collection access
+* configure Discogs API access
 
 
 ### Windows
@@ -51,7 +51,7 @@ Launch DiscoDOS' main command:
 
 A local **database** (the so-called DiscoBASE) and an additional file (`discoshell.bat`) was just created in your discodos folder.
 
-Configure access to your Discogs collection as described in chapter [Configure Discogs collection Access](#configure-discogs-collection-access), then come back here!
+Configure access to your Discogs collection as described in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
 
 Start using DiscoDOS by double clicking the newly created batch file `discoshell.bat` - make a shortcut to it on your Desktop.
 
@@ -93,14 +93,14 @@ To make `disco` easily launchable without having to type `./` in front of it, ex
 
 `./install_wrappers_to_path.sh`
 
-Configure access to your Discogs collection as described in chapter [Configure Discogs collection access](#configure-discogs-collection-access), then come back here!
+Configure access to your Discogs collection as described in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
 
 Launch the `disco` command again - if the connection to Discogs is working it will ask you to view a little tutorial teaching you how it works - hit enter and follow the steps.
 
 Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next step will be to import your Discogs collection.
 
 
-## Configure Discogs collection access
+## Configure Discogs API access
 
 To access your Discogs collection you need to generate an API login token and put it into the configuration file.
 
