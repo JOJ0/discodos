@@ -3,7 +3,7 @@
 # config.py is kind of a controller - it sets up db and creates config
 from discodos.models import Database, sqlerr
 from discodos.views import User_int
-from discodos.utils import read_yaml, print_help
+from discodos.utils import read_yaml, print_help, ask_user
 import yaml
 import logging
 import pprint
@@ -242,7 +242,6 @@ class Config():
             self.log_level = "WARNING"
             log.warn("config.yaml entry log_level not set, will take from cli option or default.")
         # then other settings
-        self.discogs_token = self._get_config_entry('discogs_token', False)
         self.discogs_appid = 'DiscoDOS/1.0 +https://github.com/JOJ0/discodos'
         self.musicbrainz_appid = ['1.0', 'DiscoDOS https://github.com/JOJ0/discodos']
         self.dropbox_token = self._get_config_entry('dropbox_token')
@@ -251,6 +250,20 @@ class Config():
         self.webdav_user = self._get_config_entry('webdav_user')
         self.webdav_password = self._get_config_entry('webdav_password')
         self.webdav_url = self._get_config_entry('webdav_url')
+
+        # discogs_token is essential, bother user until we have one
+        self.discogs_token = self._get_config_entry('discogs_token', False)
+        if self.discogs_token == '':
+            token = ''
+            while token == '':
+                token = ask_user("Please input discogs_token: ")
+            self.conf['discogs_token'] = token
+            written = self._write_yaml(self.conf, self.file)
+            if written:
+                log.info('Config: config.yaml written successfully.')
+                self.discogs_token = self._get_config_entry('discogs_token', False)
+            else:
+                log.error('writing config.yaml.')
 
     def _get_config_entry(self, yaml_key, optional = True):
         if optional:
@@ -514,21 +527,24 @@ class Config():
             'discobase_file': 'discobase.db'
         }
         create_msg = '\nSeems like you are running DiscoDOS for the first time, '
-        create_msg+= 'a config file will be created...'
+        create_msg+= 'a config file will be created...\n'
         log.info(create_msg)
         print(create_msg)
-        written = self._write_yaml(config, self.discodos_data / 'config.yaml')
+        written = self._write_yaml(config, self.file)
         if written:
-            written_msg = '* get a Discogs API access token as described here:\n'
-            written_msg+= 'https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
-            written_msg+= '* open the file config.yaml using a '
-            written_msg+= 'texteditor and set your token:  discogs_token: \'xyz\'\n'
-            written_msg+= '* Save the file and run disco again - a database file will be created '
-            written_msg+= 'and connection to Discogs will be verified.\n'
-            written_msg+= '* Learn how to import your collection and use DiscoDOS: https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection\n'
+            m = 'Now:\n'
+            m+= '* Get a Discogs API access token as described here:\n'
+            m+= '  https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
+            m+= '* Run DiscoDOS again and input the token, '
+            m+= 'setup will be completed and connection to Discogs verified.\n'
+            m+= '* Then learn how to import your collection and use DiscoDOS:\n'
+            m+= '  https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection\n'
+            m+= '* Sidenote: You can always open {} using a '.format(self.file)
+            m+= 'texteditor and set your token manually (discogs_token: \'xyz\').\n'
             self.config_created = True
-            log.info(written_msg)
-            print_help(written_msg)
+            log.info(m)
+            print_help(m)
+
 
     def _write_yaml(self, data, yamlfile):
         """data expects dict, yamlfile expects path/file"""
