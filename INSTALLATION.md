@@ -5,6 +5,7 @@
   - [Windows](#windows)
   - [macOS/Linux](#macoslinux)
 - [Configure Discogs API access](#configure-discogs-api-access)
+  - [Edit configuration file manually](#edit-configuration-file-manually)
 - [Configure _discosync_ - The DiscoDOS backup & sync tool](#configure-discosync---the-discodos-backup--sync-tool)
   - [Configure Dropbox Access for _discosync_](#configure-dropbox-access-for-discosync)
   - [Configure a webserver folder for _discosync_](#configure-a-webserver-folder-for-discosync)
@@ -18,47 +19,26 @@ There are two ways of installing DiscoDOS:
 
 ## Install released version
 
-basically the steps on every OS are similar:
-
-* download package
-* unpack
-* launch DiscoDOS' main command `disco`
-  * a local database will be initialized (the DiscoBASE)
-  * the DiscoDOS CLI tools will be set up for your user environment
-* configure Discogs API access
-
-
 ### Windows
 
-download the latest Windows package from the [release page](https://github.com/JOJ0/discodos/releases)
+download the latest Windows installer (`DiscoDOS_version.exe`) from the [release page](https://github.com/JOJ0/discodos/releases) and run it.
 
-unpack - it contains a folder named `discodos`.
+Click Start Menu - DiscoDOS - DiscoDOS
 
-You can move the `discodos` folder whereever you like inside your user profile. If unsure or not too familiar with command line tools I suggest you just put it directly into your users "home folder" (`c:\Users\your_name\discodos`).
+A new command prompt window opens and the DiscoDOS main command `disco` runs automatically.
 
-Start a command prompt window (start button - type `cmd` - enter). Change into the discodos folder and see what's in there:
+On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
 
-```
-cd discodos
-dir
-```
 
-You should see 3 files: `disco.exe`, `discosync.exe` and `config.yaml`
+Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
 
-Launch DiscoDOS' main command:
+**Note: In case you are updating from a previous DiscoDOS version, your data will be kept and your database's schema might be upgraded automatically**
 
-`disco`
+If the connection to Discogs is working, setup asks you to view a little tutorial teaching you how it works - hit enter and follow the steps.
 
-A local **database** (the so-called DiscoBASE) and an additional file (`discoshell.bat`) was just created in your discodos folder.
+Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
-Configure access to your Discogs collection as described in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
-
-Start using DiscoDOS by double clicking the newly created batch file `discoshell.bat` - make a shortcut to it on your Desktop.
-
-Launch the `disco` command again (inside your DiscoSHELL window) - if the connection to Discogs is working it will ask you to view a little tutorial teaching you how it works - hit enter and follow the steps.
-
-Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next step will be to import your Discogs collection.
-
+**Note: The `disco` and `discosync` commands are installed globally, you can use the Start Menu entry to run them but they also work in any cmd.exe window**
 
 ### macOS/Linux
 
@@ -109,19 +89,28 @@ To access your Discogs collection you need to generate an API login token and pu
 - Select _Settings_
 - Switch to section _Developers_
 - Click _Generate new token_
-- Open the file `config.yaml` (inside the discodos root folder, next to the files `setup.py` and `cli.py`) and copy/paste the generated Discogs token into it:
-  - on Windows right click the file - select "Open With" - choose "Notepad" - paste token to the right place (as shown below).
-  - on Mac secondary click/tab (two fingers) - select "Open With" - chooose "TextEdit.app" - paste token to the right place (as shown below).
+- Run `disco` - you'll be prompted to put in the token.
 
-The line in config.yaml should look something like this then (watch out for the surrounding quotes):
+**Note: If you are updating from a previous DiscoDOS version, your config.yaml is existing and has a token set up already, thus you won't be bothered!**
 
- ```
- discogs_token: 'XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH'
- ```
-
-- Save and close the file
 - Jump back to [Windows installation chapter](#windows)
 - Jump back to [macOS/Linux installation chapter](#macoslinux)
+
+### Edit configuration file manually
+
+Alternatively you can open the configuration file with a texteditor and copy/paste the generated Discogs token into it by hand:
+- Windows: Edit `MyDocuments/discodos/config.yaml`
+  (use the Start Menu entry "DiscoDOS/Edit Configuration File")
+- Linux: Edit `$HOME/.discodos/config.yaml`
+- macOS: Edit `/Users/yourname/.discodos/config.yaml` (secondary click (two fingers) - "Open With" - "TextEdit.app").
+  - Note that `.discodos` is a hidden folder you might need to navigate to it by using Finder's "Go - Go to Folder" menu entry.
+
+The line in `config.yaml` should look something like this then:
+
+ ```
+ discogs_token: XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH
+ ```
+
 
 
 
@@ -203,4 +192,4 @@ webdav_password: 'secret123'
 webdav_url: 'https://www.yourdomain.com/discodos/'
 ```
 
-Go to the [discosync chapter in the User's manual](MANUAL.md#discosync-the-discodo-backup---sync-tool)
+Go to the [discosync chapter in the User's manual](MANUAL.md#discosync-the-discodos-backup---sync-tool)
