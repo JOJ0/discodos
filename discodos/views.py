@@ -411,7 +411,7 @@ class View_common_cli(View_common):
         'capital letter. Let\'s try this right now:',
 
         '\n\nI will show a couple of basic commands now. Best you open a '
-        'second terminal window (MacOS/Linux) or discoshell.bat window (Windows), '
+        'second terminal window (macOS/Linux) or command prompt window (Windows), '
         'so you can try out the commands over there, while watching this tutorial.',
 
         '\n\nImport your collection (1000 releases take about a minute or two '
