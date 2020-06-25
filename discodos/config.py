@@ -535,7 +535,7 @@ class Config():
             m = 'Now:\n'
             m+= '* Get a Discogs API access token as described here:\n'
             m+= '  https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
-            m+= '* Run DiscoDOS again and input the token, '
+            m+= '* Run DiscoDOS again (type disco) and input the token, '
             m+= 'setup will be completed and connection to Discogs verified.\n'
             m+= '* Then learn how to import your collection and use DiscoDOS:\n'
             m+= '  https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection\n'
