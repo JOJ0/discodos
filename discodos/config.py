@@ -10,6 +10,9 @@ import pprint
 from pathlib import Path
 import os
 import sys
+import platform
+from subprocess import run
+from shutil import copy2
 
 log = logging.getLogger('discodos')
 
@@ -181,10 +184,11 @@ class Db_setup(Database):
 
 
 class Config():
-    def __init__(self, no_create_conf=False):
+    def __init__(self, no_create_conf=False, no_ask_token=False):
         # is set to true on initial run and config create
         self.config_created = False
         self.no_create_conf = no_create_conf
+        self.no_ask_token = no_ask_token
         # path handling
         # determine if application is a script file or frozen exe
         if getattr(sys, 'frozen', False):
@@ -212,58 +216,71 @@ class Config():
                 log.info('Config: We are running in a venv: {}'.format(self.venv))
         log.info("Config.discodos_root: {}".format(self.discodos_root))
         log.info("Config.discodos_data: {}".format(self.discodos_data))
-        # config.yaml handling
+
+        # config.yaml path
         self.file = self.discodos_data / "config.yaml"
+
+        # try to get a configuration from config file
         self.conf = read_yaml(self.file)
-        # on a shell we just create config and show steps,
-        # on windows when user clicks Startmenu "Edit Conf...",
-        # we show a popup and ask for rerun
         if not self.conf:
+            # on windows when user clicks Startmenu "Edit Conf...",
+            # we show a popup and ask for rerun
             if self.no_create_conf and os.name == "nt":
                 import ctypes  # An included library with Python install.
                 ctypes.windll.user32.MessageBoxW(0,
                   "No configuration file existing yet, please run DiscoDOS first!", "DiscoDOS", 0)
-                raise SystemExit()
+                raise SystemExit(0)
+            # SystemExit on macOS is evil - We don't create a config, just log
+            # this is invoked from open_shell_mac.py
+            elif self.no_create_conf and platform.system() == "Darwin":
+                log.info("Config: We are running macOS and no_create_conf is set. Not creating a config file!")
+            # on a shell we just create config and show steps,
             else:
                 self.create_conf()
-                raise SystemExit()
-        # db file handling
-        db_file = self._get_config_entry('discobase_file') # maybe configured?
-        if not db_file: # if not set, use default value
-            db_file = 'discobase.db'
-        self.discobase = self.discodos_data / db_file
-        log.info("Config.discobase: {}".format(self.discobase))
+                raise SystemExit(0)
 
-        try: # optional setting log_level
-            self.log_level = self.conf["log_level"]
-            log.info("config.yaml entry log_level is {}.".format(
-                self.log_level))
-        except KeyError:
-            self.log_level = "WARNING"
-            log.warn("config.yaml entry log_level not set, will take from cli option or default.")
-        # then other settings
-        self.discogs_appid = 'DiscoDOS/1.0 +https://github.com/JOJ0/discodos'
-        self.musicbrainz_appid = ['1.0', 'DiscoDOS https://github.com/JOJ0/discodos']
-        self.dropbox_token = self._get_config_entry('dropbox_token')
-        self.musicbrainz_user = self._get_config_entry('musicbrainz_user')
-        self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
-        self.webdav_user = self._get_config_entry('webdav_user')
-        self.webdav_password = self._get_config_entry('webdav_password')
-        self.webdav_url = self._get_config_entry('webdav_url')
 
-        # discogs_token is essential, bother user until we have one
-        self.discogs_token = self._get_config_entry('discogs_token', False)
-        if self.discogs_token == '':
-            token = ''
-            while token == '':
-                token = ask_user("Please input discogs_token: ")
-            self.conf['discogs_token'] = token
-            written = self._write_yaml(self.conf, self.file)
-            if written:
-                log.info('Config: config.yaml written successfully.')
-                self.discogs_token = self._get_config_entry('discogs_token', False)
-            else:
-                log.error('writing config.yaml.')
+        # Don't do all this on macOS when no_create_conf is set
+        # (Config init from open_shell_mac.py)
+        if not self.no_create_conf and not platform.system() == "Darwin":
+            # db file handling
+            db_file = self._get_config_entry('discobase_file') # maybe configured?
+            if not db_file: # if not set, use default value
+                db_file = 'discobase.db'
+            self.discobase = self.discodos_data / db_file
+            log.info("Config.discobase: {}".format(self.discobase))
+
+            try: # optional setting log_level
+                self.log_level = self.conf["log_level"]
+                log.info("config.yaml entry log_level is {}.".format(
+                    self.log_level))
+            except KeyError:
+                self.log_level = "WARNING"
+                log.warn("config.yaml entry log_level not set, will take from cli option or default.")
+            # then other settings
+            self.discogs_appid = 'DiscoDOS/1.0 +https://github.com/JOJ0/discodos'
+            self.musicbrainz_appid = ['1.0', 'DiscoDOS https://github.com/JOJ0/discodos']
+            self.dropbox_token = self._get_config_entry('dropbox_token')
+            self.musicbrainz_user = self._get_config_entry('musicbrainz_user')
+            self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
+            self.webdav_user = self._get_config_entry('webdav_user')
+            self.webdav_password = self._get_config_entry('webdav_password')
+            self.webdav_url = self._get_config_entry('webdav_url')
+
+            # discogs_token is essential, bother user until we have one
+            # but not when no_ask_token is set (macOS)
+            self.discogs_token = self._get_config_entry('discogs_token', False)
+            if self.discogs_token == '' and self.no_ask_token == False:
+                token = ''
+                while token == '':
+                    token = ask_user("Please input discogs_token: ")
+                self.conf['discogs_token'] = token
+                written = self._write_yaml(self.conf, self.file)
+                if written:
+                    log.info('Config: config.yaml written successfully.')
+                    self.discogs_token = self._get_config_entry('discogs_token', False)
+                else:
+                    log.error('writing config.yaml.')
 
     def _get_config_entry(self, yaml_key, optional = True):
         if optional:
@@ -287,29 +304,24 @@ class Config():
             return value
 
     # install cli command (disco) into discodos_root
-    def install_cli(self):
+    def install_cli(self, to_path=False):
+        # when to_path is set, we install wrappers to ~/bin
+        # and extend $PATH if necessary (posix only)
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
         if os.name == 'posix':
             if self.frozen: # packaged
                 venv_act = False
                 disco_py = self.discodos_root / 'cli'
-                setup_py = self.discodos_root / 'setup'
                 sync_py = self.discodos_root / 'sync'
             else: # not packaged and in a venv (checked in config.py main())
                 venv_act = Path(self.venv) / 'bin' / 'activate'
                 disco_py = self.discodos_root / 'cmd' / 'cli.py'
-                setup_py = self.discodos_root / 'cmd' / 'setup.py'
                 sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
             # cli.py wrapper
             disco_wrapper = self.discodos_root / 'disco'
             disco_contents = self._posix_wrapper(disco_py, venv_act,
                   '# This is the DiscoDOS CLI wrapper.')
-
-            # setup.py wrapper
-            setup_wrapper = self.discodos_root / 'discosetup'
-            setup_contents = self._posix_wrapper(setup_py, venv_act,
-                  '# This is the DiscoDOS setup script wrapper.')
 
             # sync.py wrapper
             sync_wrapper = self.discodos_root / 'discosync'
@@ -321,7 +333,6 @@ class Config():
             sysinst_sh_contents = 'echo "Installing disco commands to your user environment..."\n'
             sysinst_sh_contents+= 'mkdir -v ~/bin\n'
             sysinst_sh_contents+= 'cp -v {} ~/bin\n'.format(disco_wrapper)
-            sysinst_sh_contents+= 'cp -v {} ~/bin\n'.format(setup_wrapper)
             sysinst_sh_contents+= 'cp -v {} ~/bin\n'.format(sync_wrapper)
             sysinst_sh_contents+= 'echo "Adding $HOME/bin to your PATH by appending a line to $HOME/.bashrc"\n'
             sysinst_sh_contents+= 'echo \'export PATH=~/bin:$PATH\' >> ~/.bashrc\n'
@@ -336,23 +347,16 @@ class Config():
             if self.frozen: # packaged
                 venv_act = False
                 disco_py = self.discodos_root / 'cli.exe'
-                setup_py = self.discodos_root / 'winconfig.exe'
                 sync_py = self.discodos_root / 'sync.exe'
             else: # not packaged and in a venv (checked in config.py main())
                 venv_act = Path(self.venv) / 'Scripts' / 'activate.bat'
                 disco_py = self.discodos_root / 'cmd' / 'cli.py'
-                setup_py = self.discodos_root / 'cmd' / 'setup.py'
                 sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
             # WRAPPER cli.py - disco.bat
             disco_wrapper = self.discodos_root / 'disco.bat'
             disco_contents = self._win_wrapper(disco_py,
                   'rem This is the DiscoDOS CLI wrapper.', self.frozen)
-
-            # WRAPPER setup.py - discosetup.bat
-            setup_wrapper = self.discodos_root / 'discosetup.bat'
-            setup_contents = self._win_wrapper(setup_py,
-                  'rem This is the DiscoDOS setup script wrapper.', self.frozen)
 
             # WRAPPER sync.py - discosync.bat
             sync_wrapper = self.discodos_root / 'discosync.bat'
@@ -386,16 +390,6 @@ class Config():
                 disco_wrapper.chmod(0o755)
                 print("You can now use the DiscoDOS CLI using ./disco\n")
 
-            # install setup wrapper
-            if setup_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: setup wrapper is already existing: {}".format(
-                    setup_wrapper))
-            else:
-                print("Installing setup wrapper: {}".format(setup_wrapper))
-                self._write_textfile(setup_contents, setup_wrapper)
-                setup_wrapper.chmod(0o755)
-                print("You can now use DiscoDOS setup using ./discosetup\n")
-
             # install sync wrapper
             if sync_wrapper.is_file(): # install only if non-existent
                 log.info("Config.cli: sync wrapper is already existing: {}".format(
@@ -417,10 +411,33 @@ class Config():
                     sysinst_sh.name)
                 hlpmsg+="\n* makes disco command executable from everywhere. After installation you'd just type:"
                 hlpmsg+="\ndisco"
-                hlpmsg+="\n* setup and sync commands will be available as:"
-                hlpmsg+="\ndiscosetup"
                 hlpmsg+="\ndiscosync"
                 print_help(hlpmsg)
+
+            if to_path == True:
+                # handle path stuff
+                home = Path(os.getenv('HOME'))
+                Path.mkdir(home / 'bin', exist_ok=True)
+                path = os.getenv('PATH')
+                paths = path.split(os.pathsep)
+                log.info('Config: install to_path: $PATH currently is: {}'.format(paths))
+                home_bin = home / 'bin'
+                if str(home_bin) in paths:
+                    log.info('Config: install to_path: $HOME/bin is already in PATH.')
+                else:
+                    log.info('Config: install_to_path: Adding $HOME/bin to PATH.')
+                    bashrc_append_str = 'export PATH=~/bin:$PATH'
+                    bashrc_append_cmd = 'echo "{}" >> {}/.bashrc'.format(bashrc_append_str, home_bin)
+                    log.info('Config: install_to_path: bashrc_append_cmd: {}'.format(bashrc_append_cmd))
+                    run(bashrc_append_cmd, shell=True)
+                    #run('source {}/.bashrc'.format(home_bin))
+                # copy wrappers - FIXME error handling
+                log.info('Config: install_to_path: Copying wrappers to $HOME/bin.')
+                copy2(disco_wrapper, home_bin)
+                copy2(sync_wrapper, home_bin)
+                
+
+
         elif os.name == "nt":
             # INSTALL disco.bat
             if disco_wrapper.is_file(): # install only if non-existent
@@ -432,17 +449,6 @@ class Config():
                 print(msg_discoinst)
                 self._write_textfile(disco_contents, disco_wrapper)
                 print("You can now use the DiscoDOS CLI using disco.bat\n")
-
-            # INSTALL discosetup.bat
-            if setup_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: setup wrapper is already existing: {}".format(
-                    setup_wrapper))
-            else:
-                msg_setupinst = ("Installing DiscoDOS setup wrapper: {}".format(
-                      setup_wrapper))
-                print(msg_setupinst)
-                self._write_textfile(setup_contents, setup_wrapper)
-                print("You can now use DiscoDOS setup using discosetup.bat\n")
 
             # INSTALL discosync.bat
             if sync_wrapper.is_file(): # install only if non-existent
@@ -472,7 +478,6 @@ class Config():
                 hlpshmsg+= '\ndisco search -h'
                 hlpshmsg+= '\ndisco suggest -h'
                 hlpshmsg+= '\ndisco import -h'
-                hlpshmsg+= '\ndiscosetup -h'
                 hlpshmsg+= '\ndiscosync -h\n'
                 print_help(hlpshmsg)
 
