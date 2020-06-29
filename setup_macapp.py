@@ -26,7 +26,7 @@ OPTIONS = {
         'NSHumanReadableCopyright': 'J0J0 T (jt@peek-a-boo.at) - GPL v3'
     }
 }
-REQUIRES = ['py2app', 'packaging']
+REQUIRES = ['py2app']
 
 setup(
     app=APP,
