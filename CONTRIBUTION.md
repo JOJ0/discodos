@@ -5,6 +5,7 @@
   - [Prerequisites](#prerequisites)
   - [Windows](#windows)
   - [macOS/Linux](#macoslinux)
+  - [macOS/Linux - install as a Python package](#macoslinux---install-as-a-python-package)
 
 
 ## Install development version
@@ -126,3 +127,60 @@ Launch DiscoDOS' main command and follow the steps shown:
 _**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
 
 `source ~/.venvs/discodos/bin/activate`
+
+
+### macOS/Linux - install as a Python package
+
+This chapter describes how to install the DiscoDOS package into your global Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
+
+Install Python 3. On Debian based distros (Ubuntu, Linux Mint, ...), do something like this:
+
+`apt install python3`
+
+on RedHat based (Fedora, CentOS, ...):
+
+`yum install python3`
+
+
+Download the latest source package (`DiscoDOS_version.tar.gz`) from the [release page](https://github.com/JOJ0/discodos/releases)
+
+_**or**_ clone the latest development version from github:
+
+```
+cd
+git clone https://github.com/JOJ0/discodos.git
+cd discodos
+```
+
+Install DiscoDOS into your global Python environment:
+
+`python3 setup.py install`
+
+Some command wrappers should have been installed. Verify if they exist:
+
+```
+which disco
+which discosync
+```
+
+Launch DiscoDOS' main command:
+
+`disco`
+
+On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
+
+Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
+
+**Note: In case you are updating from a previous DiscoDOS version, your data will be kept and your database's schema might be upgraded automatically**
+
+If the connection to Discogs is working, setup asks you to view a little tutorial teaching you how it works - hit enter and follow the steps.
+
+Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
+
+**Note: The `disco` and `discosync` commands are now installed globally and will work in any terminal emulator.**
+
+**Note: DiscoDOS generates the following files which are kept in `~/.discodos/`:**
+
+ - The DiscoDOS configuration file (`config.yaml`)
+ - The DiscoBASE (`discobase.db`)
+ - A logfile (`debug.log`)
