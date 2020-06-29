@@ -25,3 +25,5 @@ discodos.egg-info/
 .eggs/
 ChangeLog
 AUTHORS
+build_app/
+dist_app/

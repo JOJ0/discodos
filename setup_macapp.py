@@ -8,13 +8,11 @@ Usage:
 from setuptools import setup
 
 APP = ['discodos/cmd/open_shell_mac.py']
-#APP = ['discodos/cmd/cli.py']
 DATA_FILES = ['assets/discodos_cmds_v0.3_white.png']
 OPTIONS = {
-    'iconfile': 'assets/discodos_7-v6_big_fat_D_128x128.ico',
-    #'iconfile': 'assets/default.ico',
-    'argv_emulation': 'true',
-    'emulate_shell_environment': 'true',
+    'iconfile': 'assets/discodos_7-v6_big_fat_D.icns',
+    #'argv_emulation': 'true',
+    #'emulate_shell_environment': 'true',
     'verbose': 'true',
     'plist': {
         'CFBundleVersion': '1.0_rc3',
@@ -28,13 +26,11 @@ OPTIONS = {
         'NSHumanReadableCopyright': 'J0J0 T (jt@peek-a-boo.at) - GPL v3'
     }
 }
-
-#SCRIPTS=['discodos/cmd/cli.py', 'discodos/cmd/sync.py']
+REQUIRES = ['py2app', 'packaging']
 
 setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
-    setup_requires=['py2app'],
-    #extra_scripts=SCRIPTS,
+    setup_requires=REQUIRES,
 )

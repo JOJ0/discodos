@@ -9,7 +9,7 @@ def logger_init():
     # logger is not relying on Config class and handles paths itself
     if getattr(sys, 'frozen', False):
         discodos_root = Path(os.path.dirname(sys.executable))
-        discodos_data = discodos_root
+        discodos_data = create_data_dir(discodos_root)
     else:
     #    discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
     #    discodos_root = discodos_lib.parents[0]

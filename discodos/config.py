@@ -18,10 +18,11 @@ log = logging.getLogger('discodos')
 
 def create_data_dir(discodos_root):
     # create discodos_data dir
-    if os.name == 'posix':
+    if platform.system() == "Darwin" and getattr(sys, 'frozen', False):
+        # only in mac-app installs we want Documents/DiscoDOS dir
         home = Path(os.getenv('HOME'))
-        Path.mkdir(home / '.discodos/', exist_ok=True)
-        discodos_data = home / '.discodos'
+        Path.mkdir(home / 'Documents' / 'DiscoDOS', exist_ok=True)
+        discodos_data = home / 'Documents' / 'DiscoDOS'
     elif os.name == 'nt':
         #import win32com.client
         #from win32 import win32api
@@ -36,6 +37,10 @@ def create_data_dir(discodos_root):
         mydocs = Path(buf.value)
         Path.mkdir(mydocs / 'DiscoDOS/', exist_ok=True)
         discodos_data = mydocs / 'DiscoDOS'
+    elif os.name == 'posix':
+        home = Path(os.getenv('HOME'))
+        Path.mkdir(home / '.discodos/', exist_ok=True)
+        discodos_data = home / '.discodos'
     else:
         log.warn("Config: Unknown OS - using discodos_root as data dir too.")
         discodos_data = discodos_root
@@ -184,19 +189,17 @@ class Db_setup(Database):
 
 
 class Config():
-    def __init__(self, no_create_conf=False, no_ask_token=False):
+    def __init__(self, no_create_conf=False):
         # is set to true on initial run and config create
         self.config_created = False
         self.no_create_conf = no_create_conf
-        self.no_ask_token = no_ask_token
         # path handling
         # determine if application is a script file or frozen exe
         if getattr(sys, 'frozen', False):
             self.frozen = True
             log.debug("Config.frozen: Running as a bundled executable.")
             self.discodos_root = Path(os.path.dirname(sys.executable))
-            # data and wrappers in the same location in bundled installs
-            self.discodos_data = self.discodos_root
+            self.discodos_data = create_data_dir(self.discodos_root)
         else:
             log.debug("Config.frozen: Running as a Python script.")
             self.frozen = False
@@ -226,6 +229,7 @@ class Config():
             # on windows when user clicks Startmenu "Edit Conf...",
             # we show a popup and ask for rerun
             if self.no_create_conf and os.name == "nt":
+                log.info("Config: We are running Windows and no_create_conf is set. Not creating a config file!")
                 import ctypes  # An included library with Python install.
                 ctypes.windll.user32.MessageBoxW(0,
                   "No configuration file existing yet, please run DiscoDOS first!", "DiscoDOS", 0)
@@ -239,10 +243,23 @@ class Config():
                 self.create_conf()
                 raise SystemExit(0)
 
+        # The only setting we _always_ try to fetch is log_level!!!
+        try: # optional setting log_level
+            self.log_level = self.conf["log_level"]
+            log.info("config.yaml entry log_level is {}.".format(
+                self.log_level))
+        except KeyError:
+            self.log_level = "WARNING"
+            log.warn("config.yaml entry log_level not set, taking log_level from CLI option or default (WARNING).")
+        except: # any other error: set INFO
+            self.log_level = "WARNING"
+            log.warn("config.yaml not existing or other error, setting log_level to WARNING.")
 
-        # Don't do all this on macOS when no_create_conf is set
+        # Don't fetch settings when no_create_conf is set
         # (Config init from open_shell_mac.py)
-        if not self.no_create_conf and not platform.system() == "Darwin":
+        # Windows is existing above, this is only necessary for macOS because
+        # SystemExit is evil in a mac app!
+        if self.no_create_conf == False:
             # db file handling
             db_file = self._get_config_entry('discobase_file') # maybe configured?
             if not db_file: # if not set, use default value
@@ -250,13 +267,6 @@ class Config():
             self.discobase = self.discodos_data / db_file
             log.info("Config.discobase: {}".format(self.discobase))
 
-            try: # optional setting log_level
-                self.log_level = self.conf["log_level"]
-                log.info("config.yaml entry log_level is {}.".format(
-                    self.log_level))
-            except KeyError:
-                self.log_level = "WARNING"
-                log.warn("config.yaml entry log_level not set, will take from cli option or default.")
             # then other settings
             self.discogs_appid = 'DiscoDOS/1.0 +https://github.com/JOJ0/discodos'
             self.musicbrainz_appid = ['1.0', 'DiscoDOS https://github.com/JOJ0/discodos']
@@ -270,7 +280,7 @@ class Config():
             # discogs_token is essential, bother user until we have one
             # but not when no_ask_token is set (macOS)
             self.discogs_token = self._get_config_entry('discogs_token', False)
-            if self.discogs_token == '' and self.no_ask_token == False:
+            if self.discogs_token == '':
                 token = ''
                 while token == '':
                     token = ask_user("Please input discogs_token: ")
@@ -308,6 +318,7 @@ class Config():
         # when to_path is set, we install wrappers to ~/bin
         # and extend $PATH if necessary (posix only)
         log.info('Config.cli: We are on a "{}" OS'.format(os.name))
+        # first part: compile info for wrappers together
         if os.name == 'posix':
             if self.frozen: # packaged
                 venv_act = False
@@ -342,7 +353,7 @@ class Config():
             sysinst_sh_contents+= 'else\n'
             sysinst_sh_contents+= '    exit 0\n'
             sysinst_sh_contents+= 'fi\n'
-
+        # first part: Windows wrappers
         elif os.name == 'nt':
             if self.frozen: # packaged
                 venv_act = False
@@ -372,11 +383,12 @@ class Config():
                 echo_hints = 'Launch disco.bat to view a usage tutorial'
                 discoshell_contents = 'start "DiscoDOS shell" /D "{}" echo "{}"\n'.format(
                     self.discodos_root, echo_hints)
+        # first part: else - unknown - no wrappers
         else:
             log.warn("Config.cli: Unknown OS - not creating CLI wrappers.")
             return True
 
-        # file installation part starts here
+        # second part: Posix file installation
         if os.name == "posix":
             log.info('Config.cli: Installing DiscoDOS wrappers.')
 
@@ -420,24 +432,47 @@ class Config():
                 Path.mkdir(home / 'bin', exist_ok=True)
                 path = os.getenv('PATH')
                 paths = path.split(os.pathsep)
-                log.info('Config: install to_path: $PATH currently is: {}'.format(paths))
+                m_pth = 'Config: install to_path: $PATH currently is: {}'.format(paths)
+                log.info(m_pth); print(m_pth)
                 home_bin = home / 'bin'
                 if str(home_bin) in paths:
-                    log.info('Config: install to_path: $HOME/bin is already in PATH.')
+                    m_alr ='Config: install to_path: $HOME/bin is already in PATH.'
+                    log.info(m_alr); print(m_alr)
                 else:
-                    log.info('Config: install_to_path: Adding $HOME/bin to PATH.')
+                    m_add = 'Config: install_to_path: Adding $HOME/bin to PATH.'
+                    log.info(m_add); print(m_add)
                     bashrc_append_str = 'export PATH=~/bin:$PATH'
-                    bashrc_append_cmd = 'echo "{}" >> {}/.bashrc'.format(bashrc_append_str, home_bin)
-                    log.info('Config: install_to_path: bashrc_append_cmd: {}'.format(bashrc_append_cmd))
-                    run(bashrc_append_cmd, shell=True)
-                    #run('source {}/.bashrc'.format(home_bin))
-                # copy wrappers - FIXME error handling
-                log.info('Config: install_to_path: Copying wrappers to $HOME/bin.')
-                copy2(disco_wrapper, home_bin)
-                copy2(sync_wrapper, home_bin)
-                
+                    bashrc_append_cmd = 'echo \'{}\' >> {}/.bashrc'.format(bashrc_append_str, home)
+                    m_bsh = 'Config: install_to_path: bashrc_append_cmd: {}'.format(bashrc_append_cmd)
+                    log.info(m_bsh); print(m_bsh)
+                    bashrc_success = run(bashrc_append_cmd, shell=True)
+                    log.info('Config: bashrc_success: {}'.format(bashrc_success))
+                    # this is only necessary for debugging mac packaging/installation
+                    run('. {}/.bashrc'.format(home), shell=True)
+                disco_wrapper_in_bin = home_bin / 'disco'
+                sync_wrapper_in_bin = home_bin / 'discosync'
+                # copy wrappers
+                try:
+                    if disco_wrapper_in_bin.is_file():
+                        m_de = 'Config: disco wrapper already existing in ~/bin/'
+                        log.info(m_de); print(m_de)
+                    else:
+                        m_cpd = 'Config: install_to_path: Copying disco wrapper to $HOME/bin.'
+                        log.info(m_cpd); print(m_cpd)
+                        copy2(disco_wrapper, home_bin)
+                    if sync_wrapper_in_bin.is_file():
+                        m_se = 'Config: discosync wrapper already existing in ~/bin/'
+                        log.info(m_se); print(m_se)
+                    else:
+                        m_cps = 'Config: install_to_path: Copying discosync wrapper to $HOME/bin.'
+                        log.info(m_cps); print(m_cps)
+                        copy2(sync_wrapper, home_bin)
+                except Exception as exc:
+                    #tb = sys.exc_info()[3]
+                    m_exc = 'Exception on copy: {}'.format(exc)
+                    log.info(m_exc); print(m_exc)
 
-
+        # second part: Windows file installation
         elif os.name == "nt":
             # INSTALL disco.bat
             if disco_wrapper.is_file(): # install only if non-existent
