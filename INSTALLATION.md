@@ -103,11 +103,10 @@ To access your Discogs collection you need to generate an API login token and pu
 ### Edit configuration file manually
 
 Alternatively you can open the configuration file with a texteditor and copy/paste the generated Discogs token into it by hand:
-- Windows: Edit `MyDocuments/discodos/config.yaml`
-  (use the Start Menu entry "DiscoDOS/Edit Configuration File")
-- Linux: Edit `$HOME/.discodos/config.yaml`
-- macOS: Edit `/Users/yourname/.discodos/config.yaml` (secondary click (two fingers) - "Open With" - "TextEdit.app").
-  - Note that `.discodos` is a hidden folder you might need to navigate to it by using Finder's "Go - Go to Folder" menu entry.
+- _Windows_: Edit `MyDocuments/discodos/config.yaml`
+  (use Start Menu entry "DiscoDOS/Edit Configuration File")
+- _macOS_: Edit `/Users/your_name/Documents/config.yaml` (secondary click (two fingers) - "Open With" - "TextEdit.app").
+- _Linux_: Edit `$HOME/.discodos/config.yaml`
 
 The line in `config.yaml` should look something like this then:
 
