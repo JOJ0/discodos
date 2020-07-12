@@ -351,7 +351,7 @@ def _main():
             elif user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
                 # online search gave us exactely one release in a list
                 #print(discogs_rel_found)
-                coll_ctrl.update_single_track_from_discogs(
+                coll_ctrl.update_single_track_or_release_from_discogs(
                       discogs_rel_found['id'],
                       discogs_rel_found['title'],
                       args.track_to_add)

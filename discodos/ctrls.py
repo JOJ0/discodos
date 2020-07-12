@@ -791,14 +791,24 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True # we did at least something and thus were successfull
 
-    def update_single_track_from_discogs(self, rel_id, rel_title, track_no):
+    def update_single_track_or_release_from_discogs(self, rel_id, rel_title, track_no):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
-        tr_list = [{
-              'd_release_id': rel_id,
-              'discogs_title': rel_title,
-              'd_track_no': track_no
-        }]
+        if track_no == '*' or 'all':
+            full_release = self.collection.get_d_release(rel_id)
+            tr_list = []
+            for tr in full_release.tracklist:
+                tr_list.append({
+                  'd_release_id': rel_id,
+                  'discogs_title': rel_title,
+                  'd_track_no': tr.position
+                })
+        else:
+            tr_list = [{
+                  'd_release_id': rel_id,
+                  'discogs_title': rel_title,
+                  'd_track_no': track_no
+            }]
         return self.update_tracks_from_discogs(tr_list)
 
     def update_tracks_from_brainz(self, track_list, detail=1, offset=0):
