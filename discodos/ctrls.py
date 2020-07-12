@@ -794,7 +794,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
     def update_single_track_or_release_from_discogs(self, rel_id, rel_title, track_no):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
-        if track_no == '*' or 'all':
+        if track_no == '*' or track_no == 'all':
             full_release = self.collection.get_d_release(rel_id)
             tr_list = []
             for tr in full_release.tracklist:
@@ -996,7 +996,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
 
-        if track_no == '*' or 'all':
+        if track_no == '*' or track_no == 'all':
             full_release = self.collection.get_d_release(rel_id)
             tr_list = []
             for tr in full_release.tracklist:
@@ -1011,6 +1011,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 _err_cant_fetch(track_no.upper())
                 return False
             tr_list = [track]
+
         return self.update_tracks_from_brainz(tr_list, detail)
 
     def edit_track(self, rel_id, rel_title, track_no):
