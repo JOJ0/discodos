@@ -356,7 +356,7 @@ def _main():
                       discogs_rel_found['title'],
                       args.track_to_add)
             elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
-                coll_ctrl.update_single_track_from_brainz(
+                coll_ctrl.update_single_track_or_release_from_brainz(
                       discogs_rel_found['id'],
                       discogs_rel_found['title'],
                       args.track_to_add,

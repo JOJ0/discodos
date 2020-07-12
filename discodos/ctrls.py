@@ -984,19 +984,33 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
               offset=offset)
         return match_ret
 
-    def update_single_track_from_brainz(self, rel_id, rel_title, track_no,
+    def update_single_track_or_release_from_brainz(self, rel_id, rel_title, track_no,
           detail):
-        if not track_no:
-            track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
-        track = self.collection.get_track_for_brainz_update(rel_id, track_no.upper())
-        if track == None:
-            m = 'Can\'t fetch "{}" on "{}". '.format(track_no, rel_title)
+        def _err_cant_fetch(tr_no):
+            m = 'Can\'t fetch "{}" on "{}". '.format(tr_no, rel_title)
             m+= 'Either the track number is not existing on the release or the '
-            m+= 'track was not imported to DiscoBASE yet. Try '
+            m+= 'track was not imported into DiscoBASE yet. Try '
             m+= '"disco search ... -u" first, then re-run match-command.'
             log.error(m)
-            return False
-        tr_list = [track]
+
+        if not track_no:
+            track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
+
+        if track_no == '*' or 'all':
+            full_release = self.collection.get_d_release(rel_id)
+            tr_list = []
+            for tr in full_release.tracklist:
+                db_track = self.collection.get_track_for_brainz_update(rel_id, tr.position.upper())
+                if db_track == None:
+                    _err_cant_fetch(tr.position.upper())
+                else: # only fetch track for brainz update if it is in db, matching would fail anyway
+                    tr_list.append(db_track)
+        else:
+            track = self.collection.get_track_for_brainz_update(rel_id, track_no.upper())
+            if track == None:
+                _err_cant_fetch(track_no.upper())
+                return False
+            tr_list = [track]
         return self.update_tracks_from_brainz(tr_list, detail)
 
     def edit_track(self, rel_id, rel_title, track_no):
