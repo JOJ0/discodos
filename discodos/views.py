@@ -711,6 +711,7 @@ class User_int(object):
         self.RESUME_OFFSET = 0
         self.WANTS_TO_LAUNCH_SETUP = False
         self.WANTS_TO_FORCE_UPGRADE_SCHEMA = False
+        self.MIX_SORT = False
 
 
         # RELEASE MODE:
@@ -791,7 +792,8 @@ class User_int(object):
             else:
                 self.WANTS_TO_SHOW_MIX_TRACKLIST = True
                 self.WANTS_ONLINE = False
-                #if hasattr(self.args, 'create_mix')
+                if self.args.mix_sort:
+                    self.MIX_SORT = self.args.mix_sort
                 if self.args.create_mix:
                     self.WANTS_TO_CREATE_MIX = True
                     self.WANTS_ONLINE = False

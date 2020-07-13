@@ -65,11 +65,11 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
         if self.mix.id_existing:
             self.cli.tab_mix_info_header(self.mix.get_mix_info())
             if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                full_mix = self.mix.get_full_mix(verbose = True)
+                full_mix = self.mix.get_full_mix(verbose=True, order_by=self.user.MIX_SORT)
             elif self.user.WANTS_MUSICBRAINZ_MIX_TRACKLIST:
-                full_mix = self.mix.get_full_mix(brainz = True)
+                full_mix = self.mix.get_full_mix(brainz=True, order_by=self.user.MIX_SORT)
             else:
-                full_mix = self.mix.get_full_mix(verbose = False)
+                full_mix = self.mix.get_full_mix(verbose=False, order_by=self.user.MIX_SORT)
 
             if not full_mix:
                 self.cli.p("No tracks in mix yet.")

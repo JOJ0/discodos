@@ -201,6 +201,13 @@ def argparser(argv):
         with "all tracks in mixes Discogs update" (disco mix -u) or with
         "all tracks in mixes *Brainz matching" (disco mix -z, disco mix -zz).
         ''')
+    mix_subparser.add_argument(
+		"-s", "--sort", dest="mix_sort", metavar='COLUMN',
+        type=str, default='track_pos asc',
+        help='''sort tracklist by specified column. add "asc" or "desc" to
+        specify ascending or descending sort order. "track_pos asc" is the
+        default. Experimental feature: currently expects sql column names.
+        ''')
     ### SUGGEST subparser ##########################################################
     suggest_subparser = subparsers.add_parser(
         name='suggest',
