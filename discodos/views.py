@@ -105,20 +105,35 @@ class View_common(ABC):
         # now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for key, field in row.items():
-                cut_pos_space = False # reset cut_pos_space on each field cycle
                 if (not is_number(field) and field is not None
                     and not key in exclude):
-                    if len(field) > cut_pos:
-                        cut_pos_space = field.find(" ", cut_pos)
-                        log.debug("cut_pos_space index (next space after cut_pos): %s", cut_pos_space)
-                        # don't edit if no space following (almost at end)
-                        if cut_pos_space == -1:
-                            edited_field = field
-                        else:
-                            edited_field = field[0:cut_pos_space] + "\n" + field[cut_pos_space+1:]
-                        log.debug("string from 0 to cut_pos_space: {}".format(field[0:cut_pos_space]))
-                        log.debug("string from cut_pos_space to end: {}".format(field[cut_pos_space:]))
-                        log.debug("the final string:")
+                    len_field = len(field)
+                    if len_field > cut_pos:
+                        possible_cuts = int(len_field / cut_pos)
+                        log.info("possible_cuts: {}".format(possible_cuts))
+                        edited_field = ''
+                        prev_cut_pos_space = 0
+                        log.debug("this is our range: {}".format(range(1, possible_cuts+1)))
+                        for cycle in range(1, possible_cuts+1): # run as often as cut possibilities exist
+                            log.debug("cycle {}".format(cycle))
+                            curr_cut_pos = cut_pos * cycle # in each cycle we'd like to put \n _around_ here
+                            log.debug("curr_cut_pos index: %s", curr_cut_pos)
+                            cut_pos_space = field.find(' ', curr_cut_pos)
+                            log.debug("cut_pos_space index (next space after curr_cut_pos): %s", cut_pos_space)
+                            # if no space following (almost at end) don't add newline, just add as-is
+                            if cut_pos_space == -1:
+                                log.debug("No more space following. Add part and break loop!")
+                                log.debug("")
+                                edited_field += field[prev_cut_pos_space:]
+                                break
+                            else:
+                                edited_field += field[prev_cut_pos_space:cut_pos_space] + "\n"
+                            log.debug("from prev_cut_pos_space to cut_pos_space: {}".format(field[prev_cut_pos_space:cut_pos_space]))
+                            log.debug("")
+                            # save pos for next cycle and skip the space itself,
+                            # we don't want following lines to start with a space!
+                            prev_cut_pos_space = cut_pos_space + 1
+                        log.debug("FINAL with newlines:")
                         log.debug("{}".format(edited_field))
                         log.debug("")
                         table_nl[i][key] = edited_field
