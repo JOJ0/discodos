@@ -676,12 +676,15 @@ class Mix (Database):
                           ON mix_track.d_release_id = track_ext.d_release_id
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
-          'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
-          'mix_track.d_track_no', 'm_rec_id_override'], tables, where,
-           fetchone = False, orderby = 'mix_track.track_pos')
+          'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
+          'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
+           tables, where, fetchone = False, orderby = 'mix_track.track_pos')
 
     def get_all_mix_tracks_for_brainz_update(self, offset=0):
         log.info("MODEL: Getting all tracks of all mix. Preparing for Discogs or AcousticBrainz update.")
+        if offset > 0:
+            log.info('MODEL: Add 1 to offset (FIXME why?)')
+            offset = offset - 1
         tables = '''mix_track
                       INNER JOIN release
                       ON mix_track.d_release_id = release.discogs_id
@@ -692,10 +695,10 @@ class Mix (Database):
                           ON mix_track.d_release_id = track_ext.d_release_id
                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
-          'discogs_title', 'd_catno', 'track.d_artist', 'd_track_name',
-          'mix_track.d_track_no', 'm_rec_id_override'], tables, fetchone=False,
-           orderby='mix_track.mix_id, mix_track.track_pos',
-           distinct=True, offset=offset)
+          'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
+          'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
+           tables, fetchone=False, distinct=True, offset=offset,
+           orderby='mix_track.mix_id, mix_track.track_pos')
 
 # record collection class
 class Collection (Database):
@@ -1028,7 +1031,8 @@ class Collection (Database):
         return artist_str
 
     def d_artists_parse(self, d_tracklist, track_number, d_artists):
-        '''gets Artist name from discogs release (child)objects via track_number, eg. A1'''
+        '''gets Artist name from discogs release (child)objects via track_number, eg. A1
+           params d_artist: FIXME'''
         for tr in d_tracklist:
             #log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
             #log.debug("d_artists_parse: this is the tr object: {}".format(tr))
@@ -1063,8 +1067,9 @@ class Collection (Database):
         for tr in d_tracklist:
             #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
             #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if tr.position.upper() == track_number.upper():
-                return tr.title
+            if track_number != None: # don't fail but return False
+                if tr.position.upper() == track_number.upper():
+                    return tr.title
         log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
             track_number))
         return False # we didn't find the tracknumber
@@ -1262,16 +1267,20 @@ class Collection (Database):
     def get_all_tracks_for_brainz_update(self, offset=0):
         log.info(
            "MODEL: Getting _all_ tracks in DiscoBASE. Preparing for AcousticBrainz update.")
+        if offset > 0:
+            log.info('MODEL: Subtract 1 from offset (eg --resume 1 should not alter anything')
+            offset = offset - 1
         tables = '''release
                       LEFT OUTER JOIN track
                       ON release.discogs_id = track.d_release_id
                         LEFT OUTER JOIN track_ext
                         ON track.d_release_id = track_ext.d_release_id
                         AND track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track.d_release_id', 'discogs_title', 'd_catno',
-          'track.d_artist', 'track.d_track_name', 'track.d_track_no',
-          'track_ext.m_rec_id_override'], tables, condition=False,
-           fetchone=False, orderby='release.discogs_id', offset=offset)
+        return self._select_simple(['release.discogs_id',
+              'track.d_release_id', 'discogs_title', 'd_catno',
+              'track.d_artist', 'track.d_track_name', 'track.d_track_no',
+              'track_ext.m_rec_id_override'], tables, condition=False,
+               fetchone=False, orderby='release.discogs_id', offset=offset)
 
     def get_track_for_brainz_update(self, rel_id, track_no):
         log.info(
@@ -1284,10 +1293,11 @@ class Collection (Database):
                         LEFT OUTER JOIN track_ext
                         ON track.d_release_id = track_ext.d_release_id
                         AND track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track.d_release_id', 'discogs_title', 'd_catno',
-          'track.d_artist', 'track.d_track_name', 'track.d_track_no',
-          'track_ext.m_rec_id_override'], tables, condition=where,
-           fetchone=True, orderby='release.discogs_id')
+        return self._select_simple(['track.d_release_id','discogs_id',
+          'discogs_title', 'd_catno', 'track.d_artist', 'track.d_track_name',
+          'track.d_track_no', 'track_ext.m_rec_id_override'],
+           tables, condition=where, fetchone=True, orderby='release.discogs_id')
+           
 
     def upsert_track_ext(self, orig, edit_answers ):
         track_no = orig['d_track_no'].upper() # always save uppercase track numbers

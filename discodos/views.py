@@ -649,30 +649,40 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             raise SystemExit(3)
 
     def brainz_processed_report(self, processed, added_release, added_rec, added_key,
-      added_chords_key, added_bpm, errors_db, errors_not_found, errors_no_rec_AB):
-        msg_mb = 'Processed: {}.\nAdded MusicBrainz info to DiscoBASE: '.format(processed)
+      added_chords_key, added_bpm, errors_db, errors_not_found,
+      errors_no_rec_AB, errors_not_imported, warns_discogs_fetches):
+        msg_mb = 'Processed: {}.\nMusicBrainz info added to DiscoBASE: '.format(processed)
         msg_mb+= 'Release MBIDs: {}, Recording MBIDs: {}\n'.format(
             added_release, added_rec)
-        msg_mb+= 'Added AccousticBrainz info: Key: {}, Chords Key: {}, BPM: {}\n'.format(
+        msg_mb+= 'AccousticBrainz info added: Key: {}, Chords Key: {}, BPM: {}\n'.format(
             added_key, added_chords_key, added_bpm)
-        msg_mb+= 'No AcousticBrainz entries available yet: {} (consider submitting!)'.format(errors_no_rec_AB)
+        msg_mb+= 'No AcousticBrainz entries available yet: {}'.format(errors_no_rec_AB)
 
-        msg_err = 'Database errors: {}. Not found on Discogs errors: {}.'.format(
+        msg_err = 'Database errors: {}. Not found on Discogs errors: {}. '.format(
             errors_db, errors_not_found)
+        msg_err+=  'No track number in DiscoBASE errors: {}.\n'.format(errors_not_imported)
+        msg_err+=  'Additional Discogs fetches necessary: {}.'.format(warns_discogs_fetches)
 
-        msg_note = 'Note in case you did an all-mix-tracks-match (disco mix -z): '
+        msg_note = 'Note: '
         msg_note+= 'Some of the processed tracks might be on the same release. '
-        msg_note+= 'Thus, the total release count added in reality might be less.'
+        msg_note+= 'Thus, the total "Release MBID count" added in reality might be less.\n\n'
+        msg_note+= 'Note: Many "Additional Discogs fetches" or '
+        msg_note+= '"No track number in DiscoBASE errors"?\n'
+        msg_note+= '-> Improve by pre-filling the DiscoBASE with '
+        msg_note+= 'track info (disco import -u)\n\n'
+        msg_note+= 'Note: Many missing AcoustingBrainz entries?\n'
+        msg_note+= '-> Consider submitting audio recordings to AcousticBrainz: \n'
+        msg_note+= '   https://musicbrainz.org/doc/How_to_Submit_Analyses_to_AcousticBrainz'
         print(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
         log.info(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
         print("") # space for readability
 
-        msg1 = "If DiscoDOS didn't find many Release MBIDs or Recording MBIDs "
-        msg1+= "please help improving the matching algorithm and either: "
-        print(msg1)
+        msg1 = "Note: Not many Release MBIDs or Recording MBIDs found at all?\n"
+        msg1+= "-> Please help improving the matching algorithm and either:"
+        print(msg1+'\n')
 
         msg2 = "* Investigate yourself: Execute match command again with increased log-level: disco -v ...\n"
-        msg2+= "* or just send the debug.log file (it's in your discodos folder)\n"
+        msg2+= "* or just send the debug.log file (it's in your discodos config/data folder)\n"
         msg2+= "In any case, please report by opening an issue on github.com/JOJ0/discodos"
         print(msg2+'\n')
 
