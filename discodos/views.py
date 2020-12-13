@@ -749,6 +749,13 @@ class User_int(object):
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
                     if self.args.search_offset > 0:
                         self.RESUME_OFFSET = self.args.search_offset
+                        m_r ='Resuming is not possible in combination with '
+                        m_r+='"search all -u/--discogs-update". Try it with '
+                        m_r+='"mix -u/--discogs-update". Also it works '
+                        m_r+='together with "import -zz/brainz-update" '
+                        m_r+='and "mix -zz/--brainz-update"'
+                        log.error(m_r)
+                        raise SystemExit(1)
                 elif self.args.search_brainz_update != 0:
                     # brainz update all
                     self.WANTS_ONLINE = True
@@ -848,6 +855,12 @@ class User_int(object):
                 if self.args.discogs_update:
                     self.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
                     self.WANTS_ONLINE = True
+                    if self.args.mix_offset > 0:
+                        m_r ="Resuming is not possible in single-mix "
+                        m_r+="-u/--discogs-update. "
+                        m_r+="Use -p/--pos instead."
+                        log.error(m_r)
+                        raise SystemExit(1)
                 if self.args.delete_mix:
                     self.WANTS_TO_DELETE_MIX = True
                     self.WANTS_ONLINE = False
@@ -859,6 +872,12 @@ class User_int(object):
                     self.BRAINZ_SEARCH_DETAIL = self.args.brainz_update
                     if self.args.brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
+                    if self.args.mix_offset > 0:
+                        m_r ="Resuming is not possible in single-mix "
+                        m_r+="-z/--brainz-update. "
+                        m_r+="Use -p/--pos instead."
+                        log.error(m_r)
+                        raise SystemExit(1)
                 if self.args.edit_mix:
                     self.WANTS_TO_EDIT_MIX = True
                     self.WANTS_ONLINE = False
@@ -911,6 +930,13 @@ class User_int(object):
                     self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
                     if self.args.import_offset > 0:
                         self.RESUME_OFFSET = self.args.import_offset
+                        m_r ='Resuming is not possible in combination with '
+                        m_r+='"import -u/--discogs-update". Try it with '
+                        m_r+='"mix -u/--discogs-update". Also it works '
+                        m_r+='together with "import -zz/brainz-update" '
+                        m_r+='and "mix -zz/--brainz-update"'
+                        log.error(m_r)
+                        raise SystemExit(1)
                 elif self.args.import_brainz:
                     self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
                     self.BRAINZ_SEARCH_DETAIL = self.args.import_brainz
