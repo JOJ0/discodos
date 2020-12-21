@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import unittest
 from shutil import copy2
-from os import remove
 from discodos.models import *
 from discodos.utils import *
+from discodos.config import create_data_dir, Db_setup, Config
 import inspect
+from pathlib import Path
+import os
 
 
 class TestCollection(unittest.TestCase):
@@ -13,22 +15,33 @@ class TestCollection(unittest.TestCase):
         log.handlers[0].setLevel("INFO") # handler 0 is the console handler
         log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         self.conf = Config() # doesn't get path of test-db, so...
-        empty_db_path = self.conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
-        self.db_path = self.conf.discodos_root / 'tests' / 'discobase.db'
+        discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
+        empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
+        self.db_path = discodos_tests / 'discobase.db'
         self.clname = self.__name__ # just handy a shortcut, used in test output
         print('TestMix.setUpClass: test-db: {}'.format(copy2(empty_db_path, self.db_path)))
         print("TestMix.setUpClass: done\n")
 
     def debug_db(self, db_return):
-        #print(dbr.keys())
+        #print(db_return.keys())
         print()
-        for i in db_return:
-            #print(i.keys())
+        if isinstance(db_return, list):
+            print('db_return is a list')
+            for i in db_return:
+                stringed = ''
+                for j in i:
+                    stringed+='{}, '.format(j)
+                print(stringed)
+                print()
+        elif isinstance(db_return, sqlite3.Row):
+            print('db_return is a Row')
             stringed = ''
-            for j in i:
-                stringed+='{}, '.format(j)
+            for i in db_return:
+                stringed+='{}, '.format(i)
             print(stringed)
             print()
+        else:
+            print('unknown datatype, cannot debug')
         return True
 
     def test_get_all_db_releases(self):
@@ -59,7 +72,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.search_release_id('123456')
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 5) # should be 5 columns
+        self.assertEqual(len(db_return), 10) # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)
         self.assertEqual(db_return['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return['discogs_title'], 'Material Love')
@@ -71,7 +84,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.search_release_offline('123456')
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 5) # should be 5 columns
+        self.assertEqual(len(db_return), 10) # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)
         self.assertEqual(db_return['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return['discogs_title'], 'Material Love')
@@ -129,13 +142,13 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(len(db_return), 3) # should be a list with 3 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
         self.assertEqual(db_return[0]['d_track_no'], 'AA')
-        self.assertEqual(db_return[0]['bpm'], 120)
+        self.assertEqual(db_return[0]['chosen_bpm'], 120)
         self.assertEqual(db_return[1]['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return[1]['d_track_no'], 'A1')
-        self.assertEqual(db_return[1]['bpm'], 125)
+        self.assertEqual(db_return[1]['chosen_bpm'], 125)
         self.assertEqual(db_return[2]['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return[2]['d_track_no'], 'B2')
-        self.assertEqual(db_return[2]['bpm'], 130)
+        self.assertEqual(db_return[2]['chosen_bpm'], 130)
         print("{} - {} - END".format(self.clname, name))
 
     def test_get_tracks_by_key(self):
@@ -151,10 +164,10 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(len(db_return), 2) # should be a list with 2 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
         self.assertEqual(db_return[0]['d_track_no'], 'AA')
-        self.assertEqual(db_return[0]['bpm'], 120)
+        self.assertEqual(db_return[0]['chosen_bpm'], 120)
         self.assertEqual(db_return[1]['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return[1]['d_track_no'], 'A1')
-        self.assertEqual(db_return[1]['bpm'], 125)
+        self.assertEqual(db_return[1]['chosen_bpm'], 125)
         print("{} - {} - END".format(self.clname, name))
 
     def test_search_release_online_text_multiple(self):
@@ -165,7 +178,7 @@ class TestCollection(unittest.TestCase):
             print('We are ONLINE')
             d_return = self.collection.search_release_online('Amon Tobin') # artist or title
             self.assertGreater(len(d_return), 770) # list with more than 770 Release objects
-            self.assertEqual(d_return.pages, 16) # _currently_ 16 pages
+            self.assertEqual(d_return.pages, 17) # _currently_ 17 pages
             self.assertEqual(d_return.per_page, 50) # 50 per_page
             self.assertEqual(d_return[0].id, 3618346)
             self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
@@ -218,6 +231,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         dbr = self.collection.search_release_track_offline(
             artist='', release='', track='')
+        #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 0) # should be a list with 0 Rows
         print("{} - {} - END".format(self.clname, name))
