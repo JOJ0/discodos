@@ -857,33 +857,34 @@ class Collection (Database):
                       ON track.d_release_id = track_ext.d_release_id
                       AND track.d_track_no = track_ext.d_track_no'''
 
-        if artist == '':
-            artist = '''
+        if not artist:
+            artist_sql = '''
                      ((track.d_artist IS NULL OR track.d_artist LIKE "%") OR
                       (release.d_artist IS NULL OR release.d_artist LIKE "%"))'''
         else:
-            artist = '(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "%{}%")'.format(
+            artist_sql = '(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "%{}%")'.format(
               artist, artist)
 
-        if release == '':
-            release = '(discogs_title IS NULL OR discogs_title LIKE "%")'
+        if not release:
+            release_sql = '(discogs_title IS NULL OR discogs_title LIKE "%")'
         else:
-            release = 'discogs_title LIKE "%{}%"'.format(release)
+            release_sql = 'discogs_title LIKE "%{}%"'.format(release)
 
-        if track == '':
-            track = '(d_track_name IS NULL OR d_track_name LIKE "%")'
+        if not track:
+            track_sql = '(d_track_name IS NULL OR d_track_name LIKE "%")'
         else:
-            track = 'd_track_name LIKE "%{}%"'.format(track)
+            track_sql = 'd_track_name LIKE "%{}%"'.format(track)
 
-        where = '''{} AND {} AND {}'''.format(artist, release, track)
-
+        where = '''{} AND {} AND {}'''.format(artist_sql, release_sql, track_sql)
         order_by = 'track.d_artist, discogs_title, d_track_name'
-        if artist == '' and release =='' and track == '':
+
+        # prevent returning whole track collection when all search params empty
+        if not artist and not release and not track:
             tracks = []
         else:
             tracks = self._select_simple(fields, from_tables, where,
                                    fetchone = False, orderby = order_by)
-        log.debug(self.debug_db(tracks))
+        #log.debug(self.debug_db(tracks))
         return tracks
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
