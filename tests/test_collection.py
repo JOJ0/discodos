@@ -1,19 +1,19 @@
 #!/usr/bin/env python
-import unittest
-from shutil import copy2
-from discodos.models import *
-from discodos.utils import *
-from discodos.config import create_data_dir, Db_setup, Config
 import inspect
-from pathlib import Path
 import os
+import unittest
+from pathlib import Path
+from shutil import copy2
+
+from discodos.config import Config, Db_setup, create_data_dir
+from discodos.models import Collection, log
 
 
 class TestCollection(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
+        #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
+        #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         self.conf = Config() # doesn't get path of test-db, so...
         discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
@@ -372,10 +372,9 @@ class TestCollection(unittest.TestCase):
         else:
             print('We are OFFLINE, testing if we properly fail!')
             d_return = self.collection.search_release_online('69092')
-            self.assertFalse(d_return) # FIXME returns list object because d.release not throwing error
-            d_return_catno = self.collection.d_get_first_catno(d_return[0].labels)
-            self.assertFalse(d_return_catno, '') # should return empty string
-
+            self.assertFalse(d_return)
+            # if release can't be fetched online it does not make sense to ask
+            # d_get_first_catno() to retrieve it. This should be handled elsewhere
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod
