@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 import logging
 import pprint
 import discogs_client
-import discogs_client.exceptions as errors
-import requests.exceptions as reqerrors
-import urllib3.exceptions as urlerrors
+import discogs_client.exceptions
+import requests.exceptions
+import urllib3.exceptions
 from sqlite3 import Error as sqlerr
 import sqlite3
 import time
@@ -15,6 +15,7 @@ from musicbrainzngs import WebServiceError
 import requests
 import json
 import re
+from socket import gethostbyname, gaierror
 
 log = logging.getLogger('discodos')
 
@@ -740,26 +741,33 @@ class Collection (Database):
     def search_release_online(self, id_or_title):
         try:
             if is_number(id_or_title):
-                # FIXME this doesn't raise an error when offline, how to catch?
-                release = self.d.release(id_or_title)
-                #return '|'+str(release.id)+'|'+ str(release.title)+'|'
-                return [release]
+                releases = [self.d.release(id_or_title)]
             else:
                 releases = self.d.search(id_or_title, type='release')
-                log.info("First found release: {}".format(releases[0]))
-                log.debug("All found releases: {}".format(releases))
-                return releases
-        except errors.HTTPError as HtErr:
-            log.error("%s", HtErr)
+            # exceptions are only triggerd if trying to access the release obj
+            log.info("First found release: {}".format(releases[0]))
+            log.debug("All found releases: {}".format(releases))
+            return releases
+        except discogs_client.exceptions.HTTPError as HtErr:
+            log.error("%s (HTTPError)", HtErr)
             return False
-        except urlerrors.NewConnectionError as ConnErr:
-            log.error("%s", ConnErr)
+        except urllib3.exceptions.NewConnectionError as ConnErr:
+            log.error("%s (NewConnectionError)", ConnErr)
             return False
-        except urlerrors.MaxRetryError as RetryErr:
-            log.error("%s", RetryErr)
+        except urllib3.exceptions.MaxRetryError as RetryErr:
+            log.error("%s (MaxRetryError)", RetryErr)
+            return False
+        except requests.exceptions.ConnectionError as ConnErr:
+            log.error("%s (ConnectionError)", ConnErr)
+            return False
+        except gaierror as GaiErr:
+            log.error("%s (socket.gaierror)", GaiErr)
+            return False
+        except TypeError as TypeErr:
+            log.error("%s (TypeError)", TypeErr)
             return False
         except Exception as Exc:
-            log.error("Exception: %s", Exc)
+            log.error("%s (Exception)", Exc)
             return False
 
     def prepare_release_info(self, release): # discogs_client Release object
@@ -947,19 +955,17 @@ class Collection (Database):
             if catch == True:
                 log.debug("try to access r here to catch err {}".format(r.title))
             return r
-        except errors.HTTPError as HtErr:
+        except discogs_client.exceptions.HTTPError as HtErr:
             log.error('Release not existing on Discogs ({})'.format(HtErr))
-            #log.error("%s", HtErr)
             return False
-        except urlerrors.NewConnectionError as ConnErr:
+        except urllib3.exceptions.NewConnectionError as ConnErr:
             log.error("%s", ConnErr)
             return False
-        except urlerrors.MaxRetryError as RetryErr:
+        except urllib3.exceptions.MaxRetryError as RetryErr:
             log.error("%s", RetryErr)
             return False
         except Exception as Exc:
             log.error("Exception: %s", Exc)
-            #raise Exc
             return False
 
     def is_in_d_coll(self, release_id):
@@ -1378,8 +1384,13 @@ class Brainz (object):
         try:
             return m.get_artist_by_id(mb_id, [])
         except WebServiceError as exc:
-            log.error("requesting data from MusicBrainz: %s" % exc)
+            log.error("requesting data from MusicBrainz: %s (WebServiceError)" % exc)
+            log.debug("MODELS: get_mb_artist_by_id returns False.")
             return False
+        except Exception as exc:
+            log.error("requesting data from MusicBrainz: %s (Exception)" % exc)
+            log.debug("MODELS: get_mb_artist_by_id returns empty dict.")
+            return {}
 
     def search_mb_releases(self, artist, album, cat_no = False,
           limit = 10, strict = False):
@@ -1391,17 +1402,26 @@ class Brainz (object):
                 return m.search_releases(artist=artist, release=album,
                     limit=limit, strict=strict)
         except WebServiceError as exc:
-            log.error("requesting data from MusicBrainz: %s" % exc)
+            log.error("requesting data from MusicBrainz: %s (WebServiceError)" % exc)
+            log.debug("MODELS: search_mb_releases returns False.")
             return False
+        except Exception as exc:
+            log.error("requesting data from MusicBrainz: %s (Exception)" % exc)
+            log.debug("MODELS: search_mb_releases returns empty dict.")
+            return {}
 
     def get_mb_release_by_id(self, mb_id):
         try:
             return m.get_release_by_id(mb_id, includes=["release-groups",
             "artists", "labels", "url-rels", "recordings",
             "recording-rels", "recording-level-rels" ])
-        except WebServiceError as exc:
-            log.error("requesting data from MusicBrainz: %s" % exc)
-            log.error("MODELS: get_mb_release_by_id returning empty dict.")
+        except WebServiceError as websvcerr:
+            log.error("requesting data from MusicBrainz: %s (WebServiceError)" % websvcerr)
+            log.debug("MODELS: get_mb_release_by_id returns empty dict.")
+            return {}
+        except Exception as exc:
+            log.error("requesting data from MusicBrainz: %s (Exception)" % exc)
+            log.debug("MODELS: get_mb_release_by_id returns empty dict.")
             return {}
 
     def get_mb_recording_by_id(self, mb_id):
@@ -1410,8 +1430,13 @@ class Brainz (object):
              "url-rels"
             ])
         except WebServiceError as exc:
-            log.error("requesting data from MusicBrainz: %s" % exc)
+            log.error("requesting data from MusicBrainz: %s (WebServiceError)" % exc)
+            log.debug("MODELS: get_mb_recording_by_id returns False.")
             return False
+        except Exception as exc:
+            log.error("requesting data from MusicBrainz: %s (Exception)" % exc)
+            log.debug("MODELS: get_mb_recording_by_id returns empty dict.")
+            return {}
 
     def get_urls_from_mb_release(self, full_rel): # takes what get_mb_release_by_id returned
         #log.debug(full_rel['release'].keys())
@@ -1433,16 +1458,16 @@ class Brainz (object):
         try:
             resp = requests.get(url, headers=headers, timeout=7)
             resp.raise_for_status()
-        except reqerrors.HTTPError as errh:
-            log.debug("fetching AccousticBrainz MBID: %s (HTTPError)", errh)
+        except requests.exceptions.HTTPError as errh:
+            log.debug("fetching AcousticBrainz MBID: %s (HTTPError)", errh)
             if "Not found" in errh.response.text:
                 log.warning("AcousticBrainz doesn't have this recording yet. Consider submitting it!")
-        except reqerrors.ConnectionError as errc:
-            log.error("fetching AccousticBrainz MBID: %s (ConnectionError)", errc)
-        except reqerrors.Timeout as errt:
-            log.error("fetching AccousticBrainz MBID: %s (Timeout)", errt)
-        except reqerrors.RequestException as erre:
-            log.error("fetching AccousticBrainz MBID: %s (RequestException)", erre)
+        except requests.exceptions.ConnectionError as errc:
+            log.error("fetching AcousticBrainz MBID: %s (ConnectionError)", errc)
+        except requests.exceptions.Timeout as errt:
+            log.error("fetching AcousticBrainz MBID: %s (Timeout)", errt)
+        except requests.exceptions.RequestException as erre:
+            log.error("fetching AcousticBrainz MBID: %s (RequestException)", erre)
 
         if resp.ok:
             _json = json.loads(resp.content)
