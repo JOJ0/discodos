@@ -1462,12 +1462,16 @@ class Brainz (object):
             log.debug("fetching AcousticBrainz MBID: %s (HTTPError)", errh)
             if "Not found" in errh.response.text:
                 log.warning("AcousticBrainz doesn't have this recording yet. Consider submitting it!")
+            return None
         except requests.exceptions.ConnectionError as errc:
             log.error("fetching AcousticBrainz MBID: %s (ConnectionError)", errc)
+            return None
         except requests.exceptions.Timeout as errt:
             log.error("fetching AcousticBrainz MBID: %s (Timeout)", errt)
+            return None
         except requests.exceptions.RequestException as erre:
             log.error("fetching AcousticBrainz MBID: %s (RequestException)", erre)
+            return None
 
         if resp.ok:
             _json = json.loads(resp.content)
