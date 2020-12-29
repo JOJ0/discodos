@@ -1,25 +1,28 @@
 #!/usr/bin/env python
 import unittest
 from shutil import copy2
-from os import remove
 from discodos.models import *
 from discodos.utils import *
+from discodos.config import create_data_dir, Db_setup, Config
 import inspect
 from pprint import pprint
+from pathlib import Path
+import os
 
 
 class TestBrainz(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
-        conf = Config() # doesn't get path of test-db, so...
-        empty_db_path = conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
-        self.db_path = conf.discodos_root / 'tests' / 'discobase.db'
+        log.handlers[0].setLevel("DEBUG")
+        self.conf = Config() # doesn't get path of test-db, so...
+        discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
+        empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
+        self.db_path = discodos_tests / 'discobase.db'
         self.clname = self.__name__ # just handy a shortcut, used in test output
-        self.mb_user = conf.musicbrainz_user
-        self.mb_pass = conf.musicbrainz_password
-        self.mb_appid = conf.discogs_appid
+        self.mb_user = self.conf.musicbrainz_user
+        self.mb_pass = self.conf.musicbrainz_password
+        self.mb_appid = self.conf.musicbrainz_appid
         print('TestBrainz.setUpClass: test-db: {}'.format(copy2(empty_db_path, self.db_path)))
         print("TestBrainz.setUpClass: done\n")
 
@@ -108,14 +111,10 @@ class TestBrainz(unittest.TestCase):
             print('We are ONLINE')
             mb_return = self.brainz.get_mb_recording_by_id(
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
-            #print(dir(mb_return))
-            #pprint(mb_return)
-            #print(mb_return.items())
             self.assertEqual(len(mb_return), 1) # should be single release in a list!
             self.assertEqual(mb_return['recording']['id'],
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
             self.assertEqual(mb_return['recording']['title'], 'The Crane')
-            self.assertEqual(mb_return['recording']['length'], '401000')
         else:
             print('We are OFFLINE, testing if we properly fail!')
             mb_return = self.brainz.get_mb_recording_by_id(
@@ -144,7 +143,7 @@ class TestBrainz(unittest.TestCase):
             print('We are OFFLINE, testing if we properly fail!')
             ab_return = self.brainz._get_accbr_low_level(
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
-            self.assertFalse(mb_return)
+            self.assertFalse(ab_return)
         print("{} - {} - END".format(self.clname, name))
 
     def test_get_accbr_high_level(self):
@@ -169,17 +168,18 @@ class TestBrainz(unittest.TestCase):
             print('We are OFFLINE, testing if we properly fail!')
             ab_return = self.brainz._get_accbr_high_level(
                 'fa9b7b2d-e9bb-4122-a725-4f865dd4648a')
-            self.assertFalse(mb_return)
+            self.assertFalse(ab_return)
         print("{} - {} - END".format(self.clname, name))
 
     def test_catno_match_cutter_var_2(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        bmatch = Brainz_match(self.mb_appid, self.mb_user, self.mb_pass,
+        print(self.mb_appid)
+        bmatch = Brainz_match(self.mb_user, self.mb_pass, self.mb_appid, 
               6762725, 'Imperial Propaganda', 'MONNOM BLACK 005',
               'Dax J', 'Imperial Propaganda', 'A1', 1)
         # no auto-ws-stripping here, in reality done after fetch mb_releases
-        cutter_return = bmatch._catno_match_cutter('MONNOMBLACK005', 'BLACK')
+        cutter_return = bmatch._catno_cutter('MONNOMBLACK005', 'BLACK')
         self.assertEqual(cutter_return['before'], 'MONNOM')
         self.assertEqual(cutter_return['term'], 'BLACK')
         self.assertEqual(cutter_return['after'], '005')
