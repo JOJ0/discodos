@@ -13,7 +13,7 @@ class TestMix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
+        #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         #conf = Config() # doesn't get path of test-db, so...
         discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
