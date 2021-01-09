@@ -20,9 +20,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run unittests: TestMix
-        run: python -m unittest tests.test_mix.TestMix
-      - name: Run unittests: TestCollection
-        run: python -m unittest tests.test_collection.TestCollection
-      - name: Run unittests: TestBrainz
-        run: python -m unittest tests.test_brainz.TestBrainz
+      - name: Run unittests - TestMix
+        run: |
+          python -m unittest tests.test_mix.TestMix
+      - name: Run unittests - TestCollection
+        run: |
+          python -m unittest tests.test_collection.TestCollection
+      - name: Run unittests - TestBrainz
+        run: |
+          python -m unittest tests.test_brainz.TestBrainz
