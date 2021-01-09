@@ -23,10 +23,10 @@ jobs:
       - name: Run unittests - TestMix
         run: |
           python -m unittest tests.test_mix.TestMix
-      - name: Run disco (first DiscoDOS run creates DB)
+      - name: Run unittests - TestCollection (first DiscoDOS run creates DB)
         run: |
-          disco
-      - name: Run unittests - TestCollection
+          python -m unittest tests.test_collection.TestCollection
+      - name: Run unittests - TestCollection (user is prompted for Discogs token)
         run: |
           python -m unittest tests.test_collection.TestCollection
       - name: Run unittests - TestBrainz
