@@ -23,6 +23,9 @@ jobs:
       - name: Run unittests - TestMix
         run: |
           python -m unittest tests.test_mix.TestMix
+      - name: Run disco (first DiscoDOS run creates DB)
+        run: |
+          disco
       - name: Run unittests - TestCollection
         run: |
           python -m unittest tests.test_collection.TestCollection
