@@ -64,7 +64,7 @@ class TestMix(unittest.TestCase):
         #print(db_return.keys())
         #for col in db_return:
         #    log.debug(col)
-        self.assertEqual(len(db_return), 12) # select returns 12 cols
+        self.assertEqual(len(db_return), 13) # select returns 13 cols
         self.assertEqual(db_return["track_pos"], 2)
         self.assertEqual(db_return["discogs_title"], "Material Love")
         self.assertEqual(db_return["d_track_name"], "Hedup!")
@@ -178,7 +178,7 @@ class TestMix(unittest.TestCase):
         db_ret_reord = self.mix.reorder_tracks(4) # reorder starts at pos 4
         self.assertEqual(db_ret_reord, 1)
         db_get_ret = self.mix.get_one_mix_track(5) # get the track_pos that was the gap
-        self.assertEqual(len(db_get_ret), 12) # select should return 12 columns
+        self.assertEqual(len(db_get_ret), 13) # select should return 13 columns
         self.assertEqual(db_get_ret['d_track_name'],
             'Material Love (Cab Drivers Remix)') # pos 5 should be this track now
         print("{} - {} - END".format(self.clname, name))
@@ -196,10 +196,10 @@ class TestMix(unittest.TestCase):
         db_ret_reord = self.mix.reorder_tracks_squeeze_in(3, tracks_to_shift)
         self.assertEqual(db_ret_reord, 1)
         db_get_crane = self.mix.get_one_mix_track(3) # get the squeezed in track
-        self.assertEqual(len(db_get_crane), 12) # select should return 12 columns
+        self.assertEqual(len(db_get_crane), 13) # select should return 13 columns
         self.assertEqual(db_get_crane['d_track_name'], 'The Crane') # should be The Crane
         db_get_cab = self.mix.get_one_mix_track(4) # get track after that
-        self.assertEqual(len(db_get_cab), 12) # select should return 12 columns
+        self.assertEqual(len(db_get_cab), 13) # select should return 13 columns
         self.assertEqual(db_get_cab['d_track_name'],
             'Material Love (Cab Drivers Remix)') # should be cab driver remix
         print("{} - {} - END".format(self.clname, name))
@@ -220,7 +220,7 @@ class TestMix(unittest.TestCase):
         self.mix = Mix(False, 132, self.db_path) # instantiate mix 132
         # before edit:
         db_get_bef = self.mix.get_one_mix_track(4) # get a track
-        self.assertEqual(len(db_get_bef), 12) # select should return 12 columns
+        self.assertEqual(len(db_get_bef), 13) # select should return 13 columns
         self.assertEqual(db_get_bef['d_track_name'],
             'The Crane (Inland & Function Rmx)') # we won't/can't edit this
         self.assertEqual(db_get_bef['bpm'], 120) # will be changed
@@ -232,7 +232,7 @@ class TestMix(unittest.TestCase):
         self.assertEqual(db_ret_upd, 1) # was a row updated?
         # after edit:
         db_get_aft = self.mix.get_one_mix_track(4) # get the updated track
-        self.assertEqual(len(db_get_aft), 12) # select should return 12 columns
+        self.assertEqual(len(db_get_aft), 13) # select should return 13 columns
         self.assertEqual(db_get_bef['d_track_name'],
             'The Crane (Inland & Function Rmx)') # we didn't edit this
         self.assertEqual(db_get_aft['bpm'], 130) # we just changed this
@@ -244,7 +244,7 @@ class TestMix(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.mix = Mix(False, 133, self.db_path)
         db_return = self.mix.get_full_mix() # non-verbose select - not all fields
-        self.assertEqual(len(db_return), 5) # mix 133 contains 5 tracks
+        self.assertEqual(len(db_return), 7) # mix 133 contains 7 tracks
         # track 1
         self.assertEqual(db_return[0]["track_pos"], 1)
         self.assertEqual(db_return[0]["discogs_title"], "Material Love")
@@ -266,7 +266,7 @@ class TestMix(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.mix = Mix(False, 133, self.db_path)
         db_return = self.mix.get_full_mix(verbose = True) # verbose select - all fields
-        self.assertEqual(len(db_return), 5) # mix 133 contains 5 tracks
+        self.assertEqual(len(db_return), 7) # mix 133 contains 7 tracks
         # track 1
         self.assertEqual(db_return[0]["track_pos"], 1)
         self.assertEqual(db_return[0]["discogs_title"], "Material Love")
