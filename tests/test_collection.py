@@ -12,15 +12,17 @@ from discodos.models import Collection, log
 class TestCollection(unittest.TestCase):
     @classmethod
     def setUpClass(self):
+        name = inspect.currentframe().f_code.co_name
+        self.clname = self.__name__ # just handy a shortcut, used in test output
+        print("\n{} - {} - BEGIN".format(self.clname, name))
         #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
         #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
         self.conf = Config() # doesn't get path of test-db, so...
         discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
         self.db_path = discodos_tests / 'discobase.db'
-        self.clname = self.__name__ # just handy a shortcut, used in test output
-        print('TestMix.setUpClass: test-db: {}'.format(copy2(empty_db_path, self.db_path)))
-        print("TestMix.setUpClass: done\n")
+        print('Database: {}'.format(copy2(empty_db_path, self.db_path)))
+        print("{} - {} - END\n".format(self.clname, name))
 
     def debug_db(self, db_return):
         #print(db_return.keys())
@@ -379,8 +381,10 @@ class TestCollection(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
         os.remove(self.db_path)
-        print("\nTestMix.teardownClass: done")
+        print("{} - {} - END\n".format(self.clname, name))
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
