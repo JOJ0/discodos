@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import unittest
 from shutil import copy2
-from os import remove
 from discodos.models import *
 from discodos.utils import *
+from discodos.config import create_data_dir, Db_setup, Config
 import inspect
+from pathlib import Path
+import os
 
 
 class TestMix(unittest.TestCase):
@@ -12,9 +14,10 @@ class TestMix(unittest.TestCase):
     def setUpClass(self):
         log.handlers[0].setLevel("INFO") # handler 0 is the console handler
         log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
-        conf = Config() # doesn't get path of test-db, so...
-        empty_db_path = conf.discodos_root / 'tests' / 'fixtures' / 'discobase_empty.db'
-        self.db_path = conf.discodos_root / 'tests' / 'discobase.db'
+        #conf = Config() # doesn't get path of test-db, so...
+        discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
+        empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
+        self.db_path = discodos_tests / 'discobase.db'
         self.clname = self.__name__ # just handy a shortcut, used in test output
         print('TestMix.setUpClass: test-db: {}'.format(copy2(empty_db_path, self.db_path)))
         print("TestMix.setUpClass: done\n")
@@ -147,7 +150,7 @@ class TestMix(unittest.TestCase):
         db_ret_add = self.mix.add_track("123456", "B2", 5, 'üüü', '@@@')
         self.assertEqual(db_ret_add, 1)
         db_return = self.mix.get_one_mix_track(5) # get track #2
-        self.assertEqual(len(db_return), 12) # select returns 12 cols
+        self.assertEqual(len(db_return), 13) # select returns 13 cols
         self.assertEqual(db_return["track_pos"], 5)
         self.assertEqual(db_return["discogs_title"], "Material Love")
         self.assertEqual(db_return["d_track_name"], "Hedup!")
