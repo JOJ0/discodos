@@ -17,16 +17,17 @@ class TestConfig(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
         log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
-
+        # first ever config init prints info and raises SystemExit(0)
+        self.conf = Config()
         #discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         #empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
         #self.db_path = discodos_tests / 'discobase.db'
         #print('Database: {}'.format(copy2(empty_db_path, self.db_path)))
         print("{} - {} - END\n".format(self.clname, name))
 
-    def test_config(self):
+    def test_config_secondrun(self):
         self.conf = Config()
-        #self.assertEqual(len(d_return), 1) # should be single release in a list!
+        self.assertIsInstance(self.conf, Config)
 
     def debug_db(self, db_return):
         #print(db_return.keys())
@@ -60,7 +61,7 @@ class TestConfig(unittest.TestCase):
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
-    ln = lambda f: getattr(TestCollection, f).im_func.func_code.co_firstlineno
+    ln = lambda f: getattr(TestConfig, f).im_func.func_code.co_firstlineno
     lncmp = lambda _, a, b: cmp(ln(a), ln(b))
     loader.sortTestMethodsUsing = lncmp
     unittest.main(testLoader=loader, verbosity=2)
