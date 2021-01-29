@@ -23,7 +23,10 @@ jobs:
       - name: Run unittests - TestMix
         run: |
           python -m unittest tests.test_mix.TestMix
-      - name: Run unittests - TestConfig
+      - name: Run unittests - TestConfig (first run)
+        run: |
+          python -m unittest tests.test_config.TestConfig
+      - name: Run unittests - TestConfig (second run)
         run: |
           python -m unittest tests.test_config.TestConfig
       - name: Run unittests - TestCollection (first DiscoDOS run creates DB)
