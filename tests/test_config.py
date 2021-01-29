@@ -1,33 +1,49 @@
 #!/usr/bin/env python
 import inspect
-import os
 import unittest
+from sqlite3 import Row
+from unittest.mock import patch
 from pathlib import Path
-from shutil import copy2
+import os
 
-from discodos.config import Config, Db_setup, create_data_dir
-from discodos.models import Collection, log
+from discodos.config import Config, create_data_dir  # , Db_setup
+from discodos.models import log
 
 
 class TestConfig(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         name = inspect.currentframe().f_code.co_name
-        self.clname = self.__name__ # just handy a shortcut, used in test output
+        self.clname = self.__name__  # just handy a shortcut, used in test output
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
-        # first ever config init prints info and raises SystemExit(0)
-        self.conf = Config()
-        #discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
-        #empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
-        #self.db_path = discodos_tests / 'discobase.db'
-        #print('Database: {}'.format(copy2(empty_db_path, self.db_path)))
+        #log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
+        log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
+        self.tests_path = Path(os.path.dirname(os.path.abspath(__file__)))
+        self.discodos_data = create_data_dir(self.tests_path)
+        self.config_file = self.discodos_data / 'config.yaml'
         print("{} - {} - END\n".format(self.clname, name))
 
-    def test_config_secondrun(self):
-        self.conf = Config()
-        self.assertIsInstance(self.conf, Config)
+    @patch('builtins.input', return_value='token123')
+    def test_config(self, input):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        log.info(f'This is self.tests_path: {self.tests_path}')
+        log.info(f'This is self.discodos_data: {self.discodos_data}')
+        log.info(f'This is self.config_file: {self.config_file}')
+        conf_exists = self.config_file.exists()
+        log.info(f'Config file exists: {conf_exists}')
+
+        # different test depending on file exists or not
+        if conf_exists:
+            conf = Config()  # wants user input
+            self.assertEqual(conf.discogs_token, 'token123')
+        else:
+            # first ever config init prints info, creates config.yaml
+            # and raises SystemExit(0)
+            with self.assertRaises(SystemExit) as cm:
+                Config()
+                self.assertEqual(cm.exception.code, 0)
+        print("{} - {} - END\n".format(self.clname, name))
 
     def debug_db(self, db_return):
         #print(db_return.keys())
@@ -40,7 +56,7 @@ class TestConfig(unittest.TestCase):
                     stringed+='{}, '.format(j)
                 print(stringed)
                 print()
-        elif isinstance(db_return, sqlite3.Row):
+        elif isinstance(db_return, Row):
             print('db_return is a Row')
             stringed = ''
             for i in db_return:
@@ -58,6 +74,7 @@ class TestConfig(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         #os.remove(self.db_path)
         print("{} - {} - END\n".format(self.clname, name))
+
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
