@@ -4,20 +4,21 @@ import os
 import unittest
 from pathlib import Path
 from shutil import copy2
+from sqlite3 import Row
 
-from discodos.config import Config, Db_setup, create_data_dir
-from discodos.models import Collection, log
+from discodos.config import Config
+from discodos.models import Collection
 
 
 class TestCollection(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         name = inspect.currentframe().f_code.co_name
-        self.clname = self.__name__ # just handy a shortcut, used in test output
+        self.clname = self.__name__  # just handy a shortcut, used in test output
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        #log.handlers[0].setLevel("INFO") # handler 0 is the console handler
-        #log.handlers[0].setLevel("DEBUG") # handler 0 is the console handler
-        self.conf = Config() # doesn't get path of test-db, so...
+        #log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
+        #log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
+        self.conf = Config()  # doesn't get path of test-db, so...
         discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
         self.db_path = discodos_tests / 'discobase.db'
@@ -35,7 +36,7 @@ class TestCollection(unittest.TestCase):
                     stringed+='{}, '.format(j)
                 print(stringed)
                 print()
-        elif isinstance(db_return, sqlite3.Row):
+        elif isinstance(db_return, Row):
             print('db_return is a Row')
             stringed = ''
             for i in db_return:
@@ -50,7 +51,7 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         # instantiate the Collection model class
-        self.collection = Collection(False, self.db_path) 
+        self.collection = Collection(False, self.db_path)
         db_return = self.collection.get_all_db_releases()
         #self.debug_db(db_return)
         self.assertIsNotNone(db_return)
@@ -74,7 +75,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.search_release_id('123456')
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 10) # should be 10 columns
+        self.assertEqual(len(db_return), 10)  # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)
         self.assertEqual(db_return['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return['discogs_title'], 'Material Love')
@@ -86,7 +87,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.search_release_offline('123456')
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 10) # should be 10 columns
+        self.assertEqual(len(db_return), 10)  # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)
         self.assertEqual(db_return['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return['discogs_title'], 'Material Love')
@@ -104,9 +105,9 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('Märtini') # artist or title
+        db_return = self.collection.search_release_offline('Märtini')  # artist or title
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 1) # should be a list with 1 Row
+        self.assertEqual(len(db_return), 1)  # should be a list with 1 Row
         self.assertEqual(db_return[0]['discogs_id'], 123456)
         self.assertEqual(db_return[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(db_return[0]['discogs_title'], 'Material Love')
@@ -115,9 +116,9 @@ class TestCollection(unittest.TestCase):
     def test_search_release_offline_text_multiple(self):
         print("\nTestMix.search_release_offline_text_multiple: BEGIN")
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('Amon') # artist or title
+        db_return = self.collection.search_release_offline('Amon')  # artist or title
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 2) # should be a list with 2 Rows
+        self.assertEqual(len(db_return), 2)  # should be a list with 2 Rows
         self.assertEqual(db_return[0]['discogs_id'], 69092)
         self.assertEqual(db_return[0]['d_artist'], 'Amon Tobin')
         self.assertEqual(db_return[0]['discogs_title'], 'Out From Out Where')
@@ -130,9 +131,9 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('XXX') # artist or title
-        self.assertIsNone(db_return) # returns None if nothing found
-        #self.assertEqual(db_return, []) # FIXME should this better be empty list?
+        db_return = self.collection.search_release_offline('XXX')  # artist or title
+        self.assertIsNone(db_return)  # returns None if nothing found
+        #self.assertEqual(db_return, [])  # FIXME should this better be empty list?
         print("{} - {} - END".format(self.clname, name))
 
     def test_get_tracks_by_bpm(self):
@@ -141,7 +142,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.get_tracks_by_bpm(125, 6)
         self.assertIsNotNone(db_return)
-        self.assertEqual(len(db_return), 3) # should be a list with 3 Rows
+        self.assertEqual(len(db_return), 3)  # should be a list with 3 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
         self.assertEqual(db_return[0]['d_track_no'], 'AA')
         self.assertEqual(db_return[0]['chosen_bpm'], 120)
@@ -159,11 +160,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.get_tracks_by_key("Am")
         self.assertIsNotNone(db_return)
-        #for row in db_return:
-        #    for field in row:
-        #        print(field)
-        #    print()
-        self.assertEqual(len(db_return), 2) # should be a list with 2 Rows
+        self.assertEqual(len(db_return), 2)  # should be a list with 2 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
         self.assertEqual(db_return[0]['d_track_no'], 'AA')
         self.assertEqual(db_return[0]['chosen_bpm'], 120)
@@ -176,22 +173,22 @@ class TestCollection(unittest.TestCase):
         print("\nTestMix.search_release_online_text_multiple: BEGIN")
         self.collection = Collection(False, self.db_path)
         if self.collection.discogs_connect(self.conf.discogs_token,
-            self.conf.discogs_appid):
+                                           self.conf.discogs_appid):
             print('We are ONLINE')
-            d_return = self.collection.search_release_online('Amon Tobin') # artist or title
-            self.assertGreater(len(d_return), 770) # list with more than 770 Release objects
-            self.assertEqual(d_return.pages, 17) # _currently_ 17 pages
-            self.assertEqual(d_return.per_page, 50) # 50 per_page
+            d_return = self.collection.search_release_online('Amon Tobin')  # artist or title
+            self.assertGreater(len(d_return), 770)  # list with more than 770 Release objects
+            self.assertEqual(d_return.pages, 17)  # _currently_ 17 pages
+            self.assertEqual(d_return.per_page, 50)  # 50 per_page
             self.assertEqual(d_return[0].id, 3618346)
             self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Amon Tobin') # yes, really!
+            self.assertEqual(d_return[0].title, 'Amon Tobin')  # yes, really!
             self.assertEqual(d_return[1].id, 3620565)
             self.assertEqual(d_return[1].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[1].title, 'Amon Tobin') # yes, really!
+            self.assertEqual(d_return[1].title, 'Amon Tobin')  # yes, really!
             self.assertEqual(d_return[1].tracklist[0].title, 'ISAM Live')
         else:
             print('We are OFFLINE, testing if we properly fail!')
-            db_return = self.collection.search_release_online('Amon Tobin') # artist or title
+            db_return = self.collection.search_release_online('Amon Tobin')  # artist or title
             self.assertFalse(db_return)
         print("TestMix.search_release_online_text_multiple: DONE\n")
 
@@ -199,18 +196,18 @@ class TestCollection(unittest.TestCase):
         print("\nTestMix.search_release_online_number: BEGIN")
         self.collection = Collection(False, self.db_path)
         if self.collection.discogs_connect(self.conf.discogs_token,
-            self.conf.discogs_appid):
+                                           self.conf.discogs_appid):
             print('We are ONLINE')
             d_return = self.collection.search_release_online('69092')
             #print(dir(d_return))
-            self.assertEqual(len(d_return), 1) # should be single release in a list!
-            self.assertEqual(int(d_return[0].id), 69092) # we get it as a string!
+            self.assertEqual(len(d_return), 1)  # should be single release in a list!
+            self.assertEqual(int(d_return[0].id), 69092)  # we get it as a string!
             self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
             self.assertEqual(d_return[0].title, 'Out From Out Where')
         else:
             print('We are OFFLINE, testing if we properly fail!')
             d_return = self.collection.search_release_online('69092')
-            self.assertFalse(d_return) # FIXME returns list because d.release not throwing error
+            self.assertFalse(d_return)  # FIXME returns list because d.release not throwing error
         print("TestMix.search_release_online_number: DONE\n")
 
     def test_search_release_track_offline_artist(self):
@@ -221,7 +218,7 @@ class TestCollection(unittest.TestCase):
             artist='Märtini', release='', track='')
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 3) # should be a list with 3 Rows
+        self.assertEqual(len(dbr), 3)  # should be a list with 3 Rows
         self.assertEqual(dbr[2]['d_release_id'], 123456)
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(dbr[1]['discogs_title'], 'Material Love')
@@ -235,7 +232,7 @@ class TestCollection(unittest.TestCase):
             artist='', release='', track='')
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 0) # should be a list with 0 Rows
+        self.assertEqual(len(dbr), 0)  # should be a list with 0 Rows
         print("{} - {} - END".format(self.clname, name))
 
     def test_search_release_track_offline_artist_without_tracks(self):
@@ -246,7 +243,7 @@ class TestCollection(unittest.TestCase):
             artist='Amon', release='', track='')
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 2) # should be a list with 2 Rows
+        self.assertEqual(len(dbr), 2)  # should be a list with 2 Rows
         self.assertEqual(dbr[0]['d_artist'], 'Amon Tobin')
         self.assertEqual(dbr[0]['discogs_title'], 'Foley Room')
         self.assertEqual(dbr[0]['d_artist'], 'Amon Tobin')
@@ -261,7 +258,7 @@ class TestCollection(unittest.TestCase):
             artist='', release='', track='Hedup!')
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 1) # should be a list with 1 Rows
+        self.assertEqual(len(dbr), 1)  # should be a list with 1 Rows
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
         self.assertEqual(dbr[0]['d_track_name'], 'Hedup!')
@@ -275,7 +272,7 @@ class TestCollection(unittest.TestCase):
             artist='', release='material', track='')
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 3) # it's one release but finds all track entries!
+        self.assertEqual(len(dbr), 3)  # it's one release but finds all track entries!
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(dbr[1]['d_track_name'], 'Material Love')
         self.assertEqual(dbr[2]['discogs_title'], 'Material Love')
@@ -289,7 +286,7 @@ class TestCollection(unittest.TestCase):
             artist='Märtini', release='material', track='cab')
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
-        self.assertEqual(len(dbr), 1) # one track
+        self.assertEqual(len(dbr), 1)  # one track
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(dbr[0]['d_track_name'], 'Material Love (Cab Drivers Remix)')
         self.assertEqual(dbr[0]['discogs_title'], 'Material Love')
@@ -300,7 +297,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.track_report_snippet(4, 133)
-        self.assertEqual(len(db_return), 3) # a snippet is always 3 tracks
+        self.assertEqual(len(db_return), 3)  # a snippet is always 3 tracks
         # track 3
         self.assertEqual(db_return[0]["track_pos"], 3)
         self.assertEqual(db_return[0]["discogs_title"], "Material Love")
@@ -328,16 +325,17 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.track_report_occurences(123456, 'B2')
-        self.assertEqual(len(db_return), 11) # track was used 11 times
+        self.assertEqual(len(db_return), 11)  # track was used 11 times
         # check some occurences
-        self.assertEqual(db_return[0]["mix_id"], 125) # first occurence
-        self.assertEqual(db_return[0]["track_pos"], 2) # used at pos 2
-        self.assertEqual(db_return[0]["name"],
-                                      'test 125 last_tr, tr_of_one_mix, one_mix')
-        self.assertEqual(db_return[7]["mix_id"], 132) # 8th occurence
-        self.assertEqual(db_return[7]["track_pos"], 2) # used at pos 2
-        self.assertEqual(db_return[10]["mix_id"], 135) # 11th occurence
-        self.assertEqual(db_return[10]["track_pos"], 2) # used at pos 2
+        self.assertEqual(db_return[0]["mix_id"], 125)  # first occurence
+        self.assertEqual(db_return[0]["track_pos"], 2)  # used at pos 2
+        self.assertEqual(
+            db_return[0]["name"],
+            'test 125 last_tr, tr_of_one_mix, one_mix')
+        self.assertEqual(db_return[7]["mix_id"], 132)  # 8th occurence
+        self.assertEqual(db_return[7]["track_pos"], 2)  # used at pos 2
+        self.assertEqual(db_return[10]["mix_id"], 135)  # 11th occurence
+        self.assertEqual(db_return[10]["track_pos"], 2)  # used at pos 2
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_match_method_release(self):
@@ -346,7 +344,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_match_method_release()
         #self.debug_db(db_return)
-        self.assertEqual(len(db_return), 3) # should be a list with 4 Rows
+        self.assertEqual(len(db_return), 3)  # should be a list with 4 Rows
         self.assertEqual(db_return[0]['m_match_method'], None)
         self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
         self.assertEqual(db_return[2]['m_match_method'], "Discogs URL")
@@ -357,12 +355,12 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         if self.collection.discogs_connect(self.conf.discogs_token,
-            self.conf.discogs_appid):
+                                           self.conf.discogs_appid):
             print('We are ONLINE')
             # we need to fetch a release by id first - let's also check it
             d_return = self.collection.search_release_online('69092')
-            self.assertEqual(len(d_return), 1) # should be single release in a list!
-            self.assertEqual(int(d_return[0].id), 69092) # we get it as a string!
+            self.assertEqual(len(d_return), 1)  # should be single release in a list!
+            self.assertEqual(int(d_return[0].id), 69092)  # we get it as a string!
             self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
             self.assertEqual(d_return[0].title, 'Out From Out Where')
             #print(d_return[0].labels)
@@ -385,6 +383,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         os.remove(self.db_path)
         print("{} - {} - END\n".format(self.clname, name))
+
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
