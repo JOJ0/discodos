@@ -17,7 +17,7 @@ class TestConfig(unittest.TestCase):
         self.clname = self.__name__  # just handy a shortcut, used in test output
         print("\n{} - {} - BEGIN".format(self.clname, name))
         #log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
-        log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
+        #log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
         self.tests_path = Path(os.path.dirname(os.path.abspath(__file__)))
         self.discodos_data = create_data_dir(self.tests_path)
         self.config_file = self.discodos_data / 'config.yaml'
