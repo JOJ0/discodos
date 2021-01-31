@@ -8,9 +8,9 @@ on:
 jobs:
   unittest:
     runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          python-version: [3.6, 3.7, 3.8, 3.9]
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
       - uses: actions/checkout@v2
       - name: Install Python ${{ matrix.python-version }}
@@ -21,19 +21,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run unittests - TestMix
+      - name: Run unittests - TestMix (no Config)
         run: |
           python -m unittest tests.test_mix.TestMix
-      - name: Run unittests - TestConfig (first run)
+      - name: Run unittests - TestConfig (first run, asks token)
         run: |
           python -m unittest tests.test_config.TestConfig
-      - name: Run unittests - TestConfig (second run)
+      - name: Run unittests - TestConfig (second run, uses Config)
         run: |
           python -m unittest tests.test_config.TestConfig
-      - name: Run unittests - TestCollection (first DiscoDOS run creates DB)
-        run: |
-          python -m unittest tests.test_collection.TestCollection
-      - name: Run unittests - TestCollection (user is prompted for Discogs token)
+      - name: Run unittests - TestCollection (uses Config)
         run: |
           python -m unittest tests.test_collection.TestCollection
       - name: Run unittests - TestBrainz
