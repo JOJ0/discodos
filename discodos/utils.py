@@ -1,6 +1,5 @@
 #from discodos import log
 import logging
-import time
 import yaml
 
 log = logging.getLogger('discodos')
