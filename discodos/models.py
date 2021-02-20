@@ -978,15 +978,20 @@ class Collection (Database):
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
+        #log.warning("rate limit slow downer is disabled, testing backoff")
+        #log.warning(f"rate_limit_remaining: {self.d._fetcher.rate_limit_remaining}")
+
         if int(self.d._fetcher.rate_limit_remaining) < remaining:
             log.info(
              "Discogs request rate limit is about to exceed, let's wait a little: %s",
                           self.d._fetcher.rate_limit_remaining)
+            #log.warning("Not sleeping, backoff should handle it")
             #while int(self.d._fetcher.rate_limit_remaining) < remaining:
             time.sleep(sleep)
         else:
             log.info("Discogs rate limit: %s remaining.",
                           self.d._fetcher.rate_limit_remaining)
+            #log.warning("rate_limit else branch: Backoff is enabled")
 
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1

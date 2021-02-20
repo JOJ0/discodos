@@ -739,7 +739,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             d_track_no = track['d_track_no']
             d_release_id = track['d_release_id']
             discogs_title = track['discogs_title']
-            self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
+            #self.collection.rate_limit_slow_downer(remaining=20, sleep=3)
 
             # move this to method fetch_track_and_artist_from_discogs
             try: # we catch 404 here, and not via get_d_release, to save one request

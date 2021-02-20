@@ -2,7 +2,9 @@ atomicwrites>=1.2.1
 attrs>=18.2.0
 certifi>=2018.11.29
 chardet>=3.0.4
-python3-discogs-client>=2.3.3
+python3-discogs-client>=2.3.10
+# leave this here for experiments with new features in python3-discogs-client
+#-e git+https://github.com/alifhughes/discogs_client@backoff-on-ratelimit#egg=python3-discogs-client
 idna>=2.8
 more-itertools>=5.0.0
 oauthlib>=3.0.1
