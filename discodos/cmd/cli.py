@@ -49,14 +49,17 @@ class ArgParse():
     # basic subparser element:
     subparsers = parser.add_subparsers(dest='command')
     ### SEARCH subparser #######################################################
+    search_description = """
+        searches for releases and tracks in the Discogs collection. Several
+        actions can be executed on the found items, eg. adding to a mix,
+        updating track info from Discogs or fetching additional information
+        from MusicBrainz/AcousticBrainz. View this subcommand's help: disco
+        search -h.
+        """
     search_subparser = subparsers.add_parser(
         name='search',
-        help="""searches for releases and tracks in the Discogs collection.
-        Several actions can be executed on the found items, eg. adding
-        to a mix, updating track info from Discogs or fetching additional
-        information from MusicBrainz/AcousticBrainz.
-        View this subcommand's help: "disco search -h".
-        """)
+        description=search_description,
+        help=search_description)
     search_subparser.add_argument(
         dest='release_search', metavar='search_terms',
         help='''The collection is searched for these terms. When offline, it
