@@ -1,9 +1,6 @@
 disco mix
 ************
 
-.. argparse::
-    :module: discodos.cmd.cli
-    :func: get_parser
+.. autoprogram:: discodos.cmd.cli:ArgParse.parser
     :prog: disco
-    :path: mix
-    :nodefault:
+    :start_command: mix
