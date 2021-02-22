@@ -62,7 +62,8 @@ class ArgParse():
         help=search_description)
     search_subparser.add_argument(
         dest='release_search', metavar='search_terms',
-        help='''The collection is searched for these terms. When offline, it
+        help="""
+        The collection is searched for these terms. When offline, it
         searches through all releases' artists/titles only (eg tracknames
         not considered). When online, the Discogs API search
         engine is used and also tracknames, artists, labels and
@@ -75,7 +76,8 @@ class ArgParse():
         a list of all releases in the DiscoBASE is shown (including weblinks to
         Discogs/MusicBrainz release pages). In combination with -u, -z or -zz
         respectively, all tracks are updated. Note that this is exactely the
-        same as "disco import" in combination with those options.''')
+        same as "disco import" in combination with those options.
+        """)
     search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
     search_subp_excl_group.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix', metavar='MIX_NAME',
@@ -318,6 +320,7 @@ class ArgParse():
 
     def __init__(self, argv):
         self.args = self.parser.parse_args(argv[1:])
+        #self.args = self.parser.parse_args()
         self.set_console_log_level()
 
     def set_console_log_level(self):
