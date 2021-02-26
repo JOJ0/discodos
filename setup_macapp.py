@@ -23,7 +23,7 @@ OPTIONS = {
         'CFBundleIdentifier': 'net.jojotodos.discodos',
         'NSAppleScriptEnable': 'true',
         'NSAppleScriptEnabled': 'true',
-        'NSHumanReadableCopyright': 'J0J0 T (jt@peek-a-boo.at) - GPL v3'
+        'NSHumanReadableCopyright': 'J0J0 Todos (jt@peek-a-boo.at) - GPL v3'
     }
 }
 REQUIRES = ['py2app']
