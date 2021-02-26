@@ -9,20 +9,38 @@ import argparse
 import sys
 import pprint
 
-log = logging.getLogger('discodos')
 
-# argparser init
-def argparser(argv):
+# globals we use for logging, argparser and user interaction object
+log = logging.getLogger('discodos')
+args = None
+user = None
+
+def get_parser():
+    """ Return argparse.ArgumentParser object
+
+    Used for sphinx-argparse and sphinxcontrib-autoprogram
+    """
+    return ArgParse.parser
+
+class ArgParse():
+    """ argparser and log level handling
+
+    parser needs to ba a class attribute rather than an instance attribute as
+    it should be accessible without instantiating ArgParse class.
+    This is necessary for sphinx-argparse and sphinxcontrib-autoprogram.
+    """
     parser = argparse.ArgumentParser(
-      description='the DiscoDOS CLI.')
-                 #formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+        description='the DiscoDOS CLI.'
+        #formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    )
+
     parser.add_argument(
-		"-v", "--verbose", dest="verbose_count",
+        "-v", "--verbose", dest="verbose_count",
         action="count", default=0,
         help='''increases output verbosity / shows what DiscoDOS is doing under
         the hood (-v is INFO level, -vv is DEBUG level).''')
     parser.add_argument(
-		"-o", "--offline", dest="offline_mode",
+        "-o", "--offline", dest="offline_mode",
         action="store_true",
         help="""DiscoDOS checks for connectivity to online services
         (Discogs, MusicBrainz, AcousticBrainz) itself. This option
@@ -31,16 +49,21 @@ def argparser(argv):
     # basic subparser element:
     subparsers = parser.add_subparsers(dest='command')
     ### SEARCH subparser #######################################################
+    search_description = """
+        searches for releases and tracks in the Discogs collection. Several
+        actions can be executed on the found items, eg. adding to a mix,
+        updating track info from Discogs or fetching additional information
+        from MusicBrainz/AcousticBrainz. View this subcommand's help: disco
+        search -h.
+        """
     search_subparser = subparsers.add_parser(
         name='search',
-        help='''searches for releases and tracks in the Discogs collection.
-        Several actions can be executed on the found items, eg. adding
-        to a mix, updating track info from Discogs or fetching additional
-        information from MusicBrainz/AcousticBrainz.
-        View this subcommand's help: "disco search -h".''')
+        description=search_description,
+        help=search_description)
     search_subparser.add_argument(
         dest='release_search', metavar='search_terms',
-        help='''The collection is searched for these terms. When offline, it
+        help="""
+        The collection is searched for these terms. When offline, it
         searches through all releases' artists/titles only (eg tracknames
         not considered). When online, the Discogs API search
         engine is used and also tracknames, artists, labels and
@@ -53,7 +76,8 @@ def argparser(argv):
         a list of all releases in the DiscoBASE is shown (including weblinks to
         Discogs/MusicBrainz release pages). In combination with -u, -z or -zz
         respectively, all tracks are updated. Note that this is exactely the
-        same as "disco import" in combination with those options.''')
+        same as "disco import" in combination with those options.
+        """)
     search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
     search_subp_excl_group.add_argument(
         "-m", "--mix", type=str, dest='add_to_mix', metavar='MIX_NAME',
@@ -92,7 +116,7 @@ def argparser(argv):
         end of the mix; in combination with -z, -zz, -u or -e this option is ignored.''',
         default=0)
     search_subparser.add_argument(
-		"--resume", dest="search_offset", metavar='OFFSET',
+        "--resume", dest="search_offset", metavar='OFFSET',
         type=int, default=0,
         help='''resumes long-running processes at the given offset position
         (expects a number). You can combine this option currently
@@ -194,7 +218,7 @@ def argparser(argv):
         combination with -u, -z or -zz the update process is started at the given
         position in the mix.''')
     mix_subparser.add_argument(
-		"--resume", dest="mix_offset", metavar='OFFSET',
+        "--resume", dest="mix_offset", metavar='OFFSET',
         type=int, default=0,
         help='''resumes long-running processes at the given offset position
         (expects a number). You can combine this option currently
@@ -202,7 +226,7 @@ def argparser(argv):
         "all tracks in mixes *Brainz matching" (disco mix -z, disco mix -zz).
         ''')
     mix_subparser.add_argument(
-		"-s", "--sort", dest="mix_sort", metavar='COLUMN',
+        "-s", "--sort", dest="mix_sort", metavar='COLUMN',
         type=str, default='track_pos asc',
         help='''sort tracklist by specified column. add "asc" or "desc" to
         specify ascending or descending sort order. "track_pos asc" is the
@@ -293,17 +317,32 @@ def argparser(argv):
         "--force", dest="force_upgrade_schema", action='store_true',
         help='''force upgrade database schema - only use if you know what
         you are doing.''')
-    # only the main parser goes into a variable
-    arguments = parser.parse_args(argv[1:])
-    log.info("Console log_level currently set to {} via config.yaml or default".format(
-        log.handlers[0].level))
-    # Sets log level to WARN going more verbose for each new -v.
-    cli_level = max(3 - arguments.verbose_count, 0) * 10
-    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
-        log.handlers[0].setLevel(cli_level)
-        log.warning("Console log_level override via cli. Now set to {}.".format(
-            log.handlers[0].level))
-    return arguments 
+
+    def __init__(self, argv):
+        self.args = self.parser.parse_args(argv[1:])
+        #self.args = self.parser.parse_args()
+        self.set_console_log_level()
+
+    def set_console_log_level(self):
+        """ Handle console log level setting
+
+        Check if console log level should be left default, set as in definded
+        in config file or an override via --verbose switch requested it.
+        Expects a global variable named log containg discodos logger.
+        """
+        log.info(
+            "Console log level set to {} via config.yaml or default".format(
+                logging.getLevelName(log.handlers[0].level))
+        )
+        # Sets log level to WARN going more verbose for each new -v.
+        cli_level = max(3 - self.args.verbose_count, 0) * 10
+        if cli_level < log.handlers[0].level:  # 10=DEBUG, 20=INFO, 30=WARNING
+            log.handlers[0].setLevel(cli_level)
+            log.warning(
+                "Console log level set to {} via override from CLI.".format(
+                    logging.getLevelName(log.handlers[0].level))
+            )
+
 
 def main():
     try:
@@ -314,21 +353,21 @@ def main():
         print(msg_int)
 
 def _main():
-    # CONFIGURATOR INIT / DISCOGS API conf
+    # CONFIGURATOR INIT / CLI ARGS / LOGGING ##################################
     conf = Config()
-    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
-    # SETUP / INIT
-    #global args, ONLINE, user
-    global args, user
-    args = argparser(sys.argv)
-    # DEBUG stuff
+    log.handlers[0].setLevel(conf.log_level)  # set configured console log lvl
+    global args, user  # enable re-setting of globabls
+    ap = ArgParse(sys.argv)  # instantiate ArgParse class,
+                             # also possibly override console log level
+    args = ap.args  # save arguments in global variable args
+    # DEBUG stuff #############################################################
     #print(vars(args))
     log.info("args_dict: %s", vars(args))
     #log.info("dir(args): %s", dir(args))
-    # check cli args and set attributes
+    # USER INTERACTION OBJECT
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION)
+    # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION) #####################
     coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
             conf.discobase, conf.musicbrainz_user, conf.musicbrainz_password)
 
