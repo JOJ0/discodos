@@ -24,7 +24,8 @@ OPTIONS = {
         'NSAppleScriptEnable': 'true',
         'NSAppleScriptEnabled': 'true',
         'NSHumanReadableCopyright': 'J0J0 Todos (jt@peek-a-boo.at) - GPL v3'
-    }
+    },
+    'includes': 'applescript'
 }
 REQUIRES = ['py2app']
 
