@@ -29,4 +29,4 @@ jobs:
 
     - name: Build package
       run: |
-		python -m nsist pynsist.cfg
+        python -m nsist pynsist.cfg
