@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0_rc3'
+VERSION='1.0.0_rc4'
 
 if [[ $OSTYPE == "darwin"* ]]; then
     OS="macOS"
