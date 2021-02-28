@@ -5,30 +5,39 @@ VERSION='1.0.0_rc4'
 if [[ $OSTYPE == "darwin"* ]]; then
     OS="macOS"
     SED_OPT="-s /^dist/discodos/"
+    BUILD_DIR=build_app
+    DIST_DIR=dist_app
 else
     OS="Linux" # FIXME check for family (eg ubuntu 18 alike)
     SED_OPT="--transform s/^dist/discodos/"
+    BUILD_DIR=build
+    DIST_DIR=dist
 fi
 
-source ~/.venvs/discodos_pack/bin/activate
+# clean up or not
+if [[ $1 == '--clean-all' ]]; then
+    rm -rf discodos-${VERSION}-${OS}.dmg
+    rm -rf $BUILD_DIR
+    rm -rf $DIST_DIR
+    rm -rf ~/.venvs/discodos_posix_pack
+elif [[ $1 == '--clean' ]]; then
+    rm -rf discodos-${VERSION}-${OS}.dmg
+    rm -rf $BUILD_DIR
+    rm -rf $DIST_DIR
+fi
+# create fresh venv and install deps
+# if unclean, existing venv is used
+python -m venv ~/.venvs/discodos_posix_pack
+source ~/.venvs/discodos_posix_pack/bin/activate
 
 
 if [[ $OSTYPE == "darwin"* ]]; then
     # Packaging macOS-app
-    # clean up or not
-    if [[ $1 == '--clean' ]]; then
-        rm -rf discodos-${VERSION}-${OS}.dmg
-        rm -rf build_app
-        rm -rf dist_app
-    fi
-    # check if py2app installed in current env
-    pip show -q py2app
-    PY2APP_INSTALLED=$(echo $?)
-    if [[ PY2APP_INSTALLED -ne 0 ]]; then
-        pip install py2app
-    fi
+    # install macOS specific deps
+    pip install py2app
+    pip install applescript
     # build discodos.app (terminal launch wrapper)
-    python setup_macapp.py py2app --bdist-base build_app --dist-dir dist_app \
+    python setup_macapp.py py2app --bdist-base $BUILD_DIR --dist-dir $DIST_DIR \
       --packages dropbox \
       --extra-scripts discodos/cmd/cli.py,discodos/cmd/sync.py
       #--debug-modulegraph \
@@ -47,18 +56,21 @@ if [[ $OSTYPE == "darwin"* ]]; then
       "dist_app/"
 else
     # Packaging other posix OS's - Linux, BSD, etc.
-    # clean up or not
-    if [[ $1 == '--clean' ]]; then
-        rm -rf discodos-${VERSION}-${OS}.tar.gz
-        rm -rf build
-        rm -rf dist
-    fi
     # build bundles
-    pyinstaller discodos/cmd/cli.py --onefile --name disco --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
-    pyinstaller discodos/cmd/sync.py --onefile --name discosync --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ -p ~/.venvs/discodos_pack/src/discogs-client/
+    pyinstaller discodos/cmd/cli.py \
+      --onefile \
+      --name disco \
+      --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ \
+      -p ~/.venvs/discodos_pack/src/discogs-client/
+    pyinstaller discodos/cmd/sync.py \
+      --onefile \
+      --name discosync \
+      --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ \
+      -p ~/.venvs/discodos_pack/src/discogs-client/
     # archive
-    tar -zcvf discodos-${VERSION}-${OS}.tar.gz ${SED_OPT} dist/disco dist/discosync dist/config.yaml
+    tar -zcvf \
+      discodos-${VERSION}-${OS}.tar.gz \
+      ${SED_OPT} \
+      $DIST_DIR/disco $DIST_DIR/discosync dist/config.yaml
 fi
-
-
 
