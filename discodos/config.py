@@ -454,19 +454,21 @@ class Config():
                 # copy wrappers
                 try:
                     if disco_wrapper_in_bin.is_file():
-                        m_de = 'Config: disco wrapper already existing in ~/bin/'
+                        m_de = 'Config: install_to_path: Overwriting existing '
+                        m_de = 'disco wrapper in  ~/bin/.'
                         log.info(m_de); print(m_de)
                     else:
                         m_cpd = 'Config: install_to_path: Copying disco wrapper to $HOME/bin.'
                         log.info(m_cpd); print(m_cpd)
-                        copy2(disco_wrapper, home_bin)
+                    copy2(disco_wrapper, home_bin)
                     if sync_wrapper_in_bin.is_file():
-                        m_se = 'Config: discosync wrapper already existing in ~/bin/'
+                        m_se = 'Config: install_to_path: Overwriting existing '
+                        m_se = 'discosync wrapper in  ~/bin/.'
                         log.info(m_se); print(m_se)
                     else:
-                        m_cps = 'Config: install_to_path: Copying discosync wrapper to $HOME/bin.'
+                        m_cps = 'Config: install_to_path: Copying discosync wrapper to ~/bin.'
                         log.info(m_cps); print(m_cps)
-                        copy2(sync_wrapper, home_bin)
+                    copy2(sync_wrapper, home_bin)
                 except Exception as exc:
                     #tb = sys.exc_info()[3]
                     m_exc = 'Exception on copy: {}'.format(exc)
