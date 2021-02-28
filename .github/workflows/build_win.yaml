@@ -1,0 +1,32 @@
+name: Build Windows release package with pynsist
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [created, published, edited, prereleased, released]
+
+jobs:
+  build_win:
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install pynsist
+      run: |
+        python -m pip install --upgrade pip
+        pip install pynsist
+        sudo apt-get install nsis
+
+    - name: Build package
+      run: |
+		python -m nsist pynsist.cfg
