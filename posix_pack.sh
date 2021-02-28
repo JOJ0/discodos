@@ -29,6 +29,8 @@ fi
 # if unclean, existing venv is used
 python -m venv ~/.venvs/discodos_posix_pack
 source ~/.venvs/discodos_posix_pack/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 
 
 if [[ $OSTYPE == "darwin"* ]]; then
