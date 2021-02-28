@@ -1,0 +1,4 @@
+pynsist
+py2app
+pyinstaller
+pyinstaller
