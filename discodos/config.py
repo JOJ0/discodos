@@ -292,6 +292,7 @@ class Config():
                 else:
                     log.error('writing config.yaml.')
 
+
     def _get_config_entry(self, yaml_key, optional = True):
         if optional:
             try:
@@ -313,210 +314,181 @@ class Config():
                 raise SystemExit(3)
             return value
 
-    # install cli command (disco) into discodos_root
-    def install_cli(self, to_path=False):
+
+    def install_cli(self):
         # when to_path is set, we install wrappers to ~/bin
         # and extend $PATH if necessary (posix only)
-        log.info('Config.cli: We are on a "{}" OS'.format(os.name))
-        # first part: compile info for wrappers together
+        log.info('Config.install_cli: Entering CLI setup.')
+        log.info('Config.install_cli: We are on a "{}" OS'.format(os.name))
         if os.name == 'posix':
-            if self.frozen: # packaged
-                venv_act = False
-                disco_py = self.discodos_root / 'cli'
-                sync_py = self.discodos_root / 'sync'
-            else: # not packaged and in a venv (checked in config.py main())
-                venv_act = Path(self.venv) / 'bin' / 'activate'
-                disco_py = self.discodos_root / 'cmd' / 'cli.py'
-                sync_py = self.discodos_root / 'cmd' / 'sync.py'
-
-            # cli.py wrapper
-            disco_wrapper = self.discodos_root / 'disco'
-            disco_contents = self._posix_wrapper(disco_py, venv_act,
-                  '# This is the DiscoDOS CLI wrapper.')
-
-            # sync.py wrapper
-            sync_wrapper = self.discodos_root / 'discosync'
-            sync_contents = self._posix_wrapper(sync_py, venv_act,
-                  '# This is the DiscoDOS sync/backup script wrapper.')
-
-            # install systemwide
-            sysinst_sh = self.discodos_root / 'install_wrappers_to_path.sh'
-            sysinst_sh_contents = 'echo "Installing disco commands to your user environment..."\n'
-            sysinst_sh_contents+= 'mkdir -v ~/bin\n'
-            sysinst_sh_contents+= 'cp -v {} ~/bin\n'.format(disco_wrapper)
-            sysinst_sh_contents+= 'cp -v {} ~/bin\n'.format(sync_wrapper)
-            sysinst_sh_contents+= 'echo "Adding $HOME/bin to your PATH by appending a line to $HOME/.bashrc"\n'
-            sysinst_sh_contents+= 'echo \'export PATH=~/bin:$PATH\' >> ~/.bashrc\n'
-            sysinst_sh_contents+= 'read -p "Reload ~/.bashrc to activate changes? (y/N) " RELOAD\n'
-            sysinst_sh_contents+= 'if [[ $RELOAD == "y" || $RELOAD == "Y" ]]; then\n'
-            sysinst_sh_contents+= '    source ~/.bashrc\n'
-            sysinst_sh_contents+= 'else\n'
-            sysinst_sh_contents+= '    exit 0\n'
-            sysinst_sh_contents+= 'fi\n'
-        # first part: Windows wrappers
+            self._install_posix_wrappers()
         elif os.name == 'nt':
-            if self.frozen: # packaged
-                venv_act = False
-                disco_py = self.discodos_root / 'cli.exe'
-                sync_py = self.discodos_root / 'sync.exe'
-            else: # not packaged and in a venv (checked in config.py main())
-                venv_act = Path(self.venv) / 'Scripts' / 'activate.bat'
-                disco_py = self.discodos_root / 'cmd' / 'cli.py'
-                sync_py = self.discodos_root / 'cmd' / 'sync.py'
-
-            # WRAPPER cli.py - disco.bat
-            disco_wrapper = self.discodos_root / 'disco.bat'
-            disco_contents = self._win_wrapper(disco_py,
-                  'rem This is the DiscoDOS CLI wrapper.', self.frozen)
-
-            # WRAPPER sync.py - discosync.bat
-            sync_wrapper = self.discodos_root / 'discosync.bat'
-            sync_contents = self._win_wrapper(sync_py,
-                  'rem This is the DiscoDOS sync/backup script wrapper.', self.frozen)
-
-            # WRAPPER discoshell.bat
-            discoshell = self.discodos_root / 'discoshell.bat'
-            if venv_act:
-                discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
-                    self.discodos_root, venv_act)
-            else:
-                echo_hints = 'Launch disco.bat to view a usage tutorial'
-                discoshell_contents = 'start "DiscoDOS shell" /D "{}" echo "{}"\n'.format(
-                    self.discodos_root, echo_hints)
-        # first part: else - unknown - no wrappers
+            self._install_windows_wrappers()
         else:
             log.warn("Config.cli: Unknown OS - not creating CLI wrappers.")
-            return True
+        return True  # could return something more useful
 
-        # second part: Posix file installation
-        if os.name == "posix":
-            log.info('Config.cli: Installing DiscoDOS wrappers.')
 
-            # install cli wrapper
-            if disco_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: CLI wrapper is already existing: {}".format(
-                    disco_wrapper))
-            else:
-                print("Installing CLI wrapper: {}".format(disco_wrapper))
-                self._write_textfile(disco_contents, disco_wrapper)
-                disco_wrapper.chmod(0o755)
-                print("You can now use the DiscoDOS CLI using ./disco\n")
+    def _install_posix_wrappers(self):
+        if self.frozen:  # packaged (py2app, pyinstaller)
+            venv_act = False
+            disco_py = self.discodos_root / 'cli'
+            sync_py = self.discodos_root / 'sync'
+        else:  # not packaged and in a venv (checked in config.py main())
+               # FIXME better be installed with setuptools
+            venv_act = Path(self.venv) / 'bin' / 'activate'
+            disco_py = self.discodos_root / 'cmd' / 'cli.py'
+            sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
-            # install sync wrapper
-            if sync_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: sync wrapper is already existing: {}".format(
-                    sync_wrapper))
-            else:
-                print("Installing sync wrapper: {}".format(sync_wrapper))
-                self._write_textfile(sync_contents, sync_wrapper)
-                sync_wrapper.chmod(0o755)
-                print("You can now use DiscoDOS sync using ./discosync\n")
+        # collect information for wrappers
+        wrappers = [{
+            'name': 'disco',  # cli.py wrapper
+            'path': self.discodos_root / 'disco',
+            # 'wraps': self.discodos_root / 'cli',
+            'contents': self._posix_wrapper(
+                disco_py,
+                venv_act,
+                '# This is the DiscoDOS CLI wrapper.'
+            )},
+            {
+            'name': 'discosync',  # sync.py wrapper
+            'path': self.discodos_root / 'discosync',
+            # 'wraps': self.discodos_root / 'sync',
+            'contents': self._posix_wrapper(
+                sync_py,
+                venv_act,
+                '# This is the DiscoDOS sync/backup script wrapper.'
+            ),
+        }]
 
-            # install wrappers to path script
-            if sysinst_sh.is_file(): # install only if non-existent
-                log.info("Config.cli: install_wrappers_to_path.sh is already existing: {}".format(
-                    sysinst_sh))
-            else:
-                self._write_textfile(sysinst_sh_contents, sysinst_sh)
-                sysinst_sh.chmod(0o755)
-                hlpmsg ="Execute ./{} to set up disco commands for your user environment!".format(
-                    sysinst_sh.name)
-                hlpmsg+="\n* makes disco command executable from everywhere. After installation you'd just type:"
-                hlpmsg+="\ndisco"
-                hlpmsg+="\ndiscosync"
-                print_help(hlpmsg)
+        # create disco & discosync wrapper (in .app dir for now)
+        for wrapper in wrappers:
+            log.info('Config.install_cli: Creating wrapper: {}'.format(
+                     wrapper['name']))
+            self._write_textfile(wrapper['contents'], wrapper['path'])
+            wrapper['path'].chmod(0o750)
 
-            if to_path == True:
-                # handle path stuff
-                home = Path(os.getenv('HOME'))
-                Path.mkdir(home / 'bin', exist_ok=True)
-                path = os.getenv('PATH')
-                paths = path.split(os.pathsep)
-                m_pth = 'Config: install to_path: $PATH currently is: {}'.format(paths)
-                log.info(m_pth); print(m_pth)
-                home_bin = home / 'bin'
-                if str(home_bin) in paths:
-                    m_alr ='Config: install to_path: $HOME/bin is already in PATH.'
-                    log.info(m_alr); print(m_alr)
+        # handle path stuff
+        home = Path(os.getenv('HOME'))
+        Path.mkdir(home / 'bin', exist_ok=True)
+        path = os.getenv('PATH')  # debug out path
+        paths = path.split(os.pathsep)
+        m_pth = 'Config.install_cli: $PATH currently is: {}'.format(paths)
+        log.info(m_pth); print(m_pth)
+
+        log.debug('Config.install_cli: Debug environment:')
+        self._debug_environ()
+
+        home_bin = home / 'bin'
+        if str(home_bin) in paths:
+            m_alr = 'Config.install_cli: $HOME/bin is already in PATH.'
+            log.info(m_alr); print(m_alr)
+        else:
+            m_add = 'Config.install_cli: Adding $HOME/bin to PATH.'
+            log.info(m_add); print(m_add)
+            bashrc_append_str = 'export PATH=~/bin:$PATH'
+            bashrc_append_cmd = 'echo \'{}\' >> {}/.bashrc'.format(
+                bashrc_append_str, home
+            )
+            m_bsh = 'Config.install_cli: bashrc_append_cmd: {}'.format(
+                bashrc_append_cmd
+            )
+            log.info(m_bsh); print(m_bsh)
+            bashrc_success = run(bashrc_append_cmd, shell=True)
+            log.info('Config.install_cli: bashrc_success: {}'.format(
+                bashrc_success
+            ))
+            # only necessary for debugging mac packaging/installation
+            run('. {}/.bashrc'.format(home), shell=True)
+
+        try:  # copy wrappers, overwrite if necessary
+            for wrapper in wrappers:
+                wrapper_in_bin = home_bin / wrapper['name']
+                if wrapper_in_bin.is_file():
+                    m_di = 'Config.install_cli: Overwriting existing '
+                    m_di+= '{} in ~/bin/.'.format(wrapper['name'])
                 else:
-                    m_add = 'Config: install_to_path: Adding $HOME/bin to PATH.'
-                    log.info(m_add); print(m_add)
-                    bashrc_append_str = 'export PATH=~/bin:$PATH'
-                    bashrc_append_cmd = 'echo \'{}\' >> {}/.bashrc'.format(bashrc_append_str, home)
-                    m_bsh = 'Config: install_to_path: bashrc_append_cmd: {}'.format(bashrc_append_cmd)
-                    log.info(m_bsh); print(m_bsh)
-                    bashrc_success = run(bashrc_append_cmd, shell=True)
-                    log.info('Config: bashrc_success: {}'.format(bashrc_success))
-                    # this is only necessary for debugging mac packaging/installation
-                    run('. {}/.bashrc'.format(home), shell=True)
-                disco_wrapper_in_bin = home_bin / 'disco'
-                sync_wrapper_in_bin = home_bin / 'discosync'
-                # copy wrappers
-                try:
-                    if disco_wrapper_in_bin.is_file():
-                        m_de = 'Config: install_to_path: Overwriting existing '
-                        m_de = 'disco wrapper in  ~/bin/.'
-                        log.info(m_de); print(m_de)
-                    else:
-                        m_cpd = 'Config: install_to_path: Copying disco wrapper to $HOME/bin.'
-                        log.info(m_cpd); print(m_cpd)
-                    copy2(disco_wrapper, home_bin)
-                    if sync_wrapper_in_bin.is_file():
-                        m_se = 'Config: install_to_path: Overwriting existing '
-                        m_se = 'discosync wrapper in  ~/bin/.'
-                        log.info(m_se); print(m_se)
-                    else:
-                        m_cps = 'Config: install_to_path: Copying discosync wrapper to ~/bin.'
-                        log.info(m_cps); print(m_cps)
-                    copy2(sync_wrapper, home_bin)
-                except Exception as exc:
-                    #tb = sys.exc_info()[3]
-                    m_exc = 'Exception on copy: {}'.format(exc)
-                    log.info(m_exc); print(m_exc)
+                    m_di = 'Config.install_cli: Copying '
+                    m_di+= '{} to ~/bin.'.format(wrapper['name'])
+                log.info(m_di); print(m_di)
+                copy2(wrapper['path'], home_bin)
+        except Exception as exc:
+            # tb = sys.exc_info()[3]
+            m_exc = 'Config.install_cli: Exception on copy: {}'.format(exc)
+            log.info(m_exc); print(m_exc)
 
-        # second part: Windows file installation
-        elif os.name == "nt":
-            # INSTALL disco.bat
-            if disco_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: CLI wrapper is already existing: {}".format(
-                    disco_wrapper))
-            else:
-                msg_discoinst = ("Installing DiscoDOS CLI wrapper: {}".format(
-                      disco_wrapper))
-                print(msg_discoinst)
-                self._write_textfile(disco_contents, disco_wrapper)
-                print("You can now use the DiscoDOS CLI using disco.bat\n")
 
-            # INSTALL discosync.bat
-            if sync_wrapper.is_file(): # install only if non-existent
-                log.info("Config.cli: sync wrapper is already existing: {}".format(
-                    sync_wrapper))
-            else:
-                msg_syncinst = ("Installing DiscoDOS sync wrapper: {}".format(
-                      sync_wrapper))
-                print(msg_syncinst)
-                self._write_textfile(sync_contents, sync_wrapper)
-                print("You can now use DiscoDOS sync using discosync.bat\n")
+    def _install_windows_wrappers(self):
+        if self.frozen: # packaged
+            venv_act = False
+            disco_py = self.discodos_root / 'cli.exe'
+            sync_py = self.discodos_root / 'sync.exe'
+        else: # not packaged and in a venv (checked in config.py main())
+            venv_act = Path(self.venv) / 'Scripts' / 'activate.bat'
+            disco_py = self.discodos_root / 'cmd' / 'cli.py'
+            sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
-            # INSTALL discoshell.bat
-            # FIXME if
-            if discoshell.is_file(): # install only if non-existent
-                log.info("Config.cli: discoshell.bat is already existing: {}".format(
-                    discoshell))
-            else:
-                print_help('Installing DiscoDOS shell: {}'.format(discoshell))
-                self._write_textfile(discoshell_contents, discoshell)
-                hlpshmsg = 'Usage: '
-                hlpshmsg = 'Double click discoshell.bat to open the "DiscoDOS shell," '
-                hlpshmsg+= '\nThen put DiscoDOS commands in there.'
-                hlpshmsg+= '\nTo view help for available commands:'
-                hlpshmsg+= '\ndisco -h'
-                hlpshmsg+= '\ndisco mix -h'
-                hlpshmsg+= '\ndisco search -h'
-                hlpshmsg+= '\ndisco suggest -h'
-                hlpshmsg+= '\ndisco import -h'
-                hlpshmsg+= '\ndiscosync -h\n'
-                print_help(hlpshmsg)
+        # WRAPPER cli.py - disco.bat
+        disco_wrapper = self.discodos_root / 'disco.bat'
+        disco_contents = self._win_wrapper(disco_py,
+              'rem This is the DiscoDOS CLI wrapper.', self.frozen)
+
+        # WRAPPER sync.py - discosync.bat
+        sync_wrapper = self.discodos_root / 'discosync.bat'
+        sync_contents = self._win_wrapper(sync_py,
+              'rem This is the DiscoDOS sync/backup script wrapper.', self.frozen)
+
+        # WRAPPER discoshell.bat
+        discoshell = self.discodos_root / 'discoshell.bat'
+        if venv_act:
+            discoshell_contents = 'start "DiscoDOS shell" /D "{}" "{}"\n'.format(
+                self.discodos_root, venv_act)
+        else:
+            echo_hints = 'Launch disco.bat to view a usage tutorial'
+            discoshell_contents = 'start "DiscoDOS shell" /D "{}" echo "{}"\n'.format(
+                self.discodos_root, echo_hints)
+
+        # INSTALL disco.bat
+        if disco_wrapper.is_file(): # install only if non-existent
+            log.info("Config.cli: CLI wrapper is already existing: {}".format(
+                disco_wrapper))
+        else:
+            msg_discoinst = ("Installing DiscoDOS CLI wrapper: {}".format(
+                  disco_wrapper))
+            print(msg_discoinst)
+            self._write_textfile(disco_contents, disco_wrapper)
+            print("You can now use the DiscoDOS CLI using disco.bat\n")
+
+        # INSTALL discosync.bat
+        if sync_wrapper.is_file(): # install only if non-existent
+            log.info("Config.cli: sync wrapper is already existing: {}".format(
+                sync_wrapper))
+        else:
+            msg_syncinst = ("Installing DiscoDOS sync wrapper: {}".format(
+                  sync_wrapper))
+            print(msg_syncinst)
+            self._write_textfile(sync_contents, sync_wrapper)
+            print("You can now use DiscoDOS sync using discosync.bat\n")
+
+        # INSTALL discoshell.bat
+        if discoshell.is_file(): # install only if non-existent
+            log.info("Config.cli: discoshell.bat is already existing: {}".format(
+                discoshell))
+        else:
+            print_help('Installing DiscoDOS shell: {}'.format(discoshell))
+            self._write_textfile(discoshell_contents, discoshell)
+            hlpshmsg = 'Usage: '
+            hlpshmsg+= 'Double click discoshell.bat to open the "DiscoDOS shell," '
+            hlpshmsg+= '\nThen put DiscoDOS commands in there.'
+            hlpshmsg+= '\nTo view help for available commands:'
+            hlpshmsg+= '\ndisco -h'
+            hlpshmsg+= '\ndisco mix -h'
+            hlpshmsg+= '\ndisco search -h'
+            hlpshmsg+= '\ndisco suggest -h'
+            hlpshmsg+= '\ndisco import -h'
+            hlpshmsg+= '\ndiscosync -h\n'
+            print_help(hlpshmsg)
+
 
     def _posix_wrapper(self, filename, venv_activate, comment):
         '''return some lines forming a basic posix venv (or not) wrapper'''
@@ -526,6 +498,7 @@ class Config():
             contents+= 'source "{}"\n'.format(venv_activate)
         contents+= '"{}" "$@"\n'.format(filename)
         return contents
+
 
     def _win_wrapper(self, filename, comment, frozen):
         '''return some lines forming a basic windows batch wrapper'''
@@ -539,7 +512,7 @@ class Config():
         contents+= 'endlocal\n'
         return contents
 
-    # write a textile (eg. shell script)
+
     def _write_textfile(self, contents, file):
         """contents expects string, file expects path/file"""
         try:
@@ -553,7 +526,7 @@ class Config():
         except Exception as err:
             log.error(" trying to write %s \n\n", file)
             raise err
-            #raise SystemExit(3)
+
 
     def create_conf(self):
         '''creates config.yaml'''
@@ -602,3 +575,8 @@ class Config():
             log.error(" trying to write %s \n\n", yamlfile)
             raise err
             raise SystemExit(3)
+
+
+    def _debug_environ(self):
+        for k, v in sorted(os.environ.items()):
+            log.debug('%s: %s', k, v)
