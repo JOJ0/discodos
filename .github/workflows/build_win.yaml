@@ -40,17 +40,17 @@ jobs:
         echo "setup_version=$VERSION" >> $GITHUB_ENV
         echo "tag_version=$TAG" >> $GITHUB_ENV
 
-    - name: Compare versions and report
-      run: |
-        echo "setup.py version: ${{ env.setup_version }}"
-        echo "Latest tag version: ${{ env.tag_version }}"
-        if [[ ${{ env.setup_version }} != ${{ env.tag_version }} ]]; then
-          echo "Versions are not identical -> quitting workflow."
-          exit 23
-        else
-          echo "OK, versions match -> creating release."
-          exit 0
-        fi
+    #- name: Compare versions and report
+    #  run: |
+    #    echo "setup.py version: ${{ env.setup_version }}"
+    #    echo "Latest tag version: ${{ env.tag_version }}"
+    #    if [[ ${{ env.setup_version }} != ${{ env.tag_version }} ]]; then
+    #      echo "Versions are not identical -> quitting workflow."
+    #      exit 23
+    #    else
+    #      echo "OK, versions match -> creating release."
+    #      exit 0
+    #    fi
 
     - name: Create Release
       id: create_release
@@ -75,5 +75,5 @@ jobs:
         # https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./build/nsis/DiscoDOS_${{ env.tag_version }}.exe
-        asset_name: ./build/nsis/DiscoDOS-${{ env.tag_version }}-Win.exe
+        asset_name: DiscoDOS-${{ env.tag_version }}-Win.exe
         asset_content_type: application/exe
