@@ -8,4 +8,4 @@ fi
 set -x
 VERS=$1
 
-git tag -d v$VERS; git push origin --delete v$VERS; git tag v$VERS; git push --force-with-lease; git push --tags --force-with-lease
+git tag -d v$VERS; git push origin --delete v$VERS; git tag v$VERS; git push --force-with-lease; git push --tags
