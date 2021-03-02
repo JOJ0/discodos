@@ -36,9 +36,11 @@ jobs:
     - name: Get versions into environment
       run: |
         VERSION=$(python setup.py --version)
-        TAG=${GITHUB_REF##*/v}
+        TAG_VERSION=${GITHUB_REF##*/v}
+        TAG_FULL=${GITHUB_REF##*/}
         echo "setup_version=$VERSION" >> $GITHUB_ENV
-        echo "tag_version=$TAG" >> $GITHUB_ENV
+        echo "tag_version=$TAG_VERSION" >> $GITHUB_ENV
+        echo "tag_full=$TAG_FULL" >> $GITHUB_ENV
 
     #- name: Compare versions and report
     #  run: |
@@ -61,7 +63,7 @@ jobs:
         exclude_types: ""
         view_top: 1
 
-    - name: "Print result"
+    - name: "Print latest release results"
       run: |
         echo "id: ${{ steps.last_release.outputs.id }}"
         echo "name: ${{ steps.last_release.outputs.name }}"
@@ -69,6 +71,19 @@ jobs:
         echo "created_at: ${{ steps.last_release.outputs.created_atd }}"
         echo "draft: ${{ steps.last_release.outputs.draft }}"
         echo "prerelease: ${{ steps.last_release.outputs.prerelease }}"
+
+    - name: "Check if release is existing and where to upload asset"
+      id: check
+      run: |
+        if [[ "${{ steps.last_release.outputs.tag_name }}" == "${{ env.tag_full }}" ]];
+        then
+          echo "::set-output name=release_existing::true"
+          URL="https://uploads.github.com/repos/JOJ0/discodos/releases/${{ steps.last_release.outputs.id }}/assets{?name,label}"
+          echo "upload_url=$URL" >> $GITHUB_ENV
+        else
+          echo "::set-output name=release_existing::false"
+          echo "upload_url=" >> $GITHUB_ENV  # will be filled by create_relase
+        fi
 
     - name: Create release
       id: create_release
@@ -80,6 +95,13 @@ jobs:
         release_name: DiscoDOS v${{ env.tag_version }}
         draft: true
         prerelease: true
+      if: ${{ steps.check.outputs.release_existing == 'false' }}
+
+    - name: "Update asset upload_url from create_release step"
+      id: update_url
+      run: |
+        echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+      if: ${{ steps.check.outputs.release_existing == 'false' }}
 
     - name: Upload Windows package to release assets
       id: upload-release-asset
@@ -91,7 +113,8 @@ jobs:
         # get its outputs object, which include a `upload_url`. See this blog
         # post for more info:
         # https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        #upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ env.upload_url }}
         asset_path: ./build/nsis/DiscoDOS_${{ env.tag_version }}.exe
         asset_name: DiscoDOS-${{ env.tag_version }}-Win.exe
         asset_content_type: application/exe
