@@ -31,3 +31,29 @@ jobs:
     - name: Build package
       run: |
         python -m nsist pynsist.cfg
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: DiscoDOS ${{ github.ref }}
+        draft: true
+        prerelease: true
+
+    - name: Upload Windows Package Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        # This pulls from the CREATE RELEASE step above, referencing it's ID to
+        # get its outputs object, which include a `upload_url`. See this blog
+        # post for more info:
+        # https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/nsis/DiscoDOS_${{ github.ref }}.exe
+        asset_name: ./build/nsis/DiscoDOS_${{ github.ref }}-Win.exe
+        asset_content_type: application/exe
