@@ -58,8 +58,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.tag_version }}
-        release_name: DiscoDOS ${{ env.tag_version }}
+        tag_name: v${{ env.tag_version }}
+        release_name: DiscoDOS v${{ env.tag_version }}
         draft: true
         prerelease: true
 
