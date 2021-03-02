@@ -116,5 +116,6 @@ jobs:
         #upload_url: ${{ steps.create_release.outputs.upload_url }}
         upload_url: ${{ env.upload_url }}
         asset_path: ./build/nsis/DiscoDOS_${{ env.tag_version }}.exe
-        asset_name: DiscoDOS-${{ env.tag_version }}-Win.exe
+        asset_name: "DiscoDOS-${{ env.tag_version }}-Win.exe"
+        #asset_name: DiscoDOS-random
         asset_content_type: application/exe
