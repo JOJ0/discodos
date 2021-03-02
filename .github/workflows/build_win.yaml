@@ -32,14 +32,34 @@ jobs:
       run: |
         python -m nsist pynsist.cfg
 
+
+    - name: Get versions into environment
+      run: |
+        VERSION=$(python setup.py --version)
+        TAG=${GITHUB_REF##*/v}
+        echo "setup_version=$VERSION" >> $GITHUB_ENV
+        echo "tag_version=$TAG" >> $GITHUB_ENV
+
+    - name: Compare versions and report
+      run: |
+        echo "setup.py version: ${{ env.setup_version }}"
+        echo "Latest tag version: ${{ env.tag_version }}"
+        if [[ ${{ env.setup_version }} != ${{ env.tag_version }} ]]; then
+          echo "Versions are not identical -> quitting workflow."
+          exit 23
+        else
+          echo "OK, versions match -> creating release."
+          exit 0
+        fi
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: DiscoDOS ${{ github.ref }}
+        tag_name: ${{ env.tag_version }}
+        release_name: DiscoDOS ${{ env.tag_version }}
         draft: true
         prerelease: true
 
@@ -54,6 +74,6 @@ jobs:
         # post for more info:
         # https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/nsis/DiscoDOS_${{ github.ref }}.exe
-        asset_name: ./build/nsis/DiscoDOS_${{ github.ref }}-Win.exe
+        asset_path: ./build/nsis/DiscoDOS_${{ env.tag_version }}.exe
+        asset_name: ./build/nsis/DiscoDOS-${{ env.tag_version }}-Win.exe
         asset_content_type: application/exe
