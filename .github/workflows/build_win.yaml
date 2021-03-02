@@ -52,7 +52,25 @@ jobs:
     #      exit 0
     #    fi
 
-    - name: Create Release
+
+    - name: "Get latest release"
+      id: last_release
+      uses: InsonusK/get-latest-release@v1.0.1
+      with:
+        myToken: ${{ secrets.GITHUB_TOKEN }}
+        exclude_types: ""
+        view_top: 1
+
+    - name: "Print result"
+      run: |
+        echo "id: ${{ steps.last_release.outputs.id }}"
+        echo "name: ${{ steps.last_release.outputs.name }}"
+        echo "tag_name: ${{ steps.last_release.outputs.tag_name }}"
+        echo "created_at: ${{ steps.last_release.outputs.created_atd }}"
+        echo "draft: ${{ steps.last_release.outputs.draft }}"
+        echo "prerelease: ${{ steps.last_release.outputs.prerelease }}"
+
+    - name: Create release
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -63,7 +81,7 @@ jobs:
         draft: true
         prerelease: true
 
-    - name: Upload Windows Package Release Asset
+    - name: Upload Windows package to release assets
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
