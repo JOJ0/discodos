@@ -78,7 +78,7 @@ jobs:
         if [[ "${{ steps.last_release.outputs.tag_name }}" == "${{ env.tag_full }}" ]];
         then
           echo "::set-output name=release_existing::true"
-          URL="https://uploads.github.com/repos/JOJ0/discodos/releases/${{ steps.last_release.outputs.id }}/assets{?name,label}"
+          URL='https://uploads.github.com/repos/JOJ0/discodos/releases/${{ steps.last_release.outputs.id }}/assets{?name,label}'
           echo "upload_url=$URL" >> $GITHUB_ENV
         else
           echo "::set-output name=release_existing::false"
