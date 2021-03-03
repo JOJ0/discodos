@@ -54,7 +54,7 @@ if [[ $OSTYPE == "darwin"* ]]; then
       --icon "DiscoDOS.app" 145 170 \
       --hide-extension "DiscoDOS.app" \
       --app-drop-link 600 65 \
-      "discodos-${VERSION}-${OS}.dmg" \
+      "DiscoDOS-${VERSION}-${OS}.dmg" \
       "dist_app/"
 else
     # Packaging other posix OS's - Linux, BSD, etc.
@@ -62,16 +62,16 @@ else
     pyinstaller discodos/cmd/cli.py \
       --onefile \
       --name disco \
-      --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ \
+      --clean -y -p ~/.venvs/discodos_posix_pack/lib/python3.7/site-packages/ \
       -p ~/.venvs/discodos_pack/src/discogs-client/
     pyinstaller discodos/cmd/sync.py \
       --onefile \
       --name discosync \
-      --clean -y -p ~/.venvs/discodos_pack/lib/python3.7/site-packages/ \
+      --clean -y -p ~/.venvs/discodos_posix_pack/lib/python3.7/site-packages/ \
       -p ~/.venvs/discodos_pack/src/discogs-client/
     # archive
     tar -zcvf \
-      discodos-${VERSION}-${OS}.tar.gz \
+      DiscoDOS-${VERSION}-${OS}.tar.gz \
       ${SED_OPT} \
       $DIST_DIR/disco $DIST_DIR/discosync dist/config.yaml
 fi
