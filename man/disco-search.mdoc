@@ -1,0 +1,91 @@
+.Dd June 15, 2020
+.Dt DISCO 1
+.Os DiscoDOS
+.Sh NAME
+.Nm disco
+.Nd positional arguments:
+  search_terms          the collection is searched for these terms
+
+.Sh SYNOPSIS
+.Nm disco
+.Ar search
+.Op Fl -help
+.Op Fl -mix | Fl -discogs-update | Fl -brainz-update | Fl -edit
+.Op Fl -track
+.Op Fl -pos
+.Op Fl -resume
+.Ar search_terms
+...
+
+.Sh DESCRIPTION
+positional arguments:
+  search_terms          The collection is searched for these terms. When
+                        offline, it searches through all releases'
+                        artists/titles only (eg tracknames not considered).
+                        When online, the Discogs API search engine is used and
+                        also tracknames, artists, labels and catalog numbers
+                        are looked through. If your search term consists of
+                        multiple words, put them inside double quotes (eg.
+                        "foo bar term"). If you instead put a number as your
+                        search term, it is assumed you want to view exactly
+                        the Discogs release with the given ID. If search term
+                        is the special keyword "all", a list of all releases
+                        in the DiscoBASE is shown (including weblinks to
+                        Discogs/MusicBrainz release pages). In combination
+                        with -u,
+.Fl z
+or -zz respectively, all tracks are
+                        updated. Note that this is exactely the same as "
+.Cm disco
+.Pp
+                        import" in combination with those options.
+...
+
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+show this help message and exit
+.It Fl m Ar MIX_NAME , Fl -mix Ar MIX_NAME
+adds a track of the found release to the given mix ID (asks which track to add in case -t is missing).
+.It Fl u , Fl -discogs-update
+updates found release/track with Discogs track/artist details (asks which track to update in case -t is missing).
+.It Fl z , Fl -brainz-update
+updates found release/track with additional info from MusicBrainz and AcousticBrainz. (asks which track to update in case -t is missing)
+.Fl z
+quick match, -zz detailed match (takes longer, but more results).
+.It Fl e , Fl -edit
+edits/adds details to a found release/track. Editable fields: key, BPM, key notes, general track notes, custom MusicBrainz recording ID. (asks which track to edit in case -t is missing).
+.It Fl t Ar TRACK_NUMBER , Fl -track Ar TRACK_NUMBER
+in combination with
+.Fl m
+this option adds the given track number (eg. A1, AA, B2, ...) to the mix selected using -m; in combination with
+.Fl z
+or
+.Fl u
+the given track is the one being updated with *Brainz or Discogs details; in combination with
+.Fl e
+the given track is to one to be edited.
+.It Fl p Ar POS_IN_MIX , Fl -pos Ar POS_IN_MIX
+in combination with
+.Fl m
+this option states that we'd like to insert the track at the given position (eg. 1, 14, ...), rather than at the end of the mix; in combination with -z, -zz,
+.Fl u
+or
+.Fl e
+this option is ignored.
+.It Fl -resume Ar OFFSET
+resumes long-running processes at the given offset position (expects a number). You can combine this option currently with *Brainz matching operations only (-z, -zz)
+.El
+...
+
+.Sh AUTHORS
+J0J0 T <jt@peek-a-boo.at>
+.Pp
+Special thanks go to Samplissimo for testing and feature ideas, to Schobernoise for motivation and a GUI draft and most of all to Gold Fish for her patience while Doogie Howser wrote in his diary!
+...
+
+.Sh SEE ALSO
+.Xr disco-import 1 , 
+.Xr disco-suggest 1 , 
+.Xr disco-mix 1 , 
+.Xr disco 1
