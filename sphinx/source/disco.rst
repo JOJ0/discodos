@@ -1,4 +1,28 @@
-.. autoprogram:: discodos.cmd.cli:ArgParse.parser
+disco
+*****
+.. argparse::
+    :module: discodos.cmd.cli
+    :func: get_parser
     :prog: disco
-    :maxdepth: 0
-    :groups:
+    :nosubcommands:
+    :nodefault:
+    :nodescription:
+    :manpage:
+
+
+    command
+        **search**
+             See :doc:`disco_search`  
+
+        **mix**
+             See :doc:`disco_import`
+
+        **suggest**
+             See :doc:`disco_suggest`
+
+        **import**
+             See :doc:`disco_import`
+
+        **setup**
+             See :doc:`disco_setup`
+
