@@ -6,7 +6,6 @@ disco
     :prog: disco
     :nosubcommands:
     :nodefault:
-    :nodescription:
     :manpage:
 
 
