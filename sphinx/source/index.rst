@@ -1,9 +1,10 @@
-DiscoDOS manual
-***************
+DiscoDOS documentation
+**********************
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 6
 
+    index_users_manual
     index_commands_reference
 
 
