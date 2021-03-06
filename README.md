@@ -34,9 +34,15 @@ This should give you an idea on how it looks and feels (your screen is not broke
 ![demo gif 2](assets/intro_gif_v0.4_580-end_16col_960x581.gif)
 
 
-FIXME Head over to the documentation pages and learn how to install and
-use DiscoDOS...
+Head over to the documentation pages and learn how to install and
+use DiscoDOS:
 
-or even direct links to readthedocs documentation chapters??
+- [Quickstart Guide](https://discodos.readthedocs.io/en/latest/QUICKSTART.html)
+- [Installaton Guide](https://discodos.readthedocs.io/en/latest/INSTALLATION.html)
+- [User's Manual](https://discodos.readthedocs.io/en/latest/MANUAL.html)
 
+Watch some video tutorials on Youtube:
 
+- [How to use DiscoDOS #1 - Mixes, Suggestions, Collection, AcousticBrainz](https://www.youtube.com/watch?v=c9lqKuGSCVk&list=PLcHqk0rpp8bprmYlaXdrs6pbOpPoJwW-T)
+- [How to use DiscoDOS #2 - Finding key & BPM compatible tracks](https://www.youtube.com/watch?v=agp9OrYC66I&list=PLcHqk0rpp8bprmYlaXdrs6pbOpPoJwW-T&index=3)
+- [How to use DiscoDOS #3 - Fetch key & BPM from AcousticBrainz](https://www.youtube.com/watch?v=4lungDgdJ2w&list=PLcHqk0rpp8bprmYlaXdrs6pbOpPoJwW-T&index=4)
