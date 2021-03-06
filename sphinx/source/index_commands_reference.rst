@@ -10,4 +10,3 @@ Commands Reference
     disco_suggest
     disco_import
     disco_setup
-    discosync
