@@ -80,9 +80,9 @@ Your starting point for further documentation is the [Quickstart Guuide](QUICKST
 
 ### Linux
 
-Most Linux distributions come with a compatible Python3 version in there package repositories already. Please refer to the [contribution manual](CONTRIBUTION.md#macoslinux---install-as-a-Python-package) on how to install the DiscoDOS Python package.
+Most Linux distributions come with a compatible Python3 version in there package repositories already. Please refer to the [contribution manual](CONTRIBUTION.md#macos-or-linux---install-system-wide) on how to install the DiscoDOS Python package.
 
-If you use Debian GNU/Linux or any distribution that is based on it: DiscoDOS is on its way into Debian unstable and will be available there in a couple of weeks. If all goes well it will be in the upcoming Ubuntu release as well and thus find its way into Ubuntu Studio, Linux Mint and other Ubuntu-based distros. Until `apt install discodos` is possible, please be patient or even better: Install DiscoDOS as a Python package, following above link.
+If you use Debian GNU/Linux or any distribution that is based on it: DiscoDOS v1.0_rc2 is available in Debian unstable. It is also available in the current Ubuntu release as well as in Ubuntu Studio, Linux Mint and other Ubuntu-based distros. Just `apt install discodos` and you are good to go. If you'd like to use the latest version of DiscoDOS please be patient or even better: Install DiscoDOS as a Python package. Learn how by following above link to the contribution manual.
 
 ## Configure Discogs API access
 
@@ -98,7 +98,8 @@ To access your Discogs collection you need to generate an API login token and pu
 **Note: If you are updating from a previous DiscoDOS version, your config.yaml is existing and has a token set up already, thus you won't be bothered!**
 
 - Jump back to [Windows installation chapter](#windows)
-- Jump back to [macOS/Linux installation chapter](#macoslinux)
+- Jump back to [macOS installation chapter](#macos)
+- Jump back to [Linux installation chapter](#linux)
 
 ### Edit configuration file manually
 
@@ -156,7 +157,7 @@ Certainly you can also access the backup files via the Dropbox webinterface - Cl
 
 If you don't like saving your stuff to Dropbox and happen to have your own personal webspace somewhere, `discosync` can use it to save backups. The folder needs to have these features enabled:
 
-- [WebDAV](#https://en.wikipedia.org/wiki/WebDAV)
+- [WebDAV](https://en.wikipedia.org/wiki/WebDAV)
 - Password restriction ([HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication))
 
 Even though it is not mandatory, the following is highly recommended to securly transport your password over the wire:
@@ -195,4 +196,4 @@ webdav_password: 'secret123'
 webdav_url: 'https://www.yourdomain.com/discodos/'
 ```
 
-Go to the [discosync chapter in the User's manual](MANUAL.md#discosync-the-discodos-backup---sync-tool)
+Go to the [discosync chapter in the User's manual](MANUAL.md#discosync---the-discodos-backup--sync-tool)
