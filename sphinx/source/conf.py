@@ -5,8 +5,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # Recommonmark extension imports
-import recommonmark
-from recommonmark.transform import AutoStructify
+#import recommonmark
+#from recommonmark.transform import AutoStructify
 
 # -- Path setup --------------------------------------------------------------
 
@@ -39,13 +39,14 @@ release = '1.0.0'
 # ones.
 extensions = [
     'sphinxarg.ext',
-    'recommonmark'
+    #'recommonmark'
+    'myst_parser'
 ]
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-}
+#source_suffix = {
+#    '.rst': 'restructuredtext',
+#    '.md': 'markdown',
+#}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -79,14 +80,17 @@ html_static_path = ['_static']
 # -- Extension configuration -------------------------------------------------
 
 # Recommonmark configuration
-github_doc_root = 'https://github.com/joj0/discodos/tree/master/sphinx/source'
-def setup(app):
-    app.add_config_value('recommonmark_config', {
-            #'url_resolver': lambda url: github_doc_root + url,
-            'auto_toc_tree_section': 'Contents',
-            'enable_math': False,
-            'enable_inline_math': False,
-            'enable_eval_rst': True,
-            'enable_auto_doc_ref': True,  # deprecated
-    }, True)
-    app.add_transform(AutoStructify)
+#github_doc_root = 'https://github.com/joj0/discodos/tree/master/sphinx/source'
+#def setup(app):
+#    app.add_config_value('recommonmark_config', {
+#            #'url_resolver': lambda url: github_doc_root + url,
+#            'auto_toc_tree_section': 'Contents',
+#            'enable_math': False,
+#            'enable_inline_math': False,
+#            'enable_eval_rst': True,
+#            'enable_auto_doc_ref': True,  # deprecated
+#    }, True)
+#    app.add_transform(AutoStructify)
+
+# MyST configuration
+myst_heading_anchors = 7

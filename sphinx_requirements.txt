@@ -1,4 +1,6 @@
 Sphinx
+#recommonmark
+myst-parser
 sphinx-argparse
 sphinxcontrib-autoprogram
 sphinx-rtd-theme
