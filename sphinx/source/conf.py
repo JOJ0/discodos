@@ -4,6 +4,10 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# Recommonmark extension imports
+#import recommonmark
+#from recommonmark.transform import AutoStructify
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -17,7 +21,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'DiscoDOS'
+project = 'DiscoDOS - the geekiest DJ tool on the planet'
 copyright = '2018-2021, J0J0 Todos'
 author = 'J0J0 Todos'
 
@@ -34,9 +38,15 @@ release = '1.0.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxcontrib.autoprogram',
-    #'sphinxarg.ext',
+    'sphinxarg.ext',
+    #'recommonmark'
+    'myst_parser'
 ]
+
+#source_suffix = {
+#    '.rst': 'restructuredtext',
+#    '.md': 'markdown',
+#}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -68,3 +78,19 @@ html_static_path = ['_static']
 
 
 # -- Extension configuration -------------------------------------------------
+
+# Recommonmark configuration
+#github_doc_root = 'https://github.com/joj0/discodos/tree/master/sphinx/source'
+#def setup(app):
+#    app.add_config_value('recommonmark_config', {
+#            #'url_resolver': lambda url: github_doc_root + url,
+#            'auto_toc_tree_section': 'Contents',
+#            'enable_math': False,
+#            'enable_inline_math': False,
+#            'enable_eval_rst': True,
+#            'enable_auto_doc_ref': True,  # deprecated
+#    }, True)
+#    app.add_transform(AutoStructify)
+
+# MyST configuration
+myst_heading_anchors = 7

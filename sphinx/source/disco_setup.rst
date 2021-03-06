@@ -1,5 +1,9 @@
-.. autoprogram:: discodos.cmd.cli:ArgParse.parser
+disco setup
+************
+
+.. argparse::
+    :module: discodos.cmd.cli
+    :func: get_parser
     :prog: disco
-    :start_command: setup
-    :maxdepth: 1
-    :groups:
+    :path: setup
+    :nodefault:

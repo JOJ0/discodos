@@ -1,9 +1,13 @@
-DiscoDOS manual
-***************
+DiscoDOS documentation
+**********************
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 6
 
+
+    QUICKSTART
+    INSTALLATION
+    MANUAL
+    CONTRIBUTION
     index_commands_reference
-
 

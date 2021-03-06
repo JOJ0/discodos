@@ -1,8 +1,8 @@
-Commands reference
+Commands Reference
 ******************
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 6
 
     disco
     disco_search

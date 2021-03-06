@@ -1,11 +1,11 @@
 <!-- omit in toc -->
-# DiscoDOS Contribution
+# Contribution
 
 - [Install development version](#install-development-version)
   - [Prerequisites](#prerequisites)
-  - [Windows](#windows)
-  - [macOS/Linux](#macoslinux)
-  - [macOS/Linux - install as a Python package](#macoslinux---install-as-a-python-package)
+  - [Windows - Install into virtual environment](#windows---install-into-virtual-environment)
+  - [macOS or Linux - Install into virtual environment](#macos-or-linux---install-into-virtual-environment)
+  - [macOS or Linux - Install system-wide](#macos-or-linux---install-system-wide)
 
 
 ## Install development version
@@ -42,9 +42,9 @@ During the Python setup on Windows choose "Customize installation" and select th
 - Add Python to environment variables
 
 
-### Windows
+### Windows - Install into virtual environment
 
-_[Skip this chapter](#macoslinux) if you are on macOS or Linux!_
+_[Skip this chapter](#macos-or-linux---install-into-virtual-environment) if you are on macOS or Linux!_
 
 Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
 
@@ -84,7 +84,7 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"`
 
 
-### macOS/Linux
+### macOS or Linux - Install into virtual environment
 
 Jump to your homedirectory, clone the repo and change into the cloned repo directory.
 
@@ -129,7 +129,7 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `source ~/.venvs/discodos/bin/activate`
 
 
-### macOS/Linux - install as a Python package
+### macOS or Linux - Install system-wide
 
 This chapter describes how to install the DiscoDOS package into your global Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
 
@@ -167,7 +167,7 @@ Launch DiscoDOS' main command:
 
 `disco`
 
-On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
+On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](INSTALLATION.md#configure-discogs-api-access), then come back here!
 
 Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
 
@@ -175,7 +175,7 @@ Now that you've put the token into the configuration file, DiscoDOS completes se
 
 If the connection to Discogs is working, setup asks you to view a little tutorial teaching you how it works - hit enter and follow the steps.
 
-Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
+Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
 **Note: The `disco` and `discosync` commands are now installed globally and will work in any terminal emulator.**
 

@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# DiscoDOS Installation
+# Installation Guide
 
 - [Install released version](#install-released-version)
   - [Windows](#windows)
@@ -15,7 +15,7 @@
 There are two ways of installing DiscoDOS:
 
 - Released version (get a program that just works, is easy to install and well tested)
-- Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. There is a separate document about [installing the development version](https://github.com/JOJ0/discodos/blob/master/CONTRIBUTION.md).
+- Development version (get the latest features, contribute to DiscoDOS by trying out new things and reporting back what you think. There is a separate document about [installing the development version](CONTRIBUTION.md).
 
 
 ## Install released version
@@ -37,7 +37,7 @@ Now that you've put the token into the configuration file, DiscoDOS completes se
 
 If the connection to Discogs is working, setup asks you to view a little tutorial teaching you how it works - hit enter and follow the steps.
 
-Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
+Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
 **Note: The `disco` and `discosync` commands are installed globally, you can use the Start Menu entry to run them but they also work in any cmd.exe window**
 
@@ -67,7 +67,7 @@ Now that you've put the token into the configuration file, DiscoDOS completes se
 
 If the connection to Discogs is working, setup asks you to view a little tutorial teaching you how it works - hit enter and follow the steps.
 
-Your starting point for further documentation is the [README page](https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
+Your starting point for further documentation is the [Quickstart Guuide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
 **Note: The `disco` and `discosync` commands are now installed globally, you can launch DiscoDOS.app to open a Terminal but they also work in any other Terminal window.**
 
@@ -80,9 +80,9 @@ Your starting point for further documentation is the [README page](https://githu
 
 ### Linux
 
-Most Linux distributions come with a compatible Python3 version in there package repositories already. Please refer to the [contribution manual](https://github.com/JOJ0/discodos/blob/master/CONTRIBUTION.md#macoslinux---install-as-a-Python-package) on how to install the DiscoDOS Python package.
+Most Linux distributions come with a compatible Python3 version in there package repositories already. Please refer to the [contribution manual](CONTRIBUTION.md#macos-or-linux---install-system-wide) on how to install the DiscoDOS Python package.
 
-If you use Debian GNU/Linux or any distribution that is based on it: DiscoDOS is on its way into Debian unstable and will be available there in a couple of weeks. If all goes well it will be in the upcoming Ubuntu release as well and thus find its way into Ubuntu Studio, Linux Mint and other Ubuntu-based distros. Until `apt install discodos` is possible, please be patient or even better: Install DiscoDOS as a Python package, following above link.
+If you use Debian GNU/Linux or any distribution that is based on it: DiscoDOS v1.0_rc2 is available in Debian unstable. It is also available in the current Ubuntu release as well as in Ubuntu Studio, Linux Mint and other Ubuntu-based distros. Just `apt install discodos` and you are good to go. If you'd like to use the latest version of DiscoDOS please be patient or even better: Install DiscoDOS as a Python package. Learn how by following above link to the contribution manual.
 
 ## Configure Discogs API access
 
@@ -98,7 +98,8 @@ To access your Discogs collection you need to generate an API login token and pu
 **Note: If you are updating from a previous DiscoDOS version, your config.yaml is existing and has a token set up already, thus you won't be bothered!**
 
 - Jump back to [Windows installation chapter](#windows)
-- Jump back to [macOS/Linux installation chapter](#macoslinux)
+- Jump back to [macOS installation chapter](#macos)
+- Jump back to [Linux installation chapter](#linux)
 
 ### Edit configuration file manually
 
@@ -145,7 +146,7 @@ The line in config.yaml should then look something like this (watch out for the 
 dropbox_token: 'abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz'
 ```
 
-- Jump back to [I'd like to use my DiscoBASE on multiple computers](README.md#id-like-to-use-my-discobase-on-multiple-computers)
+- Jump back to [I'd like to use my DiscoBASE on multiple computers](QUICKSTART.md#id-like-to-use-my-discobase-on-multiple-computers)
 
 If you want to delete your Dropbox app again or generate a new token because you lost it, go to the [Dropbox app console](https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps).
 
@@ -156,7 +157,7 @@ Certainly you can also access the backup files via the Dropbox webinterface - Cl
 
 If you don't like saving your stuff to Dropbox and happen to have your own personal webspace somewhere, `discosync` can use it to save backups. The folder needs to have these features enabled:
 
-- [WebDAV](#https://en.wikipedia.org/wiki/WebDAV)
+- [WebDAV](https://en.wikipedia.org/wiki/WebDAV)
 - Password restriction ([HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication))
 
 Even though it is not mandatory, the following is highly recommended to securly transport your password over the wire:
@@ -195,4 +196,4 @@ webdav_password: 'secret123'
 webdav_url: 'https://www.yourdomain.com/discodos/'
 ```
 
-Go to the [discosync chapter in the User's manual](MANUAL.md#discosync-the-discodos-backup---sync-tool)
+Go to the [discosync chapter in the User's manual](MANUAL.md#discosync---the-discodos-backup--sync-tool)

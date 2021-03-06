@@ -1,28 +1,28 @@
 <!-- omit in toc -->
-# DiscoDOS User's Manual
+# User's Manual
 
 - [General things about command line tools](#general-things-about-command-line-tools)
 - [*disco* - the main command](#disco---the-main-command)
   - [*disco* - global switches](#disco---global-switches)
 - [The *disco* subcommands](#the-disco-subcommands)
-- [The *mix* command](#the-mix-command)
-- [The *suggest* command](#the-suggest-command)
-- [The *import* command](#the-import-command)
-- [The *search* command](#the-search-command)
-  - [*search* command actions](#search-command-actions)
-  - [*search* action "edit track"](#search-action-edit-track)
-  - [*search* action "add track to mix"](#search-action-add-track-to-mix)
-  - [*search* action "update from discogs"](#search-action-update-from-discogs)
-  - [*search* action "update from *Brainz"](#search-action-update-from-brainz)
+  - [The *mix* command](#the-mix-command)
+  - [The *suggest* command](#the-suggest-command)
+  - [The *import* command](#the-import-command)
+  - [The *search* command](#the-search-command)
+    - [*search* command actions](#search-command-actions)
+    - [*search* action "edit track"](#search-action-edit-track)
+    - [*search* action "add track to mix"](#search-action-add-track-to-mix)
+    - [*search* action "update from discogs"](#search-action-update-from-discogs)
+    - [*search* action "update from *Brainz"](#search-action-update-from-brainz)
 - [_discosync_ - The DiscoDOS backup & sync tool](#discosync---the-discodos-backup--sync-tool)
   - [Backup](#backup)
   - [Viewing existing backups](#viewing-existing-backups)
   - [Restore](#restore)
 
 
-This document contains in-detail explanations about everything you can do with DiscoDOS. If you'd like to see how to do typical day to day tasks, jump to the [Common Tasks](README.md#common-tasks) section on the README page, and come back here later.
+This document contains in-detail explanations about everything you can do with DiscoDOS. If you'd like to see how to do typical day to day tasks, jump to the [Common Tasks](QUICKSTART.md#common-tasks) section on the README page, and come back here later.
 
-### General things about command line tools
+## General things about command line tools
 
 In case you don't use command line tools much: `disco` is designed as such and thus each option has a short form and a long form. For example the help output of the disco main command can be written two ways:
 
@@ -48,17 +48,13 @@ is the same as
 
 
 
-### *disco* - the main command
+## *disco* - the main command
 
 DiscoDOS' main command is `disco`, to view it's help:
 
 `disco -h`
 
-It contains four subcommands, namely:
-
-|      |         |        |        |
-| :--- | :------ | :----- | :----- |
-| mix  | suggest | import | search |
+It contains four subcommands, namely: mix , suggest, import, search
 
 To execute a subcommand you would eg type:
 
@@ -66,14 +62,14 @@ To execute a subcommand you would eg type:
 
 Each subcommand has its own built-in help output:
 
-```
+``` bash
 disco mix -h
 disco suggest -h
 disco import -h
 disco search -h
 ```
 
-#### *disco* - global switches
+### *disco* - global switches
 
 The general behaviour of `disco` can be altered by some "optional arguments":
 
@@ -90,13 +86,13 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 
 
-### The *disco* subcommands
+## The *disco* subcommands
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
 This chart gives some examples of what each subcommand can do:
 
-![Commands Chart](assets/discodos_cmds_v0.3_transp.png)
+![Commands Chart](../../assets/discodos_cmds_v0.3_transp.png)
 
 
 
@@ -353,7 +349,7 @@ To make **all** *track names* on **all** releases in your collection available o
 
 _**Note: This is exactly the same as using `disco import --tracks` or in short: `disco import -u`.**_
 
-Read more on importing release and track information in the [import command section](#The-import-command)
+Read more on importing release and track information in the [import command section](#the-import-command)
 
 #### *search* action "update from *Brainz"
 
@@ -378,12 +374,12 @@ disco search all -z
 disco search all -zz
 ```
 
-Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#The-import-command)
+Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#the-import-command)
 
 
 
 
-### _discosync_ - The DiscoDOS backup & sync tool
+## _discosync_ - The DiscoDOS backup & sync tool
 
 `discosync` is used to save the DiscoBASE to the cloud and restore it if something went wrong. It also can be used to share it between multiple computers. There are currently two options, for storing the backups:
 
@@ -408,7 +404,7 @@ discosync -t w ...
 ```
 
 
-#### Backup
+### Backup
 
 The backup command is straight forward and does not require any user-interaction after launching:
 
@@ -431,7 +427,7 @@ To backup to a **WebDAV folder**:
 short form: `discosync -t w -b`
 
 
-#### Viewing existing backups
+### Viewing existing backups
 
 Dropbox:
 
@@ -446,7 +442,7 @@ WebDAV:
 or: `discosync -t w -s`
 
 
-#### Restore
+### Restore
 
 Restoring your database from a backup is an interactive process - you will be asked which backup you'd like to restore and warned that your local discobase.db file would be overwritten.
 
