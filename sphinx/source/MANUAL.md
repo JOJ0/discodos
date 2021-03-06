@@ -94,7 +94,7 @@ Each subcommand has its typical purpose but some actions can be executed from wi
 
 This chart gives some examples of what each subcommand can do:
 
-![Commands Chart](assets/discodos_cmds_v0.3_transp.png)
+![Commands Chart](../../assets/discodos_cmds_v0.3_transp.png)
 
 
 
