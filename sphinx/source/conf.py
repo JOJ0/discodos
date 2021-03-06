@@ -21,7 +21,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'DiscoDOS'
+project = 'DiscoDOS - the geekiest DJ tool on the planet'
 copyright = '2018-2021, J0J0 Todos'
 author = 'J0J0 Todos'
 
