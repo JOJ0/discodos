@@ -4,6 +4,10 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# Recommonmark extension imports
+import recommonmark
+from recommonmark.transform import AutoStructify
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -35,6 +39,7 @@ release = '1.0.0'
 # ones.
 extensions = [
     'sphinxarg.ext',
+    'recommonmark'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,3 +72,11 @@ html_static_path = ['_static']
 
 
 # -- Extension configuration -------------------------------------------------
+
+# Recommonmark configuration
+def setup(app):
+    app.add_config_value('recommonmark_config', {
+            'url_resolver': lambda url: github_doc_root + url,
+            'auto_toc_tree_section': 'Contents',
+            }, True)
+    app.add_transform(AutoStructify)
