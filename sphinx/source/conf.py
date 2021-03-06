@@ -42,6 +42,11 @@ extensions = [
     'recommonmark'
 ]
 
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -74,9 +79,14 @@ html_static_path = ['_static']
 # -- Extension configuration -------------------------------------------------
 
 # Recommonmark configuration
+github_doc_root = 'https://github.com/joj0/discodos/tree/master/sphinx/source'
 def setup(app):
     app.add_config_value('recommonmark_config', {
-            'url_resolver': lambda url: github_doc_root + url,
+            #'url_resolver': lambda url: github_doc_root + url,
             'auto_toc_tree_section': 'Contents',
-            }, True)
+            'enable_math': False,
+            'enable_inline_math': False,
+            'enable_eval_rst': True,
+            'enable_auto_doc_ref': True,  # deprecated
+    }, True)
     app.add_transform(AutoStructify)
