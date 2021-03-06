@@ -9,7 +9,8 @@ disco
     :manpage:
 
 
-    command
+    Subcommands
+    ************
         **search**
              See :doc:`disco_search`  
 

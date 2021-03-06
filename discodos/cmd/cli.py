@@ -8,6 +8,7 @@ import logging
 import argparse
 import sys
 import pprint
+import textwrap
 
 
 # globals we use for logging, argparser and user interaction object
@@ -62,7 +63,7 @@ class ArgParse():
         help=search_description)
     search_subparser.add_argument(
         dest='release_search', metavar='search_terms',
-        help="""
+        help=textwrap.dedent('''
         The collection is searched for these terms. When offline, it
         searches through all releases' artists/titles only (eg tracknames
         not considered). When online, the Discogs API search
@@ -77,25 +78,27 @@ class ArgParse():
         Discogs/MusicBrainz release pages). In combination with -u, -z or -zz
         respectively, all tracks are updated. Note that this is exactely the
         same as "disco import" in combination with those options.
-        """)
+        '''))
     search_subp_excl_group = search_subparser.add_mutually_exclusive_group()
     search_subp_excl_group.add_argument(
-        "-m", "--mix", type=str, dest='add_to_mix', metavar='MIX_NAME',
-        help='''adds a track of the found release to the given mix ID
-                (asks which track to add in case -t is missing).''',
-        default=0)
+        "-m", "--mix", type=str, default=0,
+        dest='add_to_mix', metavar='MIX_NAME',
+        help=textwrap.dedent('''adds a track of the found release to the
+        given mix ID (asks which track to add in case -t is missing).'''))
     search_subp_excl_group.add_argument(
         "-u", "--discogs-update", action='store_true',
         dest='search_discogs_update', default=0,
-        help='''updates found release/track with Discogs track/artist details
-                (asks which track to update in case -t is missing).''')
+        help=textwrap.dedent('''updates found release/track with Discogs
+        track/artist details (asks which track to update in case -t is
+        missing).'''))
     search_subp_excl_group.add_argument(
         "-z", "--brainz-update", action="count",
         dest='search_brainz_update', default=0,
-        help='''updates found release/track with additional info from MusicBrainz
-        and AcousticBrainz. (asks which track to update in case -t is missing)
-        -z quick match,
-        -zz detailed match (takes longer, but more results).''')
+        help=textwrap.dedent('''updates found release/track with additional
+        info
+        from MusicBrainz and AcousticBrainz. (asks which track to update
+        in case -t is missing) -z quick match, -zz detailed match (takes
+        longer, but more results).'''))
     search_subp_excl_group.add_argument(
         "-e", "--edit", action="store_true",
         dest='search_edit_track',
