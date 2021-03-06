@@ -3,9 +3,9 @@
 
 - [Install development version](#install-development-version)
   - [Prerequisites](#prerequisites)
-  - [Windows](#windows)
-  - [macOS/Linux](#macoslinux)
-  - [macOS/Linux - install as a Python package](#macoslinux---install-as-a-python-package)
+  - [Windows - Install into virtual environment](#windows---install-into-virtual-environment)
+  - [macOS or Linux - Install into virtual environment](#macos-or-linux---install-into-virtual-environment)
+  - [macOS or Linux - Install system-wide](#macos-or-linux---install-system-wide)
 
 
 ## Install development version
@@ -42,7 +42,7 @@ During the Python setup on Windows choose "Customize installation" and select th
 - Add Python to environment variables
 
 
-### Windows
+### Windows - Install into virtual environment
 
 _[Skip this chapter](#macoslinux) if you are on macOS or Linux!_
 
@@ -84,7 +84,7 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"`
 
 
-### macOS/Linux
+### macOS or Linux - Install into virtual environment
 
 Jump to your homedirectory, clone the repo and change into the cloned repo directory.
 
@@ -129,7 +129,7 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `source ~/.venvs/discodos/bin/activate`
 
 
-### macOS/Linux - install as a Python package
+### macOS or Linux - Install system-wide
 
 This chapter describes how to install the DiscoDOS package into your global Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
 
