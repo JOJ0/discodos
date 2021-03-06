@@ -54,9 +54,7 @@ DiscoDOS' main command is `disco`, to view it's help:
 
 `disco -h`
 
-It contains four subcommands, namely:
-
-mix , suggest, import, search
+It contains four subcommands, namely: mix , suggest, import, search
 
 To execute a subcommand you would eg type:
 
@@ -64,7 +62,7 @@ To execute a subcommand you would eg type:
 
 Each subcommand has its own built-in help output:
 
-```
+``` bash
 disco mix -h
 disco suggest -h
 disco import -h
