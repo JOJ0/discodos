@@ -4,7 +4,7 @@ DiscoDOS User's Manual
 .. toctree::
     :maxdepth: 6
 
-    README
+    QUICKSTART
     INSTALLATION
     MANUAL
     CONTRIBUTION

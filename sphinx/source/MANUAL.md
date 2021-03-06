@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# DiscoDOS User's Manual
+# Using DiscoDOS
 
 - [General things about command line tools](#general-things-about-command-line-tools)
 - [*disco* - the main command](#disco---the-main-command)
@@ -56,9 +56,7 @@ DiscoDOS' main command is `disco`, to view it's help:
 
 It contains four subcommands, namely:
 
-|      |         |        |        |
-| :--- | :------ | :----- | :----- |
-| mix  | suggest | import | search |
+mix , suggest, import, search
 
 To execute a subcommand you would eg type:
 

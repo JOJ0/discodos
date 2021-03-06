@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# DiscoDOS Contribution
+# Contribution
 
 - [Install development version](#install-development-version)
   - [Prerequisites](#prerequisites)

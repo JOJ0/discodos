@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# DiscoDOS Installation
+# Installation Guide
 
 - [Install released version](#install-released-version)
   - [Windows](#windows)
