@@ -7,11 +7,9 @@ disco
     :nosubcommands:
     :nodefault:
 
-
-    Subcommands
-    ************
+    command : @after
         **search**
-             See :doc:`disco_search`  
+             See :doc:`disco_search`
 
         **mix**
              See :doc:`disco_import`
