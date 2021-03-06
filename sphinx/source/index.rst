@@ -4,7 +4,10 @@ DiscoDOS documentation
 .. toctree::
     :maxdepth: 6
 
-    index_users_manual
-    index_commands_reference
 
+    QUICKSTART
+    INSTALLATION
+    MANUAL
+    CONTRIBUTION
+    index_commands_reference
 

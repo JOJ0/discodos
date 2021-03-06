@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# Using DiscoDOS
+# User's Manual
 
 - [General things about command line tools](#general-things-about-command-line-tools)
 - [*disco* - the main command](#disco---the-main-command)

@@ -238,4 +238,4 @@ _**Note: Certainly you can use this feature to backup and restore your DiscoBASE
 
 ## User's Manual
 
-Even more details on what DiscoDOS can do is found in the [DiscoDOS User's Manual](MANUAL.md). Consider the README page (you are on currently) as a quickstart guide and consult the User's Manual for advanced usage concepts. You will also find some background info on how things work and why.
+Even more details on what DiscoDOS can do is found in the [User's Manual](MANUAL.md). This quickstart guide should have given you a first impression on how things work, now consult the User's Manual for advanced usage concepts. You will also find some background info on how things work and why.

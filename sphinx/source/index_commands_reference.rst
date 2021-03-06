@@ -1,5 +1,5 @@
-DiscoDOS Commands Reference
-***************************
+Commands Reference
+******************
 
 .. toctree::
     :maxdepth: 6
