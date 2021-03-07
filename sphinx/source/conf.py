@@ -38,7 +38,8 @@ release = '1.0.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxarg.ext',
+    #'sphinxarg.ext',
+    'sphinxcontrib.autoprogram',
     #'recommonmark'
     'myst_parser'
 ]
@@ -93,4 +94,4 @@ html_static_path = ['_static']
 #    app.add_transform(AutoStructify)
 
 # MyST configuration
-myst_heading_anchors = 7
+#myst_heading_anchors = 7

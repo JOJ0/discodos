@@ -5,6 +5,7 @@ Commands Reference
     :maxdepth: 6
 
     disco
+..
     disco_search
     disco_mix
     disco_suggest
