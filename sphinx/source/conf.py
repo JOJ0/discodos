@@ -94,4 +94,4 @@ html_static_path = ['_static']
 #    app.add_transform(AutoStructify)
 
 # MyST configuration
-#myst_heading_anchors = 7
+myst_heading_anchors = 7
