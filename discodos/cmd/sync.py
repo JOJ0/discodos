@@ -1,108 +1,142 @@
 #!/usr/bin/env python
 
-import sys
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
-from dropbox.dropbox import BadInputException
 from urllib3.exceptions import NewConnectionError
 from requests.exceptions import ConnectionError
 from socket import gaierror
 
-#from discodos import log
 import logging
-from discodos.utils import print_help, ask_user, is_number
+from discodos.utils import ask_user
 from discodos.config import Config
-import asyncio
-#from codetiming import Timer
+# import asyncio
+# from codetiming import Timer
 import argparse
-from sys import argv
+import sys
 from webdav3.client import Client
 from webdav3.exceptions import WebDavException
 from datetime import datetime
 from dateutil.parser import parse
-from shutil import copy2
-from pathlib import Path
 import re
 from os import utime
 
 log = logging.getLogger('discodos')
+args = None
 
 
-def argparser(argv):
-    parser = argparse.ArgumentParser(description='the DiscoDOS backup & sync tool.')
+def get_parser():
+    """ Return argparse.ArgumentParser object
+
+    Used for sphinx-argparse and sphinxcontrib-autoprogram
+    """
+    return ArgParse.parser
+
+
+class ArgParse():
+    """ argparser and log level handling
+
+    parser needs to ba a class attribute rather than an instance attribute as
+    it should be accessible without instantiating ArgParse class.
+    This is necessary for sphinx-argparse and sphinxcontrib-autoprogram.
+    """
+
+    parser = argparse.ArgumentParser(
+        description='the DiscoDOS backup & sync tool.'
+    )
     parser.add_argument(
-		"-v", "--verbose", dest="verbose_count",
+        "-v", "--verbose", dest="verbose_count",
         action="count", default=0,
         help="increase log verbosity (-v -> INFO level, -vv DEBUG level)")
     parser.add_argument(
-		"-t", "--type", dest="sync_type",
+        "-t", "--type", dest="sync_type",
         type=str, default='dropbox', choices=['dropbox', 'webdav', 'd', 'w'],
-        help='''select synchronisation type: dropbox (default) or webdav;
-                or just in short: d or w''')
+        help='''select synchronisation type: dropbox (default) or webdav
+        (can be abbreviated: d or w)''')
     parser_group1 = parser.add_mutually_exclusive_group()
     parser_group1.add_argument(
-		"-b", "--backup",
+        "-b", "--backup",
         action='store_true',
         help="")
     parser_group1.add_argument(
-		"-r", "--restore",
+        "-r", "--restore",
         action='store_true',
         help="")
     parser_group1.add_argument(
-		"-s", "--show",
+        "-s", "--show",
         action='store_true',
         help="")
-    arguments = parser.parse_args(argv[1:])
-    log.info("Console log_level currently set to {} via config.yaml or default.".format(
-        log.handlers[0].level))
-    # Sets log level to WARN going more verbose for each new -v.
-    cli_level = max(3 - arguments.verbose_count, 0) * 10
-    if cli_level < log.handlers[0].level: # 10 = DEBUG, 20 = INFO, 30 = WARNING
-        log.handlers[0].setLevel(cli_level)
-        log.warning("Console log_level override via cli (sync.py). Now set to {}.".format(
-            log.handlers[0].level))
-    return arguments
+
+    def __init__(self, argv):
+        self.args = self.parser.parse_args()
+        self.set_console_log_level()
+
+    def set_console_log_level(self):
+        """ Handle console log level setting
+
+        Check if console log level should be left default, set as in definded
+        in config file or an override via --verbose switch requested it.
+        Expects a global variable named log containg discodos logger.
+        """
+        log.info(
+            "Console log level set to {} via config.yaml or default".format(
+                logging.getLevelName(log.handlers[0].level))
+        )
+        # Sets log level to WARN going more verbose for each new -v.
+        cli_level = max(3 - self.args.verbose_count, 0) * 10
+        if cli_level < log.handlers[0].level:  # 10=DEBUG, 20=INFO, 30=WARNING
+            log.handlers[0].setLevel(cli_level)
+            log.warning(
+                "Console log level set to {} via override from CLI.".format(
+                    logging.getLevelName(log.handlers[0].level))
+            )
+
 
 def main():
     try:
         _main()
-        #asyncio.run(_main())
+        # asyncio.run(_main())
     except KeyboardInterrupt:
         msg_int = 'DiscoDOS sync canceled (ctrl-c)'
         log.info(msg_int)
         print(msg_int)
 
+
 def _main():
     conf=Config()
-    log.handlers[0].setLevel(conf.log_level) # handler 0 is the console handler
-    args = argparser(argv)
+    log.handlers[0].setLevel(conf.log_level)  # the console handler
+    global args  # enable re-setting of globabls
+    ap = ArgParse(sys.argv)  # instantiate ArgParse class,
+                             # also possibly override console log level
+    args = ap.args  # save arguments in global variable args
+
     if args.sync_type == 'dropbox' or args.sync_type == 'd':
         sync = Dropbox_sync(conf.dropbox_token, conf.discobase)
         if args.backup:
-            #await sync._async_init()
+            # await sync._async_init()
             sync.backup()
         elif args.restore:
-            #await sync._async_init()
-            #try:
-            #    sync.restore()
-            #except dropbox.stone_validators.ValidationError:
-            #    log.error('Revision not valid.')
+            # await sync._async_init()
+            # try:
+            #     sync.restore()
+            # except dropbox.stone_validators.ValidationError:
+            #     log.error('Revision not valid.')
             sync.restore()
         elif args.show:
-            #await sync._async_init()
+            # await sync._async_init()
             sync.show_backups()
         else:
             log.error("Missing arguments.")
     else:
         sync = Webdav_sync(conf.webdav_user, conf.webdav_password,
-          conf.webdav_url, conf.discobase)
+                           conf.webdav_url, conf.discobase)
         if args.backup:
             sync.backup()
         elif args.restore:
             sync.restore()
         elif args.show:
             sync.show_backups()
+
 
 class Sync(object):
     def _get_local_mtime(self, fileobj): # returns a file's formatted mtime
@@ -148,7 +182,6 @@ class Sync(object):
               'Error setting timestamp of restored file to original backupdate! {}'.format(exc))
 
 
-
 class Dropbox_sync(Sync):
     def __init__(self, token, db_file):
         super().__init__()
@@ -173,24 +206,25 @@ class Dropbox_sync(Sync):
 
     def _login(self):
         log.info("We are in _login")
-        log.info("Creating a Dropbox object...")
-        # doesn't have to be catched! doesn't connect!
-        try:
-            self.dbx = dropbox.Dropbox(self.token)
-        except BadInputException:
+        if not self.token:
             log.error("Dropbox token is missing in config.yaml.")
             raise SystemExit(1)
-        #print("One")
-        #await asyncio.sleep(1)
-        #print("Two")
 
-        # Check that the access token is valid
+        log.info("Creating a Dropbox object...")
+        # doesn't have to be catched! doesn't connect!
+        self.dbx = dropbox.Dropbox(self.token)
+
+        # print("One")
+        # await asyncio.sleep(1)
+        # print("Two")
+
+        # Validate access token, catch network and dropbox error
         try:
             self.dbx.users_get_current_account()
             return True
         except AuthError:
             log.error("ERROR: Invalid access token; try re-generating an "
-                "access token from the app console on the web.")
+                      "access token from the app console on the web.")
             return False
         except NewConnectionError:
             log.error("connecting to Dropbox. (NewConnectionError)")
@@ -201,9 +235,13 @@ class Dropbox_sync(Sync):
         except gaierror:
             log.error("connecting to Dropbox. (gaierror)")
             raise SystemExit(1)
-        except:
-            log.error("connecting to Dropbox. (Uncatched exception)")
+        # most common network errors are catched, we most probably are facing
+        # a Dropbox error that has a error.message attribute
+        except Exception as error:
+            log.error("Error connecting to Dropbox. (%s) %s",
+                      type(error).__name__, error.message)
             raise SystemExit(1)
+
 
     def exists(self, path):
         try:
@@ -460,6 +498,7 @@ class Webdav_sync(Sync):
             self.client.download_sync(remote_path='{}'.format(restore_filename),
                                       local_path='{}'.format(self.discobase))
             self._touch_to_backupdate(restore_filename)
+
 
 # __MAIN try/except wrap
 if __name__ == "__main__":
