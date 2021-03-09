@@ -11,7 +11,7 @@ from pathlib import Path
 import os
 import sys
 import platform
-from subprocess import run
+from subprocess import run, PIPE
 from shutil import copy2
 
 log = logging.getLogger('discodos')
@@ -368,19 +368,25 @@ class Config():
             self._write_textfile(wrapper['contents'], wrapper['path'])
             wrapper['path'].chmod(0o750)
 
-        # handle path stuff
-        home = Path(os.getenv('HOME'))
-        Path.mkdir(home / 'bin', exist_ok=True)
-        path = os.getenv('PATH')  # debug out path
-        paths = path.split(os.pathsep)
-        m_pth = 'Config.install_cli: $PATH currently is: {}'.format(paths)
-        log.info(m_pth); print(m_pth)
-
+        # log information about the environment
         log.debug('Config.install_cli: Debug environment:')
         self._debug_environ()
 
+        # get home, create ~/bin
+        home = Path(os.getenv('HOME'))
+        Path.mkdir(home / 'bin', exist_ok=True)
         home_bin = home / 'bin'
-        if str(home_bin) in paths:
+        # this is a dirty clumsy workaround - macOS doesn't source user's
+        # .bashrc when a .app file is launched from Finder, thus we can't just
+        # ask if ~bin is contained in $PATH environment variable
+        bashrc_grep_success = run(
+            f"grep 'export PATH=~/bin:$PATH' {home}/.bashrc",
+            shell=True,
+        )
+        log.info('Config.install_cli: bashrc_grep_success: {}'.format(
+                 bashrc_grep_success))
+
+        if bashrc_grep_success:
             m_alr = 'Config.install_cli: $HOME/bin is already in PATH.'
             log.info(m_alr); print(m_alr)
         else:

@@ -27,7 +27,7 @@ elif [[ $1 == '--clean' ]]; then
 fi
 # create fresh venv and install deps
 # if unclean, existing venv is used
-python -m venv ~/.venvs/discodos_posix_pack
+python3 -m venv ~/.venvs/discodos_posix_pack
 source ~/.venvs/discodos_posix_pack/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
