@@ -2,19 +2,18 @@
 
 # config.py is kind of a controller - it sets up db and creates config
 from discodos.models import Database, sqlerr
-from discodos.views import User_int
 from discodos.utils import read_yaml, print_help, ask_user
 import yaml
 import logging
-import pprint
 from pathlib import Path
 import os
 import sys
 import platform
-from subprocess import run, PIPE
+from subprocess import run
 from shutil import copy2
 
 log = logging.getLogger('discodos')
+
 
 def create_data_dir(discodos_root):
     # create discodos_data dir
@@ -24,16 +23,18 @@ def create_data_dir(discodos_root):
         Path.mkdir(home / 'Documents' / 'DiscoDOS', exist_ok=True)
         discodos_data = home / 'Documents' / 'DiscoDOS'
     elif os.name == 'nt':
-        #import win32com.client
-        #from win32 import win32api
-        #oShell = win32com.client.Dispatch("Wscript.Shell")
-        #mydocs = oShell.SpecialFolders("MyDocuments")
-        #discodos_data = mydocs / 'discodos'
+        # import win32com.client
+        # from win32 import win32api
+        # oShell = win32com.client.Dispatch("Wscript.Shell")
+        # mydocs = oShell.SpecialFolders("MyDocuments")
+        # discodos_data = mydocs / 'discodos'
         import ctypes.wintypes
         CSIDL_PERSONAL=5
         SHGFP_TYPE_CURRENT= 0
         buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-        ctypes.windll.shell32.SHGetFolderPathW(0, CSIDL_PERSONAL, 0, SHGFP_TYPE_CURRENT, buf)
+        ctypes.windll.shell32.SHGetFolderPathW(
+            0, CSIDL_PERSONAL, 0, SHGFP_TYPE_CURRENT, buf
+        )
         mydocs = Path(buf.value)
         Path.mkdir(mydocs / 'DiscoDOS/', exist_ok=True)
         discodos_data = mydocs / 'DiscoDOS'
@@ -49,7 +50,7 @@ def create_data_dir(discodos_root):
 
 class Db_setup(Database):
     def __init__(self, _db_file):
-        super().__init__(db_file = _db_file, setup = True)
+        super().__init__(db_file=_db_file, setup=True)
         self.sql_initial = {
             'release':
             """ CREATE TABLE release (
@@ -106,34 +107,34 @@ class Db_setup(Database):
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """}
 
-        self.sql_upgrades = [    # list element 0 contains a dict
-           {'schema_version': 2, # this dict contains 2 entries: schema and tasks
-            'tasks': {           # tasks entry contains another dict with a lot of entries
-                'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
-                'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
-                'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
-                'Add field track.a_key': 'ALTER TABLE track ADD a_key TEXT;',
-                'Add field track.a_chords_key': 'ALTER TABLE track ADD a_chords_key TEXT;',
-                'Add field track.a_bpm': 'ALTER TABLE track ADD a_bpm REAL;',
-                'Add field track_ext.m_rec_id_override': 'ALTER TABLE track_ext ADD m_rec_id_override TEXT;',
-                'Add field release.m_rel_id': 'ALTER TABLE release ADD m_rel_id TEXT;',
-                'Add field release.m_rel_id_override': 'ALTER TABLE release ADD m_rel_id_override TEXT;',
-                'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
-                'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
-                'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
-             }
-           }                       # list element 0 ends here
-           #{'schema_version': 3,  # list element 1 starts here
-           # 'tasks': {
-           #     'Add field track.test_upgrade': 'ALTER TABLE track ADD test_upgrade TEXT;',
-           # }
-           #}                      # list element 1 ends here
-        ]                          # list closes here
+        self.sql_upgrades = [      # list element 0 contains a dict
+            {'schema_version': 2,  # this dict contains 2 entries: schema and tasks
+             'tasks': {            # tasks entry contains another dict with a lot of entries
+                 'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
+                 'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
+                 'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
+                 'Add field track.a_key': 'ALTER TABLE track ADD a_key TEXT;',
+                 'Add field track.a_chords_key': 'ALTER TABLE track ADD a_chords_key TEXT;',
+                 'Add field track.a_bpm': 'ALTER TABLE track ADD a_bpm REAL;',
+                 'Add field track_ext.m_rec_id_override': 'ALTER TABLE track_ext ADD m_rec_id_override TEXT;',
+                 'Add field release.m_rel_id': 'ALTER TABLE release ADD m_rel_id TEXT;',
+                 'Add field release.m_rel_id_override': 'ALTER TABLE release ADD m_rel_id_override TEXT;',
+                 'Add field release.m_match_method': 'ALTER TABLE release ADD m_atch_method TEXT;',
+                 'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
+                 'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
+              }
+            }                        # list element 0 ends here
+            # {'schema_version': 3,  # list element 1 starts here
+            #  'tasks': {
+            #      'Add field track.test_upgrade': 'ALTER TABLE track ADD test_upgrade TEXT;',
+            #  }
+            # }                      # list element 1 ends here
+        ]                            # list closes here
 
-    def create_tables(self): # initial db setup
+    def create_tables(self):  # initial db setup
         for table, sql in self.sql_initial.items():
-            try: # release
-                self.execute_sql(sql, raise_err = True)
+            try:  # release
+                self.execute_sql(sql, raise_err=True)
                 msg_release="CREATE TABLE '{}' was successful.".format(table)
                 log.info(msg_release)
                 print(msg_release)
@@ -147,25 +148,26 @@ class Db_setup(Database):
         return latest
 
     def get_current_schema_version(self):
-        curr_vers_row = self._select('PRAGMA user_version', fetchone = True)
+        curr_vers_row = self._select('PRAGMA user_version', fetchone=True)
         return int(curr_vers_row['user_version'])
 
-    def upgrade_schema(self, force_upgrade = False):
+    def upgrade_schema(self, force_upgrade=False):
         current_schema = self.get_current_schema_version()
         latest_schema = self.get_latest_schema_version()
         # check if upgrade necessary
-        if not current_schema < latest_schema and force_upgrade == False:
+        if not current_schema < latest_schema and force_upgrade is False:
             log.info('Db_setup: No schema upgrade necessary.')
-        else: # also happens if force_upgrade True
+        else:  # also happens if force_upgrade True
             print("Upgrading DiscoBASE schema to latest version.")
             failure = False
             self.execute_sql('PRAGMA foreign_keys = OFF;')
-            for upgrade in self.sql_upgrades: # list is sorted -> execute all up to highest
+            for upgrade in self.sql_upgrades:  # list is sorted -> execute all up to highest
                 current_schema = self.get_current_schema_version()
-                if (current_schema < upgrade['schema_version'] or force_upgrade == True):
+                if (current_schema < upgrade['schema_version']
+                        or force_upgrade is True):
                     for task, sql in upgrade['tasks'].items():
                         try:
-                            self.execute_sql(sql, raise_err = True)
+                            self.execute_sql(sql, raise_err=True)
                             msg_task="Task '{}' was successful.".format(task)
                             log.info(msg_task)
                             print(msg_task)
@@ -177,14 +179,14 @@ class Db_setup(Database):
                 msg_fail='DiscoBASE schema upgrade failed, open an issue on Github!\n'
                 log.info(msg_fail)
                 print(msg_fail)
-                self.configure_db() # this sets foreign_keys = ON again
+                self.configure_db()  # this sets foreign_keys = ON again
                 return False
             else:
                 self.execute_sql('PRAGMA user_version = {}'.format(latest_schema))
                 msg_done='DiscoBASE schema upgrade done!\n'
                 log.info(msg_done)
                 print(msg_done)
-                self.configure_db() # this sets foreign_keys = ON again
+                self.configure_db()  # this sets foreign_keys = ON again
                 return True
 
 
@@ -213,7 +215,7 @@ class Config():
             # in unfrozen we need to find proper place for data_dir
             self.discodos_data = create_data_dir(self.discodos_root)
             # currently no difference if in venv or not - leave this for now
-            if self.venv == None:
+            if self.venv is None:
                 log.info('Config: We are _not_ in a venv.')
             else:
                 log.info('Config: We are running in a venv: {}'.format(self.venv))
@@ -231,8 +233,11 @@ class Config():
             if self.no_create_conf and os.name == "nt":
                 log.info("Config: We are running Windows and no_create_conf is set. Not creating a config file!")
                 import ctypes  # An included library with Python install.
-                ctypes.windll.user32.MessageBoxW(0,
-                  "No configuration file existing yet, please run DiscoDOS first!", "DiscoDOS", 0)
+                ctypes.windll.user32.MessageBoxW(
+                    0,
+                    "No configuration file existing yet, please run DiscoDOS first!",
+                    "DiscoDOS", 0
+                )
                 raise SystemExit(0)
             # SystemExit on macOS is evil - We don't create a config, just log
             # this is invoked from open_shell_mac.py
@@ -244,14 +249,14 @@ class Config():
                 raise SystemExit(0)
 
         # The only setting we _always_ try to fetch is log_level!!!
-        try: # optional setting log_level
+        try:  # optional setting log_level
             self.log_level = self.conf["log_level"]
             log.info("config.yaml entry log_level is {}.".format(
                 self.log_level))
         except KeyError:
             self.log_level = "WARNING"
             log.warn("config.yaml entry log_level not set, taking log_level from CLI option or default (WARNING).")
-        except: # any other error: set INFO
+        except:  # any other error: set INFO
             self.log_level = "WARNING"
             log.warn("config.yaml not existing or other error, setting log_level to WARNING.")
 
@@ -259,10 +264,10 @@ class Config():
         # (Config init from open_shell_mac.py)
         # Windows is existing above, this is only necessary for macOS because
         # SystemExit is evil in a mac app!
-        if self.no_create_conf == False:
+        if self.no_create_conf is False:
             # db file handling
-            db_file = self._get_config_entry('discobase_file') # maybe configured?
-            if not db_file: # if not set, use default value
+            db_file = self._get_config_entry('discobase_file')  # maybe configured?
+            if not db_file:  # if not set, use default value
                 db_file = 'discobase.db'
             self.discobase = self.discodos_data / db_file
             log.info("Config.discobase: {}".format(self.discobase))
@@ -293,7 +298,7 @@ class Config():
                     log.error('writing config.yaml.')
 
 
-    def _get_config_entry(self, yaml_key, optional = True):
+    def _get_config_entry(self, yaml_key, optional=True):
         if optional:
             try:
                 if self.conf[yaml_key] == '':
@@ -307,7 +312,7 @@ class Config():
                 log.info("config.yaml entry {} is missing.".format(yaml_key))
             return value
         else:
-            try: # essential settings entries should error and exit
+            try:  # essential settings entries should error and exit
                 value = self.conf[yaml_key]
             except KeyError as ke:
                 log.error("Missing essential entry in config.yaml: {}".format(ke))
@@ -335,7 +340,7 @@ class Config():
             disco_py = self.discodos_root / 'cli'
             sync_py = self.discodos_root / 'sync'
         else:  # not packaged and in a venv (checked in config.py main())
-               # FIXME better be installed with setuptools
+               # better be installed with setuptools
             venv_act = Path(self.venv) / 'bin' / 'activate'
             disco_py = self.discodos_root / 'cmd' / 'cli.py'
             sync_py = self.discodos_root / 'cmd' / 'sync.py'
@@ -425,25 +430,29 @@ class Config():
 
 
     def _install_windows_wrappers(self):
-        if self.frozen: # packaged
+        if self.frozen:  # packaged
             venv_act = False
             disco_py = self.discodos_root / 'cli.exe'
             sync_py = self.discodos_root / 'sync.exe'
-        else: # not packaged and in a venv (checked in config.py main())
+        else:  # not packaged and in a venv (checked in config.py main())
             venv_act = Path(self.venv) / 'Scripts' / 'activate.bat'
             disco_py = self.discodos_root / 'cmd' / 'cli.py'
             sync_py = self.discodos_root / 'cmd' / 'sync.py'
 
         # WRAPPER cli.py - disco.bat
         disco_wrapper = self.discodos_root / 'disco.bat'
-        disco_contents = self._win_wrapper(disco_py,
-              'rem This is the DiscoDOS CLI wrapper.', self.frozen)
-
+        disco_contents = self._win_wrapper(
+            disco_py,
+            'rem This is the DiscoDOS CLI wrapper.',
+            self.frozen
+        )
         # WRAPPER sync.py - discosync.bat
         sync_wrapper = self.discodos_root / 'discosync.bat'
-        sync_contents = self._win_wrapper(sync_py,
-              'rem This is the DiscoDOS sync/backup script wrapper.', self.frozen)
-
+        sync_contents = self._win_wrapper(
+            sync_py,
+            'rem This is the DiscoDOS sync/backup script wrapper.',
+            self.frozen
+        )
         # WRAPPER discoshell.bat
         discoshell = self.discodos_root / 'discoshell.bat'
         if venv_act:
@@ -455,29 +464,30 @@ class Config():
                 self.discodos_root, echo_hints)
 
         # INSTALL disco.bat
-        if disco_wrapper.is_file(): # install only if non-existent
+        if disco_wrapper.is_file():  # install only if non-existent
             log.info("Config.cli: CLI wrapper is already existing: {}".format(
-                disco_wrapper))
+                     disco_wrapper))
         else:
-            msg_discoinst = ("Installing DiscoDOS CLI wrapper: {}".format(
-                  disco_wrapper))
+            msg_discoinst = (
+                "Installing DiscoDOS CLI wrapper: {}".format(disco_wrapper)
+            )
             print(msg_discoinst)
             self._write_textfile(disco_contents, disco_wrapper)
             print("You can now use the DiscoDOS CLI using disco.bat\n")
 
         # INSTALL discosync.bat
-        if sync_wrapper.is_file(): # install only if non-existent
+        if sync_wrapper.is_file():  # install only if non-existent
             log.info("Config.cli: sync wrapper is already existing: {}".format(
                 sync_wrapper))
         else:
             msg_syncinst = ("Installing DiscoDOS sync wrapper: {}".format(
-                  sync_wrapper))
+                            sync_wrapper))
             print(msg_syncinst)
             self._write_textfile(sync_contents, sync_wrapper)
             print("You can now use DiscoDOS sync using discosync.bat\n")
 
         # INSTALL discoshell.bat
-        if discoshell.is_file(): # install only if non-existent
+        if discoshell.is_file():  # install only if non-existent
             log.info("Config.cli: discoshell.bat is already existing: {}".format(
                 discoshell))
         else:
@@ -572,7 +582,7 @@ class Config():
         try:
             with open(yamlfile, "w") as fyamlfile:
                 yaml.dump(data, fyamlfile, default_flow_style=False,
-                                 allow_unicode=True)
+                          allow_unicode=True)
                 return True
         except IOError as errio:
             log.error("IOError: could not write file %s \n\n", yamlfile)

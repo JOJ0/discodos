@@ -17,9 +17,6 @@ def _run(command):
 
 
 def disco():
-    # import pdb; pdb.set_trace()
-    # MacOS_path = path.split(environ['EXECUTABLEPATH'])[0]
-    # command = MacOS_path + '/cli'
     conf = Config(no_create_conf=True)
     conf.install_cli()
     # command = conf.discodos_root / 'cli'
