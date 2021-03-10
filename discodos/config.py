@@ -565,13 +565,13 @@ class Config():
         if written:
             m = 'Now:\n'
             m+= '* Get a Discogs API access token as described here:\n'
-            m+= '  https://github.com/JOJ0/discodos/blob/master/INSTALLATION.md#configure-discogs-api-access\n'
+            m+= '  https://discodos.readthedocs.io/en/latest/INSTALLATION.html#configure-discogs-api-access\n'
             m+= '* Run DiscoDOS again (type disco) and input the token, '
             m+= 'setup will be completed and connection to Discogs verified.\n'
             m+= '* Then learn how to import your collection and use DiscoDOS:\n'
-            m+= '  https://github.com/JOJ0/discodos/blob/master/README.md#importing-your-discogs-collection\n'
-            m+= '* Sidenote: You can always open {} using a '.format(self.file)
-            m+= 'texteditor and set your token manually (discogs_token: \'xyz\').\n'
+            m+= '  https://discodos.readthedocs.io/en/latest/QUICKSTART.html#importing-your-discogs-collection\n'
+            m+= '* If you want to change your Discogs token later, open {} using a '.format(self.file)
+            m+= 'texteditor and change the line starting with discogs_token: .\n'
             self.config_created = True
             log.info(m)
             print_help(m)
