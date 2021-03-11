@@ -1,15 +1,26 @@
 from discodos.config import Config
 import webbrowser
 
-def readme():
-    webbrowser.open('https://github.com/JOJ0/discodos/blob/master/README.md')
+def quickstart():
+    webbrowser.open(
+        'https://discodos.readthedocs.io/en/latest/QUICKSTART.html'
+    )
 
 def manual():
-    webbrowser.open('https://github.com/JOJ0/discodos/blob/master/MANUAL.md')
+    webbrowser.open(
+        'https://discodos.readthedocs.io/en/latest/MANUAL.html'
+    )
+
+def configuration():
+    webbrowser.open(
+        'https://discodos.readthedocs.io/en/latest/INSTALLATION.html#configure-discogs-api-access'
+    )
 
 def chart():
     conf = Config()
-    webbrowser.open('file://{}'.format(conf.discodos_data / 'discodos_cmds_v0.3_white.png' ))
+    webbrowser.open(
+        'file://{}'.format(conf.discodos_data / 'discodos_cmds_v0.3_white.png')
+    )
 
 if __name__ == "__main__":
     readme()
