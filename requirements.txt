@@ -9,7 +9,7 @@ oauthlib>=3.0.1
 py>=1.7.0
 pytest>=4.1.1
 PyYAML>=5.2
-requests>=2.21.0
+requests
 tabulate>=0.8.6
 urllib3>=1.24.1
 dropbox>=9.4.0

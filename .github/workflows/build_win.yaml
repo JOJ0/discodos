@@ -1,4 +1,4 @@
-name: Build Windows release package with pynsist
+name: Build Windows package
 
 on:
   push:
