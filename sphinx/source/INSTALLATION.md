@@ -39,13 +39,31 @@ If the connection to Discogs is working, setup asks you to view a little tutoria
 
 Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
-**Note: The `disco` and `discosync` commands are installed globally, you can use the Start Menu entry to run them but they also work in any cmd.exe window**
+**Note: The `disco` and `discosync` commands are installed globally, you can use the Start Menu entry to run them but they also work in any cmd.exe window.**
+
 
 **Note: DiscoDOS generates the following files which are kept in `C:\Users\your_name\Documents\discodos\` (path may vary depending on your OS-language):**
 
  - The DiscoDOS configuration file (`config.yaml`)
  - The DiscoBASE (`discobase.db`)
  - A logfile (`debug.log`)
+
+#### Improve Command Line Experience on Windows
+
+I would highly recommend installing the "Microsoft Windows Terminal". It will provide a much nicer command line experience than cmd.exe! It has a better looking font out of the box, better command auto completion and overall is the command line application Windows was missing for ages (IMHO). Future DiscoDOS version will use Windows Terminal in the Start Menu launchers by default.
+
+Get "Microsoft Windows Terminal"
+ - from the Microsoft App store (you'll find it in your Start Menu and you need a Microsoft account)
+   - get a stable release version
+ - or from the Microsoft github page: https://github.com/microsoft/terminal/releases
+   - get a stable release version
+   - or one of the preview version (I'd recommend them, they are usually stable enough!)
+
+Some features worth trying out
+  - Zoom in/out (resize terminal text) using "ctrl + mouse wheel" (e.g handy when showing mixes in verbose view (`disco mix mix_name -v`)
+    - Alternatively zoom in/out using "ctrl +/ctrl -"
+  - Paste text from clipboard using "right/secondary mouse button"
+  - Command completion using "tab key" (cmd.exe had this already, yes - anyway it feels a little better here IMHO)
 
 
 ### macOS
