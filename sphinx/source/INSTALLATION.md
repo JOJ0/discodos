@@ -50,20 +50,22 @@ Your starting point for further documentation is the [Quickstart Guide](QUICKSTA
 
 #### Improve Command Line Experience on Windows
 
-I would highly recommend installing the "Microsoft Windows Terminal". It will provide a much nicer command line experience than cmd.exe! It has a better looking font out of the box, better command auto completion and overall is the command line application Windows was missing for ages (IMHO). Future DiscoDOS version will use Windows Terminal in the Start Menu launchers by default.
+I would highly recommend installing "Microsoft Windows Terminal". It will provide a much nicer command line experience than cmd.exe! It has a better looking font out of the box, better command auto completion and overall is the command line application Windows was missing for ages (IMHO). Future DiscoDOS versions will use Windows Terminal in the Start Menu launchers by default.
 
-Get "Microsoft Windows Terminal"
+##### Get "Microsoft Windows Terminal"
  - from the Microsoft App store (you'll find it in your Start Menu and you need a Microsoft account)
    - get a stable release version
  - or from the Microsoft github page: https://github.com/microsoft/terminal/releases
    - get a stable release version
    - or one of the preview version (I'd recommend them, they are usually stable enough!)
 
-Some features worth trying out
+##### Some features worth trying out
   - Zoom in/out (resize terminal text) using "ctrl + mouse wheel" (e.g handy when showing mixes in verbose view (`disco mix mix_name -v`)
     - Alternatively zoom in/out using "ctrl +/ctrl -"
   - Paste text from clipboard using "right/secondary mouse button"
   - Command completion using "tab key" (cmd.exe had this already, yes - anyway it feels a little better here IMHO)
+  - Open a new terminal windows using "ctrl - shift - n"
+  - Open a new terminal tab using "ctrl - shift - t"
 
 
 ### macOS
