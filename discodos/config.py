@@ -390,12 +390,16 @@ class Config():
         )
         log.info('Config.install_cli: bashrc_grep_success: {}'.format(
                  bashrc_grep_success))
+        log.info('Config.install_cli: bashrc_grep_success.returncode: {}'.format(
+                 bashrc_grep_success.returncode))
 
-        if bashrc_grep_success:
-            m_alr = 'Config.install_cli: $HOME/bin is already in PATH.'
+        if bashrc_grep_success.returncode == 0:
+            m_alr = 'Config.install_cli: $HOME/bin is already in PATH. '
+            m_alr+= '(export line existing in .bashrc) '
             log.info(m_alr); print(m_alr)
         else:
-            m_add = 'Config.install_cli: Adding $HOME/bin to PATH.'
+            m_add = 'Config.install_cli: Adding $HOME/bin to PATH. '
+            m_add+= '(adding export line to .bashrc) '
             log.info(m_add); print(m_add)
             bashrc_append_str = 'export PATH=~/bin:$PATH'
             bashrc_append_cmd = 'echo \'{}\' >> {}/.bashrc'.format(
