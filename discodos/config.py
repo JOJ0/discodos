@@ -381,40 +381,60 @@ class Config():
         home = Path(os.getenv('HOME'))
         Path.mkdir(home / 'bin', exist_ok=True)
         home_bin = home / 'bin'
+        # find out which shell is used
+        if platform.system() == "Darwin":
+            # Pre-Catalina systems use bash as the default shell
+            if os.environ['SHELL'] == '/bin/bash':
+                log.info('Config.install_cli: Running bash on macOS.')
+                # macOS Terminals are login shells and thus load .bash_profile
+                shellrc = '.bash_profile'
+            # Catalina and later systems use zsh as the default shell
+            elif os.environ['SHELL'] == '/bin/zsh':
+                log.info('Config.install_cli: Running zsh on macOS.')
+                # the zshell conf file, according to research, untested!
+                shellrc = '.zshrc'
+            else:
+                log.info(
+                    'Config.install_cli: Running unknown shell on macOS, '
+                    'assuming bash.')
+                shellrc = '.bash_profile'
+        else:
+            # other Posix OS, Linux, BSD, should install via Python package
+            # but anyway: A terminal in an X session is a non-login shell
+            log.info(
+                'Config.install_cli: Running bash on Linux, '
+                'BSD or other Posix OS.')
+            shellrc = '.bashrc'
+
         # this is a dirty clumsy workaround - macOS doesn't source user's
-        # .bashrc when a .app file is launched from Finder, thus we can't just
-        # ask if ~bin is contained in $PATH environment variable
-        bashrc_grep_success = run(
-            f"grep 'export PATH=~/bin:$PATH' {home}/.bashrc",
+        # ".shellrc" when a .app file is launched from Finder, thus we can't
+        # just ask if ~bin is contained in $PATH environment variable
+        export_line = 'export PATH=~/bin:$PATH'
+        shellrc_grep = run(
+            f"grep '{export_line}' {home}/{shellrc}",
             shell=True,
         )
-        log.info('Config.install_cli: bashrc_grep_success: {}'.format(
-                 bashrc_grep_success))
-        log.info('Config.install_cli: bashrc_grep_success.returncode: {}'.format(
-                 bashrc_grep_success.returncode))
+        log.info(f'Config.install_cli: shellrc_grep: {shellrc_grep}')
+        log.info('Config.install_cli: shellrc_grep.returncode: {}'.format(
+                 shellrc_grep.returncode))
 
-        if bashrc_grep_success.returncode == 0:
+        if shellrc_grep.returncode == 0:
             m_alr = 'Config.install_cli: $HOME/bin is already in PATH. '
-            m_alr+= '(export line existing in .bashrc) '
+            m_alr+= f'(export line existing in {shellrc}) '
             log.info(m_alr); print(m_alr)
         else:
             m_add = 'Config.install_cli: Adding $HOME/bin to PATH. '
-            m_add+= '(adding export line to .bashrc) '
+            m_add+= f'(adding export line to {shellrc}) '
             log.info(m_add); print(m_add)
-            bashrc_append_str = 'export PATH=~/bin:$PATH'
-            bashrc_append_cmd = 'echo \'{}\' >> {}/.bashrc'.format(
-                bashrc_append_str, home
-            )
-            m_bsh = 'Config.install_cli: bashrc_append_cmd: {}'.format(
-                bashrc_append_cmd
-            )
-            log.info(m_bsh); print(m_bsh)
-            bashrc_success = run(bashrc_append_cmd, shell=True)
-            log.info('Config.install_cli: bashrc_success: {}'.format(
-                bashrc_success
-            ))
+            append_info = '\\n# The following line was added by DiscoDOS.\\n'
+            append_lines = append_info + export_line
+            append_cmd = f'echo \'{append_lines}\' >> {home}/{shellrc}'
+            m_append = f'Config.install_cli: append_cmd: {append_cmd}'
+            log.info(m_append); print(m_append)
+            shellrc_append = run(append_cmd, shell=True)
+            log.info(f'Config.install_cli: shellrc_append: {shellrc_append}')
             # only necessary for debugging mac packaging/installation
-            run('. {}/.bashrc'.format(home), shell=True)
+            run(f'. {home}/{shellrc}', shell=True)
 
         try:  # copy wrappers, overwrite if necessary
             for wrapper in wrappers:
