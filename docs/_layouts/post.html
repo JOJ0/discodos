@@ -1,0 +1,34 @@
+---
+layout: default
+---
+
+<article class="post">
+  <h1>{{ page.title }}</h1>
+
+  <div class="entry">
+    {{ content }}
+  </div>
+
+  <div class="date clearfix">
+    <span class="left-part">
+      {% if page.published and page.last_modified_at %}
+        This article was first published on {{ page.published | date: "%b %-d, %Y" }}
+      {% elsif page.published %}
+        This article was published on {{ page.published | date: "%b %-d, %Y" }}.
+      {% else %}
+        This article was published on {{ page.date | date: "%b %-d, %Y" }}.
+      {% endif %}
+      {% if page.last_modified_at %}
+        and last updated on {{ page.last_modified_at | date: "%b %-d, %Y" }}.
+      {% endif %}
+      {% unless page.published ==  nil %}
+      I built/coded/did this project around {{ page.date | date: "%B %Y" }}.
+      {% endunless %}
+    </span>
+    <span class="right-part">
+      <a href="#top">jump to top</a><a name="bottom"/a> 
+    </span>
+  </div>
+
+  {% include disqus.html %}
+</article>

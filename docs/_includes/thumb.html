@@ -1,0 +1,14 @@
+<!-- if a collection is existing, there must be thumbs named file-th.jpg-->
+
+<figure class="sidebyside" style="width: {{ include.width }}; float: {{include.float}}; margin: {{include.margin}}; clear:{{include.clear}}; {{include.misc_style}}">
+  <a href="{{ include.filename }}">
+      {% if page.collection %}
+      <img src="{{ include.filename | replace: '.jpg','-th.jpg' | replace: '.png','-th.png' }}"
+        alt="{{ include.alt_text }}"/>
+      {% else %}
+      <img src="{{ include.filename }}" 
+        alt="{{ include.alt_text }}"/>
+      {% endif %}
+  </a>
+  <figcaption>{{ include.caption }}</figcaption>
+</figure>

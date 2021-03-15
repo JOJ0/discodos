@@ -1,0 +1,619 @@
+---
+---
+
+//
+// IMPORTS
+//
+
+@import "reset";
+@import "variables";
+//@import url('https://fonts.googleapis.com/css?family=PT+Mono|PT+Sans|PT+Serif');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700,800|PT+Sans:400,700|PT+Mono');
+// Syntax highlighting @import is at the bottom of this file
+
+/**************/
+/* BASE RULES */
+/**************/
+
+html {
+  font-size: 100%;
+}
+
+body {
+	background: $backgroundGray;
+  //font: 16px/1.4 $helvetica;
+  //font: 16px/1.6 $ptSans;
+  font: 15px/1.4 $ptMono;
+  //color: $darkGray;
+  color: $gray;
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 740px;
+  padding: 0 10px;
+  width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  //font-family: $helveticaNeue;
+  font-family: $ptMono;
+  //color: $darkerGray;
+  color: $mediumGray;
+  //font-weight: bold;
+  font-weight: 400;
+
+  line-height: 1.7;
+  //margin: 1em 0 15px;
+  margin: 1em 0 5px;
+  padding: 0;
+
+  @include mobile {
+    line-height: 1.4;
+  }
+}
+
+h1 {
+  //font-size: 26px;
+  //font-size: 29px; // pre 2018-02-15
+  font-size: 30px;
+  //margin: 1em 0 15px;
+  //margin: 0.7em 0 0px;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  a {
+    color: inherit;
+  }
+
+  @include mobile {
+    font-size: 26px;
+    line-height: 1.4;
+    //margin-bottom: 10px;
+  }
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+h4 {
+  font-size: 18px;
+  color: $gray;
+}
+
+p {
+  //margin: 15px 0;
+  margin-top: 0px;
+  margin-bottom: 15px;
+  //border: 1px solid; // jojo tmp check margin
+}
+
+a {
+  color: $blue;
+  text-decoration: none;
+	cursor: pointer;
+  &:hover, &:active {
+    color: $blue;
+    //color: $flieder;
+  }
+}
+
+ul, ol {
+  margin: 15px 0;
+  padding-left: 30px;
+}
+
+ul {
+  list-style-type: disc;
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+ol ul, ul ol, ul ul, ol ol {
+  margin: 0;
+}
+
+ul ul, ol ul {
+  list-style-type: circle;
+}
+
+em, i {
+  font-style: italic;
+}
+
+strong, b {
+  font-weight: bold;
+}
+
+img {
+  max-width: 100%;
+  //margin-bottom: 0px; // jojo tmp
+  //padding-bottom: -10px; // jojo tmp
+  //border: 1px solid // jojo tmp
+}
+
+// Fixes images in popup boxes from Google Translate
+.gmnoprint img {
+  max-width: none;
+}
+
+// timestamp infos at bottom of post
+div.date {
+  //border-top: 1px solid; // jojo tmp: check border space
+  font-style: italic;
+  color: $gray;
+  //font-size: 16px;
+  margin-top: 20px;
+
+  .left-part {
+    width: 550px; 
+    float: left;
+    display: inline-block;
+
+    @include mobile {
+      width: 215px;
+    }
+
+  }
+  .right-part {
+    float: right;
+    display: inline-block;
+    //vertical-align: middle; // doesn't work FIXME
+  }
+}
+
+// Specify the color of the selection
+::-moz-selection {
+  color: $black;
+  background: $lightGray;
+}
+::selection {
+  color: $black;
+  background: $lightGray;
+}
+
+// Nicolas Gallagher's micro clearfix hack
+// http://nicolasgallagher.com/micro-clearfix-hack/
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+// ###############################
+// ####  styles added by me ######
+// ###############################
+// ### better picture embedding ##
+.sidebyside {
+    //display: inline-block;
+    //margin-left: auto;
+    //margin-right: auto;
+    width: 100%;
+    height: 100%;
+    img { // standalone pics should have the same margin and border as gallery pics
+        margin: 0px;
+        border: 3px solid $rosa;
+        //object-fit: contain;
+        max-width: 100%;
+        max-height: 100%;
+        width: 100%;
+    }
+
+}
+
+.sidebyflex{ // currently unused I think
+    display: flex;
+    justify-content: left;
+}
+
+// TABLE pics view - 3 pics in a row
+// the outer div around it, aka the ROW box, use together with .sidebyside
+
+div.pic_row_3 {
+    content: "";
+    clear: both;
+    display: table;
+    width: 100%;
+    margin-top: 20px; // overwrite in local style tag if needed
+    margin-bottom:20px; // overwrite in local style tag if needed
+    div.pic_left {
+        float: left;
+        width: 33.33%;
+        padding-right: 10px;
+    }
+    div.pic_middle {
+        float: left;
+        width: 33.33%;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    div.pic_right {
+        float: left;
+        width: 33.33%;
+        padding-left: 10px;
+    }
+}
+
+
+p { //  same border as gallery pics for standalone pics (markdown -> inside p)
+    img {
+        border: 3px solid $rosa;
+    }
+}
+
+a { // no colored border for picture links (from markdown)
+    img {
+        //border: 5px solid $rosa;
+        border: 0px;
+    }
+}
+// ### youtube picture embedding ##
+div.outer_ytcontainer {
+    margin-bottom: 6px;
+    border: 3px solid $rosa; // same border as images
+}
+
+div.ytcontainer {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; // 16:9 format
+    //border: 1px solid; // jojo tmp
+}
+iframe.yt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    //border: 1px solid; // jojo tmp
+}
+
+// ### my photo gallery ##
+div.photo-gallery-frame {
+  //width: 800px; //width is set in .container
+  //margin: 0 auto;
+  overflow: auto;
+  margin-left:-5px;
+  margin-right:-5px;
+}
+
+ul.photo-gallery-list {
+  list-style-type: none;
+  padding-left: 0px;
+  margin: 0px;
+  //border: 1px solid;
+
+  li img {
+    float: left;
+    //margin: 10px;
+    margin: 5px;
+    //border: 5px solid #fff;
+    //border: 5px solid $darkerGray;
+    border: 3px solid $rosa;
+    //border: 5px solid transparent;
+    max-width: 240px;
+  
+    //-webkit-transition: box-shadow 0.5s ease;
+    //-moz-transition: box-shadow 0.5s ease;
+    //-o-transition: box-shadow 0.5s ease;
+    //-ms-transition: box-shadow 0.5s ease;
+    //transition: box-shadow 0.5s ease;
+
+    @include mobile {
+      //clear: both;
+      //float: none;
+      max-width: 145px;
+    }
+
+    
+  }
+  
+  li img:hover {
+    //-webkit-box-shadow: 0px 0px 7px rgba(255,255,255,0.9);
+    //-webkit-box-shadow: 0px 0px 5px rgba(255,255,255,0.9);
+    //box-shadow: 0px 0px 7px rgba(255,255,255,0.9);
+    //box-shadow: 0px 0px 5px rgba(255,255,255,0.9);
+  }
+
+}
+
+
+// ### on photo page (full size pic) ##
+div.gallery-photo-figure {
+  //border: 1px solid $black;
+  text-align: center;
+}
+img.gallery-photo-zoom {
+  //float: left;
+  margin: 0px 0px 0px 0px;
+  //border: 5px solid $darkerGray;
+  border: 3px solid $rosa;
+  //border: 5px solid transparent;
+}
+
+div.gallery-photo-nav {
+  //border: 1px solid $black;
+  text-transform: uppercase;
+  //font-size: 14px;
+  font-size: 20px;
+  //margin-top: 14px;
+  margin-top: -2.5px;
+  //line-height: 1.5; 
+}
+div.gallery-photo-nav-inactive {
+  text-transform: uppercase;
+  //font-size: 14px;
+  font-size: 20px;
+  //margin-top: 14px;
+  //line-height: 1.5; 
+  a {
+    color: $lightGray;
+  }
+}
+div.gallery-photo-caption {
+  //border: 1px solid $black;
+  display: inline-block;
+  //padding: -10px;
+  //vertical-align: top;
+  line-height: 1.5; 
+  max-width: 580px;
+  figcaption {
+    margin-top: 0px;
+  }
+
+  @include mobile {
+    max-width: 180px;
+  }
+}
+div.gallery-photo-nav-overview {
+  //border: 1px solid $black;
+  //text-transform: uppercase;
+  //font-size: 14px;
+  margin-top: 20px;
+  text-align: center;
+  //display: inline-block;
+  div {display:inline-block;}
+}
+
+/*********************/
+/* LAYOUT / SECTIONS */
+/*********************/
+
+//
+// .masthead
+//
+
+.wrapper-masthead {
+  margin-bottom: 50px;
+}
+
+.masthead {
+  padding: 20px 0;
+  border-bottom: 1px solid $mediumGray;
+
+  @include mobile {
+    text-align: center;
+  }
+}
+
+.site-avatar {
+  float: left;
+  //width: 70px;
+  width: 70px;
+  //height: 70px;
+  height: 70px;
+  margin-right: 15px;
+  //border: 1px solid $rosa; // jojo tmp
+
+  @include mobile {
+    float: none;
+    display: block;
+    margin: 0 auto;
+  }
+
+  img {
+    border-radius: 0px;
+  }
+}
+
+.site-info {
+  float: left;
+
+  @include mobile {
+    float: none;
+    display: block;
+    margin: 0 auto;
+  }
+}
+
+.site-name {
+  margin: 0;
+  color: $mediumGray;
+  cursor: pointer;
+  font-family: $ptMono;
+  font-weight: 300;
+  font-size: 26px;
+  font-style: italic;
+  letter-spacing: 1.8px;
+  line-height: 1.7; // jojo fixate blog name in case h1 changes
+}
+
+.site-description {
+  //margin: -5px 0 0 0;
+  margin-top: -5px;
+  margin-left: 2.5px;
+  color: $gray;
+  font-size: 14px;
+  letter-spacing: 1.8px;
+
+  @include mobile {
+    margin: 3px 0;
+  }
+}
+
+nav {
+  float: right;
+  margin-top: 23px; // @TODO: Vertically middle align
+  //font-family: $helveticaNeue;
+  font-family: $ptMono;
+  font-size: 16px;
+
+  @include mobile {
+    float: none;
+    margin-top: 9px;
+    display: block;
+    font-size: 14px;
+  }
+
+  a {
+    margin-left: 20px;
+    color: $mediumGray;
+    text-align: right;
+    font-weight: 300;
+    letter-spacing: 1px;
+
+    @include mobile {
+      margin: 0 10px;
+      color: $rosa;
+    }
+  }
+}
+
+//
+// .main
+//
+
+.posts > .post {
+  padding-bottom: 2em;
+  border-bottom: 1px solid $lightGray;
+  p {
+    text-align: left;
+  }
+}
+
+.posts > .post:last-child {
+  padding-bottom: 1em;
+  border-bottom: none;
+  p {
+    text-align: left;
+  }
+}
+
+.post {
+  blockquote {
+    margin: 1.8em .8em;
+    border-left: 2px solid $gray;
+    padding: 0.1em 1em;
+    color: $gray;
+    font-size: 22px;
+    font-style: italic;
+  }
+
+  p {
+    text-align: justify;
+  }
+
+  h1.postlist {
+    margin: 1em 0 0px;
+    margin-bottom: 10px;
+  }
+
+  div.postlist-pic {
+    float:left;
+    margin-right:7px;
+    margin-top:2px; // aligns text/pic
+  }
+
+  img.postlist {
+    width:170px;
+    //border:5px solid $lightGray;
+    //border:5px solid $gray;
+    //border:3px solid $darkGray;
+    //border:5px solid $rosa;
+    border:3px solid $rosa;
+
+    @include mobile {
+      width:130px;
+    }
+  }
+
+  .comments {
+    margin-top: 10px;
+  }
+
+  .read-more {
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+
+  .timestamp {
+    font-style: italic;
+    font-size: 12px;
+    //color: $gray;
+    margin-bottom: 10px;
+  }
+
+  .excerpt {
+    line-height: 1.3;
+    font-size: 16px;
+    //margin-top: 0px;
+    //padding-top: 0px;
+    //border-top: 1px solid; // jojo tmp check margin
+
+    p {
+      //margin-top: 6px; // value before adding pics to index
+      //margin-top: -2px; // works in Chrome, but not in Safari
+      margin-top: 0px; // works in both browsers, fix text/pic alignm. in class img.postlist  
+      margin-bottom: 14px;
+
+      @include mobile {
+        margin-top: -2px;
+        text-align: justify;
+      }
+
+    }
+
+    a {
+      //color: $black;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      &:hover, &:active {
+        color: $blue;
+        //color: $flieder;
+      }
+    }
+
+  }
+}
+
+.wrapper-footer {
+  margin-top: 50px;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  background-color: $mediumGray;
+}
+
+footer {
+  padding: 20px 0;
+  text-align: center;
+}
+
+// Settled on moving the import of syntax highlighting to the bottom of the CSS
+// ... Otherwise it really bloats up the top of the CSS file and makes it difficult to find the start
+@import "highlights";
+//@import "highlights-solarized-light";
+//@import "highlights-solarized-dark";
+@import "svg-icons";

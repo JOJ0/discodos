@@ -1,0 +1,48 @@
+    <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    {% if page.excerpt %}
+    <meta name="description" content="{{ page.excerpt| strip_html }}" />
+    <meta property="og:description" content="{{ page.excerpt| strip_html }}" />
+    <meta property="og:type" content="article" />
+    {% if post.published %}
+    <meta property="article:published_time" content="{{page.published}}" />
+    {% else %}
+    <meta property="article:published_time" content="{{page.date}}" />
+    {% endif %}
+    <!-- page.modified isn't a natural Jekyll property, but it can be added. -->
+    {% if post.last_modified_at %}
+    <meta property="article:modified_time" content="{{post.last_modified_at}}" />
+    {% endif %}
+    {% else %}
+    <meta name="description" content="{{ site.description }}">
+    <meta property="og:description" content="{{ site.description }}" />
+    <meta property="og:type" content="website" />
+    {% endif %}
+
+    <meta name="author" content="J0J0 Todos" />
+
+    {% if page.title %}
+    <meta property="og:title" content="{{ page.title }}" />
+    <meta property="twitter:title" content="{{ page.title }}" />
+    {% else %}
+    <meta property="og:title" content="{{ site.name }}" />
+    <meta property="twitter:title" content="{{ site.name }}" />
+    {% endif %}
+
+    {% if page.image %}
+    <meta property="og:image" content="{{ page.image | absolute_url | replace: '-th.','.' }}" />
+    <meta name="twitter:image" content="{{ page.image |  absolute_url | replace: '-th.','.' }}" />
+    {% else %}
+    <meta property="og:image" content="https://discodos.jojotodos.net/images/discodos_7-v7_big_fat_D_altrosa_960x960.png" />
+    <meta name="twitter:image" content="https://discodos.jojotodos.net/images/discodos_7-v7_big_fat_D_altrosa_960x960.png" />
+    {% endif %}
+
+    <meta property="og:url"
+    content="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}" />
+    
+    {% if page.draft == true %}
+    <meta name="robots" content="noindex, nofollow" />
+    {% endif %}

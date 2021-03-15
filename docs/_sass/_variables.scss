@@ -1,0 +1,45 @@
+
+//
+// VARIABLES
+//
+
+// Colors
+$blue: #4183C4;
+
+// Grays
+$black: #000;
+$backgroundGray: #222;
+$darkerGray: #303030;
+//$darkGray: #333;
+$darkGray: #404040;
+$gray: #666;
+$mediumGray: #aaa;
+$lightGray: #eee;
+$white: #fff;
+$flieder: #efefff;
+//$rosa: rgb(237, 135, 176);
+//$rosa: rgb(507, 103, 162);
+//$rosa: rgb(255, 129, 175); // this is what color picker shows for log but it's too light 
+$rosa: rgb(255, 129, 173);
+$discoGreen: #99cc99;
+$discoOrange: #f99157;
+
+
+// Font stacks
+$helvetica: Helvetica, Arial, sans-serif;
+$helveticaNeue: "Helvetica Neue", Helvetica, Arial, sans-serif;
+//$helvetica: 'PT Sans', sans-serif;
+//$helveticaNeue: 'PT Sans', sans-serif;
+$georgia: Georgia, serif;
+
+//$PTserif: 'PT Serif', serif;
+$ptMono: 'PT Mono', monospace;
+$ptSans: 'PT Sans', sans-serif;
+$openSans: 'Open Sans', sans-serif;
+
+// Mobile breakpoints
+@mixin mobile {
+  @media screen and (max-width: 640px) {
+    @content;
+  }
+}
