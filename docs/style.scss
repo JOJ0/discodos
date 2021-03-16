@@ -23,9 +23,9 @@ body {
 	background: $backgroundGray;
   //font: 16px/1.4 $helvetica;
   //font: 16px/1.6 $ptSans;
-  font: 16px/1.4 $ptMono;
+  font: 15px/1.4 $ptMono;
   //color: $darkGray;
-  color: $lightGray;
+  color: $gray;
 }
 
 .container {
@@ -37,7 +37,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   //font-family: $helveticaNeue;
-  font-family: $ptSans;
+  font-family: $ptMono;
   //color: $darkerGray;
   color: $darkGray;
   //font-weight: bold;
@@ -443,7 +443,7 @@ div.gallery-photo-nav-overview {
   color: $darkGray;
   cursor: pointer;
   //font-family: $helveticaNeue;
-  font-family: $ptSans;
+  font-family: $ptMono;
   //font-weight: 300;
   font-weight: 300;
   //font-size: 28px;
@@ -472,7 +472,7 @@ nav {
   float: right;
   margin-top: 23px; // @TODO: Vertically middle align
   //font-family: $helveticaNeue;
-  font-family: $ptSans;
+  font-family: $ptMono;
   //font-size: 18px;
   font-size: 22px;
 
