@@ -20,12 +20,12 @@ html {
 }
 
 body {
-	background: $white;
+	background: $backgroundGray;
   //font: 16px/1.4 $helvetica;
   //font: 16px/1.6 $ptSans;
-  font: 16px/1.4 $ptSans;
+  font: 16px/1.4 $ptMono;
   //color: $darkGray;
-  color: $darkerGray;
+  color: $lightGray;
 }
 
 .container {
