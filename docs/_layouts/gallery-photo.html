@@ -1,0 +1,62 @@
+---
+layout: default
+---
+{% capture the_collection %}{{page.collection}}{% endcapture %}
+{% if page.collection %}
+  {% assign  document = site[the_collection]  %}
+{% endif %}
+
+{% for links in document  %}
+  {% if links.title == page.title %}
+    {% unless forloop.first %}
+      {% assign prevurl = prev.url %}
+    {% endunless %}
+    {% unless forloop.last %}
+      {% assign next = document[forloop.index] %}
+      {% assign nexturl = next.url %}
+    {% endunless %}
+  {% endif %}
+  {% assign prev = links %}
+{% endfor %}
+<div class="clearfix">
+</div>
+
+<div class="post">
+  <h1 style="text-align: center;">{{ page.title }}</h1>
+
+    <div class="gallery-photo-figure">
+      <figure>
+        <div style="margin:0px; padding:0px">
+          <img class="gallery-photo-zoom" src="{{ page.image-path }}" alt="{{ page.image-path }}" />
+        </div>
+        {% if prevurl %}
+        <div class="gallery-photo-nav" style="float:left; margin-left:0px;">
+          <a href="{{prevurl}}">prev</a>
+        </div>
+        {% else %}
+        <div class="gallery-photo-nav-inactive" style="float:left; margin-left:0px;">
+          <a href="{{prevurl}}">prev</a>
+        </div>
+        {% endif %}
+        <div class="gallery-photo-caption">
+          <figcaption>{{ page.caption }}</figcaption>
+        </div>
+        {% if nexturl %}
+        <div class="gallery-photo-nav" style="float:right; margin-right:-1px">
+          <a href="{{nexturl}}">next</a>
+        </div>
+        {% else %}
+        <div class="gallery-photo-nav-inactive" style="float:right; margin-right:-1px">
+          <a href="{{nexturl}}">next</a>
+        </div>
+        {% endif %}
+      </figure>
+    </div>
+
+    <div class="gallery-photo-nav-overview">
+      <div>
+        <a href="{{ page.url | append: '../#' | append: page.title }}">back to post</a>
+      </div>
+    </div>
+
+</div>

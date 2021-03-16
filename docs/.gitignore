@@ -1,0 +1,16 @@
+_site
+.DS_Store
+.jekyll
+.jekyll-metadata
+.bundle
+.sass-cache
+Gemfile
+Gemfile.lock
+node_modules
+package.json
+_bak_charger-tape/
+_data/
+test.md
+volca-beats-sync
+post-commit-executed
+pre-commit-executed
