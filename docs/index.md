@@ -43,6 +43,6 @@ How to use DiscoDOS #3 - Fetch key & BPM from AcousticBrainz (2 min view)
 {% include youtube.html id="4lungDgdJ2w" url_append="" %}
 
 
-## DiscoDOS is free and Open Source software
+## DiscoDOS is FOSS
 
-If you are developer or a tech-interested person, check out the [project repository](https://github.com/JOJ0/discodos)  on github.
+DiscoDOS is Free and Open Source Software and licensed under the GNU General Public License (GPL3). If you are developer or a tech-interested person, check out the [project repository](https://github.com/JOJ0/discodos) on github.
