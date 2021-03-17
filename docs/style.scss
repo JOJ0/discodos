@@ -440,7 +440,7 @@ div.gallery-photo-nav-overview {
 
 .site-name {
   margin: 0;
-  color: $darkGray;
+  color: $mediumGray;
   cursor: pointer;
   //font-family: $helveticaNeue;
   font-family: $ptMono;
@@ -473,18 +473,18 @@ nav {
   margin-top: 23px; // @TODO: Vertically middle align
   //font-family: $helveticaNeue;
   font-family: $ptMono;
-  font-size: 18px;
+  font-size: 16px;
 
   @include mobile {
     float: none;
     margin-top: 9px;
     display: block;
-    font-size: 16px;
+    font-size: 14px;
   }
 
   a {
     margin-left: 20px;
-    color: $darkGray;
+    color: $mediumGray;
     text-align: right;
     font-weight: 300;
     letter-spacing: 1px;
