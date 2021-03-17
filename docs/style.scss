@@ -458,10 +458,8 @@ div.gallery-photo-nav-overview {
   margin-top: -5px;
   margin-left: 2.5px;
   color: $gray;
-  //font-size: 16px;
-  font-size: 16px;
-  //font-family: $ptMono; // jojo
-  letter-spacing: 2.95px; // jojo
+  font-size: 14px;
+  letter-spacing: 2.2px;
 
   @include mobile {
     margin: 3px 0;
