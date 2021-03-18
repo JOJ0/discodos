@@ -2,7 +2,7 @@
 layout: page
 ---
 
-DiscoDOS brings typical features known from digital DJing systems to the Vinyl DJ. Create playlists, fetch key and BPM, let DiscoDOS help you search your collection.
+DiscoDOS is a sophisticated and flexible command line tool that brings typical features known from digital DJing systems to the Vinyl DJ. Create playlists, fetch key and BPM, let DiscoDOS help you search your collection.
 
 ```
                 _______  _______ ________
@@ -45,4 +45,4 @@ How to use DiscoDOS #3 - Fetch key & BPM from AcousticBrainz (2 min view)
 
 ## DiscoDOS is FOSS
 
-DiscoDOS is Free and Open Source Software and licensed under the GNU General Public License (GPL3). If you are developer or a tech-interested person, check out the [project repository](https://github.com/JOJ0/discodos) on github.
+DiscoDOS is Free and Open Source Software and licensed under the GNU General Public License (GPL3). If you are a developer or a tech-interested person, check out the [project repository](https://github.com/JOJ0/discodos) on github.
