@@ -442,14 +442,10 @@ div.gallery-photo-nav-overview {
   margin: 0;
   color: $mediumGray;
   cursor: pointer;
-  //font-family: $helveticaNeue;
   font-family: $ptMono;
-  //font-weight: 300;
   font-weight: 300;
-  //font-size: 28px;
   font-size: 28px;
-  //letter-spacing: 1px;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   line-height: 1.7; // jojo fixate blog name in case h1 changes
 }
 
@@ -459,7 +455,7 @@ div.gallery-photo-nav-overview {
   margin-left: 2.5px;
   color: $gray;
   font-size: 14px;
-  letter-spacing: 2.2px;
+  letter-spacing: 1.8px;
 
   @include mobile {
     margin: 3px 0;
@@ -606,7 +602,7 @@ nav {
   margin-top: 50px;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
-  background-color: $lightGray;
+  background-color: $mediumGray;
 }
 
 footer {
