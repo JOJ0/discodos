@@ -41,7 +41,7 @@ h1, h2, h3, h4, h5, h6 {
   //color: $darkerGray;
   color: $mediumGray;
   //font-weight: bold;
-  font-weight: 600;
+  font-weight: 400;
 
   line-height: 1.7;
   //margin: 1em 0 15px;
@@ -202,7 +202,7 @@ div.date {
     height: 100%;
     img { // standalone pics should have the same margin and border as gallery pics
         margin: 0px;
-        border: 5px solid $rosa;
+        border: 3px solid $rosa;
         //object-fit: contain;
         max-width: 100%;
         max-height: 100%;
@@ -247,7 +247,7 @@ div.pic_row_3 {
 
 p { //  same border as gallery pics for standalone pics (markdown -> inside p)
     img {
-        border: 5px solid $rosa;
+        border: 3px solid $rosa;
     }
 }
 
@@ -260,7 +260,7 @@ a { // no colored border for picture links (from markdown)
 // ### youtube picture embedding ##
 div.outer_ytcontainer {
     margin-bottom: 6px;
-    border: 5px solid $rosa; // same border as images
+    border: 3px solid $rosa; // same border as images
 }
 
 div.ytcontainer {
@@ -301,7 +301,7 @@ ul.photo-gallery-list {
     margin: 5px;
     //border: 5px solid #fff;
     //border: 5px solid $darkerGray;
-    border: 5px solid $rosa;
+    border: 3px solid $rosa;
     //border: 5px solid transparent;
     max-width: 240px;
   
@@ -339,7 +339,7 @@ img.gallery-photo-zoom {
   //float: left;
   margin: 0px 0px 0px 0px;
   //border: 5px solid $darkerGray;
-  border: 5px solid $rosa;
+  border: 3px solid $rosa;
   //border: 5px solid transparent;
 }
 
@@ -445,6 +445,7 @@ div.gallery-photo-nav-overview {
   font-family: $ptMono;
   font-weight: 300;
   font-size: 28px;
+  font-style: italic;
   letter-spacing: 1.5px;
   line-height: 1.7; // jojo fixate blog name in case h1 changes
 }
