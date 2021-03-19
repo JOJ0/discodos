@@ -6,7 +6,7 @@ DiscoDOS is a sophisticated and flexible command line tool that brings
 typical features known from digital DJing systems to the Vinyl DJ. Create
 playlists, fetch key and BPM, let DiscoDOS help you search your collection.
 
-``` python
+``` bash
                 _______  _______ ________
                /       \        /       /
               /  ___   /  ___  /  _____/
