@@ -24,7 +24,7 @@ services [MusicBrainz](https://musicbrainz.org) and
 [AcousticBrainz](https://acousticbrainz.org) to retrieve further information
 about your music (e.g key and BPM).
 
-## Installation & Configuration
+## Installation
 - [Windows Installer](https://github.com/JOJ0/discodos/releases/download/v1.0.0-rc4/DiscoDOS-1.0.0-rc4-Win.exe)
 - [macOS Installer](https://github.com/JOJ0/discodos/releases/download/v1.0.0-rc4/DiscoDOS-1.0.0-rc4-macOS.dmg)
 - Linux - read the [Installation Guide](https://discodos.readthedocs.io/en/latest/INSTALLATION.html#linux)
