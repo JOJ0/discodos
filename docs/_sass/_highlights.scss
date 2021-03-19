@@ -18,7 +18,8 @@ code {
   font-size: 13px;
 }
 
-.highlight .c { color: #586E75 } /* Comment */
+//.highlight .c { color: #586E75 } /* Comment */
+.highlight .c { color: $mediumGray } /* Comment */
 .highlight .err { color: #93A1A1 } /* Error */
 //.highlight .g { color: #93A1A1 } /* Generic */
 .highlight .g { color: $mediumGray } /* Generic */
