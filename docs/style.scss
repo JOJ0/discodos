@@ -415,7 +415,7 @@ div.gallery-photo-nav-overview {
   //height: 70px;
   height: 70px;
   margin-right: 15px;
-  //border: 1px solid $darkGray; // jojo tmp
+  //border: 1px solid $rosa; // jojo tmp
 
   @include mobile {
     float: none;
@@ -444,9 +444,9 @@ div.gallery-photo-nav-overview {
   cursor: pointer;
   font-family: $ptMono;
   font-weight: 300;
-  font-size: 28px;
+  font-size: 26px;
   font-style: italic;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.8px;
   line-height: 1.7; // jojo fixate blog name in case h1 changes
 }
 
