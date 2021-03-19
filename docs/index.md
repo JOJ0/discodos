@@ -43,10 +43,10 @@ View the [Quickstart Guide](https://discodos.readthedocs.io/en/latest/QUICKSTART
 
 
 {% include youtube.html id="c9lqKuGSCVk" url_append="" %}
-This video presents the concepts of Mixes, Suggestions, Collection, AcousticBrainz (7 min view)
+This video presents the concepts of Mixes, Suggestions, Discogs Collection, AcousticBrainz (7 min view)
 
 {% include youtube.html id="agp9OrYC66I" url_append="" %}
-Finding key & BPM compatible tracks (1 min view)
+Finding key & BPM compatible tracks in your Discogs Collection (1 min view)
 
 {% include youtube.html id="4lungDgdJ2w" url_append="" %}
 How to fetch key & BPM from AcousticBrainz (2 min view)
@@ -68,7 +68,7 @@ Primarily DiscoDOS was built to help me write down and analyze my Vinyl sets
 but often I play both Vinyl and Digital. It would be cool if DiscoDOS could
 view an internal playlist together with lists from digital DJing software. I
 did some research already and think it should be doable without too much
-hassle. In order of my personal perference (and ease of implementation) the
+hassle. In order of my personal preference (and ease of implementation) the
 DJing systems I am talking about are:
 
   - NI Traktor
