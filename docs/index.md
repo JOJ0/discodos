@@ -97,3 +97,23 @@ between desktop and mobile version.
 
 Any other ideas how DiscoDOS could be improved? [Let me
 know!](https://github.com/JOJ0/discodos/issues)
+
+## Changelog
+
+Find out what changed between DiscoDOS versions on the [github releases
+page](https://github.com/JOJ0/discodos/releases)
+
+## Stay up-to-date
+
+DiscoDOS is registered on [libreav.org](https://libreav.org), a site
+collecting information about Free and Open Source music software.
+
+- [DiscoDOS on libreav.org](https://libreav.org/software/discodos)
+
+There is an IRC channel that announces whenever new versions are released. Join
+#libreav on freenode.net, or if you are registered on matrix.org
+or any other Matrix homeserver, join room
+[#freenode_#libreav:matrix.org](https://matrix.to/#/#freenode_#libreav:matrix.org).
+
+Alternatively register to the [J0J0 Todos
+mailinglist](https://blog.jojotodos.net/mailinglist/)
