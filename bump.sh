@@ -1,6 +1,20 @@
 #!/bin/bash
 
-set -x
+#set -x
 VERS=$1
+DRY="echo"
 
-git tag -d v$VERS; git push origin --delete v$VERS; bumpversion build --new-version $VERS --commit --tag --verbose
+if [ -z $1 ]; then
+    echo "Usage: ./bump.s <version> [doit]"
+    exit 0
+fi
+
+if [[ "$2" == "doit" ]]; then
+    DRY=""
+else
+    echo -e "\nTHIS IS A DRY-RUN\n"
+fi
+
+$DRY git tag -d v$VERS
+$DRY git push origin --delete v$VERS
+$DRY bumpversion build --new-version $VERS --commit --tag --verbose
