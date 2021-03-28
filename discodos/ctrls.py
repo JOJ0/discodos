@@ -420,20 +420,25 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         log.debug("CTRL: Getting Collection.me instance from MODEL: %s", discogs_me_o)
         return discogs_me_o
 
-    def search_release(self, _searchterm): # online or offline search is decided in this method
-        if self.collection.ONLINE:
+    def search_release(self, _searchterm):  # online or offline search is
+        if self.collection.ONLINE:          # decided in this method
             if is_number(_searchterm):
-                self.cli.p('Searchterm is a number, trying to add Release ID to collection...')
+                self.cli.p('Searchterm is a number, trying to add Release ID '
+                           'to collection...')
                 if not self.add_release(int(_searchterm)):
-                    log.warning("Release wasn't added to Collection, continuing anyway.")
-
+                    log.warning("Release wasn't added to Collection, "
+                                "continuing anyway.")
             db_releases = self.collection.get_all_db_releases()
-            self.cli.p('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
+            self.cli.p('Searching Discogs for Release ID or Title: {}'.format(
+                _searchterm))
             search_results = self.collection.search_release_online(_searchterm)
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.print_and_return_first_d_release(
-                  search_results, _searchterm, db_releases)
-            if compiled_results_list == None:
+                search_results,
+                _searchterm,
+                db_releases
+            )
+            if compiled_results_list is None:
                 self.cli.error_not_the_release()
                 m = 'Try altering your search terms!'
                 log.info(m)
@@ -468,12 +473,18 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
 
     def print_and_return_first_d_release(self, discogs_results, _searchterm, _db_releases):
         ''' formatted output _and return of Discogs release search results'''
-        self.first_track_on_release = '' # reset this in any case first
+        self.first_track_on_release = ''  # reset this in any case first
         # only show pages count if it's a Release Title Search
         if not is_number(_searchterm):
-            self.cli.p("Found "+str(discogs_results.pages )+" page(s) of results!")
+            if discogs_results:
+                self.cli.p("Found {} page(s) of results.".format(
+                    discogs_results.pages))
+            else:
+                return None
         else:
-            self.cli.p("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+            self.cli.p("ID: {}, Title: {}".format(
+                discogs_results[0].id,
+                discogs_results[0].title))
         for result_item in discogs_results:
             self.cli.p("Checking " + str(result_item.id))
             for dbr in _db_releases:
