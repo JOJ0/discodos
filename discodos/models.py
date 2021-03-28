@@ -745,30 +745,32 @@ class Collection (Database):
             else:
                 releases = self.d.search(id_or_title, type='release')
             # exceptions are only triggerd if trying to access the release obj
-            log.info("First found release: {}".format(releases[0]))
+            if len(releases) > 0:  # fixes list index error
+                log.info("First found release: {}".format(releases[0]))
             log.debug("All found releases: {}".format(releases))
             return releases
         except discogs_client.exceptions.HTTPError as HtErr:
             log.error("%s (HTTPError)", HtErr)
-            return False
+            return None
         except urllib3.exceptions.NewConnectionError as ConnErr:
             log.error("%s (NewConnectionError)", ConnErr)
-            return False
+            return None
         except urllib3.exceptions.MaxRetryError as RetryErr:
             log.error("%s (MaxRetryError)", RetryErr)
-            return False
+            return None
         except requests.exceptions.ConnectionError as ConnErr:
             log.error("%s (ConnectionError)", ConnErr)
-            return False
+            return None
         except gaierror as GaiErr:
             log.error("%s (socket.gaierror)", GaiErr)
-            return False
+            return None
         except TypeError as TypeErr:
             log.error("%s (TypeError)", TypeErr)
-            return False
+            return None
         except Exception as Exc:
             log.error("%s (Exception)", Exc)
-            return False
+            raise Exc
+            return None
 
     def prepare_release_info(self, release): # discogs_client Release object
         '''takes a discogs_client Release object and returns prepares "relevant"
