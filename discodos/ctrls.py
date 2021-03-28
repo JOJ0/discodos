@@ -1,15 +1,15 @@
-from discodos.utils import is_number, join_sep
+from discodos.utils import is_number
 from discodos.config import Db_setup
 from discodos.models import Mix, Collection, Brainz, Brainz_match
 from discodos.views import Mix_view_cli, Collection_view_cli
-from abc import ABC, abstractmethod
+from abc import ABC
 import logging
 import discogs_client.exceptions as errors
 import pprint as p
-import re
 from time import time
 
 log = logging.getLogger('discodos')
+
 
 class Ctrl_common (ABC):
     def __init__(self):
@@ -20,10 +20,12 @@ class Ctrl_common (ABC):
         db_setup.create_tables()
         db_setup.upgrade_schema()
 
+
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
     def __init__(self):
         pass
+
 
 # mix controller class CLI implementation
 class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
@@ -226,7 +228,6 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
         else:
             log.error("No release to add to mix.")
 
-
     # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
         if not _track_no:
@@ -342,7 +343,6 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
 
         return match_ret
 
-
     def copy_mix(self):
         self.cli.p("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
         copy_tr = self.mix.get_tracks_of_one_mix()
@@ -374,10 +374,12 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
             #    self.cli.p("Let's update ALL tracks in ALL mixes with info from Discogs...")
             #    mixed_tracks = self.mix.get_all_tracks_in_mixes()
 
+
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
     def __init__(self):
         pass
+
 
 # Collection controller class
 class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
