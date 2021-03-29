@@ -1,4 +1,4 @@
-name: Run Python Tests on master branch (3.7)
+name: Run Python Tests
 
 on:
   push:

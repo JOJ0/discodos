@@ -1,11 +1,11 @@
-name: Build Windows package
+name: Build Windows Package
 
 on:
   push:
     tags:
       - 'v*'
   release:
-    types: [created, published, edited, prereleased, released]
+    types: [published]
 
 jobs:
   build_win:
