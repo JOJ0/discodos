@@ -1,15 +1,15 @@
-from discodos.utils import is_number, join_sep
+from discodos.utils import is_number
 from discodos.config import Db_setup
 from discodos.models import Mix, Collection, Brainz, Brainz_match
 from discodos.views import Mix_view_cli, Collection_view_cli
-from abc import ABC, abstractmethod
+from abc import ABC
 import logging
 import discogs_client.exceptions as errors
 import pprint as p
-import re
 from time import time
 
 log = logging.getLogger('discodos')
+
 
 class Ctrl_common (ABC):
     def __init__(self):
@@ -20,10 +20,12 @@ class Ctrl_common (ABC):
         db_setup.create_tables()
         db_setup.upgrade_schema()
 
+
 # mix controller class (abstract) - common attrs and methods  for gui and cli
 class Mix_ctrl_common (ABC):
     def __init__(self):
         pass
+
 
 # mix controller class CLI implementation
 class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
@@ -226,7 +228,6 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
         else:
             log.error("No release to add to mix.")
 
-
     # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
         if not _track_no:
@@ -342,7 +343,6 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
 
         return match_ret
 
-
     def copy_mix(self):
         self.cli.p("Copying mix {} - {}.".format(self.mix.id, self.mix.name))
         copy_tr = self.mix.get_tracks_of_one_mix()
@@ -374,10 +374,12 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
             #    self.cli.p("Let's update ALL tracks in ALL mixes with info from Discogs...")
             #    mixed_tracks = self.mix.get_all_tracks_in_mixes()
 
+
 # Collection controller common methods
 class Coll_ctrl_common (ABC):
     def __init__(self):
         pass
+
 
 # Collection controller class
 class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
@@ -418,20 +420,25 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         log.debug("CTRL: Getting Collection.me instance from MODEL: %s", discogs_me_o)
         return discogs_me_o
 
-    def search_release(self, _searchterm): # online or offline search is decided in this method
-        if self.collection.ONLINE:
+    def search_release(self, _searchterm):  # online or offline search is
+        if self.collection.ONLINE:          # decided in this method
             if is_number(_searchterm):
-                self.cli.p('Searchterm is a number, trying to add Release ID to collection...')
+                self.cli.p('Searchterm is a number, trying to add Release ID '
+                           'to collection...')
                 if not self.add_release(int(_searchterm)):
-                    log.warning("Release wasn't added to Collection, continuing anyway.")
-
+                    log.warning("Release wasn't added to Collection, "
+                                "continuing anyway.")
             db_releases = self.collection.get_all_db_releases()
-            self.cli.p('Searching Discogs for Release ID or Title: {}'.format(_searchterm))
+            self.cli.p('Searching Discogs for Release ID or Title: {}'.format(
+                _searchterm))
             search_results = self.collection.search_release_online(_searchterm)
             # SEARCH RESULTS OUTPUT HAPPENS HERE
             compiled_results_list = self.print_and_return_first_d_release(
-                  search_results, _searchterm, db_releases)
-            if compiled_results_list == None:
+                search_results,
+                _searchterm,
+                db_releases
+            )
+            if compiled_results_list is None:
                 self.cli.error_not_the_release()
                 m = 'Try altering your search terms!'
                 log.info(m)
@@ -466,12 +473,18 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
 
     def print_and_return_first_d_release(self, discogs_results, _searchterm, _db_releases):
         ''' formatted output _and return of Discogs release search results'''
-        self.first_track_on_release = '' # reset this in any case first
+        self.first_track_on_release = ''  # reset this in any case first
         # only show pages count if it's a Release Title Search
         if not is_number(_searchterm):
-            self.cli.p("Found "+str(discogs_results.pages )+" page(s) of results!")
+            if discogs_results:
+                self.cli.p("Found {} page(s) of results.".format(
+                    discogs_results.pages))
+            else:
+                return None
         else:
-            self.cli.p("ID: "+discogs_results[0].id+", Title: "+discogs_results[0].title+"")
+            self.cli.p("ID: {}, Title: {}".format(
+                discogs_results[0].id,
+                discogs_results[0].title))
         for result_item in discogs_results:
             self.cli.p("Checking " + str(result_item.id))
             for dbr in _db_releases:
