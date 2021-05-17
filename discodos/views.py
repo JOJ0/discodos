@@ -1,8 +1,8 @@
 from discodos.utils import is_number, join_sep
-from abc import ABC, abstractmethod
+from abc import ABC  # , abstractmethod
 import logging
-from tabulate import tabulate as tab # should be only in views.py
-import pprint
+from tabulate import tabulate as tab
+#  import pprint
 from datetime import datetime
 from datetime import date
 from time import time
@@ -13,21 +13,21 @@ log = logging.getLogger('discodos')
 
 # common view utils, usable in CLI and GUI
 class View_common(ABC):
-    def shorten_timestamp(self, sqlite_date, text = False):
+    def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         try:
             date_only = datetime.fromisoformat(self.none_replace(sqlite_date)).date()
-            if text == True:
+            if text is True:
                 return str(date_only)
             return date_only
         except ValueError as valerr:
-            #log.debug(
+            # log.debug(
             #  "VIEW: Can't convert date, returning dash {}".format(valerr))
             if text:
                 return '-'
             raise valerr
 
-    def format_date_month(self, sqlite_date, text = False):
+    def format_date_month(self, sqlite_date, text=False):
         ''' format a date string to eg "May 2020" '''
         try:
             date_year_month = date.fromisoformat(
@@ -35,7 +35,7 @@ class View_common(ABC):
         except ValueError:
             date_year_month = "-"
 
-        if text == True:
+        if text is True:
             return str(date_year_month)
         return date_year_month
 
@@ -48,31 +48,33 @@ class View_common(ABC):
             width = 0
             if row_mutable[keys_list[0]] is None:
                 row_mutable[keys_list[0]] = "-"
-            if row_mutable[keys_list[1]] is None: # this is chosen_bpm field
+            if row_mutable[keys_list[1]] is None:  # this is chosen_bpm field
                 row_mutable[keys_list[1]] = "-"
             width = (len(row_mutable[keys_list[0]]) + len('/')
-                + len(str(row_mutable[keys_list[1]])))
-            #log.debug("This rows width: {}.".format(width))
+                     + len(str(row_mutable[keys_list[1]])))
+            # log.debug("This rows width: {}.".format(width))
             if max_width < width:
                 max_width = width
         log.debug("Found a max width of {}, adding extra_space of {}.".format(
-              max_width, extra_space))
+                  max_width, extra_space))
         return max_width + extra_space
 
     def combine_fields_to_width(self, row, keys_list, set_width):
         '''takes sqlite row and keys_list, combines and fills with
            spaces up to set_width. FIXME: Only supports exactly 2 keys.'''
-        row_mut = dict(row) # make sqlite row tuple mutable
-        #print(row_mut[keys_list[0]])
-        #print(row_mut[keys_list[1]])
+        row_mut = dict(row)  # make sqlite row tuple mutable
+        # print(row_mut[keys_list[0]])
+        # print(row_mut[keys_list[1]])
         if row_mut[keys_list[0]] is None:
             row_mut[keys_list[0]] = "-"
-        if row_mut[keys_list[1]] is None: # this is chosen_bpm field
+        if row_mut[keys_list[1]] is None:  # this is chosen_bpm field
             row_mut[keys_list[1]] = "-"
-        combined_key_bpm = "{}/{}".format(row_mut[keys_list[0]],
-              str(row_mut[keys_list[1]]))
+        combined_key_bpm = "{}/{}".format(
+            row_mut[keys_list[0]],
+            str(row_mut[keys_list[1]])
+        )
         combined_with_space = combined_key_bpm.ljust(set_width)
-        #log.warning("Combined string: {}".format(combined_with_space))
+        # log.warning("Combined string: {}".format(combined_with_space))
         return combined_with_space
 
     def none_replace(self, value_to_check):
@@ -88,15 +90,15 @@ class View_common(ABC):
         elif value_to_check == " ":
             value_to_check = ""
 
-        #elif value_to_check == []:
-        #    value_to_check = [X]
+        # elif value_to_check == []:
+        #     value_to_check = [X]
 
-        if value_to_check == None:
+        if value_to_check is None:
             value_to_check = ""
 
         return value_to_check
 
-    def trim_table_fields(self, tuple_table, cut_pos = 16, exclude = []):
+    def trim_table_fields(self, tuple_table, cut_pos=16, exclude=[]):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
         log.info('VIEW: Trimming table field width to max {} chars'.format(cut_pos))
@@ -105,18 +107,23 @@ class View_common(ABC):
         # now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for key, field in row.items():
-                if (not is_number(field) and field is not None
-                    and not key in exclude):
+                if (
+                    not is_number(field)
+                    and field is not None
+                    and key not in exclude
+                ):
                     len_field = len(field)
                     if len_field > cut_pos:
                         possible_cuts = int(len_field / cut_pos)
                         log.info("possible_cuts: {}".format(possible_cuts))
                         edited_field = ''
                         prev_cut_pos_space = 0
-                        log.debug("this is our range: {}".format(range(1, possible_cuts+1)))
-                        for cycle in range(1, possible_cuts+1): # run as often as cut possibilities exist
+                        log.debug("this is our range: {}".format(
+                            range(1, possible_cuts + 1)
+                        ))
+                        for cycle in range(1, possible_cuts + 1):  # run as often as cut possibilities exist
                             log.debug("cycle {}".format(cycle))
-                            curr_cut_pos = cut_pos * cycle # in each cycle we'd like to put \n _around_ here
+                            curr_cut_pos = cut_pos * cycle  # in each cycle we'd like to put \n _around_ here
                             log.debug("curr_cut_pos index: %s", curr_cut_pos)
                             cut_pos_space = field.find(' ', curr_cut_pos)
                             log.debug("cut_pos_space index (next space after curr_cut_pos): %s", cut_pos_space)
@@ -151,7 +158,7 @@ class View_common(ABC):
             if row['a_key'] and not row['key']:
                 if row['a_chords_key'] != row['a_key']:
                     table[i]['key'] = '{}/{}*'.format(row['a_key'],
-                                                       row['a_chords_key'])
+                                                      row['a_chords_key'])
                 else:
                     table[i]['key'] = '{}*'.format((row['a_key']))
             if row['a_bpm'] and not row['bpm']:
@@ -221,22 +228,27 @@ class View_common(ABC):
 
     def join_links_to_str(self, row):
         links = []
-        #print(row.keys())
+        # print(row.keys())
         if 'm_rel_id' in row.keys():
-            if row['m_rel_id_override']:
-                links.append(self.link_to('musicbrainz release', row['m_rel_id_override']))
-            elif row['m_rel_id']:
-                links.append(self.link_to('musicbrainz release', row['m_rel_id']))
+            if row['m_rel_id_override'] is not None:
+                links.append(self.link_to('musicbrainz release',
+                             row['m_rel_id_override']))
+            elif row['m_rel_id'] is not None:
+                links.append(self.link_to('musicbrainz release',
+                             row['m_rel_id']))
         if 'm_rec_id' in row.keys():
-            if row['m_rec_id_override']:
-                links.append(self.link_to('musicbrainz recording', row['m_rec_id_override']))
-                links.append(self.link_to('acousticbrainz recording', row['m_rec_id_override']))
-            elif row['m_rec_id']:
-                links.append(self.link_to('musicbrainz recording', row['m_rec_id']))
-                links.append(self.link_to('acousticbrainz recording', row['m_rec_id']))
-        if 'discogs_id' in row.keys():
-            if row['discogs_id']:
-                links.append(self.link_to('discogs release', row['discogs_id']))
+            if row['m_rec_id_override'] is not None:
+                links.append(self.link_to('musicbrainz recording',
+                             row['m_rec_id_override']))
+                links.append(self.link_to('acousticbrainz recording',
+                             row['m_rec_id_override']))
+            elif row['m_rec_id'] is not None:
+                links.append(self.link_to('musicbrainz recording',
+                             row['m_rec_id']))
+                links.append(self.link_to('acousticbrainz recording',
+                             row['m_rec_id']))
+        if 'discogs_id' in row.keys() and row['discogs_id'] is not None:
+            links.append(self.link_to('discogs release', row['discogs_id']))
         links_str = join_sep(links, '\n')
         return links_str
 
@@ -271,10 +283,11 @@ class Mix_view_common(ABC):
             ["venue", "Venue ({}): "]
         ]
 
+
 # Collection view utils, usable in CLI and GUI, related to Collection only
 class Collection_view_common(ABC):
     def __init__(self):
-        #super(Collection_view_cli, self).__init__()
+        # super(Collection_view_cli, self).__init__()
         # list of questions a user is asked when searching and editing track
         # first list item is the related db-field, second is the question
         self._edit_track_questions = [
@@ -285,52 +298,57 @@ class Collection_view_common(ABC):
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
 
+
 # common view utils, usable in CLI only
 class View_common_cli(View_common):
     def p(self, message):
-        print(''+str(message)+'\n')
+        print('' + str(message) + '\n')
 
     def ask(self, text=""):
         ''' ask user for something and return answer '''
         return input(text)
 
-    def ask_for_track(self, suggest = 'A1'):
+    def ask_for_track(self, suggest='A1'):
         track_no = self.ask("Which track? ({}) ".format(suggest))
         if track_no == '':
             return suggest
         return track_no
 
-    def tab_mix_table(self, _mix_data, _verbose = False, brainz = False):
+    def tab_mix_table(self, _mix_data, _verbose=False, brainz=False):
         _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
         _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
-        #for row in _mix_data_nl: # debug only
-        #   log.debug(str(row))
-        #log.debug("")
+        # for row in _mix_data_nl: # debug only
+        #    log.debug(str(row))
+        # log.debug("")
         if _verbose:
-            self.p(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                       'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-                       'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
-                       'trans_notes': 'Trans.\nNotes', 'notes': 'Track\nNotes'}))
+            self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
+                'track_pos': '#', 'discogs_title': 'Release',
+                'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
+                'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
+                'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
+                'trans_notes': 'Trans.\nNotes', 'notes': 'Track\nNotes'
+            }))
         elif brainz:
             _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
-            _mix_data_brainz_nl = self.trim_table_fields(_mix_data_brainz,
-                exclude = ['methods'])
-            self.p(tab(_mix_data_brainz_nl, tablefmt='grid',
-              headers={'track_pos': '#', 'discogs_title': 'Release',
-                       'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                       'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-                       'd_catno': 'Discogs\nCatNo',
-                       'methods': 'Rel match via\nRec match via',
-                       'times': 'Matched\non',
-                       'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
-                       }))
+            _mix_data_brainz_nl = self.trim_table_fields(
+                _mix_data_brainz,
+                exclude=['methods']
+            )
+            self.p(tab(_mix_data_brainz_nl, tablefmt='grid', headers={
+                'track_pos': '#', 'discogs_title': 'Release',
+                'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
+                'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
+                'd_catno': 'Discogs\nCatNo',
+                'methods': 'Rel match via\nRec match via',
+                'times': 'Matched\non',
+                'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
+            }))
         else:
-            self.p(tab(_mix_data_nl, tablefmt='pipe',
-              headers={'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
-                       'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
-                       'key': 'Key', 'bpm': 'BPM'}))
+            self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
+                'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
+                'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
+                'key': 'Key', 'bpm': 'BPM'
+            }))
 
     def duration_stats(self, start_time, msg):
         took_seconds = time() - start_time
@@ -338,8 +356,10 @@ class View_common_cli(View_common):
             days_part = "{days} days "
         else:
             days_part = ""
-        took_str = self.strfdelta(timedelta(seconds=took_seconds),
-          days_part+"{hours} hours {minutes} minutes {seconds} seconds")
+        took_str = self.strfdelta(
+            timedelta(seconds=took_seconds),
+            days_part + "{hours} hours {minutes} minutes {seconds} seconds"
+        )
         msg_took = "{} took {}".format(msg, took_str)
         log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
         log.info('CTRLS: {}'.format(msg_took))
@@ -377,15 +397,16 @@ class View_common_cli(View_common):
                         print(mvmsg)
             elif db_field == 'trans_rating':
                 allowed = ['++', '+', '~', '-', '--']
-                answers['trans_rating'] = self.ask(
-                      question.format(orig_data['trans_rating']))
+                answers['trans_rating'] = self.ask(question.format(
+                    orig_data['trans_rating']
+                ))
                 if answers['trans_rating'] == '':
                     log.info("Answer was empty, dropping item from update.")
                     del(answers['trans_rating'])
                 else:
                     while not answers['trans_rating'] in allowed:
-                        log.warning(
-                          "Please use one of the following: ++, +, ~, -, --")
+                        log.warning("Please use one of the following: "
+                                    "++, +, ~, -, --")
                         if answers['trans_rating'] == '':
                             del(answers['trans_rating'])
                             break
@@ -393,8 +414,7 @@ class View_common_cli(View_common):
                             answers['trans_rating'] = self.ask(question.format(orig_data['trans_rating']))
             elif db_field == 'name':
                 # initial user question
-                answers['name'] = self.ask(
-                      question.format(orig_data['name']))
+                answers['name'] = self.ask(question.format(orig_data['name']))
                 # sanity checking loop
                 while answers['name'] == orig_data['name']:
                     log.warning("Just press enter if you want to leave as-is.")
@@ -405,8 +425,9 @@ class View_common_cli(View_common):
                     log.info("Answer was empty, dropping item from update.")
                     del(answers['name'])
             else:
-                answers[db_field] = self.ask(
-                                         question.format(orig_data[db_field]))
+                answers[db_field] = self.ask(question.format(
+                    orig_data[db_field]
+                ))
                 if answers[db_field] == "":
                     log.info("Answer was empty, dropping item from update.")
                     del(answers[db_field])
@@ -419,83 +440,83 @@ class View_common_cli(View_common):
         m+="but you didn't provide a command."
         print(m)
         tutorial_items = [
-        '\n\nFirst things first: Whenever DiscoDOS asks you a question, you '
-        'will be shown a default value in (brackets). If you '
-        'are fine with the default, just press enter.'
-        '\nWhen it\'s a yes/no question, the default will be presented as a '
-        'capital letter. Let\'s try this right now:',
+            '\n\nFirst things first: Whenever DiscoDOS asks you a question, '
+            'you will be shown a default value in (brackets). If you '
+            'are fine with the default, just press enter.'
+            '\nWhen it\'s a yes/no question, the default will be presented as a '
+            'capital letter. Let\'s try this right now:',
 
-        '\n\nI will show a couple of basic commands now. Best you open a '
-        'second terminal window (macOS/Linux) or command prompt window (Windows), '
-        'so you can try out the commands over there, while watching this tutorial.',
+            '\n\nI will show a couple of basic commands now. Best you open a '
+            'second terminal window (macOS/Linux) or command prompt window (Windows), '
+            'so you can try out the commands over there, while watching this tutorial.',
 
-        '\n\nImport your collection (1000 releases take about a minute or two '
-        'to import):'
-        '\ndisco import',
+            '\n\nImport your collection (1000 releases take about a minute or two '
+            'to import):'
+            '\ndisco import',
 
-        '\n\nCreate a mix:'
-        '\ndisco mix my_mix -c',
+            '\n\nCreate a mix:'
+            '\ndisco mix my_mix -c',
 
-        '\n\nSearch in your collection and add tracks to the mix:\n'
-        'disco mix my_mix -a "search terms"',
+            '\n\nSearch in your collection and add tracks to the mix:\n'
+            'disco mix my_mix -a "search terms"',
 
-        '\n\nView your mix. Leave out mix-name '
-        'to view a list of all your mixes:'
-        '\ndisco mix my_mix',
+            '\n\nView your mix. Leave out mix-name '
+            'to view a list of all your mixes:'
+            '\ndisco mix my_mix',
 
-        '\n\nDiscoDOS by default is minimalistic. The initial import only '
-        'gave us release-titles/artists and CatNos. Now fetch track-names '
-        'and track-artists:'
-        '\ndisco mix my_mix -u',
+            '\n\nDiscoDOS by default is minimalistic. The initial import only '
+            'gave us release-titles/artists and CatNos. Now fetch track-names '
+            'and track-artists:'
+            '\ndisco mix my_mix -u',
 
-        '\n\nNow let\'s have a look into the tracklist again. '
-        '(-v enables a more detailed view, it includes eg '
-        'track-names, artists, transition rating, notes, etc.)'
-        '\ndisco mix my_mix -v',
+            '\n\nNow let\'s have a look into the tracklist again. '
+            '(-v enables a more detailed view, it includes eg '
+            'track-names, artists, transition rating, notes, etc.)'
+            '\ndisco mix my_mix -v',
 
-        '\n\nMatch the tracks with MusicBrainz/AcousticBrainz and get '
-        'BPM and musical key information (-z is quicker but not as accurate):'
-        '\ndisco mix my_mix -zz',
+            '\n\nMatch the tracks with MusicBrainz/AcousticBrainz and get '
+            'BPM and musical key information (-z is quicker but not as accurate):'
+            '\ndisco mix my_mix -zz',
 
-        '\n\nIf we were lucky, some tracks will show BPM and key information. '
-        'Hint if you\'re new to CLI tools: We typed this command already, you '
-        'don\'t have to type or copy/paste it again, just use '
-        'your terminals command history, usually by hitting the "cursor up" key '
-        'until you see this command and just pressing enter:'
-        '\ndisco mix my_mix -v',
+            '\n\nIf we were lucky, some tracks will show BPM and key information. '
+            'Hint if you\'re new to CLI tools: We typed this command already, you '
+            'don\'t have to type or copy/paste it again, just use '
+            'your terminals command history, usually by hitting the "cursor up" key '
+            'until you see this command and just pressing enter:'
+            '\ndisco mix my_mix -v',
 
-        '\n\nView weblinks pointing directly to your Discogs & MusicBrainz releases, '
-        'find out interesting details about your music via AcousticBrainz, '
-        'and see how the actual matching went:'
-        '\ndisco mix my_mix -vv',
+            '\n\nView weblinks pointing directly to your Discogs & MusicBrainz releases, '
+            'find out interesting details about your music via AcousticBrainz, '
+            'and see how the actual matching went:'
+            '\ndisco mix my_mix -vv',
 
-        "\n\nIf a track couldn't be matched automatically, you could head over "
-        'to the MusicBrainz website yourself, find a Recording MBID and put it '
-        'into DiscoBASE by using the "edit track command" below. '
-        'If you\'re done with editing, re-run the match-command from above '
-        '(the one with -zz in the end ;-). Again: use the command history! '
-        '\ndisco mix my_mix -e 1',
+            "\n\nIf a track couldn't be matched automatically, you could head over "
+            'to the MusicBrainz website yourself, find a Recording MBID and put it '
+            'into DiscoBASE by using the "edit track command" below. '
+            'If you\'re done with editing, re-run the match-command from above '
+            '(the one with -zz in the end ;-). Again: use the command history! '
+            '\ndisco mix my_mix -e 1',
 
-        '\n\nIf you\'re just interested in a tracks details and don\'t want to '
-        'add it to a mix, use the search command. You can also combine it with '
-        'the Discogs update or MusicBrainz update options.'
-        '\ndisco search "search terms"'
-        '\ndisco search "search terms" -u'
-        '\ndisco search "search terms" -zz',
+            '\n\nIf you\'re just interested in a tracks details and don\'t want to '
+            'add it to a mix, use the search command. You can also combine it with '
+            'the Discogs update or MusicBrainz update options.'
+            '\ndisco search "search terms"'
+            '\ndisco search "search terms" -u'
+            '\ndisco search "search terms" -zz',
 
-        "\n\nThere's a lot more you can do. Each subcommand has it's own help command:"
-        '\ndisco mix -h'
-        '\ndisco search -h'
-        '\ndisco suggest -h',
+            "\n\nThere's a lot more you can do. Each subcommand has it's own help command:"
+            '\ndisco mix -h'
+            '\ndisco search -h'
+            '\ndisco suggest -h',
 
-        "\nStill questions? Check out the README or open an issue on Github: "
-        'https://github.com/JOJ0/discodos'
+            "\nStill questions? Check out the README or open an issue on Github: "
+            'https://github.com/JOJ0/discodos'
         ]
 
-        view_tut = self.ask(
-        '\nDo you want to see a tutorial on how DiscoDOS basically works? (Y/n): ')
+        view_tut = self.ask('\nDo you want to see a tutorial on how DiscoDOS '
+                            'basically works? (Y/n): ')
         if view_tut.lower() == 'y' or view_tut == '':
-            #print(tutorial_items[0])
+            # print(tutorial_items[0])
             i = 0
             while i < len(tutorial_items):
                 print(tutorial_items[i])
@@ -526,36 +547,47 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
     def tab_mixes_list(self, mixes_data):
         # make list of dicts out of the sqlite tuples list
         mixes = [dict(row) for row in mixes_data]
-        for i, mix in enumerate(mixes): # shorten/format timestamps in this view
-            mixes[i]['created'] = self.shorten_timestamp(mix['created'],
-                  text = True)
-            mixes[i]['played'] = self.format_date_month(mix['played'],
-                  text = True)
-            mixes[i]['updated'] = self.shorten_timestamp(mix['updated'],
-                  text = True)
-        tabulated = tab(self.trim_table_fields(mixes),
-          tablefmt="simple", # headers has to be dict too!
-          headers={'mix_id': '#', 'name': 'Name', 'played':'Played',
-                   'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'})
+        for i, mix in enumerate(mixes):  # shorten/format timestamps in this view
+            mixes[i]['created'] = self.shorten_timestamp(
+                mix['created'],
+                text=True
+            )
+            mixes[i]['played'] = self.format_date_month(
+                mix['played'],
+                text=True
+            )
+            mixes[i]['updated'] = self.shorten_timestamp(
+                mix['updated'],
+                text=True
+            )
+        tabulated = tab(
+            self.trim_table_fields(mixes), tablefmt="simple",
+            headers={  # when data is dict, headers must be too
+                'mix_id': '#', 'name': 'Name', 'played': 'Played',
+                'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
+            })
         self.p(tabulated)
 
     def tab_mix_info_header(self, mix_info):
-        self.p(tab([mix_info], tablefmt="plain",
-                headers=["Mix", "Name", "Created", "Updated", "Played", "Venue"]))
+        self.p(tab([mix_info], tablefmt="plain", headers=[
+            "Mix", "Name", "Created", "Updated", "Played", "Venue"
+        ]))
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
-        quest=(
-        'Add "{}" on "{}" to mix #{}, at position {}? (Y/n) '
-            .format(track_to_add.upper(), release_name, int(mix_id), pos))
-        _answ = self.ask(quest)
+        _answ = self.ask(
+            'Add "{}" on "{}" to mix #{}, at position {}? (Y/n) '.format(
+                track_to_add.upper(),
+                release_name,
+                int(mix_id), pos)
+        )
         if _answ.lower() == "y" or _answ == "":
             return True
 
     def really_delete_track(self, track_pos, mix_name):
         really_del = self.ask('Delete Track {} from mix "{}"? (y/N) '.format(
-              track_pos, mix_name))
+                              track_pos, mix_name))
         if really_del.lower() == "y":
-             return True
+            return True
         return False
 
     def really_delete_mix(self, mix_id, mix_name):
@@ -567,16 +599,18 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         return False
 
 
-
 # viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
     def __init__(self):
         super(Collection_view_cli, self).__init__()
 
     def tab_online_search_results(self, _result_list):
-        self.p(tab(_result_list, tablefmt="simple", headers={
-          'id': 'ID', 'artist': 'Artist', 'title':'Release',
-          'label': 'Label', 'country': 'C', 'year': 'Year', 'format': 'Format'}))
+        self.p(
+            tab(_result_list, tablefmt="simple", headers={
+                'id': 'ID', 'artist': 'Artist', 'title': 'Release',
+                'label': 'Label', 'country': 'C', 'year': 'Year',
+                'format': 'Format'
+            }))
 
     def online_search_results_tracklist(self, _tracklist):
         for tr in _tracklist:
@@ -591,7 +625,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
                 elif tr['bpm']:
                     key_bpm_user+= str(tr['bpm'])
                 key_bpm_user += ")"
-                if key_bpm_user == "()": # if empty, remove it completely
+                if key_bpm_user == "()":  # if empty, remove it completely
                     key_bpm_user = ""
 
                 # do the same for brainz values:
@@ -600,13 +634,13 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
                     key_bpm_brainz+= tr['a_key'] + '*'
 
                 if tr['a_key'] and tr['a_bpm']:
-                    bpm_rnd = str(round(float(tr['a_bpm']),1))
+                    bpm_rnd = str(round(float(tr['a_bpm']), 1))
                     key_bpm_brainz+= '/{}*'.format(bpm_rnd)
                 elif tr['a_bpm']:
-                    bpm_rnd = str(round(float(tr['a_bpm']),1))
+                    bpm_rnd = str(round(float(tr['a_bpm']), 1))
                     key_bpm_brainz+= '{}*'.format(bpm_rnd)
                 key_bpm_brainz += ')'
-                if key_bpm_brainz == '()': # if empty, remove it completely
+                if key_bpm_brainz == '()':  # if empty, remove it completely
                     key_bpm_brainz = ''
 
                 # the final tracklist entry:
@@ -621,17 +655,21 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         table = [dict(row) for row in releases_data]
         for i, row in enumerate(table):
             links_str = self.join_links_to_str(row)
-            row['artist_title_links'] = '{} - {}\n{}\n '.format(row['d_artist'],
-                  row['discogs_title'], links_str)
+            row['artist_title_links'] = '{} - {}\n{}\n '.format(
+                row['d_artist'],
+                row['discogs_title'],
+                links_str
+            )
             del(table[i]['m_rel_id_override'])
             del(table[i]['m_rel_id'])
             del(table[i]['discogs_id'])
             del(table[i]['d_artist'])
             del(table[i]['discogs_title'])
         table = self.trim_table_fields(table, 40)
-        print(tab(table, tablefmt="grid",
-            headers={'d_catno': 'CatNo',
-              'artist_title_links': 'Release: Artist - Title - Links'}))
+        print(tab(table, tablefmt="grid", headers={
+            'd_catno': 'CatNo',
+            'artist_title_links': 'Release: Artist - Title - Links'
+        }))
 
     def error_not_the_release(self):
         log.error("This is not the release you are looking for!")
@@ -648,9 +686,11 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             log.error("Need to be ONLINE to do that!")
             raise SystemExit(3)
 
-    def brainz_processed_report(self, processed, added_release, added_rec, added_key,
-      added_chords_key, added_bpm, errors_db, errors_not_found,
-      errors_no_rec_AB, errors_not_imported, warns_discogs_fetches):
+    def brainz_processed_report(
+        self, processed, added_release, added_rec, added_key, added_chords_key,
+        added_bpm, errors_db, errors_not_found, errors_no_rec_AB,
+        errors_not_imported, warns_discogs_fetches
+    ):
         msg_mb = 'Processed: {}.\nMusicBrainz info added to DiscoBASE: '.format(processed)
         msg_mb+= 'Release MBIDs: {}, Recording MBIDs: {}\n'.format(
             added_release, added_rec)
@@ -660,8 +700,8 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
 
         msg_err = 'Database errors: {}. Not found on Discogs errors: {}. '.format(
             errors_db, errors_not_found)
-        msg_err+=  'No track number in DiscoBASE errors: {}.\n'.format(errors_not_imported)
-        msg_err+=  'Additional Discogs fetches necessary: {}.'.format(warns_discogs_fetches)
+        msg_err+= 'No track number in DiscoBASE errors: {}.\n'.format(errors_not_imported)
+        msg_err+= 'Additional Discogs fetches necessary: {}.'.format(warns_discogs_fetches)
 
         msg_note = 'Note: '
         msg_note+= 'Some of the processed tracks might be on the same release. '
@@ -673,23 +713,24 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         msg_note+= 'Note: Many missing AcoustingBrainz entries?\n'
         msg_note+= '-> Consider submitting audio recordings to AcousticBrainz: \n'
         msg_note+= '   https://musicbrainz.org/doc/How_to_Submit_Analyses_to_AcousticBrainz'
-        print(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
-        log.info(msg_mb+'\n'+msg_err+'\n\n'+msg_note)
-        print("") # space for readability
+        print(msg_mb + '\n' + msg_err + '\n\n' + msg_note)
+        log.info(msg_mb + '\n' + msg_err +'\n\n' + msg_note)
+        print("")  # space for readability
 
         msg1 = "Note: Not many Release MBIDs or Recording MBIDs found at all?\n"
         msg1+= "-> Please help improving the matching algorithm and either:"
-        print(msg1+'\n')
+        print(msg1 + '\n')
 
         msg2 = "* Investigate yourself: Execute match command again with increased log-level: disco -v ...\n"
         msg2+= "* or just send the debug.log file (it's in your discodos config/data folder)\n"
         msg2+= "In any case, please report by opening an issue on github.com/JOJ0/discodos"
-        print(msg2+'\n')
+        print(msg2 + '\n')
 
     def brainz_processed_so_far(self, processed, processed_total):
         msg_proc='{}/{}'.format(processed, processed_total)
         log.info(msg_proc)
         print(msg_proc)
+
 
 # CLI user interaction class - holds info about what user wants to do
 # analyzes argparser args and puts it to nicely human readable properties
@@ -740,9 +781,9 @@ class User_int(object):
 
 
         # RELEASE MODE:
-        if hasattr(self.args, 'release_search'):
+        if 'release_search' in self.args:
             if self.args.release_search == "all":
-                if self.args.search_discogs_update == True:
+                if self.args.search_discogs_update is True:
                     # discogs update all
                     self.WANTS_ONLINE = True
                     self.WANTS_TO_LIST_ALL_RELEASES = True
@@ -771,8 +812,11 @@ class User_int(object):
                     self.WANTS_TO_LIST_ALL_RELEASES = True
             else:
                 self.WANTS_TO_SEARCH_FOR_RELEASE = True
-                if (self.args.add_to_mix != 0 and self.args.track_to_add != 0
-                  and self.args.add_at_pos):
+                if (
+                    self.args.add_to_mix != 0
+                    and self.args.track_to_add != 0
+                    and self.args.add_at_pos
+                ):
                     self.WANTS_TO_ADD_AT_POSITION = True
                 if self.args.add_to_mix !=0 and self.args.track_to_add !=0:
                     self.WANTS_TO_ADD_TO_MIX = True
@@ -780,32 +824,32 @@ class User_int(object):
                     self.WANTS_TO_ADD_TO_MIX = True
 
                 if self.args.search_discogs_update !=0:
-                    if self.args.offline_mode == True:
+                    if self.args.offline_mode is True:
                         log.error("You can't do that in offline mode!")
                         raise SystemExit(1)
                     self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
                 elif self.args.search_brainz_update !=0:
-                    if self.args.offline_mode == True:
+                    if self.args.offline_mode is True:
                         log.error("You can't do that in offline mode!")
                         raise SystemExit(1)
                     self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
                     self.BRAINZ_SEARCH_DETAIL = self.args.search_brainz_update
                     if self.args.search_brainz_update > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
-                elif self.args.search_edit_track == True:
+                elif self.args.search_edit_track is True:
                     self.WANTS_TO_SEARCH_AND_EDIT_TRACK = True
 
 
         # MIX MODE
-        if hasattr(self.args, 'mix_name'):
+        if 'mix_name' in self.args:
             if self.args.mix_name == "all":
                 self.WANTS_TO_SHOW_MIX_OVERVIEW = True
                 self.WANTS_ONLINE = False
-                if self.args.create_mix == True:
+                if self.args.create_mix is True:
                     log.error("Please provide a mix name to be created!")
                     log.error("(Mix name \"all\" is not valid.)")
                     raise SystemExit(1)
-                elif self.args.delete_mix == True:
+                elif self.args.delete_mix is True:
                     log.error("Please provide a mix name or ID to be deleted!")
                     raise SystemExit(1)
                 if self.args.discogs_update:
@@ -884,11 +928,14 @@ class User_int(object):
 
 
         # SUGGEST MODE
-        if hasattr(self.args, 'suggest_search'):
+        if 'suggest_search' in self.args:
             self.WANTS_TO_SUGGEST_SEARCH = True
             log.debug("Entered suggestion mode.")
-            if (self.args.suggest_bpm and self.args.suggest_search == "0"
-                  and self.args.suggest_key):
+            if (
+                self.args.suggest_bpm
+                and self.args.suggest_search == "0"
+                and self.args.suggest_key
+            ):
                 log.debug("Entered key and BPM suggestion report.")
                 self.WANTS_SUGGEST_KEY_AND_BPM_REPORT = True
             elif (self.args.suggest_bpm and self.args.suggest_search != "0"
@@ -912,18 +959,18 @@ class User_int(object):
             else:
                 log.debug("Entered Track-combination report.")
                 self.WANTS_SUGGEST_TRACK_REPORT = True
-            #log.error("track search not implemented yet.")
-            #raise SystemExit(1)
+            # log.error("track search not implemented yet.")
+            # raise SystemExit(1)
 
 
         # IMPORT MODE
-        if hasattr(self.args, 'import_id'):
+        if 'import_id' in self.args:
             log.debug("Entered import mode.")
             if self.args.import_id != 0 and self.args.import_add_coll:
                 self.WANTS_TO_ADD_AND_IMPORT_RELEASE = True
             elif self.args.import_id == 0 and self.args.import_add_coll:
-                log.error(
-                  "Release ID missing. Which release should we add to collection and import?")
+                log.error("Release ID missing. Which release should we add to "
+                          "collection and import?")
                 raise SystemExit(1)
             elif self.args.import_id == 0:
                 if self.args.import_tracks:
@@ -948,8 +995,8 @@ class User_int(object):
                     self.WANTS_TO_IMPORT_COLLECTION = True
             else:
                 if self.args.import_brainz or self.args.import_tracks:
-                    log.error(
-                      "You can't combine a single release import with -z or -u.")
+                    log.error("You can't combine a single release import with "
+                              "-z or -u.")
                     raise SystemExit(1)
                 else:
                     self.WANTS_TO_IMPORT_RELEASE = True
@@ -959,13 +1006,13 @@ class User_int(object):
         if self.args.command == 'setup':
             log.debug("Entered setup mode.")
             self.WANTS_TO_LAUNCH_SETUP = True
-            if self.args.force_upgrade_schema == True:
+            if self.args.force_upgrade_schema is True:
                 self.WANTS_TO_FORCE_UPGRADE_SCHEMA = True
 
 
         # NO COMMAND - SHOW HELP
-        if self.args.command == None:
+        if self.args.command is None:
             self.DID_NOT_PROVIDE_COMMAND = True
 
-        if self.args.offline_mode == True:
+        if self.args.offline_mode is True:
             self.WANTS_ONLINE = False
