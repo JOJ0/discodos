@@ -2,7 +2,7 @@ import sys
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSettings
 from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, log, Collection
 from discodos.config import Config
@@ -62,8 +62,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
-        self.resize(1280, 768)
+        self.settings = QSettings('discodos/qt/settings.ini', QSettings.IniFormat)
+        self.settings.setFallbacksEnabled(False)
 
+        # Load settings from settings.ini or default if no .ini found
+        self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
+        self.move(self.settings.value('pos', QtCore.QPoint(50, 50)))
+
+        # create vbox layouts and add to setlayout groupbox
         self.vboxPlaylist = QtWidgets.QVBoxLayout()
         self.vboxPlaylist.setContentsMargins(0, 0, 0, 0)
         self.vboxPlaylist.setSpacing(2)
@@ -77,6 +83,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.vboxReleases.setContentsMargins(0, 0, 0, 0)
         self.groupBoxReleases.setLayout(self.vboxReleases)
 
+        # create treeview
         self.treeViewPlaylist = QtWidgets.QTreeView()
         self.treeViewPlaylistModel = QtGui.QStandardItemModel()
         self.treeViewPlaylist.setModel(self.treeViewPlaylistModel)
@@ -84,27 +91,54 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.vboxPlaylist.addWidget(self.treeViewPlaylist)
         self.rootNode = self.treeViewPlaylistModel.invisibleRootItem()
 
+        # create tableviewplaylistsongs
         self.TableViewPlaylistSongs = GuiTableView(self)
         self.vboxSongs.addWidget(self.TableViewPlaylistSongs)
 
+        # create tableviewreleases
         self.TableViewReleases = GuiTableView(self)
         self.TableViewReleases.clicked.connect(self.tableviewreleases_on_click)
         self.vboxReleases.addWidget(self.TableViewReleases)
 
-        self.lineEditAddPlaylist = QtWidgets.QLineEdit()
-        self.vboxPlaylist.addWidget(self.lineEditAddPlaylist)
+        # create vbox formlayout for buttons and edit box
+        self.vboxFormLayout = QtWidgets.QFormLayout()
 
+        # lineedit playlistname
+        self.lineEditAddPlaylistName = QtWidgets.QLineEdit()
+        self.lineEditAddPlaylistName.setPlaceholderText('Playlist name')
+        self.vboxFormLayout.addRow(self.lineEditAddPlaylistName)
+
+        # lineedit playlistvenue
+        self.lineEditAddPlaylistVenue = QtWidgets.QLineEdit()
+        self.lineEditAddPlaylistVenue.setPlaceholderText('Venue')
+        self.vboxFormLayout.addRow(self.lineEditAddPlaylistVenue)
+
+        # lineedit playlistdate
+        self.lineEditAddPlaylistDate = QtWidgets.QLineEdit()
+        self.lineEditAddPlaylistDate.setPlaceholderText('2021-01-01')
+        self.vboxFormLayout.addRow(self.lineEditAddPlaylistDate)
+
+        # pushbuttonadd
         self.pushButtonAddPlaylist = QtWidgets.QPushButton()
         self.pushButtonAddPlaylist.setText('Add')
         self.pushButtonAddPlaylist.clicked.connect(self.treeview_pushbutton_add_playlist)
-        self.vboxPlaylist.addWidget(self.pushButtonAddPlaylist)
 
+        #pushbuttondel
         self.pushButtonDelPlaylist = QtWidgets.QPushButton()
         self.pushButtonDelPlaylist.setText('Delete')
         self.pushButtonDelPlaylist.clicked.connect(self.treeview_pushbutton_del_playlist)
-        self.vboxPlaylist.addWidget(self.pushButtonDelPlaylist)
+        self.vboxFormLayout.addRow(self.pushButtonAddPlaylist, self.pushButtonDelPlaylist)
+
+        # add formlayout to playlist boxlayout
+        self.vboxPlaylist.addLayout(self.vboxFormLayout)
 
         self.initUI()
+
+    # on close save window positions
+    def closeEvent(self, e):
+        self.settings.setValue('size', self.size())
+        self.settings.setValue('pos', self.pos())
+        e.accept()
 
     def initUI(self):
         self.treeview_load_data()
@@ -115,6 +149,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         load_mix = Mix(False, 'all')
         sql_result = load_mix.get_all_mixes()
+
+        # must be a better way to reload data on insert treeview_pushbutton_add_playlist?
+        self.rootNode.model().clear()
+        self.rootNode = self.treeViewPlaylistModel.invisibleRootItem()
 
         row = ''
         if sql_result:
@@ -128,8 +166,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     item = QtGui.QStandardItem(result)
                     item.setEditable(False)
                     list_qstandard_item.append(item)
-                    self.treeViewPlaylist.model().setHeaderData(idx, Qt.Horizontal, header[idx])
+                    self.treeViewPlaylistModel.setHeaderData(idx, Qt.Horizontal, header[idx])
+
                 self.rootNode.appendRow(list_qstandard_item)
+
+        self.treeViewPlaylist.header().resizeSections(QtWidgets.QHeaderView.ResizeToContents)
+
 
     def tableviewplaylistsongs_load_data(self, mix_name):
         sql_data = []
@@ -188,38 +230,33 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print(self.TableViewReleases.model.data(self.TableViewReleases.model.index(index.row(), 3)))
 
     def treeview_pushbutton_del_playlist(self, index):
-        index = index.sibling(index.row(), 0)
-        playlist_id = self.treeViewPlaylist.model().data(index, Qt.DisplayRole)
+        playlist_id = self.treeViewPlaylist.model().data(self.treeViewPlaylist.selectedIndexes()[0])
+        row_id = self.treeViewPlaylist.selectionModel().currentIndex().row()
 
-        playlist = Mix(self.conn, playlist_id)
-        #playlist.delete()
-
-        print('playlist_id:', playlist_id)
-        print('ok')
+        try:
+            self.treeViewPlaylist.model().removeRow(row_id)
+            playlist = Mix(False, playlist_id)
+            playlist.delete()
+            log.info("GUI: Deleted Mix %s, from list and removed rowid %d from treeview", playlist_id, row_id)
+        except:
+            log.error("GUI; Failed to delete Mix! %s", playlist_id)
 
     def treeview_pushbutton_add_playlist(self):
-        # not using _played?
-        #def create(self, _played, _venue, new_mix_name=False):
-        # sql_create = '''INSERT INTO mix (name, created, updated, played, venue)
-        #                        VALUES (?, datetime('now', 'localtime'), '', date(?), ?)'''
-        playlist_name = self.lineEditAddPlaylist.text()
+        playlist_name = self.lineEditAddPlaylistName.text()
+        playlist_venue = self.lineEditAddPlaylistVenue.text()
+        playlist_date = self.lineEditAddPlaylistDate.text()
         if playlist_name != '':
-
             print(playlist_name)
             playlist = Mix(False, 'all')
-            playlist.create('', 'home', playlist_name)
+            playlist.create(playlist_date, playlist_venue, playlist_name)
+            # self.lineEditAddPlaylistName.setText('')
+            # self.lineEditAddPlaylistVenue.setText('')
+            # self.lineEditAddPlaylistDate.setText('')
+        else:
+            print('no playlist name')
 
-
-        print('create')
-
-
-
-        #
-        # def save_mix_data(self, editor_entries, selected_id):
-        #     mix = Mix(self.conn, selected_id)
-        #     mix.create(editor_entries[3].get(),
-        #                editor_entries[2].get(),
-        #                editor_entries[1].get(), )
+        # must be a better way to reload data on insert treeview_pushbutton_add_playlist?
+        self.treeview_load_data()
 
 
 def main():
