@@ -8,6 +8,7 @@ from discodos.models import Mix, log, Collection
 from discodos.config import Config
 from discodos.utils import is_number
 
+
 class GuiTableViewModel(QtGui.QStandardItemModel):
 #class MyModel(QtCore.QAbstractTableModel):
 
@@ -68,6 +69,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Load settings from settings.ini or default if no .ini found
         self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
         self.move(self.settings.value('pos', QtCore.QPoint(50, 50)))
+        if self.settings.value('splitterSettingsHorizontal'):
+            self.splitter_horizontal.restoreState(self.settings.value('splitterSettingsHorizontal'))
+        if self.settings.value('splitterSettingsVertical'):
+            self.splitter_vertical.restoreState(self.settings.value('splitterSettingsVertical'))
+
 
         # create vbox layouts and add to setlayout groupbox
         self.vboxPlaylist = QtWidgets.QVBoxLayout()
@@ -132,22 +138,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # add formlayout to playlist boxlayout
         self.vboxPlaylist.addLayout(self.vboxFormLayout)
 
+        self.conf = Config()
+
         self.initUI()
 
     # on close save window positions
     def closeEvent(self, e):
         self.settings.setValue('size', self.size())
         self.settings.setValue('pos', self.pos())
+        self.settings.setValue('splitterSettingsHorizontal', self.splitter_horizontal.saveState())
+        self.settings.setValue('splitterSettingsVertical', self.splitter_vertical.saveState())
         e.accept()
 
     def initUI(self):
+
+        print(self.conf.discobase)
         self.treeview_load_data()
         self.tableviewreleases_load_data()
 
     def treeview_load_data(self):
         sql_data = []
 
-        load_mix = Mix(False, 'all')
+        load_mix = Mix(False, 'all', self.conf.discobase)
         sql_result = load_mix.get_all_mixes()
 
         # must be a better way to reload data on insert treeview_pushbutton_add_playlist?
@@ -177,7 +189,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         sql_data = []
         self.TableViewPlaylistSongs.model.clear()
 
-        load_mix = Mix(False, mix_name)
+        load_mix = Mix(False, mix_name, self.conf.discobase)
         sql_result = load_mix.get_full_mix(True)
 
         row = ''
@@ -199,7 +211,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def tableviewreleases_load_data(self):
         sql_data = []
 
-        load_mix = Collection(False)
+        load_mix = Collection(False, self.conf.discobase)
         sql_result = load_mix.get_all_db_releases()
 
         row = ''
@@ -235,7 +247,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         try:
             self.treeViewPlaylist.model().removeRow(row_id)
-            playlist = Mix(False, playlist_id)
+            playlist = Mix(False, playlist_id, self.conf.discobase)
             playlist.delete()
             log.info("GUI: Deleted Mix %s, from list and removed rowid %d from treeview", playlist_id, row_id)
         except:
@@ -247,7 +259,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         playlist_date = self.lineEditAddPlaylistDate.text()
         if playlist_name != '':
             print(playlist_name)
-            playlist = Mix(False, 'all')
+            playlist = Mix(False, 'all', self.conf.discobase)
             playlist.create(playlist_date, playlist_venue, playlist_name)
             # self.lineEditAddPlaylistName.setText('')
             # self.lineEditAddPlaylistVenue.setText('')
