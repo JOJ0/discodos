@@ -136,14 +136,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings = QSettings('discodos/qt/settings.ini', QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)
 
-        # Load settings from settings.ini or default if no .ini found
-        self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
-        self.move(self.settings.value('pos', QtCore.QPoint(50, 50)))
-        if self.settings.value('splitterSettingsHorizontal'):
-            self.splitter_horizontal.restoreState(self.settings.value('splitterSettingsHorizontal'))
-        if self.settings.value('splitterSettingsVertical'):
-            self.splitter_vertical.restoreState(self.settings.value('splitterSettingsVertical'))
-
         # create vbox layouts and add to setlayout groupbox
         self.vboxMix = QtWidgets.QVBoxLayout()
         self.vboxMix.setContentsMargins(0, 0, 0, 0)
