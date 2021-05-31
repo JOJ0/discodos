@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>DiscoDOS</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -26,18 +26,18 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QGroupBox" name="groupBoxPlaylist">
+      <widget class="QGroupBox" name="groupBoxMix">
        <property name="title">
-        <string>Playlist</string>
+        <string>Mixes</string>
        </property>
       </widget>
       <widget class="QSplitter" name="splitter_horizontal">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QGroupBox" name="groupBoxSongs">
+       <widget class="QGroupBox" name="groupBoxTracks">
         <property name="title">
-         <string>Songs</string>
+         <string>Tracks</string>
         </property>
        </widget>
        <widget class="QGroupBox" name="groupBoxReleases">

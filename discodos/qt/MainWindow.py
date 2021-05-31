@@ -24,13 +24,13 @@ class Ui_MainWindow(object):
         self.splitter_vertical = QtWidgets.QSplitter(self.centralwidget)
         self.splitter_vertical.setOrientation(QtCore.Qt.Horizontal)
         self.splitter_vertical.setObjectName("splitter_vertical")
-        self.groupBoxPlaylist = QtWidgets.QGroupBox(self.splitter_vertical)
-        self.groupBoxPlaylist.setObjectName("groupBoxPlaylist")
+        self.groupBoxMix = QtWidgets.QGroupBox(self.splitter_vertical)
+        self.groupBoxMix.setObjectName("groupBoxMix")
         self.splitter_horizontal = QtWidgets.QSplitter(self.splitter_vertical)
         self.splitter_horizontal.setOrientation(QtCore.Qt.Vertical)
         self.splitter_horizontal.setObjectName("splitter_horizontal")
-        self.groupBoxSongs = QtWidgets.QGroupBox(self.splitter_horizontal)
-        self.groupBoxSongs.setObjectName("groupBoxSongs")
+        self.groupBoxTracks = QtWidgets.QGroupBox(self.splitter_horizontal)
+        self.groupBoxTracks.setObjectName("groupBoxTracks")
         self.groupBoxReleases = QtWidgets.QGroupBox(self.splitter_horizontal)
         self.groupBoxReleases.setObjectName("groupBoxReleases")
         self.groupBoxTest = QtWidgets.QGroupBox(self.splitter_vertical)
@@ -50,9 +50,9 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.groupBoxPlaylist.setTitle(_translate("MainWindow", "Playlist"))
-        self.groupBoxSongs.setTitle(_translate("MainWindow", "Songs"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "DiscoDOS"))
+        self.groupBoxMix.setTitle(_translate("MainWindow", "Mixes"))
+        self.groupBoxTracks.setTitle(_translate("MainWindow", "Tracks"))
         self.groupBoxReleases.setTitle(_translate("MainWindow", "Releases"))
         self.groupBoxTest.setTitle(_translate("MainWindow", "Test"))
 
