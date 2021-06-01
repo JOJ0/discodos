@@ -2,12 +2,17 @@
 
 import sys
 import pandas as pd
+import logging
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
+
 from discodos.qt.MainWindow import Ui_MainWindow
-from discodos.models import Mix, log, Collection
+from discodos.models import Mix, Collection
 from discodos.config import Config
 from discodos.utils import is_number
+
+
+log = logging.getLogger('discodos')
 
 
 # class GuiTableViewModel(QtGui.QStandardItemModel):
