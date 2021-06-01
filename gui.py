@@ -10,6 +10,7 @@ from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
 from discodos.config import Config
 from discodos.utils import is_number
+from discodos.ctrls import Ctrl_common
 
 
 log = logging.getLogger('discodos')
@@ -132,12 +133,11 @@ class GuiTableView(QtWidgets.QTableView):
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
-    def __init__(self, *args, obj=None, **kwargs):
+    def __init__(self, *args, obj=None, config_obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
-        self.conf = Config()
-
+        self.conf = config_obj
         self.settings = QSettings('discodos/qt/settings.ini', QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)
 
@@ -390,11 +390,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 def main():
+    # Base configuration and setup tasks run on the shell
+    conf = Config()
+    # Quickfix - Ctrl_common is an abstract class and not ment to be initialized
+    # by itself, but rather be inherited by either a GUI controller or a CLI
+    # controller class.
+    ctrl_common = Ctrl_common()
+    ctrl_common.setup_db(conf.discobase)
+
+    # Initialize GUI
     app = QtWidgets.QApplication(sys.argv)
-
-    window = MainWindow()
+    window = MainWindow(config_obj=conf)
     window.show()
-
     app.exec()
 
 
