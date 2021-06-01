@@ -29,6 +29,10 @@ class GuiTableViewModel(QtCore.QAbstractTableModel):
                 value = self._data.iloc[index.row(), index.column()]
                 return value
 
+            if role == Qt.EditRole:
+                value = self._data.iloc[index.row()][index.column()]
+                return value
+
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
 
