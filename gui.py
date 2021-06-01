@@ -138,7 +138,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.conf = config_obj
-        self.settings = QSettings('discodos/qt/settings.ini', QSettings.IniFormat)
+        self.settings = QSettings(
+            str(self.conf.discodos_data / 'gui_settings_autosave.ini'),
+            QSettings.IniFormat
+        )
         self.settings.setFallbacksEnabled(False)
 
         # create vbox layouts and add to setlayout groupbox
