@@ -177,7 +177,8 @@ class Mix (Database):
 
     def __init__(self, db_conn, mix_name_or_id, db_file=False):
         super(Mix, self).__init__(db_conn, db_file)
-        # figuring out names and IDs, just logs and sets instance attributes, no exits here!
+        # figuring out names and IDs, just logs and sets instance
+        # attributes, no exits here!
         self.name_or_id = mix_name_or_id
         self.id_existing = False
         self.name_existing = False
@@ -192,14 +193,11 @@ class Mix (Database):
             # if it's a mix-id, get mix-name and info
             try:
                 self.info = self.get_mix_info()
-                # FIXME info should also be available as single attrs: created, venue, etc.
-                self.name = self.info[1]
+                self.name = self.info[1]  # info existing or trigger Exception?
                 self.id_existing = True
                 self.name_existing = True
-            except:
+            except Exception:
                 log.info("Mix ID is not existing yet!")
-                # raise Exception # use this for debugging
-                # raise SystemExit(1)
         else:
             self.name = mix_name_or_id
             # if it's a mix-name, get the id unless it's "all"
@@ -207,7 +205,8 @@ class Mix (Database):
             if not self.name == "all":
                 try:
                     mix_id_tuple = self._get_mix_id(self.name)
-                    log.debug('MODEL: mix_id_tuple type: %s', type(mix_id_tuple).__name__)
+                    log.debug('MODEL: mix_id_tuple type: %s',
+                              type(mix_id_tuple).__name__)
                     self.id = mix_id_tuple[0]
                     self.id_existing = True
                     self.name_existing = True
@@ -215,13 +214,11 @@ class Mix (Database):
                     try:
                         self.info = self.get_mix_info()
                         self.name = self.info[1]
-                    except:
+                    except Exception:
                         log.info("Can't get mix info.")
-                        # raise Exception # use this for debugging
-                except:
-                    log.info("Can't get mix-name from id. Mix not existing yet?")
-                    # raise Exception # use this for debugging
-                    # raise SystemExit(1)
+                except Exception:
+                    log.info("Can't get mix-name from ID. "
+                             "Mix not existing yet?")
         if self.id_existing:
             self.created = self.info[2]
             self.played = self.info[4]
@@ -231,7 +228,7 @@ class Mix (Database):
         log.debug("MODEL: Played is {}.".format(self.played))
         log.debug("MODEL: Venue is {}.".format(self.venue))
 
-    # fixme mix info should probably be properties to keep them current
+    # FIXME mix info should probably be properties to keep them current
     # @property
     # def.name(self):
     #    return db.get_mix_info(self.db_conn, self.id)[1]
