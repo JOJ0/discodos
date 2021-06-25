@@ -282,6 +282,14 @@ class Mix_view_common(ABC):
             ["played", "Played ({}): "],
             ["venue", "Venue ({}): "]
         ]
+        self.headers_dict = {
+            'mix_id': '#', 'name': 'Name', 'played': 'Played',
+            'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
+        }
+
+    @property
+    def headers_list(self):
+        return [val for key, val in self.headers_dict.items()]
 
 
 # Collection view utils, usable in CLI and GUI, related to Collection only
@@ -561,11 +569,10 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
                 text=True
             )
         tabulated = tab(
-            self.trim_table_fields(mixes), tablefmt="simple",
-            headers={  # when data is dict, headers must be too
-                'mix_id': '#', 'name': 'Name', 'played': 'Played',
-                'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
-            })
+            self.trim_table_fields(mixes),
+            tablefmt="simple",
+            headers=self.headers_dict  # when data is dict, headers must be too
+        )
         self.p(tabulated)
 
     def tab_mix_info_header(self, mix_info):
