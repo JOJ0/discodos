@@ -236,17 +236,17 @@ class Mix (Database):
     # def.name(self):
     #    return db.get_mix_info(self.db_conn, self.id)[1]
 
-    def _get_mix_id(self, mixname):  # this method should only be called from __init__
-        # return self._select_simple(["mix_id"], 'mix', fetchone = True,
-        #    condition = 'name LIKE "%{}%"'.format(mix_name))
-        log.info('MODEL: Getting mix_id via mix name "%s". Only returns first match',
-                     mixname)
+    def _get_mix_id(self, mixname):  # should only be called from __init__
+        log.info('MODEL: Getting mix_id via mix name "%s". '
+                 'Only returns first match', mixname)
         if is_number(mixname):
             log.info("MODEL: mix name is a number, won't try to fetch from DB")
-            return mixname  # we were probably been given an ID already, return it.
+            return mixname
         else:
             self.cur.execute(
-                'SELECT mix_id FROM mix WHERE name LIKE ?', ("%{}%".format(mixname), ))
+                'SELECT mix_id FROM mix WHERE name LIKE ?',
+                ("%{}%".format(mixname), )
+            )
             row = self.cur.fetchone()
             if row:
                 log.info("MODEL: Found mix ID: {}".format(row["mix_id"]))
