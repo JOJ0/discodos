@@ -254,8 +254,8 @@ class GuiTabWidget(QtWidgets.QTabWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
-        stylesheet = """ 
-            QTabBar::tab:selected {background: gray;}            
+        stylesheet = """
+            QTabBar::tab:selected {background: gray;}
         """
 
         self.setStyleSheet(stylesheet)
