@@ -479,11 +479,14 @@ class Mix (Database):
         )
 
     def get_tracks_from_position(self, pos):
-        log.info('MODEL: Getting tracks in mix, starting at position {}.'.format(pos))
+        log.info('MODEL: Getting tracks in mix, '
+                 'starting at position {}.'.format(pos))
         # return db.get_tracks_from_position(self.db_conn, self.id, pos)
-        return self._select_simple(['mix_track_id', 'track_pos'], 'mix_track',
+        return self._select_simple(
+            ['mix_track_id', 'track_pos'], 'mix_track',
             condition="mix_id = {} AND track_pos >= {}".format(self.id, pos),
-            orderby='track_pos ASC')
+            orderby='track_pos ASC'
+        )
 
     def reorder_tracks(self, pos):
         log.info("MODEL: Reordering tracks in mix, starting at pos {}".format(pos))
