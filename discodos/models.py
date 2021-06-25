@@ -177,7 +177,8 @@ class Mix (Database):
 
     def __init__(self, db_conn, mix_name_or_id, db_file=False):
         super(Mix, self).__init__(db_conn, db_file)
-        # figuring out names and IDs, just logs and sets instance attributes, no exits here!
+        # figuring out names and IDs, just logs and sets instance
+        # attributes, no exits here!
         self.name_or_id = mix_name_or_id
         self.id_existing = False
         self.name_existing = False
@@ -192,14 +193,11 @@ class Mix (Database):
             # if it's a mix-id, get mix-name and info
             try:
                 self.info = self.get_mix_info()
-                # FIXME info should also be available as single attrs: created, venue, etc.
-                self.name = self.info[1]
+                self.name = self.info[1]  # info existing or trigger Exception?
                 self.id_existing = True
                 self.name_existing = True
-            except:
+            except Exception:
                 log.info("Mix ID is not existing yet!")
-                # raise Exception # use this for debugging
-                # raise SystemExit(1)
         else:
             self.name = mix_name_or_id
             # if it's a mix-name, get the id unless it's "all"
@@ -207,7 +205,8 @@ class Mix (Database):
             if not self.name == "all":
                 try:
                     mix_id_tuple = self._get_mix_id(self.name)
-                    log.debug('MODEL: mix_id_tuple type: %s', type(mix_id_tuple).__name__)
+                    log.debug('MODEL: mix_id_tuple type: %s',
+                              type(mix_id_tuple).__name__)
                     self.id = mix_id_tuple[0]
                     self.id_existing = True
                     self.name_existing = True
@@ -215,13 +214,11 @@ class Mix (Database):
                     try:
                         self.info = self.get_mix_info()
                         self.name = self.info[1]
-                    except:
+                    except Exception:
                         log.info("Can't get mix info.")
-                        # raise Exception # use this for debugging
-                except:
-                    log.info("Can't get mix-name from id. Mix not existing yet?")
-                    # raise Exception # use this for debugging
-                    # raise SystemExit(1)
+                except Exception:
+                    log.info("Can't get mix-name from ID. "
+                             "Mix not existing yet?")
         if self.id_existing:
             self.created = self.info[2]
             self.played = self.info[4]
@@ -231,22 +228,22 @@ class Mix (Database):
         log.debug("MODEL: Played is {}.".format(self.played))
         log.debug("MODEL: Venue is {}.".format(self.venue))
 
-    # fixme mix info should probably be properties to keep them current
+    # FIXME mix info should probably be properties to keep them current
     # @property
     # def.name(self):
     #    return db.get_mix_info(self.db_conn, self.id)[1]
 
-    def _get_mix_id(self, mixname):  # this method should only be called from __init__
-        # return self._select_simple(["mix_id"], 'mix', fetchone = True,
-        #    condition = 'name LIKE "%{}%"'.format(mix_name))
-        log.info('MODEL: Getting mix_id via mix name "%s". Only returns first match',
-                     mixname)
+    def _get_mix_id(self, mixname):  # should only be called from __init__
+        log.info('MODEL: Getting mix_id via mix name "%s". '
+                 'Only returns first match', mixname)
         if is_number(mixname):
             log.info("MODEL: mix name is a number, won't try to fetch from DB")
-            return mixname  # we were probably been given an ID already, return it.
+            return mixname
         else:
             self.cur.execute(
-                'SELECT mix_id FROM mix WHERE name LIKE ?', ("%{}%".format(mixname), ))
+                'SELECT mix_id FROM mix WHERE name LIKE ?',
+                ("%{}%".format(mixname), )
+            )
             row = self.cur.fetchone()
             if row:
                 log.info("MODEL: Found mix ID: {}".format(row["mix_id"]))
@@ -256,12 +253,15 @@ class Mix (Database):
                 return row
 
     def delete(self):
-        log.info('MODEL: Deleting mix %s and all its mix_track entries (through cascade)',
-            self.id)
-        del_return = self.execute_sql('DELETE FROM mix WHERE mix_id == ?', (self.id, ))
+        log.info('MODEL: Deleting mix %s and all its mix_track entries '
+                 '(through cascade)', self.id)
+        del_return = self.execute_sql(
+            'DELETE FROM mix WHERE mix_id == ?',
+            (self.id, )
+        )
         log.info("MODEL: Deleted mix, DB returned: {}".format(del_return))
         self.id_existing = False
-        self.name_existing = False  # as soon as it's deleted, name is available again
+        self.name_existing = False  # it's deleted, name is available again
         self.info = []
         # self.name = False # keep name so we still know after delete
         self.created = False
@@ -300,14 +300,19 @@ class Mix (Database):
         """
         # we want to select * but in a different order:
         log.info("MODEL: Getting mixes table.")
-        mixes_data = self._select_simple(['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
-                'mix', condition=False, orderby=order_by)
+        mixes_data = self._select_simple(
+            ['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
+            'mix', condition=False, orderby=order_by
+        )
         return mixes_data
 
     def get_one_mix_track(self, track_id):
-        log.info("MODEL: Returning track {} from mix {}.".format(track_id, self.id))
-        _where = 'mix_track.mix_id == {} AND mix_track.track_pos == {}'.format(self.id,
-            track_id)
+        log.info("MODEL: Returning track {} from mix {}.".format(
+            track_id, self.id)
+        )
+        _where = 'mix_track.mix_id == {} AND mix_track.track_pos == {}'.format(
+            self.id, track_id
+        )
         _join = '''mix_track INNER JOIN mix
                                 ON mix.mix_id = mix_track.mix_id
                                   INNER JOIN release
@@ -318,17 +323,23 @@ class Mix (Database):
                                       LEFT OUTER JOIN track_ext
                                       ON mix_track.d_release_id = track_ext.d_release_id
                                       AND mix_track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track_pos', 'discogs_title', 'd_track_name',
-          'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key', 'key_notes',
-          'bpm', 'notes', 'mix_track_id', 'mix_track.d_release_id', 'm_rec_id_override'],
-          _join, fetchone=True, condition=_where)
+        return self._select_simple(
+            ['track_pos', 'discogs_title', 'd_track_name',
+             'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key',
+             'key_notes', 'bpm', 'notes', 'mix_track_id',
+             'mix_track.d_release_id', 'm_rec_id_override'],
+            _join, fetchone=True, condition=_where
+        )
 
     def update_mix_track_and_track_ext(self, track_details, edit_answers):
         log.info(
             "MODEL: Updating mix_track and track_ext entries (if necessary).")
         log.debug("MODEL: track_details dict: {}".format(track_details))
         log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
-        mix_track_cols=['d_release_id', 'd_track_no', 'track_pos', 'trans_rating', 'trans_notes']
+        mix_track_cols=[
+            'd_release_id', 'd_track_no', 'track_pos', 'trans_rating',
+            'trans_notes'
+        ]
         track_ext_cols=['key', 'bpm', 'key_notes', 'notes', 'm_rec_id_override']
         values_mix_track = ''  # mix_track update
         values_list_mix_track = []
@@ -356,24 +367,28 @@ class Mix (Database):
                     all_after_dest_pos = self.get_tracks_from_position(
                         edit_answers['track_pos'])
                     # shift all those tracks "down" +1
-                    self.reorder_tracks_squeeze_in(edit_answers['track_pos'],
-                          all_after_dest_pos)
+                    self.reorder_tracks_squeeze_in(
+                        edit_answers['track_pos'],
+                        all_after_dest_pos
+                    )
                 # when moving the track "down"
                 elif move_to > track_details['track_pos']:
                     # we set dest pos to be one further down to really be the
                     # chosen destination after reorder_pos (see below db update)
                     edit_answers['track_pos'] = move_to + 1
                     all_after_dest_pos = self.get_tracks_from_position(
-                          edit_answers['track_pos'])
+                        edit_answers['track_pos'])
                     # shift all those tracks "down" +1
-                    self.reorder_tracks_squeeze_in(edit_answers['track_pos'],
-                          all_after_dest_pos)
+                    self.reorder_tracks_squeeze_in(
+                        edit_answers['track_pos'],
+                        all_after_dest_pos)
                 # no else: nothing to do if track_pos stays the same
                 # FIXME somehow we should user inform like this:
                 # this track will be put in after/bevore track "name" ok?
 
             update_mix_track = 'UPDATE mix_track SET '
-            where_mix_track = 'WHERE mix_track_id == {}'.format(track_details['mix_track_id'])
+            where_mix_track = 'WHERE mix_track_id == {}'.format(
+                track_details['mix_track_id'])
             for key, answer in edit_answers.items():
                 log.debug('key: {}, value: {}'.format(key, answer))
                 if key in mix_track_cols:
@@ -401,7 +416,7 @@ class Mix (Database):
             update_track_ext = 'UPDATE track_ext SET '
             insert_track_ext = 'INSERT INTO track_ext'
             where_track_ext = 'WHERE d_release_id == {} AND d_track_no == \"{}\"'.format(
-                                track_details['d_release_id'], track_details['d_track_no'])
+                track_details['d_release_id'], track_details['d_track_no'])
             for key, answer in edit_answers.items():
                 log.debug('key: {}, value: {}'.format(key, answer))
                 if key in track_ext_cols:
@@ -421,7 +436,7 @@ class Mix (Database):
 
             final_update_track_ext = update_track_ext + values_track_ext + where_track_ext
             final_insert_track_ext = "{} ({}, d_release_id, d_track_no) VALUES ({}, ?, ?)".format(
-                    insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
+                insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
 
             # debug
             # log.info('MODEL: {}'.format(final_update_track_ext))
@@ -437,11 +452,17 @@ class Mix (Database):
             # log.info(values_list_track_ext)
             # log.info(tuple(values_list_track_ext))
 
-            dbret = self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
+            dbret = self.execute_sql(
+                final_update_track_ext,
+                tuple(values_list_track_ext)
+            )
             if dbret == 0:  # checks rowcount
-                log.info("MODEL: UPDATE didn't change anything, trying INSERT...")
-                dbret = self.execute_sql(final_insert_track_ext,
-                    tuple(values_insert_list_track_ext))
+                log.info("MODEL: UPDATE didn't change anything, "
+                         "trying INSERT...")
+                dbret = self.execute_sql(
+                    final_insert_track_ext,
+                    tuple(values_insert_list_track_ext)
+                )
             updated_track_ext = dbret
 
         # finally update mix table with current timestamp (only if changed)
@@ -450,29 +471,36 @@ class Mix (Database):
         return True  # we didn't update track nor track_ext - all good
 
     def _updated_timestamp(self):
-        return self.execute_sql("""UPDATE mix SET
-          updated = datetime('now', 'localtime') WHERE mix_id == ?;""", (self.id, ))
+        return self.execute_sql(
+            """
+            UPDATE mix SET
+              updated = datetime('now', 'localtime') WHERE mix_id == ?;""",
+            (self.id, )
+        )
 
     def get_tracks_from_position(self, pos):
-        log.info('MODEL: Getting tracks in mix, starting at position {}.'.format(pos))
+        log.info('MODEL: Getting tracks in mix, '
+                 'starting at position {}.'.format(pos))
         # return db.get_tracks_from_position(self.db_conn, self.id, pos)
-        return self._select_simple(['mix_track_id', 'track_pos'], 'mix_track',
+        return self._select_simple(
+            ['mix_track_id', 'track_pos'], 'mix_track',
             condition="mix_id = {} AND track_pos >= {}".format(self.id, pos),
-            orderby='track_pos ASC')
+            orderby='track_pos ASC'
+        )
 
     def reorder_tracks(self, pos):
-        log.info("MODEL: Reordering tracks in mix, starting at pos {}".format(pos))
-        # tracks_to_shift = db.get_tracks_from_position(self.db_conn, self.id, pos)
+        log.info("MODEL: Reordering tracks in mix, "
+                 "starting at pos {}".format(pos))
         tracks_to_shift = self.get_tracks_from_position(pos)
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
-            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
-                     t['track_pos'], pos)
-            sql_upd = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
+            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i",
+                     t['mix_track_id'], t['track_pos'], pos)
+            sql_upd = '''
+                UPDATE mix_track SET track_pos = ?
+                  WHERE mix_track_id == ?'''
             ids_tuple = (pos, t['mix_track_id'])
-            # if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], pos):
-            #    return False
             if not self.execute_sql(sql_upd, ids_tuple):
                 return False
             pos = pos + 1

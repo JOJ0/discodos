@@ -1,4 +1,3 @@
-#from discodos import log
 import logging
 import yaml
 
@@ -18,7 +17,7 @@ def is_number(s):
 
 # util: print a UI message
 def print_help(message):
-    print(''+str(message)+'\n')
+    print('' + str(message) + '\n')
 
 
 # util: ask user for some string
