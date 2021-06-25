@@ -471,8 +471,12 @@ class Mix (Database):
         return True  # we didn't update track nor track_ext - all good
 
     def _updated_timestamp(self):
-        return self.execute_sql("""UPDATE mix SET
-          updated = datetime('now', 'localtime') WHERE mix_id == ?;""", (self.id, ))
+        return self.execute_sql(
+            """
+            UPDATE mix SET
+              updated = datetime('now', 'localtime') WHERE mix_id == ?;""",
+            (self.id, )
+        )
 
     def get_tracks_from_position(self, pos):
         log.info('MODEL: Getting tracks in mix, starting at position {}.'.format(pos))
