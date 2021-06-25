@@ -29,6 +29,10 @@ class GuiTableViewModel(QtCore.QAbstractTableModel):
                 value = self._data.iloc[index.row(), index.column()]
                 return value
 
+            if role == Qt.EditRole:
+                value = self._data.iloc[index.row()][index.column()]
+                return value
+
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
 
@@ -117,9 +121,9 @@ class GuiTableView(QtWidgets.QTableView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
-        #self.verticalHeader().hide()
-        #self.horizontalHeader().hide()
-        #self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        # self.verticalHeader().hide()
+        # self.horizontalHeader().hide()
+        # self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.SingleSelection)
         self.setShowGrid(False)
@@ -129,6 +133,138 @@ class GuiTableView(QtWidgets.QTableView):
         self.setStyle(GuiTableViewProxyStyle())
         self.model = GuiTableViewModel(self._data)
         self.setModel(self.model)
+
+        self.setAlternatingRowColors(True)
+
+        self._create_context_menu()
+
+    def _create_context_menu(self):
+        horizontal_header = self._data.columns
+        self.horizontalHeader().setContextMenuPolicy(Qt.ActionsContextMenu)
+
+        for idx, header_item in enumerate(horizontal_header):
+            self.item = QtWidgets.QAction(header_item, self)
+            self.item.setCheckable(True)
+            result = self._make_colum_show_or_hide(idx)
+            self.item.triggered.connect(result)
+            self.horizontalHeader().addAction(self.item)
+
+    def _make_colum_show_or_hide(self, column_idx):
+        show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
+        return show_column
+
+    def read_settings(self, settings, key):
+        if settings.value(key):
+            self.horizontalHeader().restoreState(settings.value(key))
+            # Set check mark
+            for col, action in enumerate(self.horizontalHeader().actions()):
+                is_checked = not self.horizontalHeader().isSectionHidden(col)
+                action.setChecked(is_checked)
+
+
+class GuiTreeViewModel(QtCore.QAbstractTableModel):
+
+    def __init__(self, data):
+        super(GuiTreeViewModel, self).__init__()
+        self._data = data
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.DisplayRole:
+                value = self._data.iloc[index.row(), index.column()]
+                return value
+
+            if role == Qt.EditRole:
+                value = self._data.iloc[index.row()][index.column()]
+                return value
+
+    def rowCount(self, parent: QModelIndex = ...) -> int:
+        return self._data.shape[0]
+
+    def columnCount(self, parent: QModelIndex = ...) -> int:
+        return self._data.shape[1]
+
+    def setData(self, index: QModelIndex, value, role: int = ...) -> bool:
+        if role == Qt.EditRole:
+            self._data.iloc[index.row()][index.column()] = value
+        return True
+
+    def removeRows(self, position, rows, index=QModelIndex()):
+        self.beginRemoveRows(QModelIndex(), position, position + rows - 1)
+        self._data = self._data.drop(self._data.index[position])
+        self.endRemoveRows()
+        return True
+
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        if not index.isValid():
+            return Qt.ItemIsDropEnabled
+        if index.row() < len(self._data):
+            return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemNeverHasChildren
+        return Qt.ItemIsEnabled | Qt.ItemIsEditable
+
+    def update(self, df):
+        self.layoutAboutToBeChanged.emit()
+        self._data = df
+        self.layoutChanged.emit()
+
+    def headerData(self, col, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[col])
+
+
+class GuiTreeView(QtWidgets.QTreeView):
+    def __init__(self, parent, data):
+        super().__init__(parent)
+        self._data = data
+
+        self.model = GuiTreeViewModel(self._data)
+        self.setModel(self.model)
+
+        self.setAlternatingRowColors(True)
+
+        self._create_context_menu()
+
+    def _create_context_menu(self):
+        horizontal_header = self._data.columns
+        self.header().setContextMenuPolicy(Qt.ActionsContextMenu)
+
+        for idx, header_item in enumerate(horizontal_header):
+            self.item = QtWidgets.QAction(header_item, self)
+            self.item.setCheckable(True)
+            result = self._make_colum_show_or_hide(idx)
+            self.item.triggered.connect(result)
+            self.header().addAction(self.item)
+
+    def _make_colum_show_or_hide(self, column_idx):
+        show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
+        return show_column
+
+    def read_settings(self, settings, key):
+        if settings.value(key):
+            self.header().restoreState(settings.value(key))
+            # Set check mark
+            for col, action in enumerate(self.header().actions()):
+                is_checked = not self.header().isSectionHidden(col)
+                action.setChecked(is_checked)
+
+
+class GuiTabWidget(QtWidgets.QTabWidget):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        stylesheet = """ 
+            QTabBar::tab:selected {background: gray;}            
+        """
+
+        self.setStyleSheet(stylesheet)
+        self.TabWidgetSearchTab1 = QtWidgets.QWidget()
+        self.TabWidgetSearchTab2 = QtWidgets.QWidget()
+        self.TabWidgetSearchTab3 = QtWidgets.QWidget()
+        self.addTab(self.TabWidgetSearchTab1, 'Offline Search')
+        self.addTab(self.TabWidgetSearchTab2, 'Online Search')
+        self.addTab(self.TabWidgetSearchTab3, 'Suggest')
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -158,15 +294,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.vboxReleases.setContentsMargins(0, 0, 0, 0)
         self.groupBoxReleases.setLayout(self.vboxReleases)
 
+        self.vboxTest = QtWidgets.QVBoxLayout()
+        self.vboxTest.setContentsMargins(0, 0, 0, 0)
+        self.groupBoxTest.setLayout(self.vboxTest)
+
         # create treeview
-        self.treeViewMix = QtWidgets.QTreeView()
-        self.treeViewMixModel = QtGui.QStandardItemModel()
-        self.treeViewMix.setModel(self.treeViewMixModel)
+        # todo need suggestion for data_list
+        self.data_list = []
+        self.TreeViewMixHeader = ['mix_id', 'name', 'played', 'venue', 'created', 'updated']
+        self.TreeViewMixDataFrame = pd.DataFrame(self.data_list, columns=self.TreeViewMixHeader)
+        self.treeViewMix = GuiTreeView(self, self.TreeViewMixDataFrame)
+        #self.treeViewMixModel = QtGui.QStandardItemModel()
+        #self.treeViewMix.setModel(self.treeViewMixModel)
         self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
         self.vboxMix.addWidget(self.treeViewMix)
-        self.rootNode = self.treeViewMixModel.invisibleRootItem()
 
         # create tableviewplaylistsongs
+        # todo need suggestion for data_list
         self.data_list = []
         self.TableViewTracksHeader = ['track_pos', 'discogs_title', 'd_artist', 'd_track_name', 'd_track_no', 'key',
                                       'bpm', 'key_notes', 'trans_rating', 'trans_notes', 'notes', 'a_key',
@@ -181,6 +325,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.TableViewReleases = GuiTableView(self, self.TableViewReleasesDataFrame)
         self.TableViewReleases.clicked.connect(self.tableviewreleases_on_click)
         self.vboxReleases.addWidget(self.TableViewReleases)
+
+        # Create TabWidget
+        self.TabWidgetSearch = GuiTabWidget(self)
+        self.vboxTest.addWidget(self.TabWidgetSearch)
 
         # create vbox formlayout for buttons and edit box
         self.vboxFormLayout = QtWidgets.QFormLayout()
@@ -231,17 +379,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.splitter_vertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()
         self.settings.beginGroup('TableViewTracks')
-        if self.settings.value('ColumnWidth'):
-            self.TableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
+        # if self.settings.value('ColumnWidth'):
+        #     self.TableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
+        self.TableViewTracks.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
         self.settings.beginGroup('TableViewReleases')
-        if self.settings.value('ColumnWidth'):
-            self.TableViewReleases.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
+        # if self.settings.value('ColumnWidth'):
+        #    self.TableViewReleases.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
+        self.TableViewReleases.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
-
         self.settings.beginGroup('TreeViewMix')
-        if self.settings.value('ColumnWidth'):
-            self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
+        # if self.settings.value('ColumnWidth'):
+        self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
+
+
+            # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
             #
             # if self.settings.value('SelectedPlaylist'):
             #     # self.model.setRootPath(self.settings.value('TreeFileSystem'))
@@ -299,27 +451,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         load_mix = Mix(False, 'all', self.conf.discobase)
         sql_result = load_mix.get_all_mixes()
 
-        # must be a better way to reload data on insert treeview_pushbutton_add_playlist?
-        self.rootNode.model().clear()
-        self.rootNode = self.treeViewMixModel.invisibleRootItem()
-
         row = ''
         if sql_result:
             for row in sql_result:
                 sql_data.append([str(row[x]) for x in row.keys()])
-            header = row.keys()
 
-            for list_item in sql_data:
-                list_qstandard_item = []
-                for idx, result in enumerate(list_item):
-                    item = QtGui.QStandardItem(result)
-                    item.setEditable(False)
-                    list_qstandard_item.append(item)
-                    self.treeViewMixModel.setHeaderData(idx, Qt.Horizontal, header[idx])
-
-                self.rootNode.appendRow(list_qstandard_item)
-
-        self.treeViewMix.header().resizeSections(QtWidgets.QHeaderView.ResizeToContents)
+            self.TreeViewMixDataFrame = pd.DataFrame(sql_data, columns=self.TreeViewMixHeader)
+            self.treeViewMix.model.update(self.TreeViewMixDataFrame)
 
     def tableviewtracks_load_data(self, mix_name):
         sql_data = []
@@ -353,7 +491,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
-        playlist_id = self.treeViewMix.model().data(index, Qt.DisplayRole)
+        playlist_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
         self.tableviewtracks_load_data(playlist_id)
         print('playlist_id:', playlist_id)
 
@@ -363,11 +501,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print(self.TableViewReleases.model.data(self.TableViewReleases.model.index(index.row(), 3)))
 
     def treeviewmix_pushbutton_del_mix(self, index):
-        playlist_id = self.treeViewMix.model().data(self.treeViewMix.selectedIndexes()[0])
+        playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
         row_id = self.treeViewMix.selectionModel().currentIndex().row()
-
         try:
-            self.treeViewMix.model().removeRow(row_id)
+            self.treeViewMix.model.removeRow(row_id)
+
             playlist = Mix(False, playlist_id, self.conf.discobase)
             playlist.delete()
             log.info("GUI: Deleted Mix %s, from list and removed rowid %d from treeview", playlist_id, row_id)
@@ -379,7 +517,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         playlist_venue = self.lineEditAddMixVenue.text()
         playlist_date = self.lineEditAddMixDate.text()
         if playlist_name != '':
-            print(playlist_name)
             playlist = Mix(False, 'all', self.conf.discobase)
             playlist.create(playlist_date, playlist_venue, playlist_name)
             # self.lineEditAddPlaylistName.setText('')
