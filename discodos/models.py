@@ -300,14 +300,19 @@ class Mix (Database):
         """
         # we want to select * but in a different order:
         log.info("MODEL: Getting mixes table.")
-        mixes_data = self._select_simple(['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
-                'mix', condition=False, orderby=order_by)
+        mixes_data = self._select_simple(
+            ['mix_id', 'name', 'played', 'venue', 'created', 'updated'],
+            'mix', condition=False, orderby=order_by
+        )
         return mixes_data
 
     def get_one_mix_track(self, track_id):
-        log.info("MODEL: Returning track {} from mix {}.".format(track_id, self.id))
-        _where = 'mix_track.mix_id == {} AND mix_track.track_pos == {}'.format(self.id,
-            track_id)
+        log.info("MODEL: Returning track {} from mix {}.".format(
+            track_id, self.id)
+        )
+        _where = 'mix_track.mix_id == {} AND mix_track.track_pos == {}'.format(
+            self.id, track_id
+        )
         _join = '''mix_track INNER JOIN mix
                                 ON mix.mix_id = mix_track.mix_id
                                   INNER JOIN release
@@ -318,10 +323,13 @@ class Mix (Database):
                                       LEFT OUTER JOIN track_ext
                                       ON mix_track.d_release_id = track_ext.d_release_id
                                       AND mix_track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track_pos', 'discogs_title', 'd_track_name',
-          'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key', 'key_notes',
-          'bpm', 'notes', 'mix_track_id', 'mix_track.d_release_id', 'm_rec_id_override'],
-          _join, fetchone=True, condition=_where)
+        return self._select_simple(
+            ['track_pos', 'discogs_title', 'd_track_name',
+             'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key',
+             'key_notes', 'bpm', 'notes', 'mix_track_id',
+             'mix_track.d_release_id', 'm_rec_id_override'],
+            _join, fetchone=True, condition=_where
+        )
 
     def update_mix_track_and_track_ext(self, track_details, edit_answers):
         log.info(
