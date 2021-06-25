@@ -336,7 +336,10 @@ class Mix (Database):
             "MODEL: Updating mix_track and track_ext entries (if necessary).")
         log.debug("MODEL: track_details dict: {}".format(track_details))
         log.debug("MODEL: edit_answers dict: {}".format(edit_answers))
-        mix_track_cols=['d_release_id', 'd_track_no', 'track_pos', 'trans_rating', 'trans_notes']
+        mix_track_cols=[
+            'd_release_id', 'd_track_no', 'track_pos', 'trans_rating',
+            'trans_notes'
+        ]
         track_ext_cols=['key', 'bpm', 'key_notes', 'notes', 'm_rec_id_override']
         values_mix_track = ''  # mix_track update
         values_list_mix_track = []
@@ -364,24 +367,28 @@ class Mix (Database):
                     all_after_dest_pos = self.get_tracks_from_position(
                         edit_answers['track_pos'])
                     # shift all those tracks "down" +1
-                    self.reorder_tracks_squeeze_in(edit_answers['track_pos'],
-                          all_after_dest_pos)
+                    self.reorder_tracks_squeeze_in(
+                        edit_answers['track_pos'],
+                        all_after_dest_pos
+                    )
                 # when moving the track "down"
                 elif move_to > track_details['track_pos']:
                     # we set dest pos to be one further down to really be the
                     # chosen destination after reorder_pos (see below db update)
                     edit_answers['track_pos'] = move_to + 1
                     all_after_dest_pos = self.get_tracks_from_position(
-                          edit_answers['track_pos'])
+                        edit_answers['track_pos'])
                     # shift all those tracks "down" +1
-                    self.reorder_tracks_squeeze_in(edit_answers['track_pos'],
-                          all_after_dest_pos)
+                    self.reorder_tracks_squeeze_in(
+                        edit_answers['track_pos'],
+                        all_after_dest_pos)
                 # no else: nothing to do if track_pos stays the same
                 # FIXME somehow we should user inform like this:
                 # this track will be put in after/bevore track "name" ok?
 
             update_mix_track = 'UPDATE mix_track SET '
-            where_mix_track = 'WHERE mix_track_id == {}'.format(track_details['mix_track_id'])
+            where_mix_track = 'WHERE mix_track_id == {}'.format(
+                track_details['mix_track_id'])
             for key, answer in edit_answers.items():
                 log.debug('key: {}, value: {}'.format(key, answer))
                 if key in mix_track_cols:
@@ -409,7 +416,7 @@ class Mix (Database):
             update_track_ext = 'UPDATE track_ext SET '
             insert_track_ext = 'INSERT INTO track_ext'
             where_track_ext = 'WHERE d_release_id == {} AND d_track_no == \"{}\"'.format(
-                                track_details['d_release_id'], track_details['d_track_no'])
+                track_details['d_release_id'], track_details['d_track_no'])
             for key, answer in edit_answers.items():
                 log.debug('key: {}, value: {}'.format(key, answer))
                 if key in track_ext_cols:
@@ -429,7 +436,7 @@ class Mix (Database):
 
             final_update_track_ext = update_track_ext + values_track_ext + where_track_ext
             final_insert_track_ext = "{} ({}, d_release_id, d_track_no) VALUES ({}, ?, ?)".format(
-                    insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
+                insert_track_ext, cols_insert_track_ext, values_insert_track_ext)
 
             # debug
             # log.info('MODEL: {}'.format(final_update_track_ext))
@@ -445,11 +452,17 @@ class Mix (Database):
             # log.info(values_list_track_ext)
             # log.info(tuple(values_list_track_ext))
 
-            dbret = self.execute_sql(final_update_track_ext, tuple(values_list_track_ext))
+            dbret = self.execute_sql(
+                final_update_track_ext,
+                tuple(values_list_track_ext)
+            )
             if dbret == 0:  # checks rowcount
-                log.info("MODEL: UPDATE didn't change anything, trying INSERT...")
-                dbret = self.execute_sql(final_insert_track_ext,
-                    tuple(values_insert_list_track_ext))
+                log.info("MODEL: UPDATE didn't change anything, "
+                         "trying INSERT...")
+                dbret = self.execute_sql(
+                    final_insert_track_ext,
+                    tuple(values_insert_list_track_ext)
+                )
             updated_track_ext = dbret
 
         # finally update mix table with current timestamp (only if changed)
