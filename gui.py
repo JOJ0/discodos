@@ -468,7 +468,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         row = ''
         if sql_result:
             for row in sql_result:
-                sql_data.append([ str(row[x]) for x in row.keys()])
+                sql_data.append([str(row[x]) for x in row.keys()])
             # header = row.keys()
 
         self.TableViewTracksDataFrame = pd.DataFrame(sql_data, columns=self.TableViewTracksHeader)
