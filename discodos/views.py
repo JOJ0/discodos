@@ -328,9 +328,10 @@ class Mix_view_common(ABC):
             'mix_id': '#', 'name': 'Name', 'played': 'Played',
             'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
         }
-        self.headers_dict_mixinfo = [
-            "Mix", "Name", "Created", "Updated", "Played", "Venue"
-        ]
+        self.headers_dict_mixinfo = {
+            'mix_id': 'Mix', 'name': 'Name', 'created': 'Created', 'updated':
+            'Updated', 'played': 'Played', 'venue': 'Venue'
+        }
         self.headers_dict_mixtracks_all = {
             'track_pos': '#', 'discogs_title': 'Release',
             'd_artist': 'Track Artist', 'd_track_name': 'Track Name',
@@ -338,7 +339,7 @@ class Mix_view_common(ABC):
             'key_notes': 'Key Notes', 'trans_rating': 'Transition Rating',
             'trans_notes': 'Transition Notes', 'notes': 'Track Notes'
         }
-        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks
+        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all
         self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
         self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
         self.headers_dict_mixtracks_all_short['d_track_no'] = 'Trk\nNo'
@@ -351,7 +352,7 @@ class Mix_view_common(ABC):
             'track_pos': '#', 'discogs_title': 'Release', 'd_artist':
             'Track Artist', 'd_track_name': 'Track Name', 'd_track_no':
             'Trk No', 'key': 'Key', 'bpm': 'BPM', 'd_catno': 'Discogs CatNo',
-            'methods': 'Rel match via Rec match via', 'times': 'Matched on',
+            'methods': 'Release/Recording match via', 'times': 'Matched on',
             'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
         }
         self.headers_dict_mixtracks_brainz_short = self.headers_dict_mixtracks_brainz
@@ -361,6 +362,16 @@ class Mix_view_common(ABC):
         self.headers_dict_mixtracks_brainz_short['d_catno'] = 'Discogs\nCatNo'
         self.headers_dict_mixtracks_brainz_short['methods'] = 'Rel match via\nRec match via'
         self.headers_dict_mixtracks_brainz_short['times'] = 'Matched\non'
+
+        self.headers_dict_mixtracks_basic = {
+            'track_pos': '#', 'd_catno': 'Discogs CatNo', 'discogs_title': 'Release',
+            'd_track_no': 'Trk No', 'trans_rating': 'Transition Rating',
+            'key': 'Key', 'bpm': 'BPM'
+        }
+        self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic
+        self.headers_dict_mixtracks_basic_short['d_catno'] = 'CatNo'
+        self.headers_dict_mixtracks_basic_short['d_track_no'] = 'Trk\nNo'
+        self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
 
     @property
     def headers_list_mixes(self):
@@ -385,6 +396,14 @@ class Mix_view_common(ABC):
     @property
     def headers_list_mixtracks_brainz_short(self):
         return [val for val in self.headers_dict_mixtracks_brainz_short.values()]
+
+    @property
+    def headers_list_mixtracks_basic(self):
+        return [val for val in self.headers_dict_mixtracks_basic.values()]
+
+    @property
+    def headers_list_mixtracks_basic_short(self):
+        return [val for val in self.headers_dict_mixtracks_basic_short.values()]
 
 
 # Collection view utils, usable in CLI and GUI, related to Collection only
@@ -441,11 +460,11 @@ class View_common_cli(View_common):
                 headers=self.headers_dict_mixtracks_brainz_short
             ))
         else:
-            self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
-                'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
-                'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
-                'key': 'Key', 'bpm': 'BPM'
-            }))
+            self.p(tab(
+                _mix_data_nl,
+                tablefmt='pipe',
+                headers=self.headers_dict_mixtracks_basic_short
+            ))
 
     def duration_stats(self, start_time, msg):
         took_seconds = time() - start_time
