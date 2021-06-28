@@ -261,9 +261,33 @@ class View_common(ABC):
 
 # Mix view utils and data, usable in CLI and GUI, related to mixes only
 class Mix_view_common(ABC):
+    ''' Provides informationl constants used for viewing Mixes.
+
+    Contains dicts with information and often the same information translatet
+    into a list as well (using a @property). Different parts require different
+    data formats.  Potentially the contents of this class is ment to be used in
+    both CLI and GUI but some of them are rather used in one or the
+    other.
+
+    self._edit_track_questions:
+      List of questions a user is asked when editing a mix-track. First list
+      item is the related db-field, second is the question. Used in CLI.
+    self._edit_mix_questions:
+      List of questions a user is asked when editing a mixes info. Used in
+      CLI.
+    self.headers_dict_mixes:
+      Dictionary containing SQL table fields translated to human readable
+      column names. Used for tabulate CLI tables.
+    self.headers_list_mixes:
+      Plain list derived from corresponding dict. Used for GUI column headers.
+    self.headers_dict_mixinfo:
+      Dictionary containing SQL table fields translated to human readable
+      column names. Currently unused.
+    self.headers_list_mixinfo:
+      Plain list derived from corresponding dict. Used in the header line when
+      viewing the tracklist of a mix on CLI.
+    '''
     def __init__(self):
-        # list of questions a user is asked when editing a mix-track
-        # first list item is the related db-field, second is the question
         self._edit_track_questions = [
             ["key", "Key ({}): "],
             ["bpm", "BPM ({}): "],
@@ -276,20 +300,27 @@ class Mix_view_common(ABC):
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
 
-        # list of questions a user is asked when editing a mixes info
         self._edit_mix_questions = [
             ["name", "Name ({}): "],
             ["played", "Played ({}): "],
             ["venue", "Venue ({}): "]
         ]
-        self.headers_dict = {
+
+        self.headers_dict_mixes = {
             'mix_id': '#', 'name': 'Name', 'played': 'Played',
             'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
         }
+        self.headers_dict_mixinfo = [
+            "Mix", "Name", "Created", "Updated", "Played", "Venue"
+        ]
 
     @property
-    def headers_list(self):
-        return [val for val in self.headers_dict.values()]
+    def headers_list_mixes(self):
+        return [val for val in self.headers_dict_mixes.values()]
+
+    @property
+    def headers_list_mixinfo(self):
+        return [val for val in self.headers_dict_mixinfo.values()]
 
 
 # Collection view utils, usable in CLI and GUI, related to Collection only
@@ -571,14 +602,16 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         tabulated = tab(
             self.trim_table_fields(mixes),
             tablefmt="simple",
-            headers=self.headers_dict  # when data is dict, headers must be too
+            headers=self.headers_dict_mixes  # data is dict, headers must be too
         )
         self.p(tabulated)
 
     def tab_mix_info_header(self, mix_info):
-        self.p(tab([mix_info], tablefmt="plain", headers=[
-            "Mix", "Name", "Created", "Updated", "Played", "Venue"
-        ]))
+        self.p(tab(
+            [mix_info],
+            tablefmt="plain",
+            headers=self.headers_list_mixinfo
+        ))
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
         _answ = self.ask(
