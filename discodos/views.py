@@ -289,7 +289,7 @@ class Mix_view_common(ABC):
 
     @property
     def headers_list(self):
-        return [val for key, val in self.headers_dict.items()]
+        return [val for val in self.headers_dict.values()]
 
 
 # Collection view utils, usable in CLI and GUI, related to Collection only
