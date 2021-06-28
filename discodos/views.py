@@ -265,28 +265,48 @@ class Mix_view_common(ABC):
 
     Contains dicts with information and often the same information translatet
     into a list as well (using a @property). Different parts require different
-    data formats.  Potentially the contents of this class is ment to be used in
+    data formats. Potentially the contents of this class is ment to be used in
     both CLI and GUI but some of them are rather used in one or the
-    other.
+    other. Keeping all of them in this parent class (and not in CLI/GUI specific
+    child classes) should add to readability.
 
     self._edit_track_questions:
-      List of questions a user is asked when editing a mix-track. First list
-      item is the related db-field, second is the question. Used in CLI.
+        List of questions a user is asked when editing a mix-track. First list
+        item is the related db-field, second is the question. Used in CLI.
     self._edit_mix_questions:
-      List of questions a user is asked when editing a mixes info. Used in
-      CLI.
+        List of questions a user is asked when editing a mixes info. Used in
+        CLI.
     self.headers_dict_mixes:
-      Dictionary containing SQL table fields translated to human readable
-      column names. Used for tabulate CLI tables.
-    self.headers_list_mixes:
-      Plain list derived from corresponding dict. Used for GUI column headers.
+        Dictionary containing SQL table fields translated to human readable
+        column names. Used for tabulate CLI tables.
     self.headers_dict_mixinfo:
-      Dictionary containing SQL table fields translated to human readable
-      column names. Currently unused.
-    self.headers_list_mixinfo:
-      Plain list derived from corresponding dict. Used in the header line when
-      viewing the tracklist of a mix on CLI.
+        Dictionary containing SQL table fields translated to human readable
+        column names. Currently unused.
+    self.headers_dict_mixtracks_all:
+        Dictionary containing SQL table fields translated to human readable
+        column names.
+    self.headers_dict_mixtracks_all_short:
+        Same as headers_dict_mixtracks_all but some column's width is shortened
+        by using abbreviations and linebreaks. Used in CLI (verbose mode: -v).
+    self.headers_dict_mixtracks_brainz:
+        Dictionary containing SQL table fields translated to human readable
+        column names.
+    self.headers_dict_mixtracks_brainz_short:
+      Shortened version of ..mixtracks_brainz.
+
+
+    Plain lists derived from dictionaries:
+
+    self.headers_list_mixes: Used for GUI column headers.
+    self.headers_list_mixtracks_brainz_short:
+    self.headers_list_mixinfo: Used in the header line when viewing the
+       tracklist of a mix on CLI.
+    self.headers_list_mixtracks_all:
+    self.headers_list_mixtracks_all_short:
+    self.headers_list_mixtracks_brainz:
+    self.headers_list_mixtracks_brainz_short: Used in *Brainz view on CLI (-vv).
     '''
+
     def __init__(self):
         self._edit_track_questions = [
             ["key", "Key ({}): "],
@@ -299,13 +319,11 @@ class Mix_view_common(ABC):
             ["notes", "Other track notes: ({}): "],
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
-
         self._edit_mix_questions = [
             ["name", "Name ({}): "],
             ["played", "Played ({}): "],
             ["venue", "Venue ({}): "]
         ]
-
         self.headers_dict_mixes = {
             'mix_id': '#', 'name': 'Name', 'played': 'Played',
             'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
@@ -313,6 +331,36 @@ class Mix_view_common(ABC):
         self.headers_dict_mixinfo = [
             "Mix", "Name", "Created", "Updated", "Played", "Venue"
         ]
+        self.headers_dict_mixtracks_all = {
+            'track_pos': '#', 'discogs_title': 'Release',
+            'd_artist': 'Track Artist', 'd_track_name': 'Track Name',
+            'd_track_no': 'Trk No', 'key': 'Key', 'bpm': 'BPM',
+            'key_notes': 'Key Notes', 'trans_rating': 'Transition Rating',
+            'trans_notes': 'Transition Notes', 'notes': 'Track Notes'
+        }
+        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks
+        self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
+        self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
+        self.headers_dict_mixtracks_all_short['d_track_no'] = 'Trk\nNo'
+        self.headers_dict_mixtracks_all_short['key_notes'] = 'Key\nNotes'
+        self.headers_dict_mixtracks_all_short['trans_rating'] = 'Trans.\nRating'
+        self.headers_dict_mixtracks_all_short['trans_notes'] = 'Trans.\nNotes'
+        self.headers_dict_mixtracks_all_short['notes'] = 'Track\nNotes'
+
+        self.headers_dict_mixtracks_brainz = {
+            'track_pos': '#', 'discogs_title': 'Release', 'd_artist':
+            'Track Artist', 'd_track_name': 'Track Name', 'd_track_no':
+            'Trk No', 'key': 'Key', 'bpm': 'BPM', 'd_catno': 'Discogs CatNo',
+            'methods': 'Rel match via Rec match via', 'times': 'Matched on',
+            'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
+        }
+        self.headers_dict_mixtracks_brainz_short = self.headers_dict_mixtracks_brainz
+        self.headers_dict_mixtracks_brainz_short['d_artist'] = 'Track\nArtist'
+        self.headers_dict_mixtracks_brainz_short['d_track_name'] = 'Track\nName'
+        self.headers_dict_mixtracks_brainz_short['d_track_no'] = 'Trk\nNo'
+        self.headers_dict_mixtracks_brainz_short['d_catno'] = 'Discogs\nCatNo'
+        self.headers_dict_mixtracks_brainz_short['methods'] = 'Rel match via\nRec match via'
+        self.headers_dict_mixtracks_brainz_short['times'] = 'Matched\non'
 
     @property
     def headers_list_mixes(self):
@@ -321,6 +369,22 @@ class Mix_view_common(ABC):
     @property
     def headers_list_mixinfo(self):
         return [val for val in self.headers_dict_mixinfo.values()]
+
+    @property
+    def headers_list_mixtracks_all(self):
+        return [val for val in self.headers_dict_mixtracks_all.values()]
+
+    @property
+    def headers_list_mixtracks_all_short(self):
+        return [val for val in self.headers_dict_mixtracks_all_short.values()]
+
+    @property
+    def headers_list_mixtracks_brainz(self):
+        return [val for val in self.headers_dict_mixtracks_brainz.values()]
+
+    @property
+    def headers_list_mixtracks_brainz_short(self):
+        return [val for val in self.headers_dict_mixtracks_brainz_short.values()]
 
 
 # Collection view utils, usable in CLI and GUI, related to Collection only
@@ -360,28 +424,22 @@ class View_common_cli(View_common):
         #    log.debug(str(row))
         # log.debug("")
         if _verbose:
-            self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
-                'track_pos': '#', 'discogs_title': 'Release',
-                'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-                'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
-                'trans_notes': 'Trans.\nNotes', 'notes': 'Track\nNotes'
-            }))
+            self.p(tab(
+                _mix_data_nl,
+                tablefmt='pipe',
+                headers=self.headers_dict_mixtracks_all_short
+            ))
         elif brainz:
             _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
             _mix_data_brainz_nl = self.trim_table_fields(
                 _mix_data_brainz,
                 exclude=['methods']
             )
-            self.p(tab(_mix_data_brainz_nl, tablefmt='grid', headers={
-                'track_pos': '#', 'discogs_title': 'Release',
-                'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-                'd_catno': 'Discogs\nCatNo',
-                'methods': 'Rel match via\nRec match via',
-                'times': 'Matched\non',
-                'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
-            }))
+            self.p(tab(
+                _mix_data_brainz_nl,
+                tablefmt='grid',
+                headers=self.headers_dict_mixtracks_brainz_short
+            ))
         else:
             self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
                 'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
