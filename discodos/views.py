@@ -263,48 +263,49 @@ class View_common(ABC):
 class Mix_view_common(ABC):
     ''' Provides informationl constants used for viewing Mixes.
 
-    Contains dicts with information and often the same information translatet
-    into a list as well (using a @property). Different parts require different
-    data formats. Potentially the contents of this class is ment to be used in
-    both CLI and GUI but some of them are rather used in one or the
-    other. Keeping all of them in this parent class (and not in CLI/GUI specific
-    child classes) should add to readability.
+    Contains dicts and lists with information. Different parts require
+    different data formats, thus each dict is translated into a list as well.
+    Potentially the contents of this class is used in both CLI and GUI but some
+    of them are rather used in one or the other. Keeping all of them in this
+    parent class (and not in CLI/GUI specific child classes) should add to
+    readability. For consistencies sake all headers dict are available in full
+    length an abbreviated form (used in CLI mostly) and lists as well, even if
+    one or the other is not used.
 
-    self._edit_track_questions:
-        List of questions a user is asked when editing a mix-track. First list
-        item is the related db-field, second is the question. Used in CLI.
-    self._edit_mix_questions:
-        List of questions a user is asked when editing a mixes info. Used in
-        CLI.
+    Lists of questions. Used in CLI:
+        self._edit_track_questions: when editing a mix-track.
+        self._edit_mix_questions: when editing a mixes info.
+
+    Dictionaries containing SQL table fields translated to human readable
+    column names. Mostly used for tabulate CLI tables:
+
     self.headers_dict_mixes:
-        Dictionary containing SQL table fields translated to human readable
-        column names. Used for tabulate CLI tables.
+        Used in mixes overview.
     self.headers_dict_mixinfo:
-        Dictionary containing SQL table fields translated to human readable
-        column names. Currently unused.
     self.headers_dict_mixtracks_all:
-        Dictionary containing SQL table fields translated to human readable
-        column names.
     self.headers_dict_mixtracks_all_short:
         Same as headers_dict_mixtracks_all but some column's width is shortened
-        by using abbreviations and linebreaks. Used in CLI (verbose mode: -v).
+        by using abbreviations and linebreaks. Used in mix-tracks view (verbose
+        mode: -v).
     self.headers_dict_mixtracks_brainz:
-        Dictionary containing SQL table fields translated to human readable
-        column names.
     self.headers_dict_mixtracks_brainz_short:
-      Shortened version of ..mixtracks_brainz.
+        Shortened version of above. Used in mix-tracks view (*Brainz mode -vv).
+    self.headers_dict_mixtracks_basic:
+    self.headers_dict_mixtracks_basic_short:
+        Shortened version of above. Used in mix-tracks view (basic mode)
 
+    Plain lists derived from headers dictionaries. Mostly used in GUI:
 
-    Plain lists derived from dictionaries:
-
-    self.headers_list_mixes: Used for GUI column headers.
+    self.headers_list_mixes:
     self.headers_list_mixtracks_brainz_short:
-    self.headers_list_mixinfo: Used in the header line when viewing the
-       tracklist of a mix on CLI.
+    self.headers_list_mixinfo:
+        Used in the header line of mix-tracks view on CLI (all modes).
     self.headers_list_mixtracks_all:
     self.headers_list_mixtracks_all_short:
     self.headers_list_mixtracks_brainz:
-    self.headers_list_mixtracks_brainz_short: Used in *Brainz view on CLI (-vv).
+    self.headers_list_mixtracks_brainz_short:
+    self.headers_list_mixtracks_basic:
+    self.headers_list_mixtracks_basic_short:
     '''
 
     def __init__(self):
