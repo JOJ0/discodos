@@ -1,5 +1,4 @@
 from discodos.utils import is_number, join_sep
-from abc import ABC  # , abstractmethod
 import logging
 from tabulate import tabulate as tab
 #  import pprint
@@ -11,8 +10,9 @@ from datetime import timedelta
 log = logging.getLogger('discodos')
 
 
-# common view utils, usable in CLI and GUI
-class View_common(ABC):
+class View_common():
+    """ Common view utils, usable in CLI and GUI
+    """
     def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         try:
@@ -259,9 +259,8 @@ class View_common(ABC):
         return fmt.format(**d)
 
 
-# Mix view utils and data, usable in CLI and GUI, related to mixes only
-class Mix_view_common(ABC):
-    ''' Provides informationl constants used for viewing Mixes.
+class Mix_view_common():
+    ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
 
     Contains dicts and lists with information. Different parts require
     different data formats, thus each dict is translated into a list as well.
@@ -309,6 +308,7 @@ class Mix_view_common(ABC):
     '''
 
     def __init__(self):
+        super().__init__()
         self._edit_track_questions = [
             ["key", "Key ({}): "],
             ["bpm", "BPM ({}): "],
@@ -407,12 +407,13 @@ class Mix_view_common(ABC):
         return [val for val in self.headers_dict_mixtracks_basic_short.values()]
 
 
-# Collection view utils, usable in CLI and GUI, related to Collection only
-class Collection_view_common(ABC):
+class Collection_view_common():
+    """Collection view utils, usable in CLI and GUI, related to Collection only
+    """
     def __init__(self):
-        # super(Collection_view_cli, self).__init__()
-        # list of questions a user is asked when searching and editing track
-        # first list item is the related db-field, second is the question
+        super().__init__()
+        # List of questions a user is asked when searching and editing a track.
+        # First list item is the related db-field, second is the question
         self._edit_track_questions = [
             ["key", "Key ({}): "],
             ["bpm", "BPM ({}): "],
@@ -422,8 +423,10 @@ class Collection_view_common(ABC):
         ]
 
 
-# common view utils, usable in CLI only
 class View_common_cli(View_common):
+    """ Common view utils, usable in CLI only.
+    """
+
     def p(self, message):
         print('' + str(message) + '\n')
 
@@ -656,8 +659,9 @@ Welcome to  D i s c o  /                /        /
               ''')
 
 
-# viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
+    """ Viewing mixes outputs on CLI.
+    """
     def __init__(self):
         super(Mix_view_cli, self).__init__()
 
@@ -717,8 +721,9 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         return False
 
 
-# viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
+    """ Viewing collection (search) outputs on CLI.
+    """
     def __init__(self):
         super(Collection_view_cli, self).__init__()
 
@@ -850,9 +855,11 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         print(msg_proc)
 
 
-# CLI user interaction class - holds info about what user wants to do
-# analyzes argparser args and puts it to nicely human readable properties
 class User_int(object):
+    """ CLI user interaction class - holds info about what user wants to do,
+
+    analyzes argparser args and puts it into nicely human readable properties.
+    """
     def __init__(self, _args):
         self.args = _args
         self.WANTS_ONLINE = True
