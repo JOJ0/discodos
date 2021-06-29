@@ -1,5 +1,4 @@
 from discodos.utils import is_number, join_sep
-from abc import ABC  # , abstractmethod
 import logging
 from tabulate import tabulate as tab
 #  import pprint
@@ -11,8 +10,9 @@ from datetime import timedelta
 log = logging.getLogger('discodos')
 
 
-# common view utils, usable in CLI and GUI
-class View_common(ABC):
+class View_common():
+    """ Common view utils, usable in CLI and GUI
+    """
     def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         try:
@@ -259,11 +259,56 @@ class View_common(ABC):
         return fmt.format(**d)
 
 
-# Mix view utils and data, usable in CLI and GUI, related to mixes only
-class Mix_view_common(ABC):
+class Mix_view_common():
+    ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
+
+    Contains dicts and lists with information. Different parts require
+    different data formats, thus each dict is translated into a list as well.
+    Potentially the contents of this class is used in both CLI and GUI but some
+    of them are rather used in one or the other. Keeping all of them in this
+    parent class (and not in CLI/GUI specific child classes) should add to
+    readability. For consistencies sake all headers dict are available in full
+    length an abbreviated form (used in CLI mostly) and lists as well, even if
+    one or the other is not used.
+
+    Lists of questions. Used in CLI:
+        self._edit_track_questions: when editing a mix-track.
+        self._edit_mix_questions: when editing a mixes info.
+
+    Dictionaries containing SQL table fields translated to human readable
+    column names. Mostly used for tabulate CLI tables:
+
+    self.headers_dict_mixes:
+        Used in mixes overview.
+    self.headers_dict_mixinfo:
+    self.headers_dict_mixtracks_all:
+    self.headers_dict_mixtracks_all_short:
+        Same as headers_dict_mixtracks_all but some column's width is shortened
+        by using abbreviations and linebreaks. Used in mix-tracks view (verbose
+        mode: -v).
+    self.headers_dict_mixtracks_brainz:
+    self.headers_dict_mixtracks_brainz_short:
+        Shortened version of above. Used in mix-tracks view (*Brainz mode -vv).
+    self.headers_dict_mixtracks_basic:
+    self.headers_dict_mixtracks_basic_short:
+        Shortened version of above. Used in mix-tracks view (basic mode)
+
+    Plain lists derived from headers dictionaries. Mostly used in GUI:
+
+    self.headers_list_mixes:
+    self.headers_list_mixtracks_brainz_short:
+    self.headers_list_mixinfo:
+        Used in the header line of mix-tracks view on CLI (all modes).
+    self.headers_list_mixtracks_all:
+    self.headers_list_mixtracks_all_short:
+    self.headers_list_mixtracks_brainz:
+    self.headers_list_mixtracks_brainz_short:
+    self.headers_list_mixtracks_basic:
+    self.headers_list_mixtracks_basic_short:
+    '''
+
     def __init__(self):
-        # list of questions a user is asked when editing a mix-track
-        # first list item is the related db-field, second is the question
+        super().__init__()
         self._edit_track_questions = [
             ["key", "Key ({}): "],
             ["bpm", "BPM ({}): "],
@@ -275,21 +320,100 @@ class Mix_view_common(ABC):
             ["notes", "Other track notes: ({}): "],
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
-
-        # list of questions a user is asked when editing a mixes info
         self._edit_mix_questions = [
             ["name", "Name ({}): "],
             ["played", "Played ({}): "],
             ["venue", "Venue ({}): "]
         ]
+        self.headers_dict_mixes = {
+            'mix_id': '#', 'name': 'Name', 'played': 'Played',
+            'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
+        }
+        self.headers_dict_mixinfo = {
+            'mix_id': 'Mix', 'name': 'Name', 'created': 'Created', 'updated':
+            'Updated', 'played': 'Played', 'venue': 'Venue'
+        }
+        self.headers_dict_mixtracks_all = {
+            'track_pos': '#', 'discogs_title': 'Release',
+            'd_artist': 'Track Artist', 'd_track_name': 'Track Name',
+            'd_track_no': 'Trk No', 'key': 'Key', 'bpm': 'BPM',
+            'key_notes': 'Key Notes', 'trans_rating': 'Transition Rating',
+            'trans_notes': 'Transition Notes', 'notes': 'Track Notes'
+        }
+        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all
+        self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
+        self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
+        self.headers_dict_mixtracks_all_short['d_track_no'] = 'Trk\nNo'
+        self.headers_dict_mixtracks_all_short['key_notes'] = 'Key\nNotes'
+        self.headers_dict_mixtracks_all_short['trans_rating'] = 'Trans.\nRating'
+        self.headers_dict_mixtracks_all_short['trans_notes'] = 'Trans.\nNotes'
+        self.headers_dict_mixtracks_all_short['notes'] = 'Track\nNotes'
+
+        self.headers_dict_mixtracks_brainz = {
+            'track_pos': '#', 'discogs_title': 'Release', 'd_artist':
+            'Track Artist', 'd_track_name': 'Track Name', 'd_track_no':
+            'Trk No', 'key': 'Key', 'bpm': 'BPM', 'd_catno': 'Discogs CatNo',
+            'methods': 'Release/Recording match via', 'times': 'Matched on',
+            'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
+        }
+        self.headers_dict_mixtracks_brainz_short = self.headers_dict_mixtracks_brainz
+        self.headers_dict_mixtracks_brainz_short['d_artist'] = 'Track\nArtist'
+        self.headers_dict_mixtracks_brainz_short['d_track_name'] = 'Track\nName'
+        self.headers_dict_mixtracks_brainz_short['d_track_no'] = 'Trk\nNo'
+        self.headers_dict_mixtracks_brainz_short['d_catno'] = 'Discogs\nCatNo'
+        self.headers_dict_mixtracks_brainz_short['methods'] = 'Rel match via\nRec match via'
+        self.headers_dict_mixtracks_brainz_short['times'] = 'Matched\non'
+
+        self.headers_dict_mixtracks_basic = {
+            'track_pos': '#', 'd_catno': 'Discogs CatNo', 'discogs_title': 'Release',
+            'd_track_no': 'Trk No', 'trans_rating': 'Transition Rating',
+            'key': 'Key', 'bpm': 'BPM'
+        }
+        self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic
+        self.headers_dict_mixtracks_basic_short['d_catno'] = 'CatNo'
+        self.headers_dict_mixtracks_basic_short['d_track_no'] = 'Trk\nNo'
+        self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
+
+    @property
+    def headers_list_mixes(self):
+        return [val for val in self.headers_dict_mixes.values()]
+
+    @property
+    def headers_list_mixinfo(self):
+        return [val for val in self.headers_dict_mixinfo.values()]
+
+    @property
+    def headers_list_mixtracks_all(self):
+        return [val for val in self.headers_dict_mixtracks_all.values()]
+
+    @property
+    def headers_list_mixtracks_all_short(self):
+        return [val for val in self.headers_dict_mixtracks_all_short.values()]
+
+    @property
+    def headers_list_mixtracks_brainz(self):
+        return [val for val in self.headers_dict_mixtracks_brainz.values()]
+
+    @property
+    def headers_list_mixtracks_brainz_short(self):
+        return [val for val in self.headers_dict_mixtracks_brainz_short.values()]
+
+    @property
+    def headers_list_mixtracks_basic(self):
+        return [val for val in self.headers_dict_mixtracks_basic.values()]
+
+    @property
+    def headers_list_mixtracks_basic_short(self):
+        return [val for val in self.headers_dict_mixtracks_basic_short.values()]
 
 
-# Collection view utils, usable in CLI and GUI, related to Collection only
-class Collection_view_common(ABC):
+class Collection_view_common():
+    """Collection view utils, usable in CLI and GUI, related to Collection only
+    """
     def __init__(self):
-        # super(Collection_view_cli, self).__init__()
-        # list of questions a user is asked when searching and editing track
-        # first list item is the related db-field, second is the question
+        super().__init__()
+        # List of questions a user is asked when searching and editing a track.
+        # First list item is the related db-field, second is the question
         self._edit_track_questions = [
             ["key", "Key ({}): "],
             ["bpm", "BPM ({}): "],
@@ -299,8 +423,10 @@ class Collection_view_common(ABC):
         ]
 
 
-# common view utils, usable in CLI only
 class View_common_cli(View_common):
+    """ Common view utils, usable in CLI only.
+    """
+
     def p(self, message):
         print('' + str(message) + '\n')
 
@@ -321,34 +447,28 @@ class View_common_cli(View_common):
         #    log.debug(str(row))
         # log.debug("")
         if _verbose:
-            self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
-                'track_pos': '#', 'discogs_title': 'Release',
-                'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-                'key_notes': 'Key\nNotes', 'trans_rating': 'Trans.\nRating',
-                'trans_notes': 'Trans.\nNotes', 'notes': 'Track\nNotes'
-            }))
+            self.p(tab(
+                _mix_data_nl,
+                tablefmt='pipe',
+                headers=self.headers_dict_mixtracks_all_short
+            ))
         elif brainz:
             _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
             _mix_data_brainz_nl = self.trim_table_fields(
                 _mix_data_brainz,
                 exclude=['methods']
             )
-            self.p(tab(_mix_data_brainz_nl, tablefmt='grid', headers={
-                'track_pos': '#', 'discogs_title': 'Release',
-                'd_artist': 'Track\nArtist', 'd_track_name': 'Track\nName',
-                'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-                'd_catno': 'Discogs\nCatNo',
-                'methods': 'Rel match via\nRec match via',
-                'times': 'Matched\non',
-                'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
-            }))
+            self.p(tab(
+                _mix_data_brainz_nl,
+                tablefmt='grid',
+                headers=self.headers_dict_mixtracks_brainz_short
+            ))
         else:
-            self.p(tab(_mix_data_nl, tablefmt='pipe', headers={
-                'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
-                'd_track_no': 'Trk\nNo', 'trans_rating': 'Trns\nRat',
-                'key': 'Key', 'bpm': 'BPM'
-            }))
+            self.p(tab(
+                _mix_data_nl,
+                tablefmt='pipe',
+                headers=self.headers_dict_mixtracks_basic_short
+            ))
 
     def duration_stats(self, start_time, msg):
         took_seconds = time() - start_time
@@ -539,8 +659,9 @@ Welcome to  D i s c o  /                /        /
               ''')
 
 
-# viewing mixes in CLI mode:
 class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
+    """ Viewing mixes outputs on CLI.
+    """
     def __init__(self):
         super(Mix_view_cli, self).__init__()
 
@@ -561,17 +682,18 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
                 text=True
             )
         tabulated = tab(
-            self.trim_table_fields(mixes), tablefmt="simple",
-            headers={  # when data is dict, headers must be too
-                'mix_id': '#', 'name': 'Name', 'played': 'Played',
-                'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
-            })
+            self.trim_table_fields(mixes),
+            tablefmt="simple",
+            headers=self.headers_dict_mixes  # data is dict, headers must be too
+        )
         self.p(tabulated)
 
     def tab_mix_info_header(self, mix_info):
-        self.p(tab([mix_info], tablefmt="plain", headers=[
-            "Mix", "Name", "Created", "Updated", "Played", "Venue"
-        ]))
+        self.p(tab(
+            [mix_info],
+            tablefmt="plain",
+            headers=self.headers_list_mixinfo
+        ))
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
         _answ = self.ask(
@@ -599,8 +721,9 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         return False
 
 
-# viewing collection (search) outputs in CLI mode:
 class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
+    """ Viewing collection (search) outputs on CLI.
+    """
     def __init__(self):
         super(Collection_view_cli, self).__init__()
 
@@ -732,9 +855,11 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         print(msg_proc)
 
 
-# CLI user interaction class - holds info about what user wants to do
-# analyzes argparser args and puts it to nicely human readable properties
 class User_int(object):
+    """ CLI user interaction class - holds info about what user wants to do,
+
+    analyzes argparser args and puts it into nicely human readable properties.
+    """
     def __init__(self, _args):
         self.args = _args
         self.WANTS_ONLINE = True
