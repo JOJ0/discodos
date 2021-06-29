@@ -340,7 +340,7 @@ class Mix_view_common():
             'key_notes': 'Key Notes', 'trans_rating': 'Transition Rating',
             'trans_notes': 'Transition Notes', 'notes': 'Track Notes'
         }
-        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all
+        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all.copy()
         self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
         self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
         self.headers_dict_mixtracks_all_short['d_track_no'] = 'Trk\nNo'
@@ -356,7 +356,7 @@ class Mix_view_common():
             'methods': 'Release/Recording match via', 'times': 'Matched on',
             'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
         }
-        self.headers_dict_mixtracks_brainz_short = self.headers_dict_mixtracks_brainz
+        self.headers_dict_mixtracks_brainz_short = self.headers_dict_mixtracks_brainz.copy()
         self.headers_dict_mixtracks_brainz_short['d_artist'] = 'Track\nArtist'
         self.headers_dict_mixtracks_brainz_short['d_track_name'] = 'Track\nName'
         self.headers_dict_mixtracks_brainz_short['d_track_no'] = 'Trk\nNo'
@@ -369,7 +369,7 @@ class Mix_view_common():
             'd_track_no': 'Trk No', 'trans_rating': 'Transition Rating',
             'key': 'Key', 'bpm': 'BPM'
         }
-        self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic
+        self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic.copy()
         self.headers_dict_mixtracks_basic_short['d_catno'] = 'CatNo'
         self.headers_dict_mixtracks_basic_short['d_track_no'] = 'Trk\nNo'
         self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
