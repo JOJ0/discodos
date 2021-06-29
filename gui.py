@@ -11,6 +11,7 @@ from discodos.models import Mix, Collection
 from discodos.config import Config
 from discodos.utils import is_number
 from discodos.ctrls import Ctrl_common
+from discodos.views import View_common, Mix_view_common
 
 
 log = logging.getLogger('discodos')
@@ -267,7 +268,8 @@ class GuiTabWidget(QtWidgets.QTabWidget):
         self.addTab(self.TabWidgetSearchTab3, 'Suggest')
 
 
-class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
+                 Ui_MainWindow):
 
     def __init__(self, *args, obj=None, config_obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -301,7 +303,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # create treeview
         # todo need suggestion for data_list
         self.data_list = []
-        self.TreeViewMixHeader = ['mix_id', 'name', 'played', 'venue', 'created', 'updated']
+        self.TreeViewMixHeader = self.headers_list_mixes
         self.TreeViewMixDataFrame = pd.DataFrame(self.data_list, columns=self.TreeViewMixHeader)
         self.treeViewMix = GuiTreeView(self, self.TreeViewMixDataFrame)
         #self.treeViewMixModel = QtGui.QStandardItemModel()
@@ -312,10 +314,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # create tableviewplaylistsongs
         # todo need suggestion for data_list
         self.data_list = []
-        self.TableViewTracksHeader = ['track_pos', 'discogs_title', 'd_artist', 'd_track_name', 'd_track_no', 'key',
-                                      'bpm', 'key_notes', 'trans_rating', 'trans_notes', 'notes', 'a_key',
-                                      'a_chords_key', 'a_bpm']
-        self.TableViewTracksDataFrame = pd.DataFrame(self.data_list, columns=self.TableViewTracksHeader)
+        self.TableViewTracksHeader = self.headers_list_mixtracks_all
+        self.TableViewTracksDataFrame = pd.DataFrame(
+            self.data_list, columns=self.TableViewTracksHeader
+        )
         self.TableViewTracks = GuiTableView(self, self.TableViewTracksDataFrame)
         self.vboxTracks.addWidget(self.TableViewTracks)
 
@@ -467,7 +469,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         row = ''
         if sql_result:
-            for row in sql_result:
+            mix_key_bpm_replaced = self.replace_key_bpm(sql_result)
+            for row in mix_key_bpm_replaced:
                 sql_data.append([str(row[x]) for x in row.keys()])
             # header = row.keys()
 
