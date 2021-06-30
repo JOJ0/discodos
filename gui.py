@@ -458,7 +458,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 
         row = ''
         if sql_result:
-            for row in sql_result:
+            timestamps_shortened = self.shorten_mixes_timestamps(sql_result)
+            for row in timestamps_shortened:
                 sql_data.append([str(row[x]) for x in row.keys()])
 
             self.TreeViewMixDataFrame = pd.DataFrame(sql_data, columns=self.TreeViewMixHeader)
