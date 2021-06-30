@@ -300,31 +300,34 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.vboxTest.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTest.setLayout(self.vboxTest)
 
-        # create treeview
+        # create treeviewmix
         # todo need suggestion for data_list
         self.data_list = []
         self.TreeViewMixHeader = self.headers_list_mixes
-        self.TreeViewMixDataFrame = pd.DataFrame(self.data_list, columns=self.TreeViewMixHeader)
+        self.TreeViewMixDataFrame = pd.DataFrame(
+            self.data_list, columns=self.TreeViewMixHeader)
         self.treeViewMix = GuiTreeView(self, self.TreeViewMixDataFrame)
-        #self.treeViewMixModel = QtGui.QStandardItemModel()
-        #self.treeViewMix.setModel(self.treeViewMixModel)
+        # self.treeViewMixModel = QtGui.QStandardItemModel()
+        # self.treeViewMix.setModel(self.treeViewMixModel)
         self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
         self.vboxMix.addWidget(self.treeViewMix)
 
-        # create tableviewplaylistsongs
+        # create tableviewtracks
         # todo need suggestion for data_list
         self.data_list = []
         self.TableViewTracksHeader = self.headers_list_mixtracks_all
         self.TableViewTracksDataFrame = pd.DataFrame(
-            self.data_list, columns=self.TableViewTracksHeader
-        )
-        self.TableViewTracks = GuiTableView(self, self.TableViewTracksDataFrame)
+            self.data_list, columns=self.TableViewTracksHeader)
+        self.TableViewTracks = GuiTableView(
+            self, self.TableViewTracksDataFrame)
         self.vboxTracks.addWidget(self.TableViewTracks)
 
         # create tableviewreleases
         self.TableViewReleasesHeader = ['d_catno', 'd_artist', 'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override']
-        self.TableViewReleasesDataFrame = pd.DataFrame(self.data_list, columns=self.TableViewReleasesHeader)
-        self.TableViewReleases = GuiTableView(self, self.TableViewReleasesDataFrame)
+        self.TableViewReleasesDataFrame = pd.DataFrame(
+            self.data_list, columns=self.TableViewReleasesHeader)
+        self.TableViewReleases = GuiTableView(
+            self, self.TableViewReleasesDataFrame)
         self.TableViewReleases.clicked.connect(self.tableviewreleases_on_click)
         self.vboxReleases.addWidget(self.TableViewReleases)
 
