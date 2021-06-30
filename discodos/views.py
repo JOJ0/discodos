@@ -404,6 +404,28 @@ class Mix_view_common():
     def headers_list_mixtracks_basic_short(self):
         return [val for val in self.headers_dict_mixtracks_basic_short.values()]
 
+    def shorten_mixes_timestamps(self, mixes):
+        ''' Reformats timestamps in a list of mixes.
+
+        Argument mixes, usually an sqlite tuples list, will be translated into a
+        list of mutable dicts. If it's one already, it's done anyway.
+        '''
+        mixes = [dict(row) for row in mixes]
+        for i, mix in enumerate(mixes):
+            mixes[i]['created'] = self.shorten_timestamp(
+                mix['created'],
+                text=True
+            )
+            mixes[i]['played'] = self.format_date_month(
+                mix['played'],
+                text=True
+            )
+            mixes[i]['updated'] = self.shorten_timestamp(
+                mix['updated'],
+                text=True
+            )
+        return mixes
+
 
 class Collection_view_common():
     """Collection view utils, usable in CLI and GUI, related to Collection only
@@ -664,23 +686,9 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         super(Mix_view_cli, self).__init__()
 
     def tab_mixes_list(self, mixes_data):
-        # make list of dicts out of the sqlite tuples list
-        mixes = [dict(row) for row in mixes_data]
-        for i, mix in enumerate(mixes):  # shorten/format timestamps in this view
-            mixes[i]['created'] = self.shorten_timestamp(
-                mix['created'],
-                text=True
-            )
-            mixes[i]['played'] = self.format_date_month(
-                mix['played'],
-                text=True
-            )
-            mixes[i]['updated'] = self.shorten_timestamp(
-                mix['updated'],
-                text=True
-            )
+        mixes_short_timestamps = self.shorten_mixes_timestamps(mixes_data)
         tabulated = tab(
-            self.trim_table_fields(mixes),
+            self.trim_table_fields(mixes_short_timestamps),
             tablefmt="simple",
             headers=self.headers_dict_mixes  # data is dict, headers must be too
         )
