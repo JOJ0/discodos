@@ -309,6 +309,7 @@ class Mix_view_common():
 
     def __init__(self):
         super().__init__()
+        # Edit questions
         self._edit_track_questions = [
             ["key", "Key ({}): "],
             ["bpm", "BPM ({}): "],
@@ -325,10 +326,12 @@ class Mix_view_common():
             ["played", "Played ({}): "],
             ["venue", "Venue ({}): "]
         ]
+        # Mixes
         self.headers_dict_mixes = {
             'mix_id': '#', 'name': 'Name', 'played': 'Played',
             'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
         }
+        # Mixtracks
         self.headers_dict_mixinfo = {
             'mix_id': 'Mix', 'name': 'Name', 'created': 'Created', 'updated':
             'Updated', 'played': 'Played', 'venue': 'Venue'
@@ -336,23 +339,20 @@ class Mix_view_common():
         self.headers_dict_mixtracks_all = {
             'track_pos': '#', 'discogs_title': 'Release',
             'd_artist': 'Track Artist', 'd_track_name': 'Track Name',
-            'd_track_no': 'Trk No', 'key': 'Key', 'bpm': 'BPM',
-            'key_notes': 'Key Notes', 'trans_rating': 'Transition Rating',
-            'trans_notes': 'Transition Notes', 'notes': 'Track Notes'
+            'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
+            'key_notes': 'Key\nNotes', 'trans_rating': 'Transition\nRating',
+            'trans_notes': 'Transition\nNotes', 'notes': 'Track\nNotes'
         }
         self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all.copy()
         self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
         self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
-        self.headers_dict_mixtracks_all_short['d_track_no'] = 'Trk\nNo'
-        self.headers_dict_mixtracks_all_short['key_notes'] = 'Key\nNotes'
         self.headers_dict_mixtracks_all_short['trans_rating'] = 'Trans.\nRating'
         self.headers_dict_mixtracks_all_short['trans_notes'] = 'Trans.\nNotes'
-        self.headers_dict_mixtracks_all_short['notes'] = 'Track\nNotes'
 
         self.headers_dict_mixtracks_brainz = {
             'track_pos': '#', 'discogs_title': 'Release', 'd_artist':
             'Track Artist', 'd_track_name': 'Track Name', 'd_track_no':
-            'Trk No', 'key': 'Key', 'bpm': 'BPM', 'd_catno': 'Discogs CatNo',
+            'Trk\nNo', 'key': 'Key', 'bpm': 'BPM', 'd_catno': 'Discogs CatNo',
             'methods': 'Release/Recording match via', 'times': 'Matched on',
             'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
         }
@@ -365,13 +365,11 @@ class Mix_view_common():
         self.headers_dict_mixtracks_brainz_short['times'] = 'Matched\non'
 
         self.headers_dict_mixtracks_basic = {
-            'track_pos': '#', 'd_catno': 'Discogs CatNo', 'discogs_title': 'Release',
-            'd_track_no': 'Trk No', 'trans_rating': 'Transition Rating',
+            'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
+            'd_track_no': 'Trk\nNo', 'trans_rating': 'Transition\nRating',
             'key': 'Key', 'bpm': 'BPM'
         }
         self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic.copy()
-        self.headers_dict_mixtracks_basic_short['d_catno'] = 'CatNo'
-        self.headers_dict_mixtracks_basic_short['d_track_no'] = 'Trk\nNo'
         self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
 
     @property
