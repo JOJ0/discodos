@@ -178,6 +178,9 @@ class GuiTreeViewModel(QtCore.QAbstractTableModel):
             if role == Qt.EditRole:
                 value = self._data.iloc[index.row()][index.column()]
                 return value
+            if role == Qt.TextAlignmentRole:
+                if index.column() == 0:
+                    return Qt.AlignLeft
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
@@ -213,6 +216,10 @@ class GuiTreeViewModel(QtCore.QAbstractTableModel):
             if orientation == Qt.Horizontal:
                 return str(self._data.columns[col])
 
+        if role == Qt.TextAlignmentRole:
+            if col == 0:
+                return Qt.AlignLeft
+
 
 class GuiTreeView(QtWidgets.QTreeView):
     def __init__(self, parent, data):
@@ -225,6 +232,8 @@ class GuiTreeView(QtWidgets.QTreeView):
         self.setAlternatingRowColors(True)
 
         self._create_context_menu()
+
+
 
     def _create_context_menu(self):
         horizontal_header = self._data.columns
