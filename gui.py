@@ -315,6 +315,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         # self.treeViewMixModel = QtGui.QStandardItemModel()
         # self.treeViewMix.setModel(self.treeViewMixModel)
         self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
+        self.treeViewMix.setColumnWidth(0, 30)
         self.vboxMix.addWidget(self.treeViewMix)
 
         # create tableviewtracks
