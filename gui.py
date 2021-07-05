@@ -174,13 +174,20 @@ class GuiTreeViewModel(QtCore.QAbstractTableModel):
             if role == Qt.DisplayRole:
                 value = self._data.iloc[index.row(), index.column()]
                 return value
-
             if role == Qt.EditRole:
                 value = self._data.iloc[index.row()][index.column()]
                 return value
             if role == Qt.TextAlignmentRole:
-                if index.column() == 0:
-                    return Qt.AlignLeft
+                return Qt.AlignLeft
+                # if index.column() == 0:
+
+    def headerData(self, col, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[col])
+        if role == Qt.TextAlignmentRole:
+            return Qt.AlignLeft
+            # if col == 0:
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
@@ -211,29 +218,17 @@ class GuiTreeViewModel(QtCore.QAbstractTableModel):
         self._data = df
         self.layoutChanged.emit()
 
-    def headerData(self, col, orientation, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[col])
-
-        if role == Qt.TextAlignmentRole:
-            if col == 0:
-                return Qt.AlignLeft
-
 
 class GuiTreeView(QtWidgets.QTreeView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
-
         self.model = GuiTreeViewModel(self._data)
         self.setModel(self.model)
 
         self.setAlternatingRowColors(True)
-
         self._create_context_menu()
-
-
+        self.setIndentation(0)
 
     def _create_context_menu(self):
         horizontal_header = self._data.columns
