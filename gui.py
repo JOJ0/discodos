@@ -280,6 +280,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.setupUi(self)
 
         self.conf = config_obj
+        self.splitter_vertical.setStretchFactor(1, 2)
         self.settings = QSettings(
             str(self.conf.discodos_data / 'gui_settings_autosave.ini'),
             QSettings.IniFormat
