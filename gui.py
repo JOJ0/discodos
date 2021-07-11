@@ -319,14 +319,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.vboxMix.addWidget(self.treeViewMix)
 
         # create tableviewtracks
-        # todo need suggestion for data_list
-        self.data_list = []
         self.TableViewTracksHeader = self.headers_list_mixtracks_all
-        self.TableViewTracksDataFrame = pd.DataFrame(
-            self.data_list, columns=self.TableViewTracksHeader)
-        self.TableViewTracks = GuiTableView(
-            self, self.TableViewTracksDataFrame)
-        self.vboxTracks.addWidget(self.TableViewTracks)
+        self.tableviewtracks_load(None)
 
         # create tableviewreleases
         self.TableViewReleasesHeader = ['d_catno', 'd_artist', 'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override']
@@ -471,12 +465,28 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
             self.TreeViewMixDataFrame = pd.DataFrame(sql_data, columns=self.TreeViewMixHeader)
             self.treeViewMix.model.update(self.TreeViewMixDataFrame)
 
-    def tableviewtracks_load_data(self, mix_name):
+    def tableviewtracks_load(self, mix_name):
+        """ Loads mixtracks from database and initializes TableViewTracks
+
+        Args:
+            mix_name (str): The name of the mix to load from database.
+                If a mix_name of None is given, it's assumed we initialize
+                TableViewTracks and add it to vboxTracks.
+                If an existing mix_name is given, it's assumed TableViewTracks
+                is existing already and just has to be updated with the fetched
+                data.
+        Returns:
+            None
+
+        The following instance variables are created by this method:
+            self.TableViewTracksDataFrame
+            self.TableViewTracks
+        """
         mixtracks = None
+        mixtracks_list = []
         if mix_name is not None:
             mix = Mix(False, mix_name, db_file=self.conf.discobase)
             mixtracks = mix.get_full_mix(verbose=True)
-            mixtracks_list = []
 
         if mixtracks:
             mixtracks_key_bpm_replaced = self.replace_key_bpm(mixtracks)
@@ -484,9 +494,16 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
                 mixtracks_list.append(
                     [str(self.none_replace(row[key])) for key in row.keys()]
                 )
+
         self.TableViewTracksDataFrame = pd.DataFrame(
             mixtracks_list, columns=self.TableViewTracksHeader)
-        self.TableViewTracks.model.update(self.TableViewTracksDataFrame)
+
+        if mix_name is None:
+            self.TableViewTracks = GuiTableView(
+                self, self.TableViewTracksDataFrame)
+            self.vboxTracks.addWidget(self.TableViewTracks)
+        else:
+            self.TableViewTracks.model.update(self.TableViewTracksDataFrame)
 
     def tableviewreleases_load_data(self):
         sql_data = []
@@ -506,7 +523,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
         playlist_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
-        self.tableviewtracks_load_data(playlist_id)
+        self.tableviewtracks_load(playlist_id)
         print('playlist_id:', playlist_id)
 
     def tableviewreleases_on_click(self, index):
