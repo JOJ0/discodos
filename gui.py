@@ -472,9 +472,11 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
             self.treeViewMix.model.update(self.TreeViewMixDataFrame)
 
     def tableviewtracks_load_data(self, mix_name):
-        mix = Mix(False, mix_name, db_file=self.conf.discobase)
-        mixtracks = mix.get_full_mix(verbose=True)
-        mixtracks_list = []
+        mixtracks = None
+        if mix_name is not None:
+            mix = Mix(False, mix_name, db_file=self.conf.discobase)
+            mixtracks = mix.get_full_mix(verbose=True)
+            mixtracks_list = []
 
         if mixtracks:
             mixtracks_key_bpm_replaced = self.replace_key_bpm(mixtracks)
