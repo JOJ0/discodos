@@ -279,15 +279,15 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
-        self.conf = config_obj
+        self.conf = config_obj  # Save passed DiscoDOS config object
         self.splitter_vertical.setStretchFactor(1, 2)
-        self.settings = QSettings(
+        self.settings = QSettings(  # Initialize saving settings to ini file
             str(self.conf.discodos_data / 'gui_settings_autosave.ini'),
             QSettings.IniFormat
         )
         self.settings.setFallbacksEnabled(False)
 
-        # create vbox layouts and add to setlayout groupbox
+        # Create vbox layouts and add to setlayout groupbox
         self.vboxMix = QtWidgets.QVBoxLayout()
         self.vboxMix.setContentsMargins(0, 0, 0, 0)
         self.vboxMix.setSpacing(2)
@@ -305,8 +305,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.vboxTest.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTest.setLayout(self.vboxTest)
 
-        # create treeviewmix
-        # todo need suggestion for data_list
+        # Create treeviewmix
         self.data_list = []
         self.TreeViewMixHeader = self.headers_list_mixes
         self.TreeViewMixDataFrame = pd.DataFrame(
@@ -318,11 +317,11 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.treeViewMix.setColumnWidth(0, 30)
         self.vboxMix.addWidget(self.treeViewMix)
 
-        # create tableviewtracks
+        # Create tableviewtracks
         self.TableViewTracksHeader = self.headers_list_mixtracks_all
         self.tableviewtracks_load(None)
 
-        # create tableviewreleases
+        # Create tableviewreleases
         self.TableViewReleasesHeader = ['d_catno', 'd_artist', 'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override']
         self.TableViewReleasesDataFrame = pd.DataFrame(
             self.data_list, columns=self.TableViewReleasesHeader)
@@ -335,40 +334,41 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.TabWidgetSearch = GuiTabWidget(self)
         self.vboxTest.addWidget(self.TabWidgetSearch)
 
-        # create vbox formlayout for buttons and edit box
+        # Create vbox formlayout for mixes buttons and edit boxes
         self.vboxFormLayout = QtWidgets.QFormLayout()
 
-        # lineedit mix
+        # Create lineedit mix
         self.lineEditAddMix = QtWidgets.QLineEdit()
         self.lineEditAddMix.setPlaceholderText('Mix name')
         self.vboxFormLayout.addRow(self.lineEditAddMix)
 
-        # lineedit mixvenue
+        # Create lineedit mixvenue
         self.lineEditAddMixVenue = QtWidgets.QLineEdit()
         self.lineEditAddMixVenue.setPlaceholderText('Venue')
         self.vboxFormLayout.addRow(self.lineEditAddMixVenue)
 
-        # lineedit mixdate
+        # Create lineedit mixdate
         self.lineEditAddMixDate = QtWidgets.QLineEdit()
         self.lineEditAddMixDate.setPlaceholderText('2021-01-01')
         self.vboxFormLayout.addRow(self.lineEditAddMixDate)
 
-        # pushbuttonadd
+        # Create pushbutton add
         self.pushButtonAddMix = QtWidgets.QPushButton()
         self.pushButtonAddMix.setText('Add')
         self.pushButtonAddMix.clicked.connect(self.treeviewmix_pushbutton_add_mix)
 
-        #pushbuttondel
+        # Create pushbutton del
         self.pushButtonDelMix = QtWidgets.QPushButton()
         self.pushButtonDelMix.setText('Delete')
         self.pushButtonDelMix.clicked.connect(self.treeviewmix_pushbutton_del_mix)
         self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
 
-        # add formlayout to playlist boxlayout
+        # Add formlayout to mixes boxlayout
         self.vboxMix.addLayout(self.vboxFormLayout)
 
+        # on first load, only mixes and releases are fetched and displayed
         self.initUI()
-        # Restore layout
+        # Restore layout from autosaved ini file
         self.read_ui_settings()
 
     def read_ui_settings(self):
@@ -441,8 +441,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         #
         self.settings.endGroup()
 
-    # on close save window positions
     def closeEvent(self, e):
+        """ On close saves window positions to ini file """
         self.write_ui_settings()
         e.accept()
 
@@ -563,9 +563,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 def main():
     # Base configuration and setup tasks run on the shell
     conf = Config()
-    # Quickfix - Ctrl_common is an abstract class and not ment to be initialized
-    # by itself, but rather be inherited by either a GUI controller or a CLI
-    # controller class.
+    # Initialize a Ctrl_common object - contains general DiscoDOS utils
     ctrl_common = Ctrl_common()
     ctrl_common.setup_db(conf.discobase)
 
