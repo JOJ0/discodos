@@ -477,14 +477,14 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         load_mix = Mix(False, mix_name, self.conf.discobase)
         sql_result = load_mix.get_full_mix(True)
 
-        row = ''
         if sql_result:
             mix_key_bpm_replaced = self.replace_key_bpm(sql_result)
             for row in mix_key_bpm_replaced:
-                sql_data.append([str(row[x]) for x in row.keys()])
+                sql_data.append([self.none_replace(str(row[x])) for x in row.keys()])
             # header = row.keys()
 
-        self.TableViewTracksDataFrame = pd.DataFrame(sql_data, columns=self.TableViewTracksHeader)
+        self.TableViewTracksDataFrame = pd.DataFrame(
+            sql_data, columns=self.TableViewTracksHeader)
         self.TableViewTracks.model.update(self.TableViewTracksDataFrame)
 
     def tableviewreleases_load_data(self):
