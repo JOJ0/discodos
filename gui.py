@@ -472,19 +472,18 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
             self.treeViewMix.model.update(self.TreeViewMixDataFrame)
 
     def tableviewtracks_load_data(self, mix_name):
-        sql_data = []
+        mix = Mix(False, mix_name, db_file=self.conf.discobase)
+        mixtracks = mix.get_full_mix(verbose=True)
+        mixtracks_list = []
 
-        load_mix = Mix(False, mix_name, self.conf.discobase)
-        sql_result = load_mix.get_full_mix(True)
-
-        if sql_result:
-            mix_key_bpm_replaced = self.replace_key_bpm(sql_result)
-            for row in mix_key_bpm_replaced:
-                sql_data.append([self.none_replace(str(row[x])) for x in row.keys()])
-            # header = row.keys()
-
+        if mixtracks:
+            mixtracks_key_bpm_replaced = self.replace_key_bpm(mixtracks)
+            for row in mixtracks_key_bpm_replaced:
+                mixtracks_list.append(
+                    [str(self.none_replace(row[key])) for key in row.keys()]
+                )
         self.TableViewTracksDataFrame = pd.DataFrame(
-            sql_data, columns=self.TableViewTracksHeader)
+            mixtracks_list, columns=self.TableViewTracksHeader)
         self.TableViewTracks.model.update(self.TableViewTracksDataFrame)
 
     def tableviewreleases_load_data(self):
