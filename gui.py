@@ -306,16 +306,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.groupBoxTest.setLayout(self.vboxTest)
 
         # Create treeviewmix
-        self.data_list = []
         self.TreeViewMixHeader = self.headers_list_mixes
-        self.TreeViewMixDataFrame = pd.DataFrame(
-            self.data_list, columns=self.TreeViewMixHeader)
-        self.treeViewMix = GuiTreeView(self, self.TreeViewMixDataFrame)
-        # self.treeViewMixModel = QtGui.QStandardItemModel()
-        # self.treeViewMix.setModel(self.treeViewMixModel)
-        self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
-        self.treeViewMix.setColumnWidth(0, 30)
-        self.vboxMix.addWidget(self.treeViewMix)
+        self.treeviewmix_load()
 
         # Create tableviewtracks
         self.TableViewTracksHeader = self.headers_list_mixtracks_all
@@ -459,19 +451,30 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.tableviewreleases_load_data()
 
     def treeviewmix_load(self):
-        sql_data = []
+        mix = Mix(False, "all", db_file=self.conf.discobase)
+        all_mixes = mix.get_all_mixes()
+        all_mixes_list = []
 
-        load_mix = Mix(False, 'all', self.conf.discobase)
-        sql_result = load_mix.get_all_mixes()
-
-        row = ''
-        if sql_result:
-            timestamps_shortened = self.shorten_mixes_timestamps(sql_result)
+        if all_mixes:
+            timestamps_shortened = self.shorten_mixes_timestamps(all_mixes)
             for row in timestamps_shortened:
-                sql_data.append([str(row[x]) for x in row.keys()])
+                all_mixes_list.append(
+                    [str(row[key]) for key in row.keys()]
+                )
 
-            self.TreeViewMixDataFrame = pd.DataFrame(sql_data, columns=self.TreeViewMixHeader)
+        self.TreeViewMixDataFrame = pd.DataFrame(
+            all_mixes_list, columns=self.TreeViewMixHeader)
+
+        if self.vboxMix.isEmpty():
+            # self.treeViewMixModel = QtGui.QStandardItemModel()
+            # self.treeViewMix.setModel(self.treeViewMixModel)
+            self.treeViewMix = GuiTreeView(self, self.TreeViewMixDataFrame)
+            self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
+            self.treeViewMix.setColumnWidth(0, 30)
+            self.vboxMix.addWidget(self.treeViewMix)
+        else:
             self.treeViewMix.model.update(self.TreeViewMixDataFrame)
+
 
     def tableviewtracks_load(self, mix_name):
         """ Loads mixtracks from database and initializes TableViewTracks
