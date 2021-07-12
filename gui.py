@@ -310,7 +310,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.treeviewmix_load()
 
         # Create tableviewtracks
-        self.TableViewTracksHeader = self.headers_list_mixtracks_all
+        self.tableViewTracksHeader = self.headers_list_mixtracks_all
         self.tableviewtracks_load(None)
 
         # Create tableviewreleases
@@ -375,10 +375,10 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         if self.settings.value('Vertical'):
             self.splitter_vertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()
-        self.settings.beginGroup('TableViewTracks')
+        self.settings.beginGroup('tableViewTracks')
         # if self.settings.value('ColumnWidth'):
-        #     self.TableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
-        self.TableViewTracks.read_settings(self.settings, 'ColumnWidth')
+        #     self.tableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
+        self.tableViewTracks.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
         self.settings.beginGroup('TableViewReleases')
         # if self.settings.value('ColumnWidth'):
@@ -417,8 +417,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.settings.setValue('Horizontal', self.splitter_horizontal.saveState())
         self.settings.setValue('Vertical', self.splitter_vertical.saveState())
         self.settings.endGroup()
-        self.settings.beginGroup('TableViewTracks')
-        self.settings.setValue('ColumnWidth', self.TableViewTracks.horizontalHeader().saveState())
+        self.settings.beginGroup('tableViewTracks')
+        self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
         self.settings.endGroup()
         self.settings.beginGroup('TableViewReleases')
         self.settings.setValue('ColumnWidth', self.TableViewReleases.horizontalHeader().saveState())
@@ -487,20 +487,20 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
 
     def tableviewtracks_load(self, mix_name):
-        """ Loads mixtracks from database and initializes TableViewTracks
+        """ Loads mixtracks from database and initializes tableViewTracks
 
         Args:
             mix_name (str): The name of the mix to load from database.
                 If a mix_name of None is given, it's assumed we initialize
-                TableViewTracks and add it to vboxTracks.
-                If an existing mix_name is given, it's assumed TableViewTracks
+                tableViewTracks and add it to vboxTracks.
+                If an existing mix_name is given, it's assumed tableViewTracks
                 is existing already and just has to be updated with the fetched
                 data.
         Returns: None
 
         The following instance variables are created by this method:
-            self.TableViewTracksDataFrame
-            self.TableViewTracks
+            self.tableViewTracksDataFrame
+            self.tableViewTracks
         """
         mixtracks = None
         mixtracks_list = []
@@ -515,15 +515,15 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
                     [str(self.none_replace(row[key])) for key in row.keys()]
                 )
 
-        self.TableViewTracksDataFrame = pd.DataFrame(
-            mixtracks_list, columns=self.TableViewTracksHeader)
+        self.tableViewTracksDataFrame = pd.DataFrame(
+            mixtracks_list, columns=self.tableViewTracksHeader)
 
         if mix_name is None:
-            self.TableViewTracks = GuiTableView(
-                self, self.TableViewTracksDataFrame)
-            self.vboxTracks.addWidget(self.TableViewTracks)
+            self.tableViewTracks = GuiTableView(
+                self, self.tableViewTracksDataFrame)
+            self.vboxTracks.addWidget(self.tableViewTracks)
         else:
-            self.TableViewTracks.model.update(self.TableViewTracksDataFrame)
+            self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
 
     def tableviewreleases_load_data(self):
         sql_data = []
