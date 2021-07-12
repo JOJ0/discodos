@@ -455,10 +455,10 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
             event.accept()
 
     def initUI(self):
-        self.treeviewmix_load_data()
+        self.treeviewmix_load()
         self.tableviewreleases_load_data()
 
-    def treeviewmix_load_data(self):
+    def treeviewmix_load(self):
         sql_data = []
 
         load_mix = Mix(False, 'all', self.conf.discobase)
@@ -564,8 +564,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         else:
             print('no playlist name')
 
-        # must be a better way to reload data on insert treeview_pushbutton_add_playlist?
-        self.treeviewmix_load_data()
+        # must be a better way to reload data on insert
+        self.treeviewmix_load()
 
 
 def main():
