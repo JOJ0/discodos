@@ -451,6 +451,17 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.tableviewreleases_load_data()
 
     def treeviewmix_load(self):
+        """ Loads mixes list from database and initializes treeViewMix.
+
+        If vboxMix is empty, treeViewMix is created and added. Otherwise data
+        is updated only.
+
+        Returns: None
+
+        The following instance variables are created by this method:
+            self.treeViewMixDataFrame
+            self.treeViewMix
+        """
         mix = Mix(False, "all", db_file=self.conf.discobase)
         all_mixes = mix.get_all_mixes()
         all_mixes_list = []
