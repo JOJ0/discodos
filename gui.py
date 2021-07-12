@@ -486,7 +486,6 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         else:
             self.treeViewMix.model.update(self.TreeViewMixDataFrame)
 
-
     def tableviewtracks_load(self, mix_name):
         """ Loads mixtracks from database and initializes TableViewTracks
 
@@ -497,8 +496,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
                 If an existing mix_name is given, it's assumed TableViewTracks
                 is existing already and just has to be updated with the fetched
                 data.
-        Returns:
-            None
+        Returns: None
 
         The following instance variables are created by this method:
             self.TableViewTracksDataFrame
