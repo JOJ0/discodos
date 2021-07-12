@@ -306,7 +306,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.groupBoxTest.setLayout(self.vboxTest)
 
         # Create treeviewmix
-        self.TreeViewMixHeader = self.headers_list_mixes
+        self.treeViewMixHeader = self.headers_list_mixes
         self.treeviewmix_load()
 
         # Create tableviewtracks
@@ -385,7 +385,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         #    self.TableViewReleases.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
         self.TableViewReleases.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
-        self.settings.beginGroup('TreeViewMix')
+        self.settings.beginGroup('treeViewMix')
         # if self.settings.value('ColumnWidth'):
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
 
@@ -423,7 +423,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.settings.beginGroup('TableViewReleases')
         self.settings.setValue('ColumnWidth', self.TableViewReleases.horizontalHeader().saveState())
         self.settings.endGroup()
-        self.settings.beginGroup('TreeViewMix')
+        self.settings.beginGroup('treeViewMix')
         self.settings.setValue('ColumnWidth', self.treeViewMix.header().saveState())
         #
         # #self.settings.setValue('test', self.treeViewPlaylist.model().data(self.treeViewPlaylist.selectedIndexes()[1]))
@@ -473,18 +473,18 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
                     [str(row[key]) for key in row.keys()]
                 )
 
-        self.TreeViewMixDataFrame = pd.DataFrame(
-            all_mixes_list, columns=self.TreeViewMixHeader)
+        self.treeViewMixDataFrame = pd.DataFrame(
+            all_mixes_list, columns=self.treeViewMixHeader)
 
         if self.vboxMix.isEmpty():
             # self.treeViewMixModel = QtGui.QStandardItemModel()
             # self.treeViewMix.setModel(self.treeViewMixModel)
-            self.treeViewMix = GuiTreeView(self, self.TreeViewMixDataFrame)
+            self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
             self.treeViewMix.setColumnWidth(0, 30)
             self.vboxMix.addWidget(self.treeViewMix)
         else:
-            self.treeViewMix.model.update(self.TreeViewMixDataFrame)
+            self.treeViewMix.model.update(self.treeViewMixDataFrame)
 
     def tableviewtracks_load(self, mix_name):
         """ Loads mixtracks from database and initializes TableViewTracks
