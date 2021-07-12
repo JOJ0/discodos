@@ -446,6 +446,14 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.write_ui_settings()
         e.accept()
 
+    def keyPressEvent(self, event):
+        if (event.key() == Qt.Key_Shift
+                and self.treeViewMix.hasFocus() is True
+                and self.treeViewMix.selectedIndexes()):
+            mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
+            self.tableviewtracks_load(mix_id)
+            event.accept()
+
     def initUI(self):
         self.treeviewmix_load_data()
         self.tableviewreleases_load_data()
