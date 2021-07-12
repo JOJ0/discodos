@@ -316,7 +316,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         # Create tableviewreleases
         self.TableViewReleasesHeader = ['d_catno', 'd_artist', 'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override']
         self.TableViewReleasesDataFrame = pd.DataFrame(
-            self.data_list, columns=self.TableViewReleasesHeader)
+            [], columns=self.TableViewReleasesHeader)
         self.TableViewReleases = GuiTableView(
             self, self.TableViewReleasesDataFrame)
         self.TableViewReleases.clicked.connect(self.tableviewreleases_on_click)
