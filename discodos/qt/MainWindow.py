@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file '/Users/nasher/PycharmProjects/discodos/discodos/qt/MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -21,21 +21,21 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.splitter_vertical = QtWidgets.QSplitter(self.centralwidget)
-        self.splitter_vertical.setOrientation(QtCore.Qt.Horizontal)
-        self.splitter_vertical.setObjectName("splitter_vertical")
-        self.groupBoxMix = QtWidgets.QGroupBox(self.splitter_vertical)
+        self.splitterVertical = QtWidgets.QSplitter(self.centralwidget)
+        self.splitterVertical.setOrientation(QtCore.Qt.Horizontal)
+        self.splitterVertical.setObjectName("splitterVertical")
+        self.groupBoxMix = QtWidgets.QGroupBox(self.splitterVertical)
         self.groupBoxMix.setObjectName("groupBoxMix")
-        self.splitter_horizontal = QtWidgets.QSplitter(self.splitter_vertical)
-        self.splitter_horizontal.setOrientation(QtCore.Qt.Vertical)
-        self.splitter_horizontal.setObjectName("splitter_horizontal")
-        self.groupBoxTracks = QtWidgets.QGroupBox(self.splitter_horizontal)
+        self.splitterHorizontal = QtWidgets.QSplitter(self.splitterVertical)
+        self.splitterHorizontal.setOrientation(QtCore.Qt.Vertical)
+        self.splitterHorizontal.setObjectName("splitterHorizontal")
+        self.groupBoxTracks = QtWidgets.QGroupBox(self.splitterHorizontal)
         self.groupBoxTracks.setObjectName("groupBoxTracks")
-        self.groupBoxReleases = QtWidgets.QGroupBox(self.splitter_horizontal)
+        self.groupBoxReleases = QtWidgets.QGroupBox(self.splitterHorizontal)
         self.groupBoxReleases.setObjectName("groupBoxReleases")
-        self.groupBoxTest = QtWidgets.QGroupBox(self.splitter_vertical)
+        self.groupBoxTest = QtWidgets.QGroupBox(self.splitterVertical)
         self.groupBoxTest.setObjectName("groupBoxTest")
-        self.gridLayout.addWidget(self.splitter_vertical, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.splitterVertical, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1432, 24))

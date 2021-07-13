@@ -280,7 +280,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.setupUi(self)
 
         self.conf = config_obj  # Save passed DiscoDOS config object
-        self.splitter_vertical.setStretchFactor(1, 2)
+        self.splitterVertical.setStretchFactor(1, 2)
         self.settings = QSettings(  # Initialize saving settings to ini file
             str(self.conf.discodos_data / 'gui_settings_autosave.ini'),
             QSettings.IniFormat
@@ -371,9 +371,9 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.settings.endGroup()
         self.settings.beginGroup('Splitter')
         if self.settings.value('Horizontal'):
-            self.splitter_horizontal.restoreState(self.settings.value('Horizontal'))
+            self.splitterHorizontal.restoreState(self.settings.value('Horizontal'))
         if self.settings.value('Vertical'):
-            self.splitter_vertical.restoreState(self.settings.value('Vertical'))
+            self.splitterVertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()
         self.settings.beginGroup('tableViewTracks')
         # if self.settings.value('ColumnWidth'):
@@ -414,8 +414,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.settings.setValue('pos', self.pos())
         self.settings.endGroup()
         self.settings.beginGroup('Splitter')
-        self.settings.setValue('Horizontal', self.splitter_horizontal.saveState())
-        self.settings.setValue('Vertical', self.splitter_vertical.saveState())
+        self.settings.setValue('Horizontal', self.splitterHorizontal.saveState())
+        self.settings.setValue('Vertical', self.splitterVertical.saveState())
         self.settings.endGroup()
         self.settings.beginGroup('tableViewTracks')
         self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
