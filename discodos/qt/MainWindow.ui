@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QSplitter" name="splitter_vertical">
+     <widget class="QSplitter" name="splitterVertical">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -31,7 +31,7 @@
         <string>Mixes</string>
        </property>
       </widget>
-      <widget class="QSplitter" name="splitter_horizontal">
+      <widget class="QSplitter" name="splitterHorizontal">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
