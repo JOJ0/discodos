@@ -374,8 +374,11 @@ def _main():
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION) ######################
-    coll_ctrl = Coll_ctrl_cli(False, user, conf.discogs_token, conf.discogs_appid,
-            conf.discobase, conf.musicbrainz_user, conf.musicbrainz_password)
+    coll_ctrl = Coll_ctrl_cli(
+        False, user,
+        conf.discogs_token, conf.discogs_appid, conf.discobase,
+        conf.musicbrainz_user, conf.musicbrainz_password
+    )
     ##### SEARCH MODE ##########################################################
     if user.WANTS_TO_LIST_ALL_RELEASES:
         if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
@@ -383,7 +386,8 @@ def _main():
         elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
             coll_ctrl.update_all_tracks_from_brainz(
                 detail=user.BRAINZ_SEARCH_DETAIL,
-                offset=user.RESUME_OFFSET)
+                offset=user.RESUME_OFFSET
+            )
         else:
             coll_ctrl.view_all_releases()
     elif user.WANTS_TO_SEARCH_FOR_RELEASE:
@@ -395,42 +399,53 @@ def _main():
         if coll_ctrl.ONLINE:
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
-                mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
-                mix_ctrl.add_discogs_track(discogs_rel_found, args.track_to_add,
-                        args.add_at_pos,
-                        track_no_suggest = coll_ctrl.first_track_on_release)
+                mix_ctrl = Mix_ctrl_cli(
+                    False, args.add_to_mix, user, conf.discobase
+                )
+                mix_ctrl.add_discogs_track(
+                    discogs_rel_found, args.track_to_add, args.add_at_pos,
+                    track_no_suggest=coll_ctrl.first_track_on_release
+                )
             elif user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
                 # online search gave us exactely one release in a list
                 # print(discogs_rel_found)
                 coll_ctrl.update_single_track_or_release_from_discogs(
-                      discogs_rel_found['id'],
-                      discogs_rel_found['title'],
-                      args.track_to_add)
+                    discogs_rel_found['id'],
+                    discogs_rel_found['title'],
+                    args.track_to_add
+                )
             elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
                 coll_ctrl.update_single_track_or_release_from_brainz(
-                      discogs_rel_found['id'],
-                      discogs_rel_found['title'],
-                      args.track_to_add,
-                      detail=user.BRAINZ_SEARCH_DETAIL)
+                    discogs_rel_found['id'],
+                    discogs_rel_found['title'],
+                    args.track_to_add,
+                    detail=user.BRAINZ_SEARCH_DETAIL
+                )
             elif user.WANTS_TO_SEARCH_AND_EDIT_TRACK:
                 coll_ctrl.edit_track(
-                      discogs_rel_found['id'],
-                      discogs_rel_found['title'],
-                      args.track_to_add)
+                    discogs_rel_found['id'],
+                    discogs_rel_found['title'],
+                    args.track_to_add
+                )
             else:
                 # if discogs_rel_found: # prevents msg when nothing's found anyway
                 print_help(msg_use)
         else:  # when OFFLINE
             database_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
-                mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
-                mix_ctrl.add_offline_track(database_rel_found, args.track_to_add,
-                        args.add_at_pos)
+                mix_ctrl = Mix_ctrl_cli(
+                    False, args.add_to_mix, user, conf.discobase
+                )
+                mix_ctrl.add_offline_track(
+                    database_rel_found, args.track_to_add,
+                    args.add_at_pos
+                )
             elif user.WANTS_TO_SEARCH_AND_EDIT_TRACK:
                 coll_ctrl.edit_track(
-                      database_rel_found[0]['discogs_id'],
-                      database_rel_found[0]['discogs_title'],
-                      args.track_to_add)
+                    database_rel_found[0]['discogs_id'],
+                    database_rel_found[0]['discogs_title'],
+                    args.track_to_add
+                )
             else:
                 if database_rel_found:  # prevents msg when nothing's found anyway
                     print_help(msg_use)
@@ -442,12 +457,16 @@ def _main():
         # we instantiate a mix controller object
         mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl,
-              offset=user.RESUME_OFFSET)
+            mix_ctrl.pull_track_info_from_discogs(
+                coll_ctrl,
+                offset=user.RESUME_OFFSET
+            )
         elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
-            mix_ctrl.update_track_info_from_brainz(coll_ctrl,
-              detail=user.BRAINZ_SEARCH_DETAIL,
-              offset=user.RESUME_OFFSET)
+            mix_ctrl.update_track_info_from_brainz(
+                coll_ctrl,
+                detail=user.BRAINZ_SEARCH_DETAIL,
+                offset=user.RESUME_OFFSET
+            )
         else:
             mix_ctrl.view_mixes_list()
 
@@ -455,7 +474,9 @@ def _main():
     ### SHOW MIX DETAILS #######################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
-        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
+        mix_ctrl = Mix_ctrl_cli(
+            False, args.mix_name, user, conf.discobase
+        )
         # coll_ctrl = Coll_ctrl_cli(conn, user)
         ### CREATE A NEW MIX ###################################################
         if user.WANTS_TO_CREATE_MIX:
@@ -486,15 +507,22 @@ def _main():
                     # search_release returns an online or offline releases type object
                     # depending on the models online-state
                     discogs_rel_found = coll_ctrl.search_release(
-                      args.add_release_to_mix)
-                    mix_ctrl.add_discogs_track(discogs_rel_found, False,
-                      args.mix_mode_add_at_pos,
-                      track_no_suggest = coll_ctrl.first_track_on_release)
+                        args.add_release_to_mix
+                    )
+                    mix_ctrl.add_discogs_track(
+                        discogs_rel_found, False,
+                        args.mix_mode_add_at_pos,
+                        track_no_suggest=coll_ctrl.first_track_on_release
+                    )
                 else:
                     database_rel_found = coll_ctrl.search_release(
-                            args.add_release_to_mix)
-                    mix_ctrl.add_offline_track(database_rel_found, False,
-                            args.mix_mode_add_at_pos)
+                        args.add_release_to_mix
+                    )
+                    mix_ctrl.add_offline_track(
+                        database_rel_found,
+                        False,
+                        args.mix_mode_add_at_pos
+                    )
             else:
                 log.error("Mix not existing.")
         #### COPY A MIX ########################################################
@@ -506,17 +534,24 @@ def _main():
 
         #### UPDATE TRACKS WITH DISCOGS INFO ###################################
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
-            mix_ctrl.pull_track_info_from_discogs(coll_ctrl,
-              start_pos=args.mix_mode_add_at_pos)
+            mix_ctrl.pull_track_info_from_discogs(
+                coll_ctrl,
+                start_pos=args.mix_mode_add_at_pos
+            )
         #### UPDATE TRACKS WITH MUSICBRAINZ & ACOUSTICBRAINZ INFO ##############
         elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
-            mix_ctrl.update_track_info_from_brainz(coll_ctrl,
-              start_pos=args.mix_mode_add_at_pos, detail=user.BRAINZ_SEARCH_DETAIL)
+            mix_ctrl.update_track_info_from_brainz(
+                coll_ctrl,
+                start_pos=args.mix_mode_add_at_pos,
+                detail=user.BRAINZ_SEARCH_DETAIL
+            )
 
 
         #### BULK EDIT MIX COLUMNS #############################################
         elif user.WANTS_TO_BULK_EDIT:
-            mix_ctrl.bulk_edit_tracks(args.bulk_edit, args.mix_mode_add_at_pos)
+            mix_ctrl.bulk_edit_tracks(
+                args.bulk_edit, args.mix_mode_add_at_pos
+            )
 
         #### JUST SHOW MIX-TRACKLIST ###########################################
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
@@ -546,19 +581,22 @@ def _main():
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
         coll_ctrl.update_all_tracks_from_brainz(
             detail=user.BRAINZ_SEARCH_DETAIL,
-            offset=user.RESUME_OFFSET)
+            offset=user.RESUME_OFFSET
+        )
 
 
     ##### SETUP MODE ###########################################################
     if user.WANTS_TO_LAUNCH_SETUP:
         # INFORM USER what this subcommand does
         print_help(
-          "This is DiscoDOS setup. If you don't see any output below, there was nothing to do.")
+            "This is DiscoDOS setup. If you don't see any output below, "
+            "there was nothing to do."
+        )
         # SETUP DB
         setup = Db_setup(conf.discobase)
         setup.create_tables()
         if user.WANTS_TO_FORCE_UPGRADE_SCHEMA:
-            setup.upgrade_schema(force_upgrade = True)
+            setup.upgrade_schema(force_upgrade=True)
         else:
             setup.upgrade_schema()
         # INSTALL CLI if not there yet (only in self-contained package)
