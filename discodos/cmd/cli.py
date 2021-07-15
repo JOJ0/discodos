@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-from discodos.utils import ask_user, print_help
+from discodos.utils import print_help  # , ask user
 from discodos.views import User_int
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 from discodos.config import Db_setup, Config
 import logging
 import argparse
 import sys
-import pprint
 import textwrap
+# import pprint
 
 
 # globals we use for logging, argparser and user interaction object
@@ -16,12 +16,14 @@ log = logging.getLogger('discodos')
 args = None
 user = None
 
+
 def get_parser():
     """ Return argparse.ArgumentParser object
 
     Used for sphinx-argparse and sphinxcontrib-autoprogram
     """
     return ArgParse.parser
+
 
 class ArgParse():
     """ argparser and log level handling
@@ -32,7 +34,7 @@ class ArgParse():
     """
     parser = argparse.ArgumentParser(
         description='the DiscoDOS CLI.'
-        #formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+        # formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     )
 
     parser.add_argument(
@@ -125,7 +127,7 @@ class ArgParse():
         (expects a number). You can combine this option currently
         with *Brainz matching operations only (-z, -zz)
         ''')
-    ### MIX subparser #############################################################
+    ### MIX subparser ##########################################################
     mix_subparser = subparsers.add_parser(
         name='mix',
         help='manages your mixes. View this subcommand\'s help: "disco mix -h."')
@@ -323,7 +325,7 @@ class ArgParse():
 
     def __init__(self, argv):
         self.args = self.parser.parse_args(argv[1:])
-        #self.args = self.parser.parse_args()
+        # self.args = self.parser.parse_args()
         self.set_console_log_level()
 
     def set_console_log_level(self):
@@ -355,6 +357,7 @@ def main():
         log.info(msg_int)
         print(msg_int)
 
+
 def _main():
     # CONFIGURATOR INIT / CLI ARGS / LOGGING ##################################
     conf = Config()
@@ -364,9 +367,9 @@ def _main():
                              # also possibly override console log level
     args = ap.args  # save arguments in global variable args
     # DEBUG stuff #############################################################
-    #print(vars(args))
+    # print(vars(args))
     log.info("args_dict: %s", vars(args))
-    #log.info("dir(args): %s", dir(args))
+    # log.info("dir(args): %s", dir(args))
     # USER INTERACTION OBJECT
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
@@ -399,7 +402,7 @@ def _main():
                         track_no_suggest = coll_ctrl.first_track_on_release)
             elif user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
                 # online search gave us exactely one release in a list
-                #print(discogs_rel_found)
+                # print(discogs_rel_found)
                 coll_ctrl.update_single_track_or_release_from_discogs(
                       discogs_rel_found['id'],
                       discogs_rel_found['title'],
@@ -416,9 +419,9 @@ def _main():
                       discogs_rel_found['title'],
                       args.track_to_add)
             else:
-                #if discogs_rel_found: # prevents msg when nothing's found anyway
+                # if discogs_rel_found: # prevents msg when nothing's found anyway
                 print_help(msg_use)
-        else: # when OFFLINE
+        else:  # when OFFLINE
             database_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(False, args.add_to_mix, user, conf.discobase)
@@ -430,7 +433,7 @@ def _main():
                       database_rel_found[0]['discogs_title'],
                       args.track_to_add)
             else:
-                if database_rel_found: # prevents msg when nothing's found anyway
+                if database_rel_found:  # prevents msg when nothing's found anyway
                     print_help(msg_use)
 
 
@@ -454,7 +457,7 @@ def _main():
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
         mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
-        #coll_ctrl = Coll_ctrl_cli(conn, user)
+        # coll_ctrl = Coll_ctrl_cli(conn, user)
         ### CREATE A NEW MIX ##############################################
         if user.WANTS_TO_CREATE_MIX:
             mix_ctrl.create()
@@ -479,7 +482,7 @@ def _main():
             mix_ctrl.delete_track(args.delete_track_pos)
         ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode)
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            if mix_ctrl.mix.id_existing: # accessing a mix attr directly is bad practice
+            if mix_ctrl.mix.id_existing:  # accessing a mix attr directly is bad practice
                 if coll_ctrl.ONLINE:
                     # search_release returns an online or offline releases type object
                     # depending on the models online-state
@@ -501,7 +504,7 @@ def _main():
         #### EDIT MIX INFO
         elif user.WANTS_TO_EDIT_MIX:
             mix_ctrl.edit_mix()
-                                       
+
         #### UPDATE TRACKS WITH DISCOGS INFO
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(coll_ctrl,
@@ -518,15 +521,10 @@ def _main():
 
         #### JUST SHOW MIX-TRACKLIST:
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-            #pretty_print_mix_tracklist(mix_ctrl.id, mix_ctrl.info)
             mix_ctrl.view()
 
 
     ### SUGGEST MODE (was TRACK MODE)
-    #if user.WANTS_TO_PULL_TRACK_INFO:
-    #    mix_ctrl = Mix_ctrl_cli(False, False, user, conf.discobase)
-    #    mix_ctrl.pull_track_info_from_discogs(coll_ctrl)
-    #elif user.WANTS_SUGGEST_TRACK_REPORT:
     if user.WANTS_SUGGEST_TRACK_REPORT:
         coll_ctrl.track_report(args.suggest_search)
     if user.WANTS_SUGGEST_BPM_REPORT:
@@ -588,6 +586,8 @@ def _main():
 
         coll_ctrl.cli.welcome_to_discodos()
         coll_ctrl.cli.view_tutorial()
+
+
 # __MAIN try/except wrap
 if __name__ == "__main__":
     main()
