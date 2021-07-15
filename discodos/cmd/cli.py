@@ -588,7 +588,7 @@ def _main():
     ##### SETUP MODE ###########################################################
     if user.WANTS_TO_LAUNCH_SETUP:
         # INFORM USER what this subcommand does
-        print_help(
+        coll_ctrl.cli.p(
             "This is DiscoDOS setup. If you don't see any output below, "
             "there was nothing to do."
         )
@@ -608,17 +608,17 @@ def _main():
     if user.DID_NOT_PROVIDE_COMMAND:
         if not coll_ctrl.ONLINE:
             if user.WANTS_ONLINE:
-                merr ='Check your internet connection and DiscoDOS configuration (config.yaml)'
-                merr+='\nBut anyway:'
-                print(merr)
-                log.info(merr)
+                coll_ctrl.cli.p(
+                    "Check your internet connection and DiscoDOS configuration "
+                    "(config.yaml)\nBut anyway:", logging="info"
+                )
                 coll_ctrl.cli.welcome_to_discodos()
                 raise SystemExit(1)
             else:
-                merr ="You didn't provide a command but enabled offline mode, this doesn't make sense."
-                merr+='\nBut anyway:'
-                print(merr)
-                log.info(merr)
+                coll_ctrl.cli.p(
+                    "You didn't provide a command but enabled offline mode, "
+                    "this doesn't make sense.\nBut anyway:", logging="info"
+                )
                 coll_ctrl.cli.welcome_to_discodos()
                 raise SystemExit(1)
 

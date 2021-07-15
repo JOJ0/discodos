@@ -447,7 +447,11 @@ class View_common_cli(View_common):
     """ Common view utils, usable in CLI only.
     """
 
-    def p(self, message):
+    def p(self, message, logging=""):
+        if logging == "debug":
+            log.debug(message)
+        if logging == "info":
+            log.info(message)
         print('' + str(message) + '\n')
 
     def ask(self, text=""):
