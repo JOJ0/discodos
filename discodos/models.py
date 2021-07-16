@@ -1348,8 +1348,7 @@ class Collection (Database):
           'track.d_track_no', 'track_ext.m_rec_id_override'],
            tables, condition=where, fetchone=True, orderby='release.discogs_id')
            
-
-    def upsert_track_ext(self, orig, edit_answers ):
+    def upsert_track_ext(self, orig, edit_answers):
         track_no = orig['d_track_no'].upper() # always save uppercase track numbers
         release_id = orig['d_release_id']
 
