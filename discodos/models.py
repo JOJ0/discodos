@@ -314,15 +314,15 @@ class Mix (Database):
             self.id, track_id
         )
         _join = '''mix_track INNER JOIN mix
-                                ON mix.mix_id = mix_track.mix_id
-                                  INNER JOIN release
-                                  ON mix_track.d_release_id = release.discogs_id
-                                    LEFT OUTER JOIN track
-                                    ON mix_track.d_release_id = track.d_release_id
-                                    AND mix_track.d_track_no = track.d_track_no
-                                      LEFT OUTER JOIN track_ext
-                                      ON mix_track.d_release_id = track_ext.d_release_id
-                                      AND mix_track.d_track_no = track_ext.d_track_no'''
+                     ON mix.mix_id = mix_track.mix_id
+                       INNER JOIN release
+                       ON mix_track.d_release_id = release.discogs_id
+                         LEFT OUTER JOIN track
+                         ON mix_track.d_release_id = track.d_release_id
+                         AND mix_track.d_track_no = track.d_track_no
+                           LEFT OUTER JOIN track_ext
+                           ON mix_track.d_release_id = track_ext.d_release_id
+                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(
             ['track_pos', 'discogs_title', 'd_track_name',
              'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key',
