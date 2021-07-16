@@ -606,7 +606,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         load_mix = Collection(False, self.conf.discobase)
         sql_result = load_mix.search_release_track_offline(self.lineEditTrackOfflineSearchArtist.text(), self.lineEditTrackOfflineSearchRelease.text(), self.lineEditTrackOfflineSearchTrack.text())
         row = ''
-
+        header = ''
         if sql_result:
             for row in sql_result:
                 sql_data.append([ str(row[x]) for x in row.keys()])
@@ -614,6 +614,10 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 
             #self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
             self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=header)
+            self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
+        else:
+            # Clear tableview
+            self.TableViewReleasesDataFrame = pd.DataFrame([], columns=[])
             self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
 
 
