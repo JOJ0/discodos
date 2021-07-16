@@ -329,15 +329,21 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
         self.pushButtonOfflineSearch.clicked.connect(self.tabwidgetsearch_pushbutton_offline_search)
-        self.lineEditTrackOfflineSearch = QtWidgets.QLineEdit()
-        self.lineEditTrackOfflineSearch.setPlaceholderText('Artist - Track name')
+        self.lineEditTrackOfflineSearchArtist = QtWidgets.QLineEdit()
+        self.lineEditTrackOfflineSearchArtist.setPlaceholderText('Artist')
+        self.lineEditTrackOfflineSearchRelease = QtWidgets.QLineEdit()
+        self.lineEditTrackOfflineSearchRelease.setPlaceholderText('Release')
+        self.lineEditTrackOfflineSearchTrack = QtWidgets.QLineEdit()
+        self.lineEditTrackOfflineSearchTrack.setPlaceholderText('Track')
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearch, 0, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.pushButtonOfflineSearch, 0, 1)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(vSpacer, 1, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchArtist, 0, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchRelease, 1, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchTrack, 2, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.pushButtonOfflineSearch, 3, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(vSpacer, 4, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(self.TabWidgetSearch.TabWidgetSearchTab1.layout)
 
         self.vboxTest.addWidget(self.TabWidgetSearch)
@@ -597,21 +603,21 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 
     def tabwidgetsearch_pushbutton_offline_search(self):
         print('hello :)')
-        # right query, and update a qtableview
-        
-        #         sql_data = []
-        #
-        #         load_mix = Collection(False, self.conf.discobase)
-        #         sql_result = load_mix.get_all_db_releases()
-        #
-        #         row = ''
-        #         if sql_result:
-        #             for row in sql_result:
-        #                 sql_data.append([ str(row[x]) for x in row.keys()])
-        #             # header = row.keys()
-        #
-        #         self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
-        #         self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
+        sql_data = []
+        load_mix = Collection(False, self.conf.discobase)
+        sql_result = load_mix.search_release_track_offline(self.lineEditTrackOfflineSearchArtist.text(), self.lineEditTrackOfflineSearchRelease.text(), self.lineEditTrackOfflineSearchTrack.text())
+        header = ''
+        row = ''
+
+        if sql_result:
+            for row in sql_result:
+                sql_data.append([ str(row[x]) for x in row.keys()])
+            header = row.keys()
+
+        #self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
+        self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=header)
+        self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
+
 
 
 def main():
