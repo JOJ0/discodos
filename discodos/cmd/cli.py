@@ -608,21 +608,28 @@ def _main():
     if user.DID_NOT_PROVIDE_COMMAND:
         if not coll_ctrl.ONLINE:
             if user.WANTS_ONLINE:
-                coll_ctrl.cli.p(
-                    "Check your internet connection and DiscoDOS configuration "
-                    "(config.yaml)\nBut anyway:", logging="info"
-                )
                 coll_ctrl.cli.welcome_to_discodos()
+                coll_ctrl.cli.p(
+                    "Connection to your Discogs collection failed.\nCheck your "
+                    "internet connection and DiscoDOS configuration "
+                    f"({conf.discodos_data}/config.yaml)"
+                )
                 raise SystemExit(1)
             else:
+                coll_ctrl.cli.welcome_to_discodos()
                 coll_ctrl.cli.p(
                     "You didn't provide a command but enabled offline mode, "
-                    "this doesn't make sense.\nBut anyway:", logging="info"
+                    "that doesn't make sense.", logging="info"
                 )
-                coll_ctrl.cli.welcome_to_discodos()
+                coll_ctrl.cli.view_tutorial()
                 raise SystemExit(1)
 
+        # Discogs connection successful but no command
         coll_ctrl.cli.welcome_to_discodos()
+        coll_ctrl.cli.p(
+            "Connection to your Discogs collection successful, "
+            "but you didn't provide a command.", logging="info"
+        )
         coll_ctrl.cli.view_tutorial()
 
 
