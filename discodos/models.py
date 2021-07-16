@@ -589,41 +589,43 @@ class Mix (Database):
             return self._updated_timestamp()
         return del_success
 
-    def get_full_mix(self, verbose=False, brainz=False, order_by='track_pos ASC'):
+    def get_full_mix(self, verbose=False, brainz=False,
+                     order_by='track_pos ASC'):
         log.info('MODEL: Getting full mix.')
         if verbose:
             sql_sel = '''SELECT track_pos, discogs_title, track.d_artist,
-                          d_track_name, mix_track.d_track_no,
-                          key, bpm, key_notes, trans_rating, trans_notes, notes,
-                          a_key, a_chords_key, a_bpm FROM'''
+                           d_track_name, mix_track.d_track_no, key, bpm,
+                           key_notes, trans_rating, trans_notes, notes, a_key,
+                           a_chords_key, a_bpm FROM'''
         elif brainz:
             sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
-                          key, bpm, a_key, a_chords_key, a_bpm,
-                          d_catno, discogs_id, m_rel_id, m_rec_id,
-                          m_rel_id_override, m_rec_id_override,
-                          track.m_match_method AS track_match_method,
-                          release.m_match_method AS release_match_method,
-                          release.m_match_time AS release_match_time,
-                          track.m_match_time AS track_match_time FROM'''
+                           key, bpm, a_key, a_chords_key, a_bpm,
+                           d_catno, discogs_id, m_rel_id, m_rec_id,
+                           m_rel_id_override, m_rec_id_override,
+                           track.m_match_method AS track_match_method,
+                           release.m_match_method AS release_match_method,
+                           release.m_match_time AS release_match_time,
+                           track.m_match_time AS track_match_time FROM'''
         else:
-            sql_sel = '''SELECT track_pos, d_catno, discogs_title, mix_track.d_track_no,
-                          trans_rating, key, bpm, a_key, a_chords_key, a_bpm FROM'''
+            sql_sel = '''SELECT track_pos, d_catno, discogs_title,
+                           mix_track.d_track_no, trans_rating, key, bpm, a_key,
+                           a_chords_key, a_bpm FROM'''
 
         order_clause = 'ORDER BY {}'.format(order_by)
-        sql_sel+=''' 
-                           mix_track INNER JOIN mix
-                             ON mix.mix_id = mix_track.mix_id
-                               INNER JOIN release
-                               ON mix_track.d_release_id = release.discogs_id
-                                 LEFT OUTER JOIN track
-                                 ON mix_track.d_release_id = track.d_release_id
-                                 AND mix_track.d_track_no = track.d_track_no
-                                   LEFT OUTER JOIN track_ext
-                                   ON mix_track.d_release_id = track_ext.d_release_id
-                                   AND mix_track.d_track_no = track_ext.d_track_no
-                       WHERE mix_track.mix_id == {}
-                       {}'''.format(self.id, order_clause)
-        return self._select(sql_sel, fetchone = False)
+        sql_sel+='''
+                      mix_track INNER JOIN mix
+                        ON mix.mix_id = mix_track.mix_id
+                          INNER JOIN release
+                          ON mix_track.d_release_id = release.discogs_id
+                            LEFT OUTER JOIN track
+                            ON mix_track.d_release_id = track.d_release_id
+                            AND mix_track.d_track_no = track.d_track_no
+                              LEFT OUTER JOIN track_ext
+                              ON mix_track.d_release_id = track_ext.d_release_id
+                              AND mix_track.d_track_no = track_ext.d_track_no
+                        WHERE mix_track.mix_id == {}
+                        {}'''.format(self.id, order_clause)
+        return self._select(sql_sel, fetchone=False)
 
     def add_track(self, release_id, track_no, track_pos, trans_rating='', trans_notes=''):
         log.info('MODEL: Adding track to current mix.')
