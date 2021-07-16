@@ -602,11 +602,9 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.treeviewmix_load()
 
     def tabwidgetsearch_pushbutton_offline_search(self):
-        print('hello :)')
         sql_data = []
         load_mix = Collection(False, self.conf.discobase)
         sql_result = load_mix.search_release_track_offline(self.lineEditTrackOfflineSearchArtist.text(), self.lineEditTrackOfflineSearchRelease.text(), self.lineEditTrackOfflineSearchTrack.text())
-        header = ''
         row = ''
 
         if sql_result:
@@ -614,10 +612,9 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
                 sql_data.append([ str(row[x]) for x in row.keys()])
             header = row.keys()
 
-        #self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
-        self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=header)
-        self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
-
+            #self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
+            self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=header)
+            self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
 
 
 def main():
