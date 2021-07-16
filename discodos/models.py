@@ -507,15 +507,14 @@ class Mix (Database):
         return self._updated_timestamp()
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
-        log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
+        log.info("MODEL: Reordering because a track was squeezed in at pos "
+                 "{}.".format(pos))
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
             new_pos = t['track_pos'] + 1
-            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
-                     t['track_pos'], new_pos)
-            # if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):
-            #    return False
+            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i",
+                     t['mix_track_id'], t['track_pos'], new_pos)
             sql_upd = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
             ids_tuple = (new_pos, t['mix_track_id'])
             if not self.execute_sql(sql_upd, ids_tuple):
@@ -527,19 +526,27 @@ class Mix (Database):
             log.error('MODEL: shift_track: wrong usage.')
             return False
         # get mix_track_id of track to shift, the one before and the one after
-        tr_before = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
-            condition="mix_id = {} AND track_pos == {}".format(self.id, pos-1))
-        tr = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
-            condition="mix_id = {} AND track_pos == {}".format(self.id, pos))
-        tr_after = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
-            condition="mix_id = {} AND track_pos == {}".format(self.id, pos+1))
+        tr_before = self._select_simple(
+            ['mix_track_id'], 'mix_track', fetchone=True,
+            condition="mix_id = {} AND track_pos == {}".format(self.id, pos - 1)
+        )
+        tr = self._select_simple(
+            ['mix_track_id'], 'mix_track', fetchone=True,
+            condition="mix_id = {} AND track_pos == {}".format(self.id, pos)
+        )
+        tr_after = self._select_simple(
+            ['mix_track_id'], 'mix_track', fetchone=True,
+            condition="mix_id = {} AND track_pos == {}".format(self.id, pos + 1)
+        )
         log.debug('before: {}, shift_track: {}, after: {}'.format(
-          tr_before['mix_track_id'], tr['mix_track_id'], tr_after['mix_track_id']))
+            tr_before['mix_track_id'], tr['mix_track_id'],
+            tr_after['mix_track_id'])
+        )
 
         if direction == 'up':
-            tr_before_pos = pos     # is now the same as the orig track
-            tr_pos        = pos -1  # is now one less than before
-            tr_after_pos  = pos +1  # stays the same
+            tr_before_pos = pos       # is now the same as the orig track
+            tr_pos = pos - 1          # is now one less than before
+            # tr_after_pos = pos + 1  # stays the same
 
             sql_upd_tr_bef = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
             ids_tr_bef = (tr_before_pos, tr_before['mix_track_id'])
@@ -551,9 +558,9 @@ class Mix (Database):
             ret_tr_aft = True
 
         elif direction == 'down':
-            tr_before_pos = pos -1  # stays the same
-            tr_pos        = pos +1  # is now one more than before
-            tr_after_pos  = pos     # is now the same as the orig track
+            # tr_before_pos = pos - 1  # stays the same
+            tr_pos = pos + 1           # is now one more than before
+            tr_after_pos = pos         # is now the same as the orig track
 
             sql_upd_tr = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
             ids_tr = (tr_pos, tr['mix_track_id'])
@@ -568,8 +575,9 @@ class Mix (Database):
             log.error('MODEL: shift_track: one or more track updates failed.')
             return False
         log.info(
-            'MODEL: shift_track: Former track {} was successfully shifted {}.'.format(
-                     pos, direction))
+            'MODEL: shift_track: Former track {} was successfully '.format(pos)
+            + 'shifted {}.'.format(direction)
+        )
         return self._updated_timestamp()
 
     def delete_track(self, pos):
