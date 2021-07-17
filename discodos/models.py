@@ -898,13 +898,14 @@ class Collection (Database):
                 raise Exc
 
     def search_release_track_offline(self, artist='', release='', track=''):
-        fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id',
-                  'release.d_catno', 'release.discogs_title',
+        fields = ['track.d_artist', 'track.d_track_name',
+                  'release.d_catno', 'track.d_track_no',
+                  'track_ext.key', 'track_ext.bpm', 'track_ext.key_notes',
+                  'track_ext.notes',
+                  'release.discogs_id', 'release.discogs_title',
                   'release.import_timestamp', 'release.in_d_collection',
                   'release.m_rel_id', 'release.m_rel_id_override',
-                  'release.m_match_method', 'release.m_match_time',
-                  'track.d_track_no', 'track.d_track_name', 'track_ext.key',
-                  'track_ext.bpm', 'track_ext.key_notes', 'track_ext.notes']
+                  'release.m_match_method', 'release.m_match_time']
         from_tables='''
                     release LEFT OUTER JOIN track
                     ON track.d_release_id = release.discogs_id
