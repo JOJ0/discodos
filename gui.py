@@ -11,7 +11,7 @@ from discodos.models import Mix, Collection
 from discodos.config import Config
 from discodos.utils import is_number
 from discodos.ctrls import Ctrl_common
-from discodos.views import View_common, Mix_view_common
+from discodos.views import View_common, Mix_view_common, Collection_view_common
 
 
 log = logging.getLogger('discodos')
@@ -272,8 +272,8 @@ class GuiTabWidget(QtWidgets.QTabWidget):
         self.addTab(self.TabWidgetSearchTab3, 'Suggest')
 
 
-class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
-                 Ui_MainWindow):
+class MainWindow(Collection_view_common, Mix_view_common, View_common,
+                 QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self, *args, obj=None, config_obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -314,7 +314,7 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.tableviewtracks_load(None)
 
         # Create tableviewresults
-        self.tableViewResultsHeader = []
+        self.tableViewResultsHeader = self.headers_list_search_results
         self.tableviewresults_load()
 
         # Create TabWidget
@@ -597,14 +597,11 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         load_mix = Collection(False, self.conf.discobase)
         sql_result = load_mix.search_release_track_offline(self.lineEditTrackOfflineSearchArtist.text(), self.lineEditTrackOfflineSearchRelease.text(), self.lineEditTrackOfflineSearchTrack.text())
         row = ''
-        header = ''
         if sql_result:
             for row in sql_result:
                 sql_data.append([ str(row[x]) for x in row.keys()])
-            header = row.keys()
 
-            #self.tableViewResultsDataFrame = pd.DataFrame(sql_data, columns=self.tableViewResultsHeader)
-            self.tableViewResultsDataFrame = pd.DataFrame(sql_data, columns=header)
+            self.tableViewResultsDataFrame = pd.DataFrame(sql_data, columns=self.tableViewResultsHeader)
             self.tableViewResults.model.update(self.tableViewResultsDataFrame)
         else:
             # Clear tableview
