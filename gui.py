@@ -593,19 +593,31 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.treeviewmix_load()
 
     def tabwidgetsearch_pushbutton_offline_search(self):
-        sql_data = []
-        load_mix = Collection(False, self.conf.discobase)
-        sql_result = load_mix.search_release_track_offline(self.lineEditTrackOfflineSearchArtist.text(), self.lineEditTrackOfflineSearchRelease.text(), self.lineEditTrackOfflineSearchTrack.text())
-        row = ''
-        if sql_result:
-            for row in sql_result:
-                sql_data.append([ str(row[x]) for x in row.keys()])
+        search_results_list = []
+        collection = Collection(False, self.conf.discobase)
+        search_results = collection.search_release_track_offline(
+            self.lineEditTrackOfflineSearchArtist.text(),
+            self.lineEditTrackOfflineSearchRelease.text(),
+            self.lineEditTrackOfflineSearchTrack.text()
+        )
+        if search_results:
+            search_results_key_bpm_replaced = self.replace_key_bpm(
+                search_results
+            )
+            for row in search_results_key_bpm_replaced:
+                search_results_list.append(
+                    [str(self.none_replace(row[key])) for key in row.keys()]
+                )
 
-            self.tableViewResultsDataFrame = pd.DataFrame(sql_data, columns=self.tableViewResultsHeader)
+            self.tableViewResultsDataFrame = pd.DataFrame(
+                search_results_list,
+                columns=self.tableViewResultsHeader
+            )
             self.tableViewResults.model.update(self.tableViewResultsDataFrame)
         else:
-            # Clear tableview
-            self.tableViewResultsDataFrame = pd.DataFrame([], columns=[])
+            # Clear tableview when nothing found
+            self.tableViewResultsDataFrame = pd.DataFrame(
+                [], columns=self.tableViewResultsHeader)
             self.tableViewResults.model.update(self.tableViewResultsDataFrame)
 
 
