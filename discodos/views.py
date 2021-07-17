@@ -429,6 +429,15 @@ class Mix_view_common():
 
 class Collection_view_common():
     """Collection view utils, usable in CLI and GUI, related to Collection only
+
+    Lists of questions. Used in CLI:
+        self._edit_track_questions: when editing a collection-track.
+
+    Dictionaries containing SQL table fields translated to human readable
+    column names.
+
+    self.headers_list_search_results: Used for headers in GUI Search Results
+
     """
     def __init__(self):
         super().__init__()
@@ -441,6 +450,25 @@ class Collection_view_common():
             ["notes", "Other track notes: ({}): "],
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
+
+        self.headers_dict_search_results = {
+            'd_artist': 'Artist', 'd_track_name': 'Title',
+            'd_catno': 'CatNo', 'd_track_no': 'Trk\nNo',
+            'key': 'Key', 'bpm': 'BPM',
+            'key_notes': 'Key\nNotes', 'notes': 'Track\nNotes',
+            'discogs_id': 'Discogs\nRelease ID',
+            'discogs_title': 'Release\nTitle',
+            'import_timestamp': 'Imported',
+            'in_d_collection': 'In D.\nColl.',
+            'm_rel_id ': 'MusicBrainz\nID',
+            'm_rel_id_override ': 'MusicBrainz\nID Override',
+            'm_match_method ': 'MusicBrainz\nMatch Method',
+            'm_match_time ': 'MusicBrainz\nMatch Time',
+        }
+
+    @property
+    def headers_list_search_results(self):
+        return [val for val in self.headers_dict_search_results.values()]
 
 
 class View_common_cli(View_common):
