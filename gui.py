@@ -323,7 +323,29 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.vboxReleases.addWidget(self.TableViewReleases)
 
         # Create TabWidget
+        vSpacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+
         self.TabWidgetSearch = GuiTabWidget(self)
+
+        self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
+        self.pushButtonOfflineSearch.clicked.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.lineEditTrackOfflineSearchArtist = QtWidgets.QLineEdit()
+        self.lineEditTrackOfflineSearchArtist.setPlaceholderText('Artist')
+        self.lineEditTrackOfflineSearchRelease = QtWidgets.QLineEdit()
+        self.lineEditTrackOfflineSearchRelease.setPlaceholderText('Release')
+        self.lineEditTrackOfflineSearchTrack = QtWidgets.QLineEdit()
+        self.lineEditTrackOfflineSearchTrack.setPlaceholderText('Track')
+
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchArtist, 0, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchRelease, 1, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchTrack, 2, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.pushButtonOfflineSearch, 3, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(vSpacer, 4, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(self.TabWidgetSearch.TabWidgetSearchTab1.layout)
+
         self.vboxTest.addWidget(self.TabWidgetSearch)
 
         # Create vbox formlayout for mixes buttons and edit boxes
@@ -578,6 +600,25 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 
         # must be a better way to reload data on insert
         self.treeviewmix_load()
+
+    def tabwidgetsearch_pushbutton_offline_search(self):
+        sql_data = []
+        load_mix = Collection(False, self.conf.discobase)
+        sql_result = load_mix.search_release_track_offline(self.lineEditTrackOfflineSearchArtist.text(), self.lineEditTrackOfflineSearchRelease.text(), self.lineEditTrackOfflineSearchTrack.text())
+        row = ''
+        header = ''
+        if sql_result:
+            for row in sql_result:
+                sql_data.append([ str(row[x]) for x in row.keys()])
+            header = row.keys()
+
+            #self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
+            self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=header)
+            self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
+        else:
+            # Clear tableview
+            self.TableViewReleasesDataFrame = pd.DataFrame([], columns=[])
+            self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
 
 
 def main():
