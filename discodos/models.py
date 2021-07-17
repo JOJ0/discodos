@@ -900,6 +900,7 @@ class Collection (Database):
     def search_release_track_offline(self, artist='', release='', track=''):
         fields = ['track.d_artist', 'track.d_track_name',
                   'release.d_catno', 'track.d_track_no',
+                  'track.a_key', 'track.a_bpm',
                   'track_ext.key', 'track_ext.bpm', 'track_ext.key_notes',
                   'track_ext.notes',
                   'release.discogs_id', 'release.discogs_title',
