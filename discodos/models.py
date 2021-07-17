@@ -765,18 +765,18 @@ class Collection (Database):
             global me
             me = self.me
             _ONLINE = True
-        #except Exception as Exc:
+        # except Exception as Exc:
         except Exception:
             _ONLINE = False
-            #raise Exc
+            # raise Exc
         self.ONLINE = _ONLINE
         return _ONLINE
 
     def get_all_db_releases(self):
-        #return db.all_releases(self.db_conn)
+        # return db.all_releases(self.db_conn)
         return self._select_simple(['d_catno', 'd_artist',
             'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'
-            #'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
+            # 'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
             ], 'release', orderby='d_artist, discogs_title')
 
     def search_release_online(self, id_or_title):
@@ -898,9 +898,13 @@ class Collection (Database):
                 raise Exc
 
     def search_release_track_offline(self, artist='', release='', track=''):
-        fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id', 'discogs_title',
-                 'track.d_track_no', 'd_track_name',
-                 'key', 'bpm', 'key_notes', 'notes']
+        fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id',
+                  'release.d_catno', 'release.discogs_title',
+                  'release.import_timestamp', 'release.in_d_collection',
+                  'release.m_rel_id', 'release.m_rel_id_override',
+                  'release.m_match_method', 'release.m_match_time',
+                  'track.d_track_no', 'track.d_track_name', 'track_ext.key',
+                  'track_ext.bpm', 'track_ext.key_notes', 'track_ext.notes']
         from_tables='''
                     release LEFT OUTER JOIN track
                     ON track.d_release_id = release.discogs_id
@@ -910,11 +914,11 @@ class Collection (Database):
 
         if not artist:
             artist_sql = '''
-                     ((track.d_artist IS NULL OR track.d_artist LIKE "%") OR
-                      (release.d_artist IS NULL OR release.d_artist LIKE "%"))'''
+                ((track.d_artist IS NULL OR track.d_artist LIKE "%") OR
+                 (release.d_artist IS NULL OR release.d_artist LIKE "%"))'''
         else:
             artist_sql = '(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "%{}%")'.format(
-              artist, artist)
+                artist, artist)
 
         if not release:
             release_sql = '(discogs_title IS NULL OR discogs_title LIKE "%")'
@@ -926,20 +930,23 @@ class Collection (Database):
         else:
             track_sql = 'd_track_name LIKE "%{}%"'.format(track)
 
-        where = '''{} AND {} AND {}'''.format(artist_sql, release_sql, track_sql)
+        where = '''{} AND {} AND {}'''.format(
+            artist_sql, release_sql, track_sql
+        )
         order_by = 'track.d_artist, discogs_title, d_track_name'
 
         # prevent returning whole track collection when all search params empty
         if not artist and not release and not track:
             tracks = []
         else:
-            tracks = self._select_simple(fields, from_tables, where,
-                                   fetchone=False, orderby=order_by)
-        #log.debug(self.debug_db(tracks))
+            tracks = self._select_simple(
+                fields, from_tables, where, fetchone=False, orderby=order_by
+            )
+        # log.debug(self.debug_db(tracks))
         return tracks
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
-        track_no = track_no.upper() # always save uppercase track numbers
+        track_no = track_no.upper()  # always save uppercase track numbers
         try:
             sql_i='''INSERT INTO track(d_release_id, d_track_no, d_artist,
                         d_track_name, import_timestamp)
@@ -1012,9 +1019,9 @@ class Collection (Database):
             return False
 
     def is_in_d_coll(self, release_id):
-        #successful = False
+        # successful = False
         for r in self.me.collection_folders[0].releases:
-            #self.rate_limit_slow_downer(d, remaining=5, sleep=2)
+            # self.rate_limit_slow_downer(d, remaining=5, sleep=2)
             if r.release.id == release_id:
                 return r
         return False
@@ -1025,7 +1032,7 @@ class Collection (Database):
             log.info(
              "Discogs request rate limit is about to exceed, let's wait a little: %s",
                           self.d._fetcher.rate_limit_remaining)
-            #while int(self.d._fetcher.rate_limit_remaining) < remaining:
+            # while int(self.d._fetcher.rate_limit_remaining) < remaining:
             time.sleep(sleep)
         else:
             log.info("Discogs rate limit: %s remaining.",
@@ -1058,7 +1065,7 @@ class Collection (Database):
             return False
         else:
             log.info("MODEL: Returning track_report_snippet data.")
-            #self.cli.print_help(tracks_snippet)
+            # self.cli.print_help(tracks_snippet)
             return tracks_snippet
 
     def track_report_occurences(self, release_id, track_no):
@@ -1084,18 +1091,18 @@ class Collection (Database):
         '''gets Artist name from discogs release (child)objects via track_number, eg. A1
            params d_artist: FIXME'''
         for tr in d_tracklist:
-            #log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
-            #log.debug("d_artists_parse: this is the tr object: {}".format(tr))
+            # log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            # log.debug("d_artists_parse: this is the tr object: {}".format(tr))
             if tr.position.upper() == track_number.upper():
-                #log.info("d_tracklist_parse: found by track number.")
+                # log.info("d_tracklist_parse: found by track number.")
                 if len(tr.artists) == 1:
                     name = tr.artists[0].name
                     log.info("MODEL: d_artists_parse: just one artist, returning name: {}".format(name))
                     return name
                 elif len(tr.artists) == 0:
-                    #log.info(
-                    #  "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
-                    #            dir(tr.artists)))
+                    # log.info(
+                    #   "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
+                    #             dir(tr.artists)))
                     log.info(
                       "MODEL: d_artists_parse: no artists in tracklist, checking d_artists object..")
                     combined_name = self.d_artists_to_str(d_artists)
@@ -1115,25 +1122,25 @@ class Collection (Database):
     def d_tracklist_parse(self, d_tracklist, track_number):
         '''gets Track name from discogs tracklist object via track_number, eg. A1'''
         for tr in d_tracklist:
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
-            #log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if track_number != None: # don't fail but return False
+            # log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            # log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
+            if track_number != None:  # don't fail but return False
                 if tr.position.upper() == track_number.upper():
                     return tr.title
         log.debug('d_tracklist_parse: Track {} not existing on release.'.format(
             track_number))
-        return False # we didn't find the tracknumber
+        return False  # we didn't find the tracknumber
 
     def d_tracklist_parse_numerical(self, d_tracklist, track_number):
         '''get numerical track pos from discogs tracklist object via
            track_number, eg. A1'''
         for num, tr in enumerate(d_tracklist):
             if tr.position.lower() == track_number.lower():
-                return num + 1 # return human readable (matches brainz position)
+                return num + 1  # return human readable (matches brainz position)
         log.debug(
             'd_tracklist_parse_numerical: Track {} not existing on release.'.format(
               track_number))
-        return False # we didn't find the tracknumber
+        return False  # we didn't find the tracknumber
 
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
@@ -1167,13 +1174,13 @@ class Collection (Database):
                 OR (chosen_bpm >= "{}" AND chosen_bpm <= "{}")
             ORDER BY chosen_key, chosen_bpm'''.format(
               min_bpm, max_bpm, min_bpm, max_bpm)
-                    #THEN trim(track_ext.bpm, '.0')
-                    #THEN trim(round(track.a_bpm, 0), '.0')
+                    # THEN trim(track_ext.bpm, '.0')
+                    # THEN trim(round(track.a_bpm, 0), '.0')
         return self._select(sql_bpm, fetchone=False)
 
     def get_tracks_by_key(self, key):
-        #prev_key = "" # future music ;-) when we have key-translation-table
-        #next_key = ""
+        # prev_key = "" # future music ;-) when we have key-translation-table
+        # next_key = ""
         sql_key = '''
           SELECT discogs_title, d_catno, track.d_artist, d_track_name,
             track.d_track_no, key_notes, notes,
@@ -1241,7 +1248,7 @@ class Collection (Database):
 
     def upsert_track_brainz(self, release_id, track_no, rec_id,
           match_method, key, chords_key, bpm):
-        track_no = track_no.upper() # always save uppercase track numbers
+        track_no = track_no.upper()  # always save uppercase track numbers
         try:
             sql_i = '''INSERT INTO track(d_release_id, d_track_no,
                   m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
@@ -1349,7 +1356,7 @@ class Collection (Database):
            tables, condition=where, fetchone=True, orderby='release.discogs_id')
            
     def upsert_track_ext(self, orig, edit_answers):
-        track_no = orig['d_track_no'].upper() # always save uppercase track numbers
+        track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
         release_id = orig['d_release_id']
 
         fields_ins = ''
@@ -1368,7 +1375,7 @@ class Collection (Database):
             fields_ins_vals += ", ?"
             values_list.append(answer)
 
-        if len(edit_answers) == 0: # only update if necessary
+        if len(edit_answers) == 0:  # only update if necessary
             return True
 
         try:
@@ -1409,11 +1416,11 @@ class Brainz (object):
     def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):
         # If you plan to submit data, authenticate
         m.auth(mb_user, mb_pass)
-        m.set_useragent(mb_appid[0], mb_appid[1]) # 0=version, 1=app
+        m.set_useragent(mb_appid[0], mb_appid[1])  # 0=version, 1=app
         # If you are connecting to a different server
-        #m.set_hostname("beta.musicbrainz.org")
-        #m.set_rate_limit(limit_or_interval=1.0, new_requests=1)
-        try: # test request
+        # m.set_hostname("beta.musicbrainz.org")
+        # m.set_rate_limit(limit_or_interval=1.0, new_requests=1)
+        try:  # test request
             m.get_artist_by_id("952a4205-023d-4235-897c-6fdb6f58dfaa", [])
             self.ONLINE = True
             return True
@@ -1480,15 +1487,15 @@ class Brainz (object):
             log.debug("MODELS: get_mb_recording_by_id returns empty dict.")
             return {}
 
-    def get_urls_from_mb_release(self, full_rel): # takes what get_mb_release_by_id returned
-        #log.debug(full_rel['release'].keys())
+    def get_urls_from_mb_release(self, full_rel):  # takes what get_mb_release_by_id returned
+        # log.debug(full_rel['release'].keys())
         if 'url-relation-list' in full_rel['release']:
             return full_rel['release']['url-relation-list']
         else:
             return []
 
-    def get_catno_from_mb_label(self, mb_label): # label-info-list item
-        #log.debug(mb_label)
+    def get_catno_from_mb_label(self, mb_label):  # label-info-list item
+        # log.debug(mb_label)
         if 'catalog-number' in mb_label:
             return mb_label['catalog-number']
         else:
@@ -1525,13 +1532,13 @@ class Brainz (object):
 
     def _get_accbr_low_level(self, mb_id):
         low_level = self._get_accousticbrainz("{}/low-level".format(mb_id))
-        #pprint.pprint(low_level)
+        # pprint.pprint(low_level)
         return low_level
 
     def _get_accbr_high_level(self, mb_id):
         return self._get_accousticbrainz("{}/high-level".format(mb_id))
 
-    #def _get_accbr_url_rels(self, )
+    # def _get_accbr_url_rels(self, )
 
     def get_accbr_bpm(self, mb_id):
         try:
@@ -1565,7 +1572,7 @@ class Brainz (object):
             return None
 
 
-class Brainz_match (Brainz): # we are based on Brainz, but it's not online
+class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
     '''This class tries to match _one_ given release and/or recording with
         musicbrainz using the information passed in init'''
 
@@ -1584,40 +1591,40 @@ class Brainz_match (Brainz): # we are based on Brainz, but it's not online
         self.d_track_name_orig = d_track_name
         self.d_track_no_orig = d_track_no
         self.d_track_no_num_orig = d_track_no_num
-        #self.detail = detail
+        # self.detail = detail
         # match methods and times init
         self.release_match_method = ''
         self.release_mbid = ''
         self.rec_match_method = ''
         self.rec_mbid = ''
         # strip and lowercase here already, we need it all the time
-        self.d_release_id = d_release_id # no mods here, just streamlining
+        self.d_release_id = d_release_id  # no mods here, just streamlining
         self.d_release_title = d_release_title.lower()
-        #self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
+        # self.d_catno = d_catno.upper().replace(' ', '') # exp. with upper here
         self.d_catno = d_catno.upper().replace(' ', '')
         if d_artist:
             self.d_artist = d_artist.lower()
-        else: # if it's None or something else
+        else:  # if it's None or something else
             self.d_artist = ''
         self.d_track_name = d_track_name.lower()
-        self.d_track_no = d_track_no.upper() # upper comparision everywhere
+        self.d_track_no = d_track_no.upper()  # upper comparision everywhere
         self.d_track_no_num = int(d_track_no_num)
 
-    def fetch_mb_releases(self, detail): # fetching controllable from outside
+    def fetch_mb_releases(self, detail):  # fetching controllable from outside
         # decide which search method is used according to detail (-z count)
         # FIXME error handling should be happening here
-        if detail < 2: # be strict, also use _original_ data here
+        if detail < 2:  # be strict, also use _original_ data here
             log.debug('strict catno: {}'.format(self.d_catno_orig))
             log.debug('strict artist: {}'.format(self.d_artist_orig))
             log.debug('strict release: {}'.format(self.d_release_title_orig))
             self.mb_releases = self.search_mb_releases(
                 self.d_artist_orig, self.d_release_title_orig,
                 self.d_catno_orig, limit = 5, strict = True)
-        else: # fuzzy search
+        else:  # fuzzy search
             self.mb_releases = self.search_mb_releases(
                 self.d_artist, self.d_release_title, self.d_catno,
                   limit = 5, strict = False)
-        return True # FIXME error handling
+        return True  # FIXME error handling
 
     def fetch_mb_matched_rel(self, rel_mbid = False): # mbid passable from outside
         if rel_mbid: # given from outside, rest of necess. data from init
