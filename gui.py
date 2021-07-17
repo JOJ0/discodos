@@ -297,10 +297,6 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.vboxTracks.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTracks.setLayout(self.vboxTracks)
 
-        self.vboxReleases = QtWidgets.QVBoxLayout()
-        self.vboxReleases.setContentsMargins(0, 0, 0, 0)
-        self.groupBoxReleases.setLayout(self.vboxReleases)
-
         self.vboxTest = QtWidgets.QVBoxLayout()
         self.vboxTest.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTest.setLayout(self.vboxTest)
@@ -312,15 +308,6 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         # Create tableviewtracks
         self.tableViewTracksHeader = self.headers_list_mixtracks_all
         self.tableviewtracks_load(None)
-
-        # Create tableviewreleases
-        self.TableViewReleasesHeader = ['d_catno', 'd_artist', 'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override']
-        self.TableViewReleasesDataFrame = pd.DataFrame(
-            [], columns=self.TableViewReleasesHeader)
-        self.TableViewReleases = GuiTableView(
-            self, self.TableViewReleasesDataFrame)
-        self.TableViewReleases.clicked.connect(self.tableviewreleases_on_click)
-        self.vboxReleases.addWidget(self.TableViewReleases)
 
         # Create TabWidget
         vSpacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -402,11 +389,6 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         #     self.tableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
         self.tableViewTracks.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
-        self.settings.beginGroup('TableViewReleases')
-        # if self.settings.value('ColumnWidth'):
-        #    self.TableViewReleases.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
-        self.TableViewReleases.read_settings(self.settings, 'ColumnWidth')
-        self.settings.endGroup()
         self.settings.beginGroup('treeViewMix')
         # if self.settings.value('ColumnWidth'):
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
@@ -442,9 +424,6 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.settings.beginGroup('tableViewTracks')
         self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
         self.settings.endGroup()
-        self.settings.beginGroup('TableViewReleases')
-        self.settings.setValue('ColumnWidth', self.TableViewReleases.horizontalHeader().saveState())
-        self.settings.endGroup()
         self.settings.beginGroup('treeViewMix')
         self.settings.setValue('ColumnWidth', self.treeViewMix.header().saveState())
         #
@@ -470,7 +449,6 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
 
     def initUI(self):
         self.treeviewmix_load()
-        self.tableviewreleases_load_data()
 
     def treeviewmix_load(self):
         """ Loads mixes list from database and initializes treeViewMix.
@@ -547,31 +525,11 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         else:
             self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
 
-    def tableviewreleases_load_data(self):
-        sql_data = []
-
-        load_mix = Collection(False, self.conf.discobase)
-        sql_result = load_mix.get_all_db_releases()
-
-        row = ''
-        if sql_result:
-            for row in sql_result:
-                sql_data.append([ str(row[x]) for x in row.keys()])
-            # header = row.keys()
-
-        self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
-        self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
-
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
         playlist_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
         self.tableviewtracks_load(playlist_id)
         print('playlist_id:', playlist_id)
-
-    def tableviewreleases_on_click(self, index):
-        indexes = self.TableViewReleases.selectionModel().selectedRows()
-        for index in indexes:
-            print(self.TableViewReleases.model.data(self.TableViewReleases.model.index(index.row(), 3)))
 
     def treeviewmix_pushbutton_del_mix(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
