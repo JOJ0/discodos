@@ -447,7 +447,11 @@ class View_common_cli(View_common):
     """ Common view utils, usable in CLI only.
     """
 
-    def p(self, message):
+    def p(self, message, logging=""):
+        if logging == "debug":
+            log.debug(message)
+        if logging == "info":
+            log.info(message)
         print('' + str(message) + '\n')
 
     def ask(self, text=""):
@@ -576,9 +580,6 @@ class View_common_cli(View_common):
         return answers
 
     def view_tutorial(self):
-        m ='Connection to your Discogs collection is working, '
-        m+="but you didn't provide a command."
-        print(m)
         tutorial_items = [
             '\n\nFirst things first: Whenever DiscoDOS asks you a question, '
             'you will be shown a default value in (brackets). If you '
@@ -653,7 +654,7 @@ class View_common_cli(View_common):
             'https://github.com/JOJ0/discodos'
         ]
 
-        view_tut = self.ask('\nDo you want to see a tutorial on how DiscoDOS '
+        view_tut = self.ask('Do you want to see a tutorial on how DiscoDOS '
                             'basically works? (Y/n): ')
         if view_tut.lower() == 'y' or view_tut == '':
             # print(tutorial_items[0])

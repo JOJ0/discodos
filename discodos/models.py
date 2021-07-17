@@ -314,15 +314,15 @@ class Mix (Database):
             self.id, track_id
         )
         _join = '''mix_track INNER JOIN mix
-                                ON mix.mix_id = mix_track.mix_id
-                                  INNER JOIN release
-                                  ON mix_track.d_release_id = release.discogs_id
-                                    LEFT OUTER JOIN track
-                                    ON mix_track.d_release_id = track.d_release_id
-                                    AND mix_track.d_track_no = track.d_track_no
-                                      LEFT OUTER JOIN track_ext
-                                      ON mix_track.d_release_id = track_ext.d_release_id
-                                      AND mix_track.d_track_no = track_ext.d_track_no'''
+                     ON mix.mix_id = mix_track.mix_id
+                       INNER JOIN release
+                       ON mix_track.d_release_id = release.discogs_id
+                         LEFT OUTER JOIN track
+                         ON mix_track.d_release_id = track.d_release_id
+                         AND mix_track.d_track_no = track.d_track_no
+                           LEFT OUTER JOIN track_ext
+                           ON mix_track.d_release_id = track_ext.d_release_id
+                           AND mix_track.d_track_no = track_ext.d_track_no'''
         return self._select_simple(
             ['track_pos', 'discogs_title', 'd_track_name',
              'mix_track.d_track_no', 'trans_rating', 'trans_notes', 'key',
@@ -507,15 +507,14 @@ class Mix (Database):
         return self._updated_timestamp()
 
     def reorder_tracks_squeeze_in(self, pos, tracks_to_shift):
-        log.info('MODEL: Reordering because a track was squeezed in at pos {}.'.format(pos))
+        log.info("MODEL: Reordering because a track was squeezed in at pos "
+                 "{}.".format(pos))
         if not tracks_to_shift:
             return False
         for t in tracks_to_shift:
             new_pos = t['track_pos'] + 1
-            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i", t['mix_track_id'],
-                     t['track_pos'], new_pos)
-            # if not db.update_pos_in_mix(self.db_conn, t['mix_track_id'], new_pos):
-            #    return False
+            log.info("MODEL: Shifting mix_track_id %i from pos %i to %i",
+                     t['mix_track_id'], t['track_pos'], new_pos)
             sql_upd = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
             ids_tuple = (new_pos, t['mix_track_id'])
             if not self.execute_sql(sql_upd, ids_tuple):
@@ -527,19 +526,27 @@ class Mix (Database):
             log.error('MODEL: shift_track: wrong usage.')
             return False
         # get mix_track_id of track to shift, the one before and the one after
-        tr_before = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
-            condition="mix_id = {} AND track_pos == {}".format(self.id, pos-1))
-        tr = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
-            condition="mix_id = {} AND track_pos == {}".format(self.id, pos))
-        tr_after = self._select_simple(['mix_track_id'], 'mix_track', fetchone=True,
-            condition="mix_id = {} AND track_pos == {}".format(self.id, pos+1))
+        tr_before = self._select_simple(
+            ['mix_track_id'], 'mix_track', fetchone=True,
+            condition="mix_id = {} AND track_pos == {}".format(self.id, pos - 1)
+        )
+        tr = self._select_simple(
+            ['mix_track_id'], 'mix_track', fetchone=True,
+            condition="mix_id = {} AND track_pos == {}".format(self.id, pos)
+        )
+        tr_after = self._select_simple(
+            ['mix_track_id'], 'mix_track', fetchone=True,
+            condition="mix_id = {} AND track_pos == {}".format(self.id, pos + 1)
+        )
         log.debug('before: {}, shift_track: {}, after: {}'.format(
-          tr_before['mix_track_id'], tr['mix_track_id'], tr_after['mix_track_id']))
+            tr_before['mix_track_id'], tr['mix_track_id'],
+            tr_after['mix_track_id'])
+        )
 
         if direction == 'up':
-            tr_before_pos = pos     # is now the same as the orig track
-            tr_pos        = pos -1  # is now one less than before
-            tr_after_pos  = pos +1  # stays the same
+            tr_before_pos = pos       # is now the same as the orig track
+            tr_pos = pos - 1          # is now one less than before
+            # tr_after_pos = pos + 1  # stays the same
 
             sql_upd_tr_bef = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
             ids_tr_bef = (tr_before_pos, tr_before['mix_track_id'])
@@ -551,9 +558,9 @@ class Mix (Database):
             ret_tr_aft = True
 
         elif direction == 'down':
-            tr_before_pos = pos -1  # stays the same
-            tr_pos        = pos +1  # is now one more than before
-            tr_after_pos  = pos     # is now the same as the orig track
+            # tr_before_pos = pos - 1  # stays the same
+            tr_pos = pos + 1           # is now one more than before
+            tr_after_pos = pos         # is now the same as the orig track
 
             sql_upd_tr = 'UPDATE mix_track SET track_pos = ? WHERE mix_track_id == ?'
             ids_tr = (tr_pos, tr['mix_track_id'])
@@ -568,8 +575,9 @@ class Mix (Database):
             log.error('MODEL: shift_track: one or more track updates failed.')
             return False
         log.info(
-            'MODEL: shift_track: Former track {} was successfully shifted {}.'.format(
-                     pos, direction))
+            'MODEL: shift_track: Former track {} was successfully '.format(pos)
+            + 'shifted {}.'.format(direction)
+        )
         return self._updated_timestamp()
 
     def delete_track(self, pos):
@@ -581,41 +589,43 @@ class Mix (Database):
             return self._updated_timestamp()
         return del_success
 
-    def get_full_mix(self, verbose=False, brainz=False, order_by='track_pos ASC'):
+    def get_full_mix(self, verbose=False, brainz=False,
+                     order_by='track_pos ASC'):
         log.info('MODEL: Getting full mix.')
         if verbose:
             sql_sel = '''SELECT track_pos, discogs_title, track.d_artist,
-                          d_track_name, mix_track.d_track_no,
-                          key, bpm, key_notes, trans_rating, trans_notes, notes,
-                          a_key, a_chords_key, a_bpm FROM'''
+                           d_track_name, mix_track.d_track_no, key, bpm,
+                           key_notes, trans_rating, trans_notes, notes, a_key,
+                           a_chords_key, a_bpm FROM'''
         elif brainz:
             sql_sel = '''SELECT track_pos, discogs_title, mix_track.d_track_no,
-                          key, bpm, a_key, a_chords_key, a_bpm,
-                          d_catno, discogs_id, m_rel_id, m_rec_id,
-                          m_rel_id_override, m_rec_id_override,
-                          track.m_match_method AS track_match_method,
-                          release.m_match_method AS release_match_method,
-                          release.m_match_time AS release_match_time,
-                          track.m_match_time AS track_match_time FROM'''
+                           key, bpm, a_key, a_chords_key, a_bpm,
+                           d_catno, discogs_id, m_rel_id, m_rec_id,
+                           m_rel_id_override, m_rec_id_override,
+                           track.m_match_method AS track_match_method,
+                           release.m_match_method AS release_match_method,
+                           release.m_match_time AS release_match_time,
+                           track.m_match_time AS track_match_time FROM'''
         else:
-            sql_sel = '''SELECT track_pos, d_catno, discogs_title, mix_track.d_track_no,
-                          trans_rating, key, bpm, a_key, a_chords_key, a_bpm FROM'''
+            sql_sel = '''SELECT track_pos, d_catno, discogs_title,
+                           mix_track.d_track_no, trans_rating, key, bpm, a_key,
+                           a_chords_key, a_bpm FROM'''
 
         order_clause = 'ORDER BY {}'.format(order_by)
-        sql_sel+=''' 
-                           mix_track INNER JOIN mix
-                             ON mix.mix_id = mix_track.mix_id
-                               INNER JOIN release
-                               ON mix_track.d_release_id = release.discogs_id
-                                 LEFT OUTER JOIN track
-                                 ON mix_track.d_release_id = track.d_release_id
-                                 AND mix_track.d_track_no = track.d_track_no
-                                   LEFT OUTER JOIN track_ext
-                                   ON mix_track.d_release_id = track_ext.d_release_id
-                                   AND mix_track.d_track_no = track_ext.d_track_no
-                       WHERE mix_track.mix_id == {}
-                       {}'''.format(self.id, order_clause)
-        return self._select(sql_sel, fetchone = False)
+        sql_sel+='''
+                      mix_track INNER JOIN mix
+                        ON mix.mix_id = mix_track.mix_id
+                          INNER JOIN release
+                          ON mix_track.d_release_id = release.discogs_id
+                            LEFT OUTER JOIN track
+                            ON mix_track.d_release_id = track.d_release_id
+                            AND mix_track.d_track_no = track.d_track_no
+                              LEFT OUTER JOIN track_ext
+                              ON mix_track.d_release_id = track_ext.d_release_id
+                              AND mix_track.d_track_no = track_ext.d_track_no
+                        WHERE mix_track.mix_id == {}
+                        {}'''.format(self.id, order_clause)
+        return self._select(sql_sel, fetchone=False)
 
     def add_track(self, release_id, track_no, track_pos, trans_rating='', trans_notes=''):
         log.info('MODEL: Adding track to current mix.')
@@ -634,20 +644,20 @@ class Mix (Database):
     def get_last_track(self):
         log.info('MODEL: Getting last track in current mix')
         return self._select_simple(['MAX(track_pos)'], 'mix_track',
-            condition = "mix_id = {}".format(self.id), fetchone = True)
+            condition="mix_id = {}".format(self.id), fetchone=True)
 
-    def get_tracks_of_one_mix(self, start_pos = False):
+    def get_tracks_of_one_mix(self, start_pos=False):
         log.info("MODEL: Getting tracks of a mix, from mix_track_table only)")
         if not start_pos:
             where = "mix_id == {}".format(self.id)
         else:
             where = "mix_id == {} and track_pos >= {}".format(self.id, start_pos)
         return self._select_simple(['*'], 'mix_track', where,
-                fetchone = False, orderby = 'track_pos')
+                fetchone=False, orderby='track_pos')
 
     def get_all_tracks_in_mixes(self):
         log.info('MODEL: Getting all tracks from mix_track table (only).')
-        return self._select_simple(['*'], 'mix_track', fetchone = False)
+        return self._select_simple(['*'], 'mix_track', fetchone=False)
 
     def get_mix_info(self):
         log.info("MODEL: Getting mix info.")
@@ -659,7 +669,7 @@ class Mix (Database):
         @author
         """
         self.mix_info = self._select_simple(
-            ['*'], 'mix', "mix_id == {}".format(self.id), fetchone = True)
+            ['*'], 'mix', "mix_id == {}".format(self.id), fetchone=True)
         return self.mix_info
 
     def update_mix_info(self, mix_details, edit_answers):
@@ -690,7 +700,7 @@ class Mix (Database):
             log.info("MODEL: Nothing changed - not executing mix update")
             return True
 
-    def get_mix_tracks_for_brainz_update(self, start_pos = False):
+    def get_mix_tracks_for_brainz_update(self, start_pos=False):
         log.info("MODEL: Getting tracks of a mix. Preparing for Discogs or AcousticBrainz update.")
         if not start_pos:
             where = "mix_id == {}".format(self.id)
@@ -709,7 +719,7 @@ class Mix (Database):
         return self._select_simple(['track_pos', 'mix_track.d_release_id',
           'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
           'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
-           tables, where, fetchone = False, orderby = 'mix_track.track_pos')
+           tables, where, fetchone=False, orderby='mix_track.track_pos')
 
     def get_all_mix_tracks_for_brainz_update(self, offset=0):
         log.info("MODEL: Getting all tracks of all mix. Preparing for Discogs or AcousticBrainz update.")
@@ -748,7 +758,7 @@ class Collection (Database):
         try:
             self.d = discogs_client.Client(
                     _appIdentifier,
-                    user_token = _userToken)
+                    user_token=_userToken)
             self.me = self.d.identity()
             global d
             d = self.d
@@ -863,7 +873,7 @@ class Collection (Database):
         return self._select_simple(['track.d_track_no', 'track.d_release_id',
           'd_track_name', 'key', 'key_notes', 'bpm', 'notes', 'm_rec_id_override',
           'a_key', 'a_chords_key', 'a_bpm'],
-          join, fetchone = True, condition = where)
+          join, fetchone=True, condition=where)
 
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
@@ -876,7 +886,7 @@ class Collection (Database):
             try:
                 releases = self._select_simple(['*'], 'release',
                         'discogs_title LIKE "%{}%" OR d_artist LIKE "%{}%"'.format(
-                        id_or_title, id_or_title), fetchone = False, orderby = 'd_artist')
+                        id_or_title, id_or_title), fetchone=False, orderby='d_artist')
                 if releases:
                     log.debug("First found release: {}".format(releases[0]))
                     log.debug("All found releases: {}".format(releases))
@@ -924,7 +934,7 @@ class Collection (Database):
             tracks = []
         else:
             tracks = self._select_simple(fields, from_tables, where,
-                                   fetchone = False, orderby = order_by)
+                                   fetchone=False, orderby=order_by)
         #log.debug(self.debug_db(tracks))
         return tracks
 
@@ -955,16 +965,16 @@ class Collection (Database):
 
     def search_release_id(self, release_id):
         return self._select_simple(['*'], 'release',
-            'discogs_id == {}'.format(release_id), fetchone = True)
+            'discogs_id == {}'.format(release_id), fetchone=True)
 
-    def create_release(self, release_id, release_title, release_artists, d_catno, d_coll = False):
+    def create_release(self, release_id, release_title, release_artists, d_catno, d_coll=False):
         try:
             insert_sql = '''INSERT OR FAIL INTO release(discogs_id, discogs_title,
                                     import_timestamp, d_artist, in_d_collection, d_catno)
                                     VALUES(?, ?, ?, ?, ?, ?)'''
             in_tuple = (release_id, release_title, datetime.today().isoformat(' ', 'seconds'),
                     release_artists, d_coll, d_catno)
-            return self.execute_sql(insert_sql, in_tuple, raise_err = True)
+            return self.execute_sql(insert_sql, in_tuple, raise_err=True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
                 log.debug("Release already in DiscoBASE, updating ...")
@@ -982,7 +992,7 @@ class Collection (Database):
                 log.error("MODEL: %s", e.args[0])
                 return False
 
-    def get_d_release(self, release_id, catch = True):
+    def get_d_release(self, release_id, catch=True):
         try:
             r = self.d.release(release_id)
             if catch == True:
@@ -1062,7 +1072,7 @@ class Collection (Database):
     def d_artists_to_str(self, d_artists):
         '''gets a combined string from discogs artistlist object'''
         artist_str=''
-        for cnt,artist in enumerate(d_artists):
+        for cnt, artist in enumerate(d_artists):
             if cnt == 0:
                 artist_str = artist.name
             else:
@@ -1159,7 +1169,7 @@ class Collection (Database):
               min_bpm, max_bpm, min_bpm, max_bpm)
                     #THEN trim(track_ext.bpm, '.0')
                     #THEN trim(round(track.a_bpm, 0), '.0')
-        return self._select(sql_bpm, fetchone = False)
+        return self._select(sql_bpm, fetchone=False)
 
     def get_tracks_by_key(self, key):
         #prev_key = "" # future music ;-) when we have key-translation-table
@@ -1193,7 +1203,7 @@ class Collection (Database):
             ORDER BY chosen_key, chosen_bpm'''.format(key)
                    # THEN trim(round(track.a_bpm, 0), '.0')
                    # THEN round(track_ext.bpm, 0)
-        return self._select(sql_key, fetchone = False)
+        return self._select(sql_key, fetchone=False)
 
     def get_tracks_by_key_and_bpm(self, key, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
@@ -1227,7 +1237,7 @@ class Collection (Database):
                    AND chosen_key LIKE "%{}%")
             ORDER BY chosen_key, chosen_bpm'''.format(min_bpm, max_bpm,
               min_bpm, max_bpm, key)
-        return self._select(sql_bpm, fetchone = False)
+        return self._select(sql_bpm, fetchone=False)
 
     def upsert_track_brainz(self, release_id, track_no, rec_id,
           match_method, key, chords_key, bpm):
@@ -1270,7 +1280,7 @@ class Collection (Database):
         sql_stats = '''
                     SELECT m_match_method, COUNT(*) FROM release GROUP BY m_match_method;
                     '''
-        return self._select(sql_stats, fetchone = False)
+        return self._select(sql_stats, fetchone=False)
 
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
@@ -1338,8 +1348,7 @@ class Collection (Database):
           'track.d_track_no', 'track_ext.m_rec_id_override'],
            tables, condition=where, fetchone=True, orderby='release.discogs_id')
            
-
-    def upsert_track_ext(self, orig, edit_answers ):
+    def upsert_track_ext(self, orig, edit_answers):
         track_no = orig['d_track_no'].upper() # always save uppercase track numbers
         release_id = orig['d_release_id']
 
@@ -1425,7 +1434,7 @@ class Brainz (object):
             log.debug("MODELS: get_mb_artist_by_id returns empty dict.")
             return {}
 
-    def search_mb_releases(self, artist, album, cat_no = False,
+    def search_mb_releases(self, artist, album, cat_no=False,
           limit = 10, strict = False):
         try:
             if cat_no:
