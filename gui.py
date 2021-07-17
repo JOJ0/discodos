@@ -297,6 +297,10 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.vboxTracks.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTracks.setLayout(self.vboxTracks)
 
+        self.vboxResults = QtWidgets.QVBoxLayout()
+        self.vboxResults.setContentsMargins(0, 0, 0, 0)
+        self.groupBoxReleases.setLayout(self.vboxResults)
+
         self.vboxTest = QtWidgets.QVBoxLayout()
         self.vboxTest.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTest.setLayout(self.vboxTest)
@@ -308,6 +312,10 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         # Create tableviewtracks
         self.tableViewTracksHeader = self.headers_list_mixtracks_all
         self.tableviewtracks_load(None)
+
+        # Create tableviewresults
+        self.tableViewResultsHeader = []
+        self.tableviewresults_load()
 
         # Create TabWidget
         vSpacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -388,6 +396,8 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         # if self.settings.value('ColumnWidth'):
         #     self.tableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
         self.tableViewTracks.read_settings(self.settings, 'ColumnWidth')
+        self.settings.beginGroup('tableViewResults')
+        self.tableViewResults.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
         self.settings.beginGroup('treeViewMix')
         # if self.settings.value('ColumnWidth'):
@@ -423,6 +433,12 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         self.settings.endGroup()
         self.settings.beginGroup('tableViewTracks')
         self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
+        self.settings.endGroup()
+        self.settings.beginGroup('tableViewResults')
+        self.settings.setValue(
+            'ColumnWidth',
+            self.tableViewResults.horizontalHeader().saveState()
+        )
         self.settings.endGroup()
         self.settings.beginGroup('treeViewMix')
         self.settings.setValue('ColumnWidth', self.treeViewMix.header().saveState())
@@ -525,11 +541,28 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
         else:
             self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
 
+    def tableviewresults_load(self):
+        self.tableViewResultsDataFrame = pd.DataFrame(
+            [], columns=self.tableViewResultsHeader)
+
+        self.tableViewResults = GuiTableView(
+            self, self.tableViewResultsDataFrame)
+        self.vboxResults.addWidget(self.tableViewResults)
+
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
         playlist_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
         self.tableviewtracks_load(playlist_id)
         print('playlist_id:', playlist_id)
+
+    def tableviewresults_on_click(self, index):
+        indexes = self.tableViewResults.selectionModel().selectedRows()
+        for index in indexes:
+            print(
+                self.tableViewResults.model.data(
+                    self.tableViewResults.model.index(index.row(), 3)
+                )
+            )
 
     def treeviewmix_pushbutton_del_mix(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
@@ -570,13 +603,13 @@ class MainWindow(Mix_view_common, View_common, QtWidgets.QMainWindow,
                 sql_data.append([ str(row[x]) for x in row.keys()])
             header = row.keys()
 
-            #self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=self.TableViewReleasesHeader)
-            self.TableViewReleasesDataFrame = pd.DataFrame(sql_data, columns=header)
-            self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
+            #self.tableViewResultsDataFrame = pd.DataFrame(sql_data, columns=self.tableViewResultsHeader)
+            self.tableViewResultsDataFrame = pd.DataFrame(sql_data, columns=header)
+            self.tableViewResults.model.update(self.tableViewResultsDataFrame)
         else:
             # Clear tableview
-            self.TableViewReleasesDataFrame = pd.DataFrame([], columns=[])
-            self.TableViewReleases.model.update(self.TableViewReleasesDataFrame)
+            self.tableViewResultsDataFrame = pd.DataFrame([], columns=[])
+            self.tableViewResults.model.update(self.tableViewResultsDataFrame)
 
 
 def main():
