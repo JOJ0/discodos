@@ -899,8 +899,12 @@ class Collection (Database):
 
     def search_release_track_offline(self, artist='', release='', track=''):
         fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id',
-                  'discogs_title', 'track.d_track_no', 'd_track_name', 'key',
-                  'bpm', 'key_notes', 'notes']
+                  'release.d_catno', 'release.discogs_title',
+                  'release.import_timestamp', 'release.in_d_collection',
+                  'release.m_rel_id', 'release.m_rel_id_override',
+                  'release.m_match_method', 'release.m_match_time',
+                  'track.d_track_no', 'track.d_track_name', 'track_ext.key',
+                  'track_ext.bpm', 'track_ext.key_notes', 'track_ext.notes']
         from_tables='''
                     release LEFT OUTER JOIN track
                     ON track.d_release_id = release.discogs_id
