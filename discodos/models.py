@@ -898,9 +898,9 @@ class Collection (Database):
                 raise Exc
 
     def search_release_track_offline(self, artist='', release='', track=''):
-        fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id', 'discogs_title',
-                 'track.d_track_no', 'd_track_name',
-                 'key', 'bpm', 'key_notes', 'notes']
+        fields = ['release.d_artist', 'track.d_artist', 'track.d_release_id',
+                  'discogs_title', 'track.d_track_no', 'd_track_name', 'key',
+                  'bpm', 'key_notes', 'notes']
         from_tables='''
                     release LEFT OUTER JOIN track
                     ON track.d_release_id = release.discogs_id
@@ -910,11 +910,11 @@ class Collection (Database):
 
         if not artist:
             artist_sql = '''
-                     ((track.d_artist IS NULL OR track.d_artist LIKE "%") OR
-                      (release.d_artist IS NULL OR release.d_artist LIKE "%"))'''
+                ((track.d_artist IS NULL OR track.d_artist LIKE "%") OR
+                 (release.d_artist IS NULL OR release.d_artist LIKE "%"))'''
         else:
             artist_sql = '(track.d_artist LIKE "%{}%" OR release.d_artist LIKE "%{}%")'.format(
-              artist, artist)
+                artist, artist)
 
         if not release:
             release_sql = '(discogs_title IS NULL OR discogs_title LIKE "%")'
@@ -926,15 +926,18 @@ class Collection (Database):
         else:
             track_sql = 'd_track_name LIKE "%{}%"'.format(track)
 
-        where = '''{} AND {} AND {}'''.format(artist_sql, release_sql, track_sql)
+        where = '''{} AND {} AND {}'''.format(
+            artist_sql, release_sql, track_sql
+        )
         order_by = 'track.d_artist, discogs_title, d_track_name'
 
         # prevent returning whole track collection when all search params empty
         if not artist and not release and not track:
             tracks = []
         else:
-            tracks = self._select_simple(fields, from_tables, where,
-                                   fetchone=False, orderby=order_by)
+            tracks = self._select_simple(
+                fields, from_tables, where, fetchone=False, orderby=order_by
+            )
         # log.debug(self.debug_db(tracks))
         return tracks
 
