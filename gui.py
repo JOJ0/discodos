@@ -644,7 +644,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 search_results_list.append(
                     [str(self.none_replace(row[key])) for key in row.keys()]
                 )
-
             self.tableViewResultsDataFrame = pd.DataFrame(
                 search_results_list,
                 columns=self.tableViewResultsHeader
