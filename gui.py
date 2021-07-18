@@ -641,9 +641,27 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 search_results
             )
             for row in search_results_key_bpm_replaced:
-                search_results_list.append(
-                    [str(self.none_replace(row[key])) for key in row.keys()]
-                )
+                keys_list = []
+                print(row)
+                for key, value in row.items():
+                    if key == 'm_rel_id' and value is not None:
+                        keys_list.append(
+                            str(self.link_to("musicbrainz release", value))
+                        )
+                    elif key == 'm_rec_id' and value is not None and value != 0:
+                        keys_list.append(
+                            str(self.link_to("musicbrainz recording", value))
+                        )
+                    elif key == 'discogs_id' and value is not None:
+                        keys_list.append(
+                            str(self.link_to("discogs release", value))
+                        )
+                    else:
+                        keys_list.append(
+                            str(self.none_replace(value))
+                        )
+                search_results_list.append(keys_list)
+
             self.tableViewResultsDataFrame = pd.DataFrame(
                 search_results_list,
                 columns=self.tableViewResultsHeader
