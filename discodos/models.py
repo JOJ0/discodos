@@ -905,7 +905,9 @@ class Collection (Database):
                   'track_ext.notes',
                   'release.discogs_id', 'release.discogs_title',
                   'release.import_timestamp', 'release.in_d_collection',
-                  'release.m_rel_id', 'release.m_rel_id_override',
+                  'track.m_rec_id', 'track_ext.m_rec_id_override',
+                  'track.m_match_method', 'track.m_match_time',
+                  'release.m_rel_id',
                   'release.m_match_method', 'release.m_match_time']
         from_tables='''
                     release LEFT OUTER JOIN track

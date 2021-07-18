@@ -338,7 +338,7 @@ class Mix_view_common():
         }
         self.headers_dict_mixtracks_all = {
             'track_pos': '#', 'discogs_title': 'Release',
-            'd_artist': 'Track Artist', 'd_track_name': 'Track Name',
+            'd_artist': 'Artist', 'd_track_name': 'Title',
             'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
             'key_notes': 'Key\nNotes', 'trans_rating': 'Transition\nRating',
             'trans_notes': 'Transition\nNotes', 'notes': 'Track\nNotes'
@@ -453,17 +453,20 @@ class Collection_view_common():
 
         self.headers_dict_search_results = {
             'd_artist': 'Artist', 'd_track_name': 'Title',
-            'd_catno': 'CatNo', 'd_track_no': 'Trk\nNo',
+            'd_catno': 'Catalog', 'd_track_no': 'Trk\nNo',
             'key': 'Key', 'bpm': 'BPM',
             'key_notes': 'Key\nNotes', 'notes': 'Track\nNotes',
             'discogs_id': 'Discogs\nRelease ID',
             'discogs_title': 'Release\nTitle',
             'import_timestamp': 'Imported',
             'in_d_collection': 'In D.\nColl.',
-            'm_rel_id ': 'MusicBrainz\nID',
-            'm_rel_id_override ': 'MusicBrainz\nID Override',
-            'm_match_method ': 'MusicBrainz\nMatch Method',
-            'm_match_time ': 'MusicBrainz\nMatch Time',
+            'track.m_rec_id': 'MusicBrainz\nRec. ID',
+            'track_ext.m_rec_id_override': 'MusicBrainz\nID Override',
+            'track.m_match_method': 'MusicBrainz\nRec. Match Method',
+            'track.m_match_time': 'MusicBrainz\nRec. Match Time',
+            'release.m_rel_id': 'MusicBrainz\nRel. ID',
+            'release.m_match_method ': 'MusicBrainz\nRel. Match Method',
+            'release.m_match_time ': 'MusicBrainz\nRel. Match Time'
         }
 
     @property
