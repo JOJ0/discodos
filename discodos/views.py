@@ -338,7 +338,7 @@ class Mix_view_common():
         }
         self.headers_dict_mixtracks_all = {
             'track_pos': '#', 'discogs_title': 'Release',
-            'd_artist': 'Track Artist', 'd_track_name': 'Track Name',
+            'd_artist': 'Artist', 'd_track_name': 'Title',
             'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
             'key_notes': 'Key\nNotes', 'trans_rating': 'Transition\nRating',
             'trans_notes': 'Transition\nNotes', 'notes': 'Track\nNotes'
@@ -453,7 +453,7 @@ class Collection_view_common():
 
         self.headers_dict_search_results = {
             'd_artist': 'Artist', 'd_track_name': 'Title',
-            'd_catno': 'CatNo', 'd_track_no': 'Trk\nNo',
+            'd_catno': 'Catalog', 'd_track_no': 'Trk\nNo',
             'key': 'Key', 'bpm': 'BPM',
             'key_notes': 'Key\nNotes', 'notes': 'Track\nNotes',
             'discogs_id': 'Discogs\nRelease ID',
