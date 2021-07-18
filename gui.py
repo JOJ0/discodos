@@ -497,7 +497,11 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # self.treeViewMix.setModel(self.treeViewMixModel)
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
-            self.treeViewMix.setColumnWidth(0, 30)
+            self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
+            self.treeViewMix.setColumnHidden(0, True)  # Mix ID
+            self.treeViewMix.setColumnWidth(2, 90)     # Played
+            self.treeViewMix.setColumnHidden(4, True)  # Created
+            self.treeViewMix.setColumnHidden(5, True)  # Updated
             self.vboxMix.addWidget(self.treeViewMix)
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
@@ -537,6 +541,18 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         if mix_name is None:
             self.tableViewTracks = GuiTableView(
                 self, self.tableViewTracksDataFrame)
+            # Set default column width and visible state
+            self.tableViewTracks.setColumnWidth(0, 30)     # Track Pos.
+            self.tableViewTracks.setColumnHidden(1, True)  # Release
+            self.tableViewTracks.setColumnWidth(2, 120)    # Artist
+            self.tableViewTracks.setColumnWidth(3, 180)    # Title
+            self.tableViewTracks.setColumnWidth(4, 30)     # Trk No
+            self.tableViewTracks.setColumnWidth(5, 50)     # Key
+            self.tableViewTracks.setColumnWidth(6, 45)     # BPM
+            self.tableViewTracks.setColumnWidth(7, 58)     # Key Notes
+            self.tableViewTracks.setColumnWidth(8, 58)     # Transition Rating
+            self.tableViewTracks.setColumnWidth(9, 58)     # Transition Notes
+            self.tableViewTracks.setColumnWidth(10, 55)    # Track Notes
             self.vboxTracks.addWidget(self.tableViewTracks)
         else:
             self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
@@ -547,6 +563,26 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.tableViewResults = GuiTableView(
             self, self.tableViewResultsDataFrame)
+        # set default column width and visible state
+        self.tableViewResults.setColumnWidth(0, 120)     # Artist
+        self.tableViewResults.setColumnWidth(1, 180)     # Title
+        self.tableViewResults.setColumnWidth(2, 90)      # Catalog
+        self.tableViewResults.setColumnWidth(3, 30)      # Trk No
+        self.tableViewResults.setColumnWidth(4, 50)      # Key
+        self.tableViewResults.setColumnWidth(5, 45)      # BPM
+        self.tableViewResults.setColumnWidth(6, 58)      # Key Notes
+        self.tableViewResults.setColumnHidden(6, True)   # Key Notes
+        self.tableViewResults.setColumnWidth(7, 58)      # Track Notes
+        self.tableViewResults.setColumnHidden(7, True)   # Track Notes
+        self.tableViewResults.setColumnWidth(8, 70)      # Discogs Release ID
+        self.tableViewResults.setColumnHidden(8, True)   # Discogs Release ID
+        self.tableViewResults.setColumnHidden(10, True)  # Release
+        self.tableViewResults.setColumnWidth(11, 30)     # In Discogs Coll.
+        self.tableViewResults.setColumnHidden(11, True)  # In Discogs Coll.
+        self.tableViewResults.setColumnWidth(12, 80)     # MusicBrainz ID
+        self.tableViewResults.setColumnWidth(13, 80)     # MusicBrainz ID Overr.
+        self.tableViewResults.setColumnWidth(14, 100)    # MusicBrainz Match M.
+        self.tableViewResults.setColumnWidth(15, 100)     # MusicBrainz Match T.
         self.vboxResults.addWidget(self.tableViewResults)
 
     def treeviewmix_on_clicked(self, index):
