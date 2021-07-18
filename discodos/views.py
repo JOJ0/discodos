@@ -460,13 +460,13 @@ class Collection_view_common():
             'discogs_title': 'Release\nTitle',
             'import_timestamp': 'Imported',
             'in_d_collection': 'In D.\nColl.',
-            'track.m_rec_id': 'MusicBrainz\nRec. ID',
+            'track.m_rec_id': 'MusicBrainz\nRecording',
             'track_ext.m_rec_id_override': 'MusicBrainz\nID Override',
-            'track.m_match_method': 'MusicBrainz\nRec. Match Method',
-            'track.m_match_time': 'MusicBrainz\nRec. Match Time',
-            'release.m_rel_id': 'MusicBrainz\nRel. ID',
-            'release.m_match_method ': 'MusicBrainz\nRel. Match Method',
-            'release.m_match_time ': 'MusicBrainz\nRel. Match Time'
+            'track.m_match_method': 'MusicBrainz\nMatch Method\nRecording',
+            'track.m_match_time': 'MusicBrainz\nMatch Time\nRecording',
+            'release.m_rel_id': 'MusicBrainz\nRelease',
+            'release.m_match_method ': 'MusicBrainz\nMatch Method\nRelease',
+            'release.m_match_time ': 'MusicBrainz\nMatch Time\nRelease'
         }
 
     @property

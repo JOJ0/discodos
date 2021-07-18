@@ -906,9 +906,11 @@ class Collection (Database):
                   'release.discogs_id', 'release.discogs_title',
                   'release.import_timestamp', 'release.in_d_collection',
                   'track.m_rec_id', 'track_ext.m_rec_id_override',
-                  'track.m_match_method', 'track.m_match_time',
+                  'track.m_match_method AS recording_match_method',
+                  'track.m_match_time AS recording_match_time',
                   'release.m_rel_id',
-                  'release.m_match_method', 'release.m_match_time']
+                  'release.m_match_method AS release_match_method',
+                  'release.m_match_time AS release_match_time']
         from_tables='''
                     release LEFT OUTER JOIN track
                     ON track.d_release_id = release.discogs_id
