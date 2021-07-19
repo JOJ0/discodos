@@ -6,6 +6,8 @@ import logging
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
 
+import webbrowser
+
 from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
 from discodos.config import Config
@@ -33,6 +35,12 @@ class GuiTableViewModel(QtCore.QAbstractTableModel):
             if role == Qt.EditRole:
                 value = self._data.iloc[index.row()][index.column()]
                 return value
+
+            if role == Qt.ForegroundRole:
+                value = str(self._data.iloc[index.row()][index.column()])
+                if value.startswith("https://") or value.startswith("http://"):
+                    return QtGui.QColor("blue")
+
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
@@ -584,6 +592,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResults.setColumnWidth(14, 100)    # MusicBrainz Match M.
         self.tableViewResults.setColumnWidth(15, 100)     # MusicBrainz Match T.
         self.vboxResults.addWidget(self.tableViewResults)
+        self.tableViewResults.clicked.connect(self.tableviewreleasesOnClick)
 
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
@@ -599,6 +608,12 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                     self.tableViewResults.model.index(index.row(), 3)
                 )
             )
+
+    def tableviewreleasesOnClick(self, index):
+        print(index.row())
+        value = self.tableViewResults.model.index(index.row(), index.column()).data()
+        if value.startswith("http://") or value.startswith("https://"):
+            webbrowser.open(value)
 
     def treeviewmix_pushbutton_del_mix(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
@@ -642,7 +657,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             )
             for row in search_results_key_bpm_replaced:
                 keys_list = []
-                print(row)
+                #print(row)
                 for key, value in row.items():
                     if key == 'm_rel_id' and value is not None:
                         keys_list.append(
