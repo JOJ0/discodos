@@ -638,7 +638,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         row = index.row()
         value = self.tableViewResults.model.index(index.row(),
                                                   index.column()).data()
-        if value.startswith("http://") or value.startswith("https://"):
+        if value.startswith('http://') or value.startswith('https://'):
             webbrowser.open(value)
 
         for idx, header_name in enumerate(self.tableViewResultsHeader):
@@ -654,7 +654,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             #     self.label_list_box[header_name + str(1)].setOpenExternalLinks(
             #         True)
             # else:
-            if 'http://' in result or 'https://' in result:
+            if result.startswith('http://') or result.startswith('https://'):
+            #if 'http://' in result or 'https://' in result:
                 url_link = " <a href=" + result + "> <color=blue>" + result + \
                            "</font> </a>"
                 self.label_list_box[header_name + str(1)].setText(url_link)
