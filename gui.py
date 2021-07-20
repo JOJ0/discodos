@@ -312,9 +312,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.vboxResults.setContentsMargins(0, 0, 0, 0)
         self.groupBoxResults.setLayout(self.vboxResults)
 
-        self.vboxTest = QtWidgets.QVBoxLayout()
-        self.vboxTest.setContentsMargins(0, 0, 0, 0)
-        self.groupBoxSearch.setLayout(self.vboxTest)
+        self.vboxSearch = QtWidgets.QVBoxLayout()
+        self.vboxSearch.setContentsMargins(0, 0, 0, 0)
+        self.groupBoxSearch.setLayout(self.vboxSearch)
 
         # Create treeviewmix
         self.treeViewMixHeader = self.headers_list_mixes
@@ -356,7 +356,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(vSpacer, 4, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(self.TabWidgetSearch.TabWidgetSearchTab1.layout)
 
-        self.vboxTest.addWidget(self.TabWidgetSearch)
+        self.vboxSearch.addWidget(self.TabWidgetSearch)
 
         # Create vbox formlayout for mixes buttons and edit boxes
         self.vboxFormLayout = QtWidgets.QFormLayout()
