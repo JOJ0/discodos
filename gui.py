@@ -358,6 +358,47 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.vboxSearch.addWidget(self.TabWidgetSearch)
 
+        # Create Labels for info
+        self.vboxLabelInfo = QtWidgets.QGridLayout()
+        self.groupBoxInfo = QtWidgets.QGroupBox()
+        self.groupBoxInfo.setObjectName('groupBoxInfo')
+        self.groupBoxInfo.setTitle('Info')
+        self.groupBoxInfo.setLayout(self.vboxLabelInfo)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidget(self.groupBoxInfo)
+        scroll.setWidgetResizable(True)
+
+        self.splitterHorizontal2.addWidget(scroll)
+
+        self.label_list_box = dict()
+        for idx, header_name in enumerate(self.tableViewResultsHeader):
+            for idx2 in range(2):
+                label = QtWidgets.QLabel()
+                # Not sure if you want this, just an example
+                header_name_text = header_name.replace('\n', ' ')
+                label.setObjectName(header_name + str(idx2))
+                label.setText(header_name_text + str(idx2) + ':')
+
+                # Keep referencs
+                self.label_list_box[header_name + str(idx2)] = label
+
+                self.vboxLabelInfo.addWidget(label, idx, idx2)
+
+        self.verticalSpacer = QtWidgets.QSpacerItem(0, 0,
+                                                    QtWidgets.QSizePolicy.Maximum,
+                                                    QtWidgets.QSizePolicy.Expanding)
+
+        self.horizontalSpacer = QtWidgets.QSpacerItem(0, 0,
+                                                    QtWidgets.QSizePolicy.Expanding)
+
+        # idx+1 add verticalSpacer on last row
+        # This crops all labels to above
+        self.vboxLabelInfo.addItem(self.verticalSpacer, idx+1, 0)
+        # Horizontal spacer is so text dont get stretched when moving
+        # splitterHorizontal2 to left/right
+        self.vboxLabelInfo.addItem(self.horizontalSpacer, idx, 2)
+
         # Create vbox formlayout for mixes buttons and edit boxes
         self.vboxFormLayout = QtWidgets.QFormLayout()
 
@@ -387,22 +428,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.pushButtonDelMix.clicked.connect(self.treeviewmix_pushbutton_del_mix)
         self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
 
-        # Create Labels for info
-        self.vboxLabelInfo = QtWidgets.QGridLayout()
-        self.label_list_box = dict()
-        for idx, header_name in enumerate(self.tableViewResultsHeader):
-            for idx2 in range(2):
-                print(header_name)
-                label = QtWidgets.QLabel()
-                label.setObjectName(header_name + str(idx2))
-                label.setText(header_name + str(idx2))
 
-                # Keep referencs
-                self.label_list_box[header_name + str(idx2)] = label
-
-                self.vboxLabelInfo.addWidget(label, idx, idx2)
-
-        self.groupBoxInfo.setLayout(self.vboxLabelInfo)
 
 
         # Add formlayout to mixes boxlayout
@@ -423,7 +449,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         if self.settings.value('Horizontal'):
             self.splitterHorizontal.restoreState(self.settings.value('Horizontal'))
         if self.settings.value('Horizontal2'):
-            self.splitterHorizontal2.restoreState(self.settings.value('Horizontal'))
+            self.splitterHorizontal2.restoreState(self.settings.value('Horizontal2'))
         if self.settings.value('Vertical'):
             self.splitterVertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()

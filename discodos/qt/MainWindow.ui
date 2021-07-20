@@ -55,11 +55,6 @@
          <string>Search</string>
         </property>
        </widget>
-       <widget class="QGroupBox" name="groupBoxInfo">
-        <property name="title">
-         <string>Info</string>
-        </property>
-       </widget>
       </widget>
      </widget>
     </item>

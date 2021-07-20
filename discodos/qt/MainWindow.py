@@ -41,8 +41,6 @@ class Ui_MainWindow(object):
         self.splitterHorizontal2.setObjectName("splitterHorizontal2")
         self.groupBoxSearch = QtWidgets.QGroupBox(self.splitterHorizontal2)
         self.groupBoxSearch.setObjectName("groupBoxSearch")
-        self.groupBoxInfo = QtWidgets.QGroupBox(self.splitterHorizontal2)
-        self.groupBoxInfo.setObjectName("groupBoxInfo")
         self.gridLayout.addWidget(self.splitterVertical, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -63,4 +61,3 @@ class Ui_MainWindow(object):
         self.groupBoxTracks.setTitle(_translate("MainWindow", "Tracks"))
         self.groupBoxResults.setTitle(_translate("MainWindow", "Search Results"))
         self.groupBoxSearch.setTitle(_translate("MainWindow", "Search"))
-        self.groupBoxInfo.setTitle(_translate("MainWindow", "Info"))
