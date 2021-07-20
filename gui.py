@@ -335,12 +335,16 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
         self.pushButtonOfflineSearch.clicked.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.pushButtonOfflineSearch.setShortcut('Shift+S')
         self.lineEditTrackOfflineSearchArtist = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchArtist.setPlaceholderText('Artist')
+        self.lineEditTrackOfflineSearchArtist.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
         self.lineEditTrackOfflineSearchRelease = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchRelease.setPlaceholderText('Release')
+        self.lineEditTrackOfflineSearchRelease.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
         self.lineEditTrackOfflineSearchTrack = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchTrack.setPlaceholderText('Track')
+        self.lineEditTrackOfflineSearchTrack.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
