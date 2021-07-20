@@ -591,7 +591,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResults.setColumnWidth(14, 100)    # MusicBrainz Match M.
         self.tableViewResults.setColumnWidth(15, 100)     # MusicBrainz Match T.
         self.vboxResults.addWidget(self.tableViewResults)
-        self.tableViewResults.clicked.connect(self.tableviewreleasesOnClick)
+        self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
 
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
@@ -608,7 +608,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 )
             )
 
-    def tableviewreleasesOnClick(self, index):
+    def tableViewResultsOnClick(self, index):
         print(index.row())
         value = self.tableViewResults.model.index(index.row(), index.column()).data()
         if value.startswith("http://") or value.startswith("https://"):
