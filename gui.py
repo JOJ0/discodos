@@ -387,6 +387,24 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.pushButtonDelMix.clicked.connect(self.treeviewmix_pushbutton_del_mix)
         self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
 
+        # Create Labels for info
+        self.vboxLabelInfo = QtWidgets.QGridLayout()
+        self.label_list_box = dict()
+        for idx, header_name in enumerate(self.tableViewResultsHeader):
+            for idx2 in range(2):
+                print(header_name)
+                label = QtWidgets.QLabel()
+                label.setObjectName(header_name + str(idx2))
+                label.setText(header_name + str(idx2))
+
+                # Keep referencs
+                self.label_list_box[header_name + str(idx2)] = label
+
+                self.vboxLabelInfo.addWidget(label, idx, idx2)
+
+        self.groupBoxInfo.setLayout(self.vboxLabelInfo)
+
+
         # Add formlayout to mixes boxlayout
         self.vboxMix.addLayout(self.vboxFormLayout)
 
@@ -617,10 +635,27 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             )
 
     def tableViewResultsOnClick(self, index):
-        print(index.row())
-        value = self.tableViewResults.model.index(index.row(), index.column()).data()
+        row = index.row()
+        value = self.tableViewResults.model.index(index.row(),
+                                                  index.column()).data()
         if value.startswith("http://") or value.startswith("https://"):
             webbrowser.open(value)
+
+        for idx, header_name in enumerate(self.tableViewResultsHeader):
+            result = self.tableViewResults.model.index(row, idx).data()
+            # Need to define all headers with a url,
+            # or maybe if value = http/https?
+            if header_name == 'Discogs\nRelease ID' or \
+                    header_name == 'MusicBrainz\nRecording' or \
+                    header_name == 'MusicBrainz\nRelease':
+                url_link = " <a href=" + result + "> <color=blue>" + result +\
+                           "</font> </a>"
+                self.label_list_box[header_name + str(1)].setText(url_link)
+                self.label_list_box[header_name + str(1)].setOpenExternalLinks(
+                    True)
+            else:
+                self.label_list_box[header_name + str(1)].setText(result)
+
 
     def treeviewmix_pushbutton_del_mix(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
