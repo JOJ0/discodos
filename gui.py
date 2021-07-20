@@ -310,11 +310,11 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.vboxResults = QtWidgets.QVBoxLayout()
         self.vboxResults.setContentsMargins(0, 0, 0, 0)
-        self.groupBoxReleases.setLayout(self.vboxResults)
+        self.groupBoxResults.setLayout(self.vboxResults)
 
         self.vboxTest = QtWidgets.QVBoxLayout()
         self.vboxTest.setContentsMargins(0, 0, 0, 0)
-        self.groupBoxTest.setLayout(self.vboxTest)
+        self.groupBoxSearch.setLayout(self.vboxTest)
 
         # Create treeviewmix
         self.treeViewMixHeader = self.headers_list_mixes
@@ -404,6 +404,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.beginGroup('Splitter')
         if self.settings.value('Horizontal'):
             self.splitterHorizontal.restoreState(self.settings.value('Horizontal'))
+        if self.settings.value('Horizontal2'):
+            self.splitterHorizontal2.restoreState(self.settings.value('Horizontal'))
         if self.settings.value('Vertical'):
             self.splitterVertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()
@@ -444,6 +446,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.endGroup()
         self.settings.beginGroup('Splitter')
         self.settings.setValue('Horizontal', self.splitterHorizontal.saveState())
+        self.settings.setValue('Horizontal2', self.splitterHorizontal2.saveState())
         self.settings.setValue('Vertical', self.splitterVertical.saveState())
         self.settings.endGroup()
         self.settings.beginGroup('tableViewTracks')
