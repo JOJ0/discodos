@@ -168,6 +168,9 @@ class GuiTableView(QtWidgets.QTableView):
             for col, action in enumerate(self.horizontalHeader().actions()):
                 is_checked = not self.horizontalHeader().isSectionHidden(col)
                 action.setChecked(is_checked)
+        else:
+            for col, action in enumerate(self.horizontalHeader().actions()):
+                action.setChecked(True)
 
 
 class GuiTreeViewModel(QtCore.QAbstractTableModel):
@@ -259,6 +262,7 @@ class GuiTreeView(QtWidgets.QTreeView):
             for col, action in enumerate(self.header().actions()):
                 is_checked = not self.header().isSectionHidden(col)
                 action.setChecked(is_checked)
+
 
 
 class GuiTabWidget(QtWidgets.QTabWidget):
@@ -388,7 +392,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.read_ui_settings()
 
     def read_ui_settings(self):
-        print('asd')
         # Load settings from settings.ini or default if no .ini found
         self.settings.beginGroup('MainWindow')
         self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
