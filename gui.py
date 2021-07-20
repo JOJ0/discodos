@@ -329,7 +329,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableviewresults_load()
 
         # Create TabWidget
-        vSpacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.vboxTabWidgetSearchHorizontal = QtWidgets.QHBoxLayout()
 
         self.TabWidgetSearch = GuiTabWidget(self)
 
@@ -348,13 +348,26 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
-
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchArtist, 0, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchRelease, 1, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchTrack, 2, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.pushButtonOfflineSearch, 3, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(vSpacer, 4, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(self.TabWidgetSearch.TabWidgetSearchTab1.layout)
+
+        verticaSpacerTabWidget = QtWidgets.QSpacerItem(0, 0,
+                                                       QtWidgets.QSizePolicy.Minimum,
+                                                       QtWidgets.QSizePolicy.Expanding)
+        horizontalSpecerTabWidget = QtWidgets.QSpacerItem(0, 0,
+                                                       QtWidgets.QSizePolicy.Expanding)
+
+        self.vboxTabWidgetSearchHorizontal.addItem(horizontalSpecerTabWidget)
+        self.vboxTabWidgetSearchHorizontal.addWidget(self.pushButtonOfflineSearch)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
+            self.vboxTabWidgetSearchHorizontal, 3, 0)
+
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
+            verticaSpacerTabWidget, 4, 0)
+
+        self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(
+            self.TabWidgetSearch.TabWidgetSearchTab1.layout)
 
         self.vboxSearch.addWidget(self.TabWidgetSearch)
 
@@ -385,19 +398,18 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
                 self.vboxLabelInfo.addWidget(label, idx, idx2)
 
-        self.verticalSpacer = QtWidgets.QSpacerItem(0, 0,
+        verticalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
                                                     QtWidgets.QSizePolicy.Maximum,
                                                     QtWidgets.QSizePolicy.Expanding)
 
-        self.horizontalSpacer = QtWidgets.QSpacerItem(0, 0,
+        horizontalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
                                                     QtWidgets.QSizePolicy.Expanding)
-
         # idx+1 add verticalSpacer on last row
         # This crops all labels to above
-        self.vboxLabelInfo.addItem(self.verticalSpacer, idx+1, 0)
-        # Horizontal spacer is so text dont get stretched when moving
+        self.vboxLabelInfo.addItem(verticalSpacervboxLabelInfo, idx+1, 0)
+        # Horizontal spacer so text don't get stretched when moving
         # splitterHorizontal2 to left/right
-        self.vboxLabelInfo.addItem(self.horizontalSpacer, idx, 2)
+        self.vboxLabelInfo.addItem(horizontalSpacervboxLabelInfo, idx, 2)
 
         # Create vbox formlayout for mixes buttons and edit boxes
         self.vboxFormLayout = QtWidgets.QFormLayout()
