@@ -6,6 +6,8 @@ import logging
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
 
+import webbrowser
+
 from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
 from discodos.config import Config
@@ -33,6 +35,11 @@ class GuiTableViewModel(QtCore.QAbstractTableModel):
             if role == Qt.EditRole:
                 value = self._data.iloc[index.row()][index.column()]
                 return value
+
+            if role == Qt.ForegroundRole:
+                value = str(self._data.iloc[index.row()][index.column()])
+                if value.startswith("https://") or value.startswith("http://"):
+                    return QtGui.QColor("blue")
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
@@ -161,6 +168,9 @@ class GuiTableView(QtWidgets.QTableView):
             for col, action in enumerate(self.horizontalHeader().actions()):
                 is_checked = not self.horizontalHeader().isSectionHidden(col)
                 action.setChecked(is_checked)
+        else:
+            for col, action in enumerate(self.horizontalHeader().actions()):
+                action.setChecked(True)
 
 
 class GuiTreeViewModel(QtCore.QAbstractTableModel):
@@ -252,6 +262,7 @@ class GuiTreeView(QtWidgets.QTreeView):
             for col, action in enumerate(self.header().actions()):
                 is_checked = not self.header().isSectionHidden(col)
                 action.setChecked(is_checked)
+
 
 
 class GuiTabWidget(QtWidgets.QTabWidget):
@@ -396,14 +407,14 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # if self.settings.value('ColumnWidth'):
         #     self.tableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
         self.tableViewTracks.read_settings(self.settings, 'ColumnWidth')
+        self.settings.endGroup()
+
         self.settings.beginGroup('tableViewResults')
         self.tableViewResults.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
+
         self.settings.beginGroup('treeViewMix')
-        # if self.settings.value('ColumnWidth'):
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
-
-
             # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
             #
             # if self.settings.value('SelectedPlaylist'):
@@ -435,10 +446,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
         self.settings.endGroup()
         self.settings.beginGroup('tableViewResults')
-        self.settings.setValue(
-            'ColumnWidth',
-            self.tableViewResults.horizontalHeader().saveState()
-        )
+        self.settings.setValue('ColumnWidth',self.tableViewResults.horizontalHeader().saveState())
         self.settings.endGroup()
         self.settings.beginGroup('treeViewMix')
         self.settings.setValue('ColumnWidth', self.treeViewMix.header().saveState())
@@ -584,6 +592,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResults.setColumnWidth(14, 100)    # MusicBrainz Match M.
         self.tableViewResults.setColumnWidth(15, 100)     # MusicBrainz Match T.
         self.vboxResults.addWidget(self.tableViewResults)
+        self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
 
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
@@ -599,6 +608,12 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                     self.tableViewResults.model.index(index.row(), 3)
                 )
             )
+
+    def tableViewResultsOnClick(self, index):
+        print(index.row())
+        value = self.tableViewResults.model.index(index.row(), index.column()).data()
+        if value.startswith("http://") or value.startswith("https://"):
+            webbrowser.open(value)
 
     def treeviewmix_pushbutton_del_mix(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
@@ -642,7 +657,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             )
             for row in search_results_key_bpm_replaced:
                 keys_list = []
-                print(row)
+                #print(row)
                 for key, value in row.items():
                     if key == 'm_rel_id' and value is not None:
                         keys_list.append(
