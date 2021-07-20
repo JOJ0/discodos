@@ -388,6 +388,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.read_ui_settings()
 
     def read_ui_settings(self):
+        print('asd')
         # Load settings from settings.ini or default if no .ini found
         self.settings.beginGroup('MainWindow')
         self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
@@ -403,14 +404,14 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # if self.settings.value('ColumnWidth'):
         #     self.tableViewTracks.horizontalHeader().restoreState(self.settings.value('ColumnWidth'))
         self.tableViewTracks.read_settings(self.settings, 'ColumnWidth')
+        self.settings.endGroup()
+
         self.settings.beginGroup('tableViewResults')
         self.tableViewResults.read_settings(self.settings, 'ColumnWidth')
         self.settings.endGroup()
+
         self.settings.beginGroup('treeViewMix')
-        # if self.settings.value('ColumnWidth'):
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
-
-
             # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
             #
             # if self.settings.value('SelectedPlaylist'):
@@ -442,10 +443,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
         self.settings.endGroup()
         self.settings.beginGroup('tableViewResults')
-        self.settings.setValue(
-            'ColumnWidth',
-            self.tableViewResults.horizontalHeader().saveState()
-        )
+        self.settings.setValue('ColumnWidth',self.tableViewResults.horizontalHeader().saveState())
         self.settings.endGroup()
         self.settings.beginGroup('treeViewMix')
         self.settings.setValue('ColumnWidth', self.treeViewMix.header().saveState())
