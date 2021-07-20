@@ -41,7 +41,6 @@ class GuiTableViewModel(QtCore.QAbstractTableModel):
                 if value.startswith("https://") or value.startswith("http://"):
                     return QtGui.QColor("blue")
 
-
     def rowCount(self, parent: QModelIndex = ...) -> int:
         return self._data.shape[0]
 
