@@ -242,6 +242,7 @@ class GuiTreeView(QtWidgets.QTreeView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
+        self.defaultHeader = dict()
         self.model = GuiTreeViewModel(self._data)
         self.setModel(self.model)
 
@@ -267,10 +268,16 @@ class GuiTreeView(QtWidgets.QTreeView):
     def read_settings(self, settings, key):
         if settings.value(key):
             self.header().restoreState(settings.value(key))
-            # Set check mark
-            for col, action in enumerate(self.header().actions()):
-                is_checked = not self.header().isSectionHidden(col)
-                action.setChecked(is_checked)
+        else:
+            for key in self.defaultHeader:
+                if self.defaultHeader[key]['width']:
+                    self.setColumnWidth(key, self.defaultHeader[key]['width'])
+                if self.defaultHeader[key]['hidden']:
+                    self.setColumnHidden(key, self.defaultHeader[key]['hidden'])
+        # Set check mark
+        for col, action in enumerate(self.header().actions()):
+            is_checked = not self.header().isSectionHidden(col)
+            action.setChecked(is_checked)
 
 
 class GuiTabWidget(QtWidgets.QTabWidget):
@@ -526,6 +533,14 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.settings.beginGroup('treeViewMix')
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
+
+        # self.treeViewMix.setColumnWidth(0, 30)  # Mix ID
+        # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
+        # self.treeViewMix.setColumnWidth(2, 90)  # Played
+        # self.treeViewMix.setColumnHidden(4, True)  # Created
+        # self.treeViewMix.setColumnHidden(5, True)  # Updated
+
+
             # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
             #
             # if self.settings.value('SelectedPlaylist'):
@@ -617,11 +632,19 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # self.treeViewMix.setModel(self.treeViewMixModel)
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
-            self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
-            self.treeViewMix.setColumnHidden(0, True)  # Mix ID
-            self.treeViewMix.setColumnWidth(2, 90)     # Played
-            self.treeViewMix.setColumnHidden(4, True)  # Created
-            self.treeViewMix.setColumnHidden(5, True)  # Updated
+            # init default settings
+            self.treeViewMix.defaultHeader = {
+                0: {'width': 30, 'hidden': True},  # Mix ID
+                2: {'width': 90, 'hidden': None},  # Played
+                4: {'width': None, 'hidden': True},  # Created
+                5: {'width': None, 'hidden': True}  # Updated
+            }
+
+            # self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
+            # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
+            # self.treeViewMix.setColumnWidth(2, 90)     # Played
+            # self.treeViewMix.setColumnHidden(4, True)  # Created
+            # self.treeViewMix.setColumnHidden(5, True)  # Updated
             self.vboxMix.addWidget(self.treeViewMix)
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
