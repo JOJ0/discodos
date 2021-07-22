@@ -485,7 +485,7 @@ class Collection_view_common():
 
         self.column_defaults_search_results = {
             0: {"width": 120, "hidden": False},   # Artist
-            1: {"width": 180, "hidden": True},    # Title
+            1: {"width": 180, "hidden": False},   # Title
             2: {"width": 90, "hidden": False},    # Catalog
             3: {"width": 30, "hidden": False},    # Trk No
             4: {"width": 50, "hidden": False},    # Key
