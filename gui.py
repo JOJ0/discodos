@@ -149,8 +149,6 @@ class GuiTableView(QtWidgets.QTableView):
     def _create_context_menu(self):
         horizontal_header = self._data.columns
         self.horizontalHeader().setContextMenuPolicy(Qt.ActionsContextMenu)
-
-        print("GuiTableViewModel._create_context_menu: Right before lopping through all header items and then calling _make_column_show_or_hide for each of them.")
         for idx, header_item in enumerate(horizontal_header):
             self.item = QtWidgets.QAction(header_item, self)
             self.item.setCheckable(True)
@@ -162,24 +160,45 @@ class GuiTableView(QtWidgets.QTableView):
         show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
         return show_column
 
-    def restore_header_settings(self, settings, key):
-        print("GuiTableView.restore_header_settings:")
-        print("settings:", settings)
-        print("key:", key)
-        #print(dir(settings))
-        if settings.value(key):
-            print("GuiTableView.restore_header_settings: The passed key is existing in Qsettings object.")
-            print("GuiTableView.restore_header_settings: Restoring header state from QSettings object.")
-            self.horizontalHeader().restoreState(settings.value(key))
-            # Set check mark
-            for col, action in enumerate(self.horizontalHeader().actions()):
-                is_checked = not self.horizontalHeader().isSectionHidden(col)
-                action.setChecked(is_checked)
-            return True
+    def restore_column_settings(self, settings, setting_path, defaults={}):
+        """ Restores column width and visible-state from Qsettings
+
+        or falls back to using defaults (if provided). Also sets check marks
+        in right click on headers context menu according to visible-state of
+        columns.
+
+        Args:
+            settings (object): A QSettings object.
+            setting_path (string): The path to the setting in the Qsettings
+                object aka the .ini file. Format: section/keyname.
+            defaults (dict): Contains column ID and a subdict containing default
+                width and hidden state. Format:
+                0: {width: 50, hidden: True}, 1: {width: ...}, ...
+
+        Returns: None
+        """
+        if settings.value(setting_path):
+            log.info("GuiTableView.restore_column_settings: "
+                     "Restoring from saved settings.")
+            self.horizontalHeader().restoreState(settings.value(setting_path))
         else:
-            print("GuiTableView.restore_header_settings: The key is not existing in the Qsettings object, returning False to inform the caller.")
-            # The setting couldn't be loaded, return False to inform the caller
-            return False
+            log.info("GuiTableView.restore_column_settings: "
+                     "No saved settings found. Using defaults.")
+            for column_id in defaults:
+                if defaults[column_id]['width']:
+                    self.setColumnWidth(
+                        column_id,
+                        defaults[column_id]['width']
+                    )
+                if defaults[column_id]['hidden']:
+                    self.setColumnHidden(
+                        column_id,
+                        defaults[column_id]['hidden']
+                    )
+
+        # Set context menu check marks according to visible-state of columns
+        for col, action in enumerate(self.horizontalHeader().actions()):
+            action.setChecked(not self.horizontalHeader().isSectionHidden(col))
 
 
 class GuiTreeViewModel(QtCore.QAbstractTableModel):
@@ -412,55 +431,16 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self.splitterVertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()
 
-        print("MainWindow.read_ui_settings: Restoring settings from QSettings object. We are right before beginGroup tableViewTracks.")
-
-        self.settings.beginGroup('tableViewTracks')
-        if not self.tableViewTracks.restore_header_settings(self.settings, 'ColumnWidth'):
-            print("MainWindow.read_ui_settings: Falling back to setting defaults for tableViewTracks.")
-            # Set default column width and visible state
-            self.tableViewTracks.setColumnWidth(0, 30)     # Track Pos.
-            self.tableViewTracks.setColumnHidden(1, True)  # Release
-            self.tableViewTracks.setColumnWidth(2, 120)    # Artist
-            self.tableViewTracks.setColumnWidth(3, 180)    # Title
-            self.tableViewTracks.setColumnWidth(4, 30)     # Trk No
-            self.tableViewTracks.setColumnWidth(5, 50)     # Key
-            self.tableViewTracks.setColumnWidth(6, 45)     # BPM
-            self.tableViewTracks.setColumnWidth(7, 58)     # Key Notes
-            self.tableViewTracks.setColumnWidth(8, 58)     # Transition Rating
-            self.tableViewTracks.setColumnWidth(9, 58)     # Transition Notes
-            self.tableViewTracks.setColumnWidth(10, 55)    # Track Notes
-            for col, action in enumerate(self.tableViewTracks.horizontalHeader().actions()):
-                action.setChecked(not self.tableViewTracks.horizontalHeader().isSectionHidden(col))
-        self.settings.endGroup()
-
-        print("MainWindow.read_ui_settings: Restoring settings from Qsettings object. We are right before beginGroup tableViewResults.")
-
-        self.settings.beginGroup('tableViewResults')
-        if not self.tableViewResults.restore_header_settings(self.settings, 'ColumnWidth'):
-            print("MainWindow.read_ui_settings: Falling back to setting defaults for tableViewResults.")
-            # set default column width and visible state
-            self.tableViewResults.setColumnWidth(0, 120)     # Artist
-            self.tableViewResults.setColumnWidth(1, 180)     # Title
-            self.tableViewResults.setColumnWidth(2, 90)      # Catalog
-            self.tableViewResults.setColumnWidth(3, 30)      # Trk No
-            self.tableViewResults.setColumnWidth(4, 50)      # Key
-            self.tableViewResults.setColumnWidth(5, 45)      # BPM
-            self.tableViewResults.setColumnWidth(6, 58)      # Key Notes
-            self.tableViewResults.setColumnHidden(6, True)   # Key Notes
-            self.tableViewResults.setColumnWidth(7, 58)      # Track Notes
-            self.tableViewResults.setColumnHidden(7, True)   # Track Notes
-            self.tableViewResults.setColumnWidth(8, 70)      # Discogs Release ID
-            self.tableViewResults.setColumnHidden(8, True)   # Discogs Release ID
-            self.tableViewResults.setColumnHidden(10, True)  # Release
-            self.tableViewResults.setColumnWidth(11, 30)     # In Discogs Coll.
-            self.tableViewResults.setColumnHidden(11, True)  # In Discogs Coll.
-            self.tableViewResults.setColumnWidth(12, 80)     # MusicBrainz ID
-            self.tableViewResults.setColumnWidth(13, 80)     # MusicBrainz ID Overr.
-            self.tableViewResults.setColumnWidth(14, 100)    # MusicBrainz Match M.
-            self.tableViewResults.setColumnWidth(15, 100)     # MusicBrainz Match T.
-            for col, action in enumerate(self.tableViewResults.horizontalHeader().actions()):
-                action.setChecked(not self.tableViewResults.horizontalHeader().isSectionHidden(col))
-        self.settings.endGroup()
+        self.tableViewTracks.restore_column_settings(
+            self.settings,
+            "tableViewTracks/ColumnWidth",
+            defaults=self.column_defaults_mixtracks
+        )
+        self.tableViewResults.restore_column_settings(
+            self.settings,
+            "tableViewResults/ColumnWidth",
+            defaults=self.column_defaults_search_results
+        )
 
         self.settings.beginGroup('treeViewMix')
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
