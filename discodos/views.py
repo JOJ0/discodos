@@ -372,6 +372,20 @@ class Mix_view_common():
         self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic.copy()
         self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
 
+        self.column_defaults_mixtracks = {
+            0: {"width": 30, "hidden": False},     # Track Pos.
+            1: {"width": None, "hidden": True},    # Release
+            2: {"width": 120, "hidden": False},    # Artist
+            3: {"width": 180, "hidden": False},    # Title
+            4: {"width": 30, "hidden": False},     # Trk No
+            5: {"width": 50, "hidden": False},     # Key
+            6: {"width": 45, "hidden": False},     # BPM
+            7: {"width": 58, "hidden": False},     # Key Notes
+            8: {"width": 58, "hidden": False},     # Transition Rating
+            9: {"width": 58, "hidden": False},     # Transition Notes
+            10: {"width": 55, "hidden": False},    # Track Notes
+        }
+
     @property
     def headers_list_mixes(self):
         return [val for val in self.headers_dict_mixes.values()]
@@ -467,6 +481,25 @@ class Collection_view_common():
             'release.m_rel_id': 'MusicBrainz\nRelease',
             'release.m_match_method ': 'MusicBrainz\nRelease\nMatch-Method',
             'release.m_match_time ': 'MusicBrainz\nRelease\nMatch-Time'
+        }
+
+        self.column_defaults_search_results = {
+            0: {"width": 120, "hidden": False},   # Artist
+            1: {"width": 180, "hidden": True},    # Title
+            2: {"width": 90, "hidden": False},    # Catalog
+            3: {"width": 30, "hidden": False},    # Trk No
+            4: {"width": 50, "hidden": False},    # Key
+            5: {"width": 45, "hidden": False},    # BPM
+            6: {"width": 58, "hidden": True},     # Key Notes
+            7: {"width": 58, "hidden": True},     # Track Notes
+            8: {"width": 70, "hidden": False},    # Discogs Release ID
+            9: {"width": None, "hidden": False},  # Import Timestamp
+            10: {"width": None, "hidden": True},  # Release Title
+            11: {"width": 30, "hidden": True},    # In Discogs Coll.
+            12: {"width": 80, "hidden": False},   # MusicBrainz ID
+            13: {"width": 80, "hidden": False},   # MusicBrainz ID Overr.
+            14: {"width": 100, "hidden": False},  # MusicBrainz Match M.
+            15: {"width": 100, "hidden": False},  # MusicBrainz Match T.
         }
 
     @property
