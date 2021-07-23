@@ -40,9 +40,9 @@
          <string>Tracks</string>
         </property>
        </widget>
-       <widget class="QGroupBox" name="groupBoxReleases">
+       <widget class="QGroupBox" name="groupBoxResults">
         <property name="title">
-         <string>Releases</string>
+         <string>Search Results</string>
         </property>
        </widget>
       </widget>
@@ -50,14 +50,9 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QGroupBox" name="groupBoxTest">
+       <widget class="QGroupBox" name="groupBoxSearch">
         <property name="title">
-         <string>Test</string>
-        </property>
-       </widget>
-       <widget class="QGroupBox" name="groupBoxTest2">
-        <property name="title">
-         <string>Test2</string>
+         <string>Search</string>
         </property>
        </widget>
       </widget>

@@ -261,6 +261,7 @@ class GuiTreeView(QtWidgets.QTreeView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
+        self.defaultHeader = dict()
         self.model = GuiTreeViewModel(self._data)
         self.setModel(self.model)
 
@@ -286,10 +287,16 @@ class GuiTreeView(QtWidgets.QTreeView):
     def read_settings(self, settings, key):
         if settings.value(key):
             self.header().restoreState(settings.value(key))
-            # Set check mark
-            for col, action in enumerate(self.header().actions()):
-                is_checked = not self.header().isSectionHidden(col)
-                action.setChecked(is_checked)
+        else:
+            for key in self.defaultHeader:
+                if self.defaultHeader[key]['width']:
+                    self.setColumnWidth(key, self.defaultHeader[key]['width'])
+                if self.defaultHeader[key]['hidden']:
+                    self.setColumnHidden(key, self.defaultHeader[key]['hidden'])
+        # Set check mark
+        for col, action in enumerate(self.header().actions()):
+            is_checked = not self.header().isSectionHidden(col)
+            action.setChecked(is_checked)
 
 
 class GuiTabWidget(QtWidgets.QTabWidget):
@@ -337,11 +344,11 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.vboxResults = QtWidgets.QVBoxLayout()
         self.vboxResults.setContentsMargins(0, 0, 0, 0)
-        self.groupBoxReleases.setLayout(self.vboxResults)
+        self.groupBoxResults.setLayout(self.vboxResults)
 
-        self.vboxTest = QtWidgets.QVBoxLayout()
-        self.vboxTest.setContentsMargins(0, 0, 0, 0)
-        self.groupBoxTest.setLayout(self.vboxTest)
+        self.vboxSearch = QtWidgets.QVBoxLayout()
+        self.vboxSearch.setContentsMargins(0, 0, 0, 0)
+        self.groupBoxSearch.setLayout(self.vboxSearch)
 
         # Create treeviewmix
         self.treeViewMixHeader = self.headers_list_mixes
@@ -356,30 +363,87 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableviewresults_load()
 
         # Create TabWidget
-        vSpacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.vboxTabWidgetSearchHorizontal = QtWidgets.QHBoxLayout()
 
         self.TabWidgetSearch = GuiTabWidget(self)
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
         self.pushButtonOfflineSearch.clicked.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.pushButtonOfflineSearch.setShortcut('Shift+S')
         self.lineEditTrackOfflineSearchArtist = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchArtist.setPlaceholderText('Artist')
+        self.lineEditTrackOfflineSearchArtist.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
         self.lineEditTrackOfflineSearchRelease = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchRelease.setPlaceholderText('Release')
+        self.lineEditTrackOfflineSearchRelease.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
         self.lineEditTrackOfflineSearchTrack = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchTrack.setPlaceholderText('Track')
+        self.lineEditTrackOfflineSearchTrack.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
-
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchArtist, 0, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchRelease, 1, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchTrack, 2, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.pushButtonOfflineSearch, 3, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(vSpacer, 4, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(self.TabWidgetSearch.TabWidgetSearchTab1.layout)
 
-        self.vboxTest.addWidget(self.TabWidgetSearch)
+        verticaSpacerTabWidget = QtWidgets.QSpacerItem(0, 0,
+                                                       QtWidgets.QSizePolicy.Minimum,
+                                                       QtWidgets.QSizePolicy.Expanding)
+        horizontalSpecerTabWidget = QtWidgets.QSpacerItem(0, 0,
+                                                       QtWidgets.QSizePolicy.Expanding)
+
+        self.vboxTabWidgetSearchHorizontal.addItem(horizontalSpecerTabWidget)
+        self.vboxTabWidgetSearchHorizontal.addWidget(self.pushButtonOfflineSearch)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
+            self.vboxTabWidgetSearchHorizontal, 3, 0)
+
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
+            verticaSpacerTabWidget, 4, 0)
+
+        self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(
+            self.TabWidgetSearch.TabWidgetSearchTab1.layout)
+
+        self.vboxSearch.addWidget(self.TabWidgetSearch)
+
+        # Create Labels for info
+        self.vboxLabelInfo = QtWidgets.QGridLayout()
+        self.groupBoxInfo = QtWidgets.QGroupBox()
+        self.groupBoxInfo.setObjectName('groupBoxInfo')
+        self.groupBoxInfo.setTitle('Info')
+        self.groupBoxInfo.setLayout(self.vboxLabelInfo)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidget(self.groupBoxInfo)
+        scroll.setWidgetResizable(True)
+
+        self.splitterHorizontal2.addWidget(scroll)
+
+        self.label_list_box = dict()
+        for idx, header_name in enumerate(self.tableViewResultsHeader):
+            for idx2 in range(2):
+                label = QtWidgets.QLabel()
+                # Not sure if you want this, just an example
+                header_name_text = header_name.replace('\n', ' ')
+                label.setObjectName(header_name + str(idx2))
+                label.setText(header_name_text + str(idx2) + ':')
+
+                # Keep referencs
+                self.label_list_box[header_name + str(idx2)] = label
+
+                self.vboxLabelInfo.addWidget(label, idx, idx2)
+
+        verticalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
+                                                    QtWidgets.QSizePolicy.Maximum,
+                                                    QtWidgets.QSizePolicy.Expanding)
+
+        horizontalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
+                                                    QtWidgets.QSizePolicy.Expanding)
+        # idx+1 add verticalSpacer on last row
+        # This crops all labels to above
+        self.vboxLabelInfo.addItem(verticalSpacervboxLabelInfo, idx+1, 0)
+        # Horizontal spacer so text don't get stretched when moving
+        # splitterHorizontal2 to left/right
+        self.vboxLabelInfo.addItem(horizontalSpacervboxLabelInfo, idx, 2)
 
         # Create vbox formlayout for mixes buttons and edit boxes
         self.vboxFormLayout = QtWidgets.QFormLayout()
@@ -410,6 +474,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.pushButtonDelMix.clicked.connect(self.treeviewmix_pushbutton_del_mix)
         self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
 
+
+
+
         # Add formlayout to mixes boxlayout
         self.vboxMix.addLayout(self.vboxFormLayout)
 
@@ -427,6 +494,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.beginGroup('Splitter')
         if self.settings.value('Horizontal'):
             self.splitterHorizontal.restoreState(self.settings.value('Horizontal'))
+        if self.settings.value('Horizontal2'):
+            self.splitterHorizontal2.restoreState(self.settings.value('Horizontal2'))
         if self.settings.value('Vertical'):
             self.splitterVertical.restoreState(self.settings.value('Vertical'))
         self.settings.endGroup()
@@ -444,6 +513,14 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.settings.beginGroup('treeViewMix')
         self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
+
+        # self.treeViewMix.setColumnWidth(0, 30)  # Mix ID
+        # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
+        # self.treeViewMix.setColumnWidth(2, 90)  # Played
+        # self.treeViewMix.setColumnHidden(4, True)  # Created
+        # self.treeViewMix.setColumnHidden(5, True)  # Updated
+
+
             # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
             #
             # if self.settings.value('SelectedPlaylist'):
@@ -469,6 +546,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.endGroup()
         self.settings.beginGroup('Splitter')
         self.settings.setValue('Horizontal', self.splitterHorizontal.saveState())
+        self.settings.setValue('Horizontal2', self.splitterHorizontal2.saveState())
         self.settings.setValue('Vertical', self.splitterVertical.saveState())
         self.settings.endGroup()
         self.settings.beginGroup('tableViewTracks')
@@ -534,11 +612,19 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # self.treeViewMix.setModel(self.treeViewMixModel)
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
-            self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
-            self.treeViewMix.setColumnHidden(0, True)  # Mix ID
-            self.treeViewMix.setColumnWidth(2, 90)     # Played
-            self.treeViewMix.setColumnHidden(4, True)  # Created
-            self.treeViewMix.setColumnHidden(5, True)  # Updated
+            # init default settings
+            self.treeViewMix.defaultHeader = {
+                0: {'width': 30, 'hidden': True},  # Mix ID
+                2: {'width': 90, 'hidden': None},  # Played
+                4: {'width': None, 'hidden': True},  # Created
+                5: {'width': None, 'hidden': True}  # Updated
+            }
+
+            # self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
+            # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
+            # self.treeViewMix.setColumnWidth(2, 90)     # Played
+            # self.treeViewMix.setColumnHidden(4, True)  # Created
+            # self.treeViewMix.setColumnHidden(5, True)  # Updated
             self.vboxMix.addWidget(self.treeViewMix)
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
@@ -607,10 +693,35 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             )
 
     def tableViewResultsOnClick(self, index):
-        print(index.row())
-        value = self.tableViewResults.model.index(index.row(), index.column()).data()
-        if value.startswith("http://") or value.startswith("https://"):
+        row = index.row()
+        value = self.tableViewResults.model.index(index.row(),
+                                                  index.column()).data()
+        if value.startswith('http://') or value.startswith('https://'):
             webbrowser.open(value)
+
+        for idx, header_name in enumerate(self.tableViewResultsHeader):
+            result = self.tableViewResults.model.index(row, idx).data()
+            # Need to define all headers with a url,
+            # or maybe if value = http/https?
+            # if header_name == 'Discogs\nRelease ID' or \
+            #         header_name == 'MusicBrainz\nRecording' or \
+            #         header_name == 'MusicBrainz\nRelease':
+            #     url_link = " <a href=" + result + "> <color=blue>" + result +\
+            #                "</font> </a>"
+            #     self.label_list_box[header_name + str(1)].setText(url_link)
+            #     self.label_list_box[header_name + str(1)].setOpenExternalLinks(
+            #         True)
+            # else:
+            if result.startswith('http://') or result.startswith('https://'):
+            #if 'http://' in result or 'https://' in result:
+                url_link = " <a href=" + result + "> <color=blue>" + result + \
+                           "</font> </a>"
+                self.label_list_box[header_name + str(1)].setText(url_link)
+                self.label_list_box[
+                    header_name + str(1)].setOpenExternalLinks(
+                    True)
+            else:
+                self.label_list_box[header_name + str(1)].setText(result)
 
     def treeviewmix_pushbutton_del_mix(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
