@@ -219,7 +219,7 @@ class TestCollection(unittest.TestCase):
         #self.debug_db(dbr)
         self.assertIsNotNone(dbr)
         self.assertEqual(len(dbr), 3)  # should be a list with 3 Rows
-        self.assertEqual(dbr[2]['d_release_id'], 123456)
+        self.assertEqual(dbr[2]['discogs_id'], 123456)
         self.assertEqual(dbr[0]['d_artist'], 'Märtini Brös.')
         self.assertEqual(dbr[1]['discogs_title'], 'Material Love')
         print("{} - {} - END".format(self.clname, name))
