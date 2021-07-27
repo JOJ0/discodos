@@ -572,13 +572,21 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.write_ui_settings()
         e.accept()
 
-    def keyPressEvent(self, event):
-        if (event.key() == Qt.Key_Shift
-                and self.treeViewMix.hasFocus() is True
-                and self.treeViewMix.selectedIndexes()):
+    # def keyPressEvent(self, event):
+    #     if (event.key() == Qt.Key_Shift
+    #             and self.treeViewMix.hasFocus() is True
+    #             and self.treeViewMix.selectedIndexes()):
+    #         mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
+    #         self.tableviewtracks_load(mix_id)
+    #         event.accept()
+
+    def keyPressEventtreeViewMix(self, e: QtGui.QKeyEvent) -> None:
+        if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
+            # It's important to send the event first before do the action
+            # else you get the info from the selected row before or after
+            QtWidgets.QTreeView.keyPressEvent(self.treeViewMix, e)
             mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
             self.tableviewtracks_load(mix_id)
-            event.accept()
 
     def keyPressEventtableViewResults(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
@@ -622,6 +630,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # self.treeViewMix.setModel(self.treeViewMixModel)
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
+            self.treeViewMix.keyPressEvent = self.keyPressEventtreeViewMix
             # init default settings
             self.treeViewMix.defaultHeader = {
                 0: {'width': 30, 'hidden': True},  # Mix ID
