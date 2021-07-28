@@ -261,7 +261,6 @@ class GuiTreeView(QtWidgets.QTreeView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
-        self.defaultHeader = dict()
         self.model = GuiTreeViewModel(self._data)
         self.setModel(self.model)
 
@@ -284,15 +283,15 @@ class GuiTreeView(QtWidgets.QTreeView):
         show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
         return show_column
 
-    def read_settings(self, settings, key):
-        if settings.value(key):
-            self.header().restoreState(settings.value(key))
+    def restore_column_settings(self, settings, setting_path, defaults={}):
+        if settings.value(setting_path):
+            self.header().restoreState(settings.value(setting_path))
         else:
-            for key in self.defaultHeader:
-                if self.defaultHeader[key]['width']:
-                    self.setColumnWidth(key, self.defaultHeader[key]['width'])
-                if self.defaultHeader[key]['hidden']:
-                    self.setColumnHidden(key, self.defaultHeader[key]['hidden'])
+            for key in defaults:
+                if defaults[key]['width']:
+                    self.setColumnWidth(key, defaults[key]['width'])
+                if defaults[key]['hidden']:
+                    self.setColumnHidden(key, defaults[key]['hidden'])
         # Set check mark
         for col, action in enumerate(self.header().actions()):
             is_checked = not self.header().isSectionHidden(col)
@@ -476,9 +475,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.pushButtonDelMix.clicked.connect(self.treeviewmix_pushbutton_del_mix)
         self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
 
-
-
-
         # Add formlayout to mixes boxlayout
         self.vboxMix.addLayout(self.vboxFormLayout)
 
@@ -514,14 +510,11 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         )
 
         self.settings.beginGroup('treeViewMix')
-        self.treeViewMix.read_settings(self.settings, 'ColumnWidth')
-
-        # self.treeViewMix.setColumnWidth(0, 30)  # Mix ID
-        # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
-        # self.treeViewMix.setColumnWidth(2, 90)  # Played
-        # self.treeViewMix.setColumnHidden(4, True)  # Created
-        # self.treeViewMix.setColumnHidden(5, True)  # Updated
-
+        self.treeViewMix.restore_column_settings(
+            self.settings,
+            'ColumnWidth',
+            defaults=self.column_defaults_treeview
+        )
 
             # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
             #
@@ -566,27 +559,43 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # self.settings.setValue("items", self.treeViewPlaylist.dataFromChild(self.invisibleRootItem()))
         #
         self.settings.endGroup()
+        self.settings.sync()
+
 
     def closeEvent(self, e):
         """ On close saves window positions to ini file """
+        # todo Question: When using cmd + q on a mac this closeEvent is called
+        #  twice when using keyPressEventtreeViewMix and keyPressEventtableViewResults.
+        #  Also changes are not saved in ini file.
+        #  If you disable keyPressEventtreeViewMix and keyPressEventtableViewResults
+        #  then settings are saved in .ini file
+        #  Need to use self.settings.sync() in combination with
+        #  keyPressEventtreeViewMix and keyPressEventtableViewResults
+        #  Why is that?
         self.write_ui_settings()
         e.accept()
 
     # def keyPressEvent(self, event):
-    #     if (event.key() == Qt.Key_Shift
-    #             and self.treeViewMix.hasFocus() is True
-    #             and self.treeViewMix.selectedIndexes()):
-    #         mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
-    #         self.tableviewtracks_load(mix_id)
-    #         event.accept()
+    #     print(event.key())
+    #     # if (event.key() == Qt.Key_Shift
+    #     #         and self.treeViewMix.hasFocus() is True
+    #     #         and self.treeViewMix.selectedIndexes()):
+    #     #     mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
+    #     #     self.tableviewtracks_load(mix_id)
+    #     #     event.accept()
+    #     # else:
+    #     super(MainWindow, self).keyPressEvent(event)
 
     def keyPressEventtreeViewMix(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
             # It's important to send the event first before do the action
             # else you get the info from the selected row before or after
             QtWidgets.QTreeView.keyPressEvent(self.treeViewMix, e)
-            mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
-            self.tableviewtracks_load(mix_id)
+            # if you dont use this if and starts the app and press up then the app
+            # crashes because of IndexError: list index out of range
+            if self.treeViewMix.selectedIndexes():
+                mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
+                self.tableviewtracks_load(mix_id)
 
     def keyPressEventtableViewResults(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
@@ -632,12 +641,12 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
             self.treeViewMix.keyPressEvent = self.keyPressEventtreeViewMix
             # init default settings
-            self.treeViewMix.defaultHeader = {
-                0: {'width': 30, 'hidden': True},  # Mix ID
-                2: {'width': 90, 'hidden': None},  # Played
-                4: {'width': None, 'hidden': True},  # Created
-                5: {'width': None, 'hidden': True}  # Updated
-            }
+            # self.treeViewMix.defaultHeader = {
+            #     0: {'width': 30, 'hidden': True},  # Mix ID
+            #     2: {'width': 90, 'hidden': None},  # Played
+            #     4: {'width': None, 'hidden': True},  # Created
+            #     5: {'width': None, 'hidden': True}  # Updated
+            # }
 
             # self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
             # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
@@ -696,7 +705,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.vboxResults.addWidget(self.tableViewResults)
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
         self.tableViewResults.keyPressEvent = self.keyPressEventtableViewResults
-        #self.tableViewResults.
 
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
