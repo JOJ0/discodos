@@ -560,11 +560,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # It's important to send the event first before do the action
             # else you get the info from the selected row before or after
             QtWidgets.QTreeView.keyPressEvent(self.treeViewMix, e)
-            # if you dont use this if and starts the app and press up then the app
-            # crashes because of IndexError: list index out of range
-            if self.treeViewMix.selectedIndexes():
-                mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
-                self.tableViewTracksLoad(mix_id)
+            self.treeViewMixOnClick(self.treeViewMix.currentIndex())
 
     def keyPressEventTableViewResults(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
@@ -663,9 +659,12 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResults.keyPressEvent = self.keyPressEventTableViewResults
 
     def treeViewMixOnClick(self, index):
-        index = index.sibling(index.row(), 0)
-        mix_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
-        self.tableViewTracksLoad(mix_id)
+        mix_id = self.treeViewMix.model.data(
+            index.sibling(index.row(), 0),
+            Qt.DisplayRole
+        )
+        if mix_id is not None:
+            self.tableViewTracksLoad(mix_id)
 
     def tableViewResultsOnClick(self, index):
         row = index.row()
