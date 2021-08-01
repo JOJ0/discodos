@@ -545,17 +545,17 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
     def closeEvent(self, e):
         """ On close saves window positions to ini file """
         # todo Question: When using cmd + q on a mac this closeEvent is called
-        #  twice when using keyPressEventtreeViewMix and keyPressEventTableViewResults.
+        #  twice when using keyPressEventTreeViewMix and keyPressEventTableViewResults.
         #  Also changes are not saved in ini file.
-        #  If you disable keyPressEventtreeViewMix and keyPressEventTableViewResults
+        #  If you disable keyPressEventTreeViewMix and keyPressEventTableViewResults
         #  then settings are saved in .ini file
         #  Need to use self.settings.sync() in combination with
-        #  keyPressEventtreeViewMix and keyPressEventTableViewResults
+        #  keyPressEventTreeViewMix and keyPressEventTableViewResults
         #  Why is that?
         self.write_ui_settings()
         e.accept()
 
-    def keyPressEventtreeViewMix(self, e: QtGui.QKeyEvent) -> None:
+    def keyPressEventTreeViewMix(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
             # It's important to send the event first before do the action
             # else you get the info from the selected row before or after
@@ -608,7 +608,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # self.treeViewMix.setModel(self.treeViewMixModel)
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
-            self.treeViewMix.keyPressEvent = self.keyPressEventtreeViewMix
+            self.treeViewMix.keyPressEvent = self.keyPressEventTreeViewMix
             self.vboxMix.addWidget(self.treeViewMix)
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
