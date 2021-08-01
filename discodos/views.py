@@ -470,17 +470,17 @@ class Collection_view_common():
             'd_catno': 'Catalog', 'd_track_no': 'Trk\nNo',
             'key': 'Key', 'bpm': 'BPM',
             'key_notes': 'Key\nNotes', 'notes': 'Track\nNotes',
-            'discogs_id': 'Discogs\nRelease ID',
+            'discogs_id': 'Discogs\nRelease',
             'discogs_title': 'Release\nTitle',
             'import_timestamp': 'Imported',
             'in_d_collection': 'In D.\nColl.',
             'track.m_rec_id': 'MusicBrainz\nRecording',
-            'track_ext.m_rec_id_override': 'MusicBrainz\nID Override',
-            'track.m_match_method': 'MusicBrainz\nMatch Method\nRecording',
-            'track.m_match_time': 'MusicBrainz\nMatch Time\nRecording',
+            'track_ext.m_rec_id_override': 'MusicBrainz\nRecording\nID-Override',
+            'track.m_match_method': 'MusicBrainz\nRecording\nMatch-Method',
+            'track.m_match_time': 'MusicBrainz\nRecording\nMatch-Time',
             'release.m_rel_id': 'MusicBrainz\nRelease',
-            'release.m_match_method ': 'MusicBrainz\nMatch Method\nRelease',
-            'release.m_match_time ': 'MusicBrainz\nMatch Time\nRelease'
+            'release.m_match_method ': 'MusicBrainz\nRelease\nMatch-Method',
+            'release.m_match_time ': 'MusicBrainz\nRelease\nMatch-Time'
         }
 
         self.column_defaults_search_results = {
