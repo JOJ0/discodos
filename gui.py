@@ -513,23 +513,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             'ColumnWidth',
             defaults=self.column_defaults_treeview
         )
-
-            # self.treeViewMix.header().restoreState(self.settings.value('ColumnWidth'))
-            #
-            # if self.settings.value('SelectedPlaylist'):
-            #     # self.model.setRootPath(self.settings.value('TreeFileSystem'))
-            #     # index = self.model.index(str(self.path))
-            #
-            #     # index = self.model.index(str(self.settings.value('TreeViewPlaylist1')))
-            #     row = self.settings.value('SelectedPlaylist')
-            #
-            #     x = int(row) - 1
-            #     index = self.treeViewPlaylist.model().index(int(x), 0)
-            #     # print(index)
-            #     self.treeViewPlaylist.scrollTo(index)
-            #     self.treeViewPlaylist.setCurrentIndex(index)
-            #     self.tableviewplaylistsongs_load_data(row)
-            #     # print(self.settings.value('SelectedPlaylist'))
         self.settings.endGroup()
 
     def write_ui_settings(self):
@@ -559,7 +542,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.endGroup()
         self.settings.sync()
 
-
     def closeEvent(self, e):
         """ On close saves window positions to ini file """
         # todo Question: When using cmd + q on a mac this closeEvent is called
@@ -572,17 +554,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         #  Why is that?
         self.write_ui_settings()
         e.accept()
-
-    # def keyPressEvent(self, event):
-    #     print(event.key())
-    #     # if (event.key() == Qt.Key_Shift
-    #     #         and self.treeViewMix.hasFocus() is True
-    #     #         and self.treeViewMix.selectedIndexes()):
-    #     #     mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
-    #     #     self.tableviewtracks_load(mix_id)
-    #     #     event.accept()
-    #     # else:
-    #     super(MainWindow, self).keyPressEvent(event)
 
     def keyPressEventtreeViewMix(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
@@ -638,19 +609,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
             self.treeViewMix.keyPressEvent = self.keyPressEventtreeViewMix
-            # init default settings
-            # self.treeViewMix.defaultHeader = {
-            #     0: {'width': 30, 'hidden': True},  # Mix ID
-            #     2: {'width': 90, 'hidden': None},  # Played
-            #     4: {'width': None, 'hidden': True},  # Created
-            #     5: {'width': None, 'hidden': True}  # Updated
-            # }
-
-            # self.treeViewMix.setColumnWidth(0, 30)     # Mix ID
-            # self.treeViewMix.setColumnHidden(0, True)  # Mix ID
-            # self.treeViewMix.setColumnWidth(2, 90)     # Played
-            # self.treeViewMix.setColumnHidden(4, True)  # Created
-            # self.treeViewMix.setColumnHidden(5, True)  # Updated
             self.vboxMix.addWidget(self.treeViewMix)
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
@@ -710,15 +668,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableviewtracks_load(playlist_id)
         print('playlist_id:', playlist_id)
 
-    # def tableviewresults_on_click(self, index):
-    #     indexes = self.tableViewResults.selectionModel().selectedRows()
-    #     for index in indexes:
-    #         print(
-    #             self.tableViewResults.model.data(
-    #                 self.tableViewResults.model.index(index.row(), 3)
-    #             )
-    #         )
-
     def tableViewResultsOnClick(self, index):
         row = index.row()
         value = self.tableViewResults.model.index(index.row(),
@@ -728,19 +677,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         for idx, header_name in enumerate(self.tableViewResultsHeader):
             result = self.tableViewResults.model.index(row, idx).data()
-            # Need to define all headers with a url,
-            # or maybe if value = http/https?
-            # if header_name == 'Discogs\nRelease ID' or \
-            #         header_name == 'MusicBrainz\nRecording' or \
-            #         header_name == 'MusicBrainz\nRelease':
-            #     url_link = " <a href=" + result + "> <color=blue>" + result +\
-            #                "</font> </a>"
-            #     self.label_list_box[header_name + str(1)].setText(url_link)
-            #     self.label_list_box[header_name + str(1)].setOpenExternalLinks(
-            #         True)
-            # else:
             if result.startswith('http://') or result.startswith('https://'):
-            #if 'http://' in result or 'https://' in result:
                 url_link = " <a href=" + result + "> <color=blue>" + result + \
                            "</font> </a>"
                 self.label_list_box[header_name + str(1)].setText(url_link)
