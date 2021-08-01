@@ -609,16 +609,15 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
 
-    def tableViewTracksLoad(self, mix_name):
+    def tableViewTracksLoad(self, mix_id):
         """ Loads mixtracks from database and initializes tableViewTracks
 
         Args:
-            mix_name (str): The name of the mix to load from database.
-                If a mix_name of None is given, it's assumed we initialize
-                tableViewTracks and add it to vboxTracks.
-                If an existing mix_name is given, it's assumed tableViewTracks
-                is existing already and just has to be updated with the fetched
-                data.
+            mix_id (str): The ID of the mix to load from database.
+                If mix_id is not None we fetch from db.
+                If vboxTracks is still empty we initialize tableViewTracks and
+                add it to the vbox, otherwise we assume it's there already and
+                update it with the fetched data or an empty list.
         Returns: None
 
         The following instance variables are created by this method:
@@ -627,8 +626,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         """
         mixtracks = None
         mixtracks_list = []
-        if mix_name is not None:
-            mix = Mix(False, mix_name, db_file=self.conf.discobase)
+        if mix_id is not None:
+            mix = Mix(False, mix_id, db_file=self.conf.discobase)
             mixtracks = mix.get_full_mix(verbose=True)
 
         if mixtracks:
