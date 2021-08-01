@@ -641,7 +641,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewTracksDataFrame = pd.DataFrame(
             mixtracks_list, columns=self.tableViewTracksHeader)
 
-        if mix_name is None:
+        if self.vboxTracks.isEmpty():
             self.tableViewTracks = GuiTableView(
                 self, self.tableViewTracksDataFrame)
             self.vboxTracks.addWidget(self.tableViewTracks)
@@ -663,8 +663,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             index.sibling(index.row(), 0),
             Qt.DisplayRole
         )
-        if mix_id is not None:
-            self.tableViewTracksLoad(mix_id)
+        self.tableViewTracksLoad(mix_id)
 
     def tableViewResultsOnClick(self, index):
         row = index.row()
