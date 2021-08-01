@@ -3,10 +3,9 @@
 import sys
 import pandas as pd
 import logging
+import webbrowser
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
-
-import webbrowser
 
 from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
