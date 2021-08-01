@@ -502,6 +502,14 @@ class Collection_view_common():
             15: {"width": 100, "hidden": False},  # MusicBrainz Match T.
         }
 
+        self.column_defaults_treeview = {
+            0: {'width': 30, 'hidden': True},  # Mix ID
+            2: {'width': 90, 'hidden': None},  # Played
+            4: {'width': None, 'hidden': True},  # Created
+            5: {'width': None, 'hidden': True}  # Updated
+        }
+
+
     @property
     def headers_list_search_results(self):
         return [val for val in self.headers_dict_search_results.values()]
