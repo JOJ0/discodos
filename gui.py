@@ -545,12 +545,12 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
     def closeEvent(self, e):
         """ On close saves window positions to ini file """
         # todo Question: When using cmd + q on a mac this closeEvent is called
-        #  twice when using keyPressEventtreeViewMix and keyPressEventtableViewResults.
+        #  twice when using keyPressEventtreeViewMix and keyPressEventTableViewResults.
         #  Also changes are not saved in ini file.
-        #  If you disable keyPressEventtreeViewMix and keyPressEventtableViewResults
+        #  If you disable keyPressEventtreeViewMix and keyPressEventTableViewResults
         #  then settings are saved in .ini file
         #  Need to use self.settings.sync() in combination with
-        #  keyPressEventtreeViewMix and keyPressEventtableViewResults
+        #  keyPressEventtreeViewMix and keyPressEventTableViewResults
         #  Why is that?
         self.write_ui_settings()
         e.accept()
@@ -566,7 +566,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
                 self.tableviewtracks_load(mix_id)
 
-    def keyPressEventtableViewResults(self, e: QtGui.QKeyEvent) -> None:
+    def keyPressEventTableViewResults(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
             # It's important to send the event first before do the action
             # else you get the info from the selected row before or after
@@ -660,7 +660,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self, self.tableViewResultsDataFrame)
         self.vboxResults.addWidget(self.tableViewResults)
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
-        self.tableViewResults.keyPressEvent = self.keyPressEventtableViewResults
+        self.tableViewResults.keyPressEvent = self.keyPressEventTableViewResults
 
     def treeviewmix_on_clicked(self, index):
         index = index.sibling(index.row(), 0)
