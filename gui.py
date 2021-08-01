@@ -664,9 +664,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
     def treeViewMixOnClick(self, index):
         index = index.sibling(index.row(), 0)
-        playlist_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
-        self.tableViewTracksLoad(playlist_id)
-        print('playlist_id:', playlist_id)
+        mix_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
+        self.tableViewTracksLoad(mix_id)
 
     def tableViewResultsOnClick(self, index):
         row = index.row()
