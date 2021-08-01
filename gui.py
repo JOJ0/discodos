@@ -349,15 +349,15 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         # Create treeviewmix
         self.treeViewMixHeader = self.headers_list_mixes
-        self.treeviewmix_load()
+        self.treeViewMixLoad()
 
         # Create tableviewtracks
         self.tableViewTracksHeader = self.headers_list_mixtracks_all
-        self.tableviewtracks_load(None)
+        self.tableViewTracksLoad(None)
 
         # Create tableviewresults
         self.tableViewResultsHeader = self.headers_list_search_results
-        self.tableviewresults_load()
+        self.tableViewResultsLoad()
 
         # Create TabWidget
         self.vboxTabWidgetSearchHorizontal = QtWidgets.QHBoxLayout()
@@ -365,17 +365,17 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.TabWidgetSearch = GuiTabWidget(self)
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
-        self.pushButtonOfflineSearch.clicked.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.pushButtonOfflineSearch.clicked.connect(self.tabWidgetOfflineSearchButtonOnClick)
         self.pushButtonOfflineSearch.setShortcut('Shift+S')
         self.lineEditTrackOfflineSearchArtist = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchArtist.setPlaceholderText('Artist')
-        self.lineEditTrackOfflineSearchArtist.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.lineEditTrackOfflineSearchArtist.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
         self.lineEditTrackOfflineSearchRelease = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchRelease.setPlaceholderText('Release')
-        self.lineEditTrackOfflineSearchRelease.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.lineEditTrackOfflineSearchRelease.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
         self.lineEditTrackOfflineSearchTrack = QtWidgets.QLineEdit()
         self.lineEditTrackOfflineSearchTrack.setPlaceholderText('Track')
-        self.lineEditTrackOfflineSearchTrack.returnPressed.connect(self.tabwidgetsearch_pushbutton_offline_search)
+        self.lineEditTrackOfflineSearchTrack.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
@@ -465,12 +465,12 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # Create pushbutton add
         self.pushButtonAddMix = QtWidgets.QPushButton()
         self.pushButtonAddMix.setText('Add')
-        self.pushButtonAddMix.clicked.connect(self.treeviewmix_pushbutton_add_mix)
+        self.pushButtonAddMix.clicked.connect(self.treeViewMixButtonAdd)
 
         # Create pushbutton del
         self.pushButtonDelMix = QtWidgets.QPushButton()
         self.pushButtonDelMix.setText('Delete')
-        self.pushButtonDelMix.clicked.connect(self.treeviewmix_pushbutton_del_mix)
+        self.pushButtonDelMix.clicked.connect(self.treeViewMixButtonDel)
         self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
 
         # Add formlayout to mixes boxlayout
@@ -479,9 +479,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # on first load, only mixes and releases are fetched and displayed
         self.initUI()
         # Restore layout from autosaved ini file
-        self.read_ui_settings()
+        self.readSettings()
 
-    def read_ui_settings(self):
+    def readSettings(self):
         # Load settings from settings.ini or default if no .ini found
         self.settings.beginGroup('MainWindow')
         self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
@@ -515,7 +515,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         )
         self.settings.endGroup()
 
-    def write_ui_settings(self):
+    def writeSettings(self):
         self.settings.beginGroup('MainWindow')
         self.settings.setValue('size', self.size())
         self.settings.setValue('pos', self.pos())
@@ -552,7 +552,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         #  Need to use self.settings.sync() in combination with
         #  keyPressEventTreeViewMix and keyPressEventTableViewResults
         #  Why is that?
-        self.write_ui_settings()
+        self.writeSettings()
         e.accept()
 
     def keyPressEventTreeViewMix(self, e: QtGui.QKeyEvent) -> None:
@@ -564,7 +564,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # crashes because of IndexError: list index out of range
             if self.treeViewMix.selectedIndexes():
                 mix_id = self.treeViewMix.selectedIndexes()[0].data(Qt.DisplayRole)
-                self.tableviewtracks_load(mix_id)
+                self.tableViewTracksLoad(mix_id)
 
     def keyPressEventTableViewResults(self, e: QtGui.QKeyEvent) -> None:
         if e.key() == QtCore.Qt.Key_Down or e.key() == QtCore.Qt.Key_Up:
@@ -575,9 +575,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self.tableViewResultsOnClick(index)
 
     def initUI(self):
-        self.treeviewmix_load()
+        self.treeViewMixLoad()
 
-    def treeviewmix_load(self):
+    def treeViewMixLoad(self):
         """ Loads mixes list from database and initializes treeViewMix.
 
         If vboxMix is empty, treeViewMix is created and added. Otherwise data
@@ -607,13 +607,13 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             # self.treeViewMixModel = QtGui.QStandardItemModel()
             # self.treeViewMix.setModel(self.treeViewMixModel)
             self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
-            self.treeViewMix.clicked.connect(self.treeviewmix_on_clicked)
+            self.treeViewMix.clicked.connect(self.treeViewMixOnClick)
             self.treeViewMix.keyPressEvent = self.keyPressEventTreeViewMix
             self.vboxMix.addWidget(self.treeViewMix)
         else:
             self.treeViewMix.model.update(self.treeViewMixDataFrame)
 
-    def tableviewtracks_load(self, mix_name):
+    def tableViewTracksLoad(self, mix_name):
         """ Loads mixtracks from database and initializes tableViewTracks
 
         Args:
@@ -652,7 +652,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         else:
             self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
 
-    def tableviewresults_load(self):
+    def tableViewResultsLoad(self):
         self.tableViewResultsDataFrame = pd.DataFrame(
             [], columns=self.tableViewResultsHeader)
 
@@ -662,10 +662,10 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
         self.tableViewResults.keyPressEvent = self.keyPressEventTableViewResults
 
-    def treeviewmix_on_clicked(self, index):
+    def treeViewMixOnClick(self, index):
         index = index.sibling(index.row(), 0)
         playlist_id = self.treeViewMix.model.data(index, Qt.DisplayRole)
-        self.tableviewtracks_load(playlist_id)
+        self.tableViewTracksLoad(playlist_id)
         print('playlist_id:', playlist_id)
 
     def tableViewResultsOnClick(self, index):
@@ -687,7 +687,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             else:
                 self.label_list_box[header_name + str(1)].setText(result)
 
-    def treeviewmix_pushbutton_del_mix(self, index):
+    def treeViewMixButtonDel(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
         row_id = self.treeViewMix.selectionModel().currentIndex().row()
         try:
@@ -699,7 +699,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         except:
             log.error("GUI; Failed to delete Mix! %s", playlist_id)
 
-    def treeviewmix_pushbutton_add_mix(self):
+    def treeViewMixButtonAdd(self):
         playlist_name = self.lineEditAddMix.text()
         playlist_venue = self.lineEditAddMixVenue.text()
         playlist_date = self.lineEditAddMixDate.text()
@@ -713,9 +713,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             print('no playlist name')
 
         # must be a better way to reload data on insert
-        self.treeviewmix_load()
+        self.treeViewMixLoad()
 
-    def tabwidgetsearch_pushbutton_offline_search(self):
+    def tabWidgetOfflineSearchButtonOnClick(self):
         search_results_list = []
         collection = Collection(False, self.conf.discobase)
         search_results = collection.search_release_track_offline(
