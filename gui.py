@@ -11,7 +11,6 @@ import webbrowser
 from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
 from discodos.config import Config
-from discodos.utils import is_number
 from discodos.ctrls import Ctrl_common
 from discodos.views import View_common, Mix_view_common, Collection_view_common
 
