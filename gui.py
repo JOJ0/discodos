@@ -32,8 +32,9 @@ class QtUtilsMixIn:
         pandas_header = self._data.columns
         header().setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        for idx, header_item in enumerate(pandas_header):
-            self.item = QtWidgets.QAction(header_item, self)
+        for idx, header_name in enumerate(pandas_header):
+            header_name_stripped = header_name.replace("\n", " ")
+            self.item = QtWidgets.QAction(header_name_stripped, self)
             self.item.setCheckable(True)
             result = self._make_colum_show_or_hide(idx)
             self.item.triggered.connect(result)
