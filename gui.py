@@ -476,8 +476,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # Add formlayout to mixes boxlayout
         self.vboxMix.addLayout(self.vboxFormLayout)
 
-        # on first load, only mixes and releases are fetched and displayed
-        self.initUI()
+        # on first load, only mixes are fetched and displayed in vboxMix
+        self.treeViewMixLoad()
         # Restore layout from autosaved ini file
         self.readSettings()
 
@@ -569,9 +569,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             QtWidgets.QTableView.keyPressEvent(self.tableViewResults, e)
             index = self.tableViewResults.currentIndex()
             self.tableViewResultsOnClick(index)
-
-    def initUI(self):
-        self.treeViewMixLoad()
 
     def treeViewMixLoad(self):
         """ Loads mixes list from database and initializes treeViewMix.
