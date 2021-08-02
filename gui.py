@@ -482,20 +482,28 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.readSettings()
 
     def readSettings(self):
-        # Load settings from settings.ini or default if no .ini found
-        self.settings.beginGroup('MainWindow')
-        self.resize(self.settings.value('size', QtCore.QSize(1280, 768)))
-        self.move(self.settings.value('pos', QtCore.QPoint(50, 50)))
-        self.settings.endGroup()
-        self.settings.beginGroup('Splitter')
-        if self.settings.value('Horizontal'):
-            self.splitterHorizontal.restoreState(self.settings.value('Horizontal'))
-        if self.settings.value('Horizontal2'):
-            self.splitterHorizontal2.restoreState(self.settings.value('Horizontal2'))
-        if self.settings.value('Vertical'):
-            self.splitterVertical.restoreState(self.settings.value('Vertical'))
-        self.settings.endGroup()
+        """ Load settings from self.settings.
 
+        If a settings key could not be loaded (reading ini file happens in
+        __init__) then some settings will use built-in defaults, others use
+        provided defaults saved in views.py.
+        """
+        self.resize(self.settings.value('MainWindow/size',
+                                        QtCore.QSize(1280, 768)))
+        self.move(self.settings.value('MainWindow/pos',
+                                      QtCore.QPoint(50, 50)))
+        if self.settings.value('Splitter/Horizontal'):
+            self.splitterHorizontal.restoreState(self.settings.value(
+                'Splitter/Horizontal'
+            ))
+        if self.settings.value('Splitter/Horizontal2'):
+            self.splitterHorizontal2.restoreState(self.settings.value(
+                'Splitter/Horizontal2'
+            ))
+        if self.settings.value('Splitter/Vertical'):
+            self.splitterVertical.restoreState(self.settings.value(
+                'Splitter/Vertical'
+            ))
         self.tableViewTracks.restore_column_settings(
             self.settings,
             "tableViewTracks/ColumnWidth",
@@ -506,14 +514,11 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             "tableViewResults/ColumnWidth",
             defaults=self.column_defaults_search_results
         )
-
-        self.settings.beginGroup('treeViewMix')
         self.treeViewMix.restore_column_settings(
             self.settings,
-            'ColumnWidth',
+            'treeViewMix/ColumnWidth',
             defaults=self.column_defaults_mixes
         )
-        self.settings.endGroup()
 
     def writeSettings(self):
         self.settings.beginGroup('MainWindow')
