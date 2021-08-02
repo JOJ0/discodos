@@ -323,10 +323,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.conf = config_obj  # Save passed DiscoDOS config object
         self.splitterVertical.setStretchFactor(1, 2)
-        self.settings = QSettings(  # Initialize saving settings to ini file
-            str(self.conf.discodos_data / 'gui_settings_autosave.ini'),
-            QSettings.IniFormat
-        )
+        ini_file = str(self.conf.discodos_data / 'gui_settings_autosave.ini')
+        log.info("GUI: Initializing self.settings from %s", ini_file)
+        self.settings = QSettings(ini_file, QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)
 
         # Create vbox layouts and add to setlayout groupbox
@@ -488,6 +487,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         __init__) then some settings will use built-in defaults, others use
         provided defaults saved in views.py.
         """
+        log.info("GUI: Loading settings from self.settings.")
         self.resize(self.settings.value('MainWindow/size',
                                         QtCore.QSize(1280, 768)))
         self.move(self.settings.value('MainWindow/pos',
@@ -521,6 +521,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         )
 
     def writeSettings(self):
+        log.info("GUI: Saving settings to self.settings.")
         self.settings.setValue('MainWindow/size', self.size())
         self.settings.setValue('MainWindow/pos', self.pos())
         self.settings.setValue('Splitter/Horizontal',
