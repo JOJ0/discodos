@@ -17,7 +17,76 @@ from discodos.views import View_common, Mix_view_common, Collection_view_common
 log = logging.getLogger('discodos')
 
 
-# class TableViewModel(QtGui.QStandardItemModel):
+class QtUtilsMixIn:
+    """Provides common utils usable in TreeView and TableView instances.
+
+    Currently this involves handling of column settings and context menus.
+    """
+    def _create_context_menu(self, header):
+        """Creates context menu for TreeView or TableView headers
+
+        Args:
+            header (method): Either a reference to a treeview.header() or a
+                tableview.horizontalHeader() method
+        """
+        pandas_header = self._data.columns
+        header().setContextMenuPolicy(Qt.ActionsContextMenu)
+
+        for idx, header_item in enumerate(pandas_header):
+            self.item = QtWidgets.QAction(header_item, self)
+            self.item.setCheckable(True)
+            result = self._make_colum_show_or_hide(idx)
+            self.item.triggered.connect(result)
+            header().addAction(self.item)
+
+    def _make_colum_show_or_hide(self, column_idx):
+        show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
+        return show_column
+
+    def restore_column_settings(self, settings, setting_path, defaults={},
+                                header=None):
+        """ Restores column width and visible-state from Qsettings
+
+        or falls back to using defaults (if provided). Also sets check marks
+        in right click on headers context menu according to visible-state of
+        columns.
+
+        Args:
+            settings (object): A QSettings object.
+            setting_path (string): The path to the setting in the Qsettings
+                object aka the .ini file. Format: section/keyname.
+            defaults (dict): Contains column ID and a subdict containing default
+                width and hidden state. Format:
+                0: {width: 50, hidden: True}, 1: {width: ...}, ...
+            header (method): either a treeview.header() or a
+                tableview.horizontalHeader() method
+
+        Returns: None
+        """
+        if settings.value(setting_path):
+            log.info("TableView.restore_column_settings: "
+                     "Restoring from saved settings.")
+            header().restoreState(settings.value(setting_path))
+        else:
+            log.info("TableView.restore_column_settings: "
+                     "No saved settings found. Using defaults.")
+            for column_id in defaults:
+                if defaults[column_id]['width']:
+                    self.setColumnWidth(
+                        column_id,
+                        defaults[column_id]['width']
+                    )
+                if defaults[column_id]['hidden']:
+                    self.setColumnHidden(
+                        column_id,
+                        defaults[column_id]['hidden']
+                    )
+
+        # Set context menu check marks according to visible-state of columns
+        for col, action in enumerate(header().actions()):
+            action.setChecked(not header().isSectionHidden(col))
+
+
 class TableViewModel(QtCore.QAbstractTableModel):
 
     def __init__(self, data):
@@ -122,7 +191,7 @@ class TableViewProxyStyle(QtWidgets.QProxyStyle):
         super().drawPrimitive(element, option, painter, widget)
 
 
-class TableView(QtWidgets.QTableView):
+class TableView(QtUtilsMixIn, QtWidgets.QTableView):
 
     def __init__(self, parent, data):
         super().__init__(parent)
@@ -142,61 +211,7 @@ class TableView(QtWidgets.QTableView):
 
         self.setAlternatingRowColors(True)
 
-        self._create_context_menu()
-
-    def _create_context_menu(self):
-        horizontal_header = self._data.columns
-        self.horizontalHeader().setContextMenuPolicy(Qt.ActionsContextMenu)
-        for idx, header_item in enumerate(horizontal_header):
-            self.item = QtWidgets.QAction(header_item, self)
-            self.item.setCheckable(True)
-            result = self._make_colum_show_or_hide(idx)
-            self.item.triggered.connect(result)
-            self.horizontalHeader().addAction(self.item)
-
-    def _make_colum_show_or_hide(self, column_idx):
-        show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
-        return show_column
-
-    def restore_column_settings(self, settings, setting_path, defaults={}):
-        """ Restores column width and visible-state from Qsettings
-
-        or falls back to using defaults (if provided). Also sets check marks
-        in right click on headers context menu according to visible-state of
-        columns.
-
-        Args:
-            settings (object): A QSettings object.
-            setting_path (string): The path to the setting in the Qsettings
-                object aka the .ini file. Format: section/keyname.
-            defaults (dict): Contains column ID and a subdict containing default
-                width and hidden state. Format:
-                0: {width: 50, hidden: True}, 1: {width: ...}, ...
-
-        Returns: None
-        """
-        if settings.value(setting_path):
-            log.info("TableView.restore_column_settings: "
-                     "Restoring from saved settings.")
-            self.horizontalHeader().restoreState(settings.value(setting_path))
-        else:
-            log.info("TableView.restore_column_settings: "
-                     "No saved settings found. Using defaults.")
-            for column_id in defaults:
-                if defaults[column_id]['width']:
-                    self.setColumnWidth(
-                        column_id,
-                        defaults[column_id]['width']
-                    )
-                if defaults[column_id]['hidden']:
-                    self.setColumnHidden(
-                        column_id,
-                        defaults[column_id]['hidden']
-                    )
-
-        # Set context menu check marks according to visible-state of columns
-        for col, action in enumerate(self.horizontalHeader().actions()):
-            action.setChecked(not self.horizontalHeader().isSectionHidden(col))
+        self._create_context_menu(self.horizontalHeader)
 
 
 class TreeViewModel(QtCore.QAbstractTableModel):
@@ -255,7 +270,7 @@ class TreeViewModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
-class TreeView(QtWidgets.QTreeView):
+class TreeView(QtUtilsMixIn, QtWidgets.QTreeView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
@@ -263,37 +278,8 @@ class TreeView(QtWidgets.QTreeView):
         self.setModel(self.model)
 
         self.setAlternatingRowColors(True)
-        self._create_context_menu()
+        self._create_context_menu(self.header)
         self.setIndentation(0)
-
-    def _create_context_menu(self):
-        horizontal_header = self._data.columns
-        self.header().setContextMenuPolicy(Qt.ActionsContextMenu)
-
-        for idx, header_item in enumerate(horizontal_header):
-            self.item = QtWidgets.QAction(header_item, self)
-            self.item.setCheckable(True)
-            result = self._make_colum_show_or_hide(idx)
-            self.item.triggered.connect(result)
-            self.header().addAction(self.item)
-
-    def _make_colum_show_or_hide(self, column_idx):
-        show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
-        return show_column
-
-    def restore_column_settings(self, settings, setting_path, defaults={}):
-        if settings.value(setting_path):
-            self.header().restoreState(settings.value(setting_path))
-        else:
-            for key in defaults:
-                if defaults[key]['width']:
-                    self.setColumnWidth(key, defaults[key]['width'])
-                if defaults[key]['hidden']:
-                    self.setColumnHidden(key, defaults[key]['hidden'])
-        # Set check mark
-        for col, action in enumerate(self.header().actions()):
-            is_checked = not self.header().isSectionHidden(col)
-            action.setChecked(is_checked)
 
 
 class TabWidget(QtWidgets.QTabWidget):
@@ -507,17 +493,20 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewTracks.restore_column_settings(
             self.settings,
             "tableViewTracks/ColumnWidth",
-            defaults=self.column_defaults_mixtracks
+            defaults=self.column_defaults_mixtracks,
+            header=self.tableViewTracks.horizontalHeader,
         )
         self.tableViewResults.restore_column_settings(
             self.settings,
             "tableViewResults/ColumnWidth",
-            defaults=self.column_defaults_search_results
+            defaults=self.column_defaults_search_results,
+            header=self.tableViewResults.horizontalHeader,
         )
         self.treeViewMix.restore_column_settings(
             self.settings,
             'treeViewMix/ColumnWidth',
-            defaults=self.column_defaults_mixes
+            defaults=self.column_defaults_mixes,
+            header=self.treeViewMix.header,
         )
 
     def writeSettings(self):
