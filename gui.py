@@ -639,7 +639,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         if self.vboxTracks.isEmpty():
             self.tableViewTracks = TableView(
-                self, self.tableViewTracksDataFrame)
+                self, self.tableViewTracksDataFrame
+            )
             self.vboxTracks.addWidget(self.tableViewTracks)
         else:
             self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
@@ -648,8 +649,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResultsDataFrame = pd.DataFrame(
             [], columns=self.tableViewResultsHeader)
 
-        self.tableViewResults = TableView(
-            self, self.tableViewResultsDataFrame)
+        self.tableViewResults = TableView(self, self.tableViewResultsDataFrame)
         self.vboxResults.addWidget(self.tableViewResults)
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
         self.tableViewResults.keyPressEvent = self.keyPressEventTableViewResults
