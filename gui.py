@@ -17,11 +17,11 @@ from discodos.views import View_common, Mix_view_common, Collection_view_common
 log = logging.getLogger('discodos')
 
 
-# class GuiTableViewModel(QtGui.QStandardItemModel):
-class GuiTableViewModel(QtCore.QAbstractTableModel):
+# class TableViewModel(QtGui.QStandardItemModel):
+class TableViewModel(QtCore.QAbstractTableModel):
 
     def __init__(self, data):
-        super(GuiTableViewModel, self).__init__()
+        super(TableViewModel, self).__init__()
         self._data = data
 
     def data(self, index, role=Qt.DisplayRole):
@@ -105,7 +105,7 @@ class GuiTableViewModel(QtCore.QAbstractTableModel):
     #     self.layoutChanged.emit()
 
 
-class GuiTableViewProxyStyle(QtWidgets.QProxyStyle):
+class TableViewProxyStyle(QtWidgets.QProxyStyle):
 
     def drawPrimitive(self, element, option, painter, widget=None):
         """
@@ -122,7 +122,7 @@ class GuiTableViewProxyStyle(QtWidgets.QProxyStyle):
         super().drawPrimitive(element, option, painter, widget)
 
 
-class GuiTableView(QtWidgets.QTableView):
+class TableView(QtWidgets.QTableView):
 
     def __init__(self, parent, data):
         super().__init__(parent)
@@ -136,8 +136,8 @@ class GuiTableView(QtWidgets.QTableView):
         self.setDragDropMode(self.InternalMove)
         self.setDragDropOverwriteMode(False)
 
-        self.setStyle(GuiTableViewProxyStyle())
-        self.model = GuiTableViewModel(self._data)
+        self.setStyle(TableViewProxyStyle())
+        self.model = TableViewModel(self._data)
         self.setModel(self.model)
 
         self.setAlternatingRowColors(True)
@@ -176,11 +176,11 @@ class GuiTableView(QtWidgets.QTableView):
         Returns: None
         """
         if settings.value(setting_path):
-            log.info("GuiTableView.restore_column_settings: "
+            log.info("TableView.restore_column_settings: "
                      "Restoring from saved settings.")
             self.horizontalHeader().restoreState(settings.value(setting_path))
         else:
-            log.info("GuiTableView.restore_column_settings: "
+            log.info("TableView.restore_column_settings: "
                      "No saved settings found. Using defaults.")
             for column_id in defaults:
                 if defaults[column_id]['width']:
@@ -199,10 +199,10 @@ class GuiTableView(QtWidgets.QTableView):
             action.setChecked(not self.horizontalHeader().isSectionHidden(col))
 
 
-class GuiTreeViewModel(QtCore.QAbstractTableModel):
+class TreeViewModel(QtCore.QAbstractTableModel):
 
     def __init__(self, data):
-        super(GuiTreeViewModel, self).__init__()
+        super(TreeViewModel, self).__init__()
         self._data = data
 
     def data(self, index, role=Qt.DisplayRole):
@@ -255,11 +255,11 @@ class GuiTreeViewModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
-class GuiTreeView(QtWidgets.QTreeView):
+class TreeView(QtWidgets.QTreeView):
     def __init__(self, parent, data):
         super().__init__(parent)
         self._data = data
-        self.model = GuiTreeViewModel(self._data)
+        self.model = TreeViewModel(self._data)
         self.setModel(self.model)
 
         self.setAlternatingRowColors(True)
@@ -296,7 +296,7 @@ class GuiTreeView(QtWidgets.QTreeView):
             action.setChecked(is_checked)
 
 
-class GuiTabWidget(QtWidgets.QTabWidget):
+class TabWidget(QtWidgets.QTabWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -361,7 +361,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # Create TabWidget
         self.vboxTabWidgetSearchHorizontal = QtWidgets.QHBoxLayout()
 
-        self.TabWidgetSearch = GuiTabWidget(self)
+        self.TabWidgetSearch = TabWidget(self)
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
         self.pushButtonOfflineSearch.clicked.connect(self.tabWidgetOfflineSearchButtonOnClick)
@@ -599,7 +599,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         if self.vboxMix.isEmpty():
             # self.treeViewMixModel = QtGui.QStandardItemModel()
             # self.treeViewMix.setModel(self.treeViewMixModel)
-            self.treeViewMix = GuiTreeView(self, self.treeViewMixDataFrame)
+            self.treeViewMix = TreeView(self, self.treeViewMixDataFrame)
             self.treeViewMix.clicked.connect(self.treeViewMixOnClick)
             self.treeViewMix.keyPressEvent = self.keyPressEventTreeViewMix
             self.vboxMix.addWidget(self.treeViewMix)
@@ -638,7 +638,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             mixtracks_list, columns=self.tableViewTracksHeader)
 
         if self.vboxTracks.isEmpty():
-            self.tableViewTracks = GuiTableView(
+            self.tableViewTracks = TableView(
                 self, self.tableViewTracksDataFrame)
             self.vboxTracks.addWidget(self.tableViewTracks)
         else:
@@ -648,7 +648,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResultsDataFrame = pd.DataFrame(
             [], columns=self.tableViewResultsHeader)
 
-        self.tableViewResults = GuiTableView(
+        self.tableViewResults = TableView(
             self, self.tableViewResultsDataFrame)
         self.vboxResults.addWidget(self.tableViewResults)
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
