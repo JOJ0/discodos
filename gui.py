@@ -511,7 +511,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.treeViewMix.restore_column_settings(
             self.settings,
             'ColumnWidth',
-            defaults=self.column_defaults_treeview
+            defaults=self.column_defaults_mixes
         )
         self.settings.endGroup()
 
