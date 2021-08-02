@@ -460,10 +460,11 @@ class Collection_view_common():
         self._edit_track_questions: when editing a collection-track.
 
     Dictionaries containing SQL table fields translated to human readable
-    column names.
+    column names:
+        self.headers_list_search_results: Used for headers in GUI Search Results
 
-    self.headers_list_search_results: Used for headers in GUI Search Results
-
+    Column defaults for visible-state and width. Used in GUI:
+        self.column_defaults_search_results
     """
     def __init__(self):
         super().__init__()
