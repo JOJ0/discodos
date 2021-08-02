@@ -58,7 +58,7 @@ class QtUtilsMixIn:
             defaults (dict): Contains column ID and a subdict containing default
                 width and hidden state. Format:
                 0: {width: 50, hidden: True}, 1: {width: ...}, ...
-            header (method): either a treeview.header() or a
+            header (method): Either a reference to a treeview.header() or a
                 tableview.horizontalHeader() method
 
         Returns: None
@@ -204,13 +204,10 @@ class TableView(QtUtilsMixIn, QtWidgets.QTableView):
         self.setShowGrid(False)
         self.setDragDropMode(self.InternalMove)
         self.setDragDropOverwriteMode(False)
-
         self.setStyle(TableViewProxyStyle())
         self.model = TableViewModel(self._data)
         self.setModel(self.model)
-
         self.setAlternatingRowColors(True)
-
         self._create_context_menu(self.horizontalHeader)
 
 
@@ -276,7 +273,6 @@ class TreeView(QtUtilsMixIn, QtWidgets.QTreeView):
         self._data = data
         self.model = TreeViewModel(self._data)
         self.setModel(self.model)
-
         self.setAlternatingRowColors(True)
         self._create_context_menu(self.header)
         self.setIndentation(0)
