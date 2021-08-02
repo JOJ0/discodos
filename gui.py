@@ -521,30 +521,23 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         )
 
     def writeSettings(self):
-        self.settings.beginGroup('MainWindow')
-        self.settings.setValue('size', self.size())
-        self.settings.setValue('pos', self.pos())
-        self.settings.endGroup()
-        self.settings.beginGroup('Splitter')
-        self.settings.setValue('Horizontal', self.splitterHorizontal.saveState())
-        self.settings.setValue('Horizontal2', self.splitterHorizontal2.saveState())
-        self.settings.setValue('Vertical', self.splitterVertical.saveState())
-        self.settings.endGroup()
-        self.settings.beginGroup('tableViewTracks')
-        self.settings.setValue('ColumnWidth', self.tableViewTracks.horizontalHeader().saveState())
-        self.settings.endGroup()
-        self.settings.beginGroup('tableViewResults')
-        self.settings.setValue('ColumnWidth',self.tableViewResults.horizontalHeader().saveState())
-        self.settings.endGroup()
-        self.settings.beginGroup('treeViewMix')
-        self.settings.setValue('ColumnWidth', self.treeViewMix.header().saveState())
-        #
-        # #self.settings.setValue('test', self.treeViewPlaylist.model().data(self.treeViewPlaylist.selectedIndexes()[1]))
-        # #index = self.treeViewPlaylist.model().index(int(x), 0)
-        # #playlist_id = self.treeViewPlaylist.model().data(index, Qt.DisplayRole)
-        # self.settings.setValue("items", self.treeViewPlaylist.dataFromChild(self.invisibleRootItem()))
-        #
-        self.settings.endGroup()
+        self.settings.setValue('MainWindow/size', self.size())
+        self.settings.setValue('MainWindow/pos', self.pos())
+        self.settings.setValue('Splitter/Horizontal',
+                               self.splitterHorizontal.saveState())
+        self.settings.setValue('Splitter/Horizontal2',
+                               self.splitterHorizontal2.saveState())
+        self.settings.setValue('Splitter/Vertical',
+                               self.splitterVertical.saveState())
+        self.settings.setValue(
+            'tableViewTracks/ColumnWidth',
+            self.tableViewTracks.horizontalHeader().saveState())
+        self.settings.setValue(
+            'tableViewResults/ColumnWidth',
+            self.tableViewResults.horizontalHeader().saveState())
+        self.settings.setValue(
+            'treeViewMix/ColumnWidth',
+            self.treeViewMix.header().saveState())
         self.settings.sync()
 
     def closeEvent(self, e):
