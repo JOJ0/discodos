@@ -305,6 +305,10 @@ class Mix_view_common():
     self.headers_list_mixtracks_brainz_short:
     self.headers_list_mixtracks_basic:
     self.headers_list_mixtracks_basic_short:
+
+    Column defaults for visible-state and width. Used in GUI:
+        self.column_defaults_mixes
+        self.column_defaults_mixtracks
     '''
 
     def __init__(self):
@@ -372,6 +376,13 @@ class Mix_view_common():
         self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic.copy()
         self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
 
+        self.column_defaults_mixes = {
+            0: {'width': 30, 'hidden': True},    # Mix ID
+            2: {'width': 90, 'hidden': None},    # Played
+            4: {'width': None, 'hidden': True},  # Created
+            5: {'width': None, 'hidden': True}   # Updated
+        }
+
         self.column_defaults_mixtracks = {
             0: {"width": 30, "hidden": False},     # Track Pos.
             1: {"width": None, "hidden": True},    # Release
@@ -385,6 +396,7 @@ class Mix_view_common():
             9: {"width": 58, "hidden": False},     # Transition Notes
             10: {"width": 55, "hidden": False},    # Track Notes
         }
+
 
     @property
     def headers_list_mixes(self):
