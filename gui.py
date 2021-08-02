@@ -541,7 +541,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings.sync()
 
     def closeEvent(self, e):
-        """ On close saves window positions to ini file """
+        """ When application closes this method calls writeSettings """
         # todo Question: When using cmd + q on a mac this closeEvent is called
         #  twice when using keyPressEventTreeViewMix and keyPressEventTableViewResults.
         #  Also changes are not saved in ini file.
@@ -550,6 +550,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         #  Need to use self.settings.sync() in combination with
         #  keyPressEventTreeViewMix and keyPressEventTableViewResults
         #  Why is that?
+        log.info("GUI: Application is closing.")
         self.writeSettings()
         e.accept()
 
