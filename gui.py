@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import logging
 import webbrowser
+import re
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
 
@@ -398,33 +399,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.splitterHorizontal2.addWidget(scroll)
 
         self.label_list_box = dict()
-        for idx, header_name in enumerate(self.tableViewResultsHeader):
-            for idx2 in range(2):
-                label = QtWidgets.QLabel()
-                # Not sure if you want this, just an example
-                header_name_text = header_name.replace('\n', ' ')
-                label.setObjectName(header_name + str(idx2))
+        self.populate_info_box(self.tableViewResultsHeader)
 
-                if idx2 == 0:  # only show first column with text
-                    label.setText(header_name_text + ':')
-
-                # Keep referencs
-                self.label_list_box[header_name + str(idx2)] = label
-
-                self.vboxLabelInfo.addWidget(label, idx, idx2)
-
-        verticalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
-                                                    QtWidgets.QSizePolicy.Maximum,
-                                                    QtWidgets.QSizePolicy.Expanding)
-
-        horizontalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
-                                                    QtWidgets.QSizePolicy.Expanding)
-        # idx+1 add verticalSpacer on last row
-        # This crops all labels to above
-        self.vboxLabelInfo.addItem(verticalSpacervboxLabelInfo, idx+1, 0)
-        # Horizontal spacer so text don't get stretched when moving
-        # splitterHorizontal2 to left/right
-        self.vboxLabelInfo.addItem(horizontalSpacervboxLabelInfo, idx, 2)
 
         # Create vbox formlayout for mixes buttons and edit boxes
         self.vboxFormLayout = QtWidgets.QFormLayout()
@@ -738,6 +714,46 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self.tableViewResultsDataFrame = pd.DataFrame(
                 [], columns=self.tableViewResultsHeader)
             self.tableViewResults.model.update(self.tableViewResultsDataFrame)
+
+    def populate_info_box(self, headers_list):
+        for idx, header_name in enumerate(headers_list):
+            for idx2 in range(2):
+                label = QtWidgets.QLabel()
+                name_parts = re.findall(r'\S+|\s', header_name)
+                new_header_name = ''
+                for pidx, part in enumerate(name_parts):
+                    if pidx < 3:
+                        if part == '\n':
+                            new_header_name += ' '
+                        else:
+                            new_header_name += part
+                    else:
+                        if len(header_name) < 20 and part == '\n':
+                            new_header_name += ' '
+                        else:
+                            new_header_name += part
+                label.setObjectName(new_header_name + str(idx2))
+
+                if idx2 == 0:  # only show first column with text
+                    label.setText(new_header_name + ':')
+
+                # Keep referencs
+                self.label_list_box[header_name + str(idx2)] = label
+
+                self.vboxLabelInfo.addWidget(label, idx, idx2)
+
+        verticalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
+                                                    QtWidgets.QSizePolicy.Maximum,
+                                                    QtWidgets.QSizePolicy.Expanding)
+
+        horizontalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
+                                                    QtWidgets.QSizePolicy.Expanding)
+        # idx+1 add verticalSpacer on last row
+        # This crops all labels to above
+        self.vboxLabelInfo.addItem(verticalSpacervboxLabelInfo, idx+1, 0)
+        # Horizontal spacer so text don't get stretched when moving
+        # splitterHorizontal2 to left/right
+        self.vboxLabelInfo.addItem(horizontalSpacervboxLabelInfo, idx, 2)
 
 
 def main():
