@@ -347,7 +347,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_match_method_release()
-        # self.debug_db(db_return)
+        self.debug_db(db_return)
         self.assertEqual(len(db_return), 3)  # should be a list with 4 Rows
         self.assertEqual(db_return[0]['m_match_method'], None)
         self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
@@ -379,6 +379,58 @@ class TestCollection(unittest.TestCase):
             self.assertFalse(d_return)
             # if release can't be fetched online it does not make sense to ask
             # d_get_first_catno() to retrieve it. This should be handled elsewhere
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_releases_total(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_releases_total()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return[0], 4)  # should be 4 releases in coll.
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_total(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_total()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return[0], 5)  # should be 5 tracks in coll.
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_total_ext(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_total_ext()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return[0], 5)  # should be 5 tracks in track_ext t.
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_total_sanity(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_total_sanity()
+        # self.debug_db(db_return)
+        self.assertTrue(db_return[0])  # True if count in both track t. equal
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_releases_matched(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_releases_matched()
+        self.assertEqual(db_return[0], 2)  # should be 2 matched releases
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_matched(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_matched()
+        self.assertEqual(db_return[0], 1)  # should be 1 matched tracks
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod

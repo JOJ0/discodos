@@ -314,6 +314,12 @@ class ArgParse():
         with the *Brainz matching import operation only
         (-z, -zz)
         ''')
+    ### STATS subparser ##########################################################
+    stats_subparser = subparsers.add_parser(
+        name='stats',
+        help='''show stats about your record collection and mixes.
+        View this subcommand's help: "disco stats -h".''')
+    ### SETUP subparser ##########################################################
     setup_subparser = subparsers.add_parser(
         name='setup',
         help='''sets up the DiscoBASE and handles database schema upgrades.
@@ -584,6 +590,11 @@ def _main():
             offset=user.RESUME_OFFSET
         )
 
+
+    ##### STATS MODE ###########################################################
+    if user.WANTS_TO_SHOW_STATS:
+        # mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
+        coll_ctrl.view_stats()
 
     ##### SETUP MODE ###########################################################
     if user.WANTS_TO_LAUNCH_SETUP:
