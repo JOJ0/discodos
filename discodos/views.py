@@ -745,6 +745,19 @@ class View_common_cli(View_common):
                     break
                 i += 1
 
+    def collection_and_mixes_stats(
+        self, releases_total, releases_matched, tracks_total, tracks_matched
+    ):
+        print()
+        print(
+            'Releases in DiscoBASE:\t\t{}'.format(releases_total),
+            'Releases matched with *Brainz:\t{}'.format(releases_matched),
+            'Tracks in DiscoBASE:\t\t{}'.format(tracks_total),
+            'Tracks matched with *Brainz:\t{}'.format(tracks_matched),
+            sep='\n'
+        )
+        print()
+
     def welcome_to_discodos(self):
         print(r'''
                             _______  _______ ________
@@ -987,6 +1000,7 @@ class User_int(object):
         self.WANTS_TO_LAUNCH_SETUP = False
         self.WANTS_TO_FORCE_UPGRADE_SCHEMA = False
         self.MIX_SORT = False
+        self.WANTS_TO_SHOW_STATS = False
 
 
         # RELEASE MODE:
@@ -1209,6 +1223,12 @@ class User_int(object):
                     raise SystemExit(1)
                 else:
                     self.WANTS_TO_IMPORT_RELEASE = True
+
+
+        # STATS MODE
+        if self.args.command == 'stats':
+            log.debug("Entered stats mode.")
+            self.WANTS_TO_SHOW_STATS = True
 
 
         # SETUP MODE

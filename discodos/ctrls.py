@@ -1088,3 +1088,13 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         else:
             log.error("Something went wrong on track edit!")
             raise SystemExit(1)
+
+    def view_stats(self):
+        releases_total = self.collection.stats_releases_total()
+        releases_matched = self.collection.stats_releases_matched()
+        tracks_total = self.collection.stats_tracks_total()
+        tracks_matched = self.collection.stats_tracks_matched()
+        self.cli.collection_and_mixes_stats(
+            releases_total, releases_matched,
+            tracks_total, tracks_matched
+        )

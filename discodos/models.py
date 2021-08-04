@@ -1299,19 +1299,22 @@ class Collection (Database):
         sql_stats = '''
                     SELECT COUNT(*) FROM release;
                     '''
-        return self._select(sql_stats, fetchone=True)
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
 
     def stats_tracks_total(self):
         sql_stats = '''
-                    SELECT COUNT(*) FROM tracks;
+                    SELECT COUNT(*) FROM track;
                     '''
-        return self._select(sql_stats, fetchone=True)
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
 
     def stats_tracks_total_ext(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM track_ext;
                     '''
-        return self._select(sql_stats, fetchone=True)
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
 
     def stats_tracks_total_sanity(self):
         '''Total tracks count should be the same in track and track_ext tables.
@@ -1324,13 +1327,15 @@ class Collection (Database):
         sql_stats = '''
                     SELECT COUNT(*) FROM release WHERE m_match_time IS NOT NULL;
                     '''
-        return self._select(sql_stats, fetchone=True)
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
 
     def stats_tracks_matched(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM track WHERE m_match_time IS NOT NULL;
                     '''
-        return self._select(sql_stats, fetchone=True)
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
 
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
