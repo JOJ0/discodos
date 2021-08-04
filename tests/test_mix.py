@@ -5,15 +5,15 @@ import unittest
 from pathlib import Path
 from shutil import copy2
 
-#from discodos.config import Config
-from discodos.models import Mix, log
+# from discodos.config import Config
+from discodos.models import Mix  # , log
 
 
 class TestMix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        #log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
-        #log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
+        # log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
+        # log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
         discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
         self.db_path = discodos_tests / 'discobase.db'
@@ -95,7 +95,7 @@ class TestMix(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.mix = Mix(False, 0, self.db_path)
         db_return = self.mix.get_all_tracks_in_mixes()
-        #self.assertEqual(len(db_return), 4)  # this will vary if we add tracks, screw it
+        # self.assertEqual(len(db_return), 4)  # this will vary if we add tracks, screw it
         self.assertEqual(db_return[0]["mix_id"], 125)
         self.assertEqual(db_return[0]["d_release_id"], 123456)
         self.assertEqual(db_return[0]["d_track_no"], "A1")
@@ -136,7 +136,7 @@ class TestMix(unittest.TestCase):
         self.mix = Mix(False, 125, self.db_path)
         db_return = self.mix.get_last_track()
         self.assertEqual(len(db_return), 1)
-        #self.assertEqual(db_return["track_pos"], 2)  # no named cols in this case?
+        # self.assertEqual(db_return["track_pos"], 2)  # no named cols in this case?
         self.assertEqual(db_return[0], 2)  # maybe we use like this somewhere
         print("{} - {} - END".format(self.clname, name))
 
