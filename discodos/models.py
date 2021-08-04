@@ -1320,6 +1320,18 @@ class Collection (Database):
             return True
         return False
 
+    def stats_releases_matched(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM release WHERE m_match_time IS NOT NULL;
+                    '''
+        return self._select(sql_stats, fetchone=True)
+
+    def stats_tracks_matched(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track WHERE m_match_time IS NOT NULL;
+                    '''
+        return self._select(sql_stats, fetchone=True)
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''

@@ -417,6 +417,22 @@ class TestCollection(unittest.TestCase):
         self.assertTrue(db_return[0])  # True if count in both track t. equal
         print("{} - {} - END".format(self.clname, name))
 
+    def test_stats_releases_matched(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_releases_matched()
+        self.assertEqual(db_return[0], 2)  # should be 2 matched releases
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_matched(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_matched()
+        self.assertEqual(db_return[0], 1)  # should be 1 matched tracks
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         name = inspect.currentframe().f_code.co_name
