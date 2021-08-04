@@ -177,7 +177,7 @@ class TestCollection(unittest.TestCase):
             print('We are ONLINE')
             d_return = self.collection.search_release_online('Amon Tobin')  # artist or title
             self.assertGreater(len(d_return), 770)  # list with more than 770 Release objects
-            self.assertEqual(d_return.pages, 17)  # _currently_ 17 pages
+            self.assertGreater(d_return.pages, 17)  # _currently_ 18 pages
             self.assertEqual(d_return.per_page, 50)  # 50 per_page
             self.assertEqual(d_return[0].id, 3618346)
             self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
