@@ -390,6 +390,15 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[0], 4)  # should be 4 releases in coll.
         print("{} - {} - END".format(self.clname, name))
 
+    def test_stats_tracks_total(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_total()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return[0], 5)  # should be 5 tracks in coll.
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         name = inspect.currentframe().f_code.co_name
