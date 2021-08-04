@@ -347,7 +347,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_match_method_release()
-        # self.debug_db(db_return)
+        self.debug_db(db_return)
         self.assertEqual(len(db_return), 3)  # should be a list with 4 Rows
         self.assertEqual(db_return[0]['m_match_method'], None)
         self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
@@ -379,6 +379,15 @@ class TestCollection(unittest.TestCase):
             self.assertFalse(d_return)
             # if release can't be fetched online it does not make sense to ask
             # d_get_first_catno() to retrieve it. This should be handled elsewhere
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_releases_total(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_releases_total()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return[0], 4)  # should be 4 releases in coll.
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod
