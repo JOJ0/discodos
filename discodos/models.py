@@ -1313,6 +1313,13 @@ class Collection (Database):
                     '''
         return self._select(sql_stats, fetchone=True)
 
+    def stats_tracks_total_sanity(self):
+        '''Total tracks count should be the same in track and track_ext tables.
+        '''
+        if self.stats_tracks_total() == self.stats_tracks_total_ext():
+            return True
+        return False
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
