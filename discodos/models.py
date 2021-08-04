@@ -1295,6 +1295,12 @@ class Collection (Database):
                     '''
         return self._select(sql_stats, fetchone=False)
 
+    def stats_releases_total(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM release;
+                    '''
+        return self._select(sql_stats, fetchone=True)
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
