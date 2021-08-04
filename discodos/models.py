@@ -1301,6 +1301,18 @@ class Collection (Database):
                     '''
         return self._select(sql_stats, fetchone=True)
 
+    def stats_tracks_total(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM tracks;
+                    '''
+        return self._select(sql_stats, fetchone=True)
+
+    def stats_tracks_total_ext(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track_ext;
+                    '''
+        return self._select(sql_stats, fetchone=True)
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
