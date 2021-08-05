@@ -387,7 +387,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_releases_total()
         # self.debug_db(db_return)
-        self.assertEqual(db_return[0], 4)  # should be 4 releases in coll.
+        self.assertEqual(db_return, 4)  # should be 4 releases in coll.
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_total(self):
@@ -396,7 +396,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_total()
         # self.debug_db(db_return)
-        self.assertEqual(db_return[0], 5)  # should be 5 tracks in coll.
+        self.assertEqual(db_return, 5)  # should be 5 tracks in coll.
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_total_ext(self):
@@ -405,7 +405,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_total_ext()
         # self.debug_db(db_return)
-        self.assertEqual(db_return[0], 5)  # should be 5 tracks in track_ext t.
+        self.assertEqual(db_return, 5)  # should be 5 tracks in track_ext t.
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_track_ext_orphaned(self):
@@ -422,7 +422,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_releases_matched()
-        self.assertEqual(db_return[0], 2)  # should be 2 matched releases
+        self.assertEqual(db_return, 2)  # should be 2 matched releases
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_matched(self):
@@ -430,7 +430,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_matched()
-        self.assertEqual(db_return[0], 1)  # should be 1 matched tracks
+        self.assertEqual(db_return, 1)  # should be 1 matched tracks
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_releases_discogs_collection_flag(self):
