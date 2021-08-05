@@ -1352,6 +1352,13 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_releases_discogs_collection_flag(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM release WHERE in_d_collection == 1;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
