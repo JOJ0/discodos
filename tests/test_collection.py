@@ -347,7 +347,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_match_method_release()
-        self.debug_db(db_return)
+        # self.debug_db(db_return)
         self.assertEqual(len(db_return), 3)  # should be a list with 4 Rows
         self.assertEqual(db_return[0]['m_match_method'], None)
         self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
