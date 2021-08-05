@@ -408,13 +408,13 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[0], 5)  # should be 5 tracks in track_ext t.
         print("{} - {} - END".format(self.clname, name))
 
-    def test_stats_tracks_total_sanity(self):
+    def test_stats_track_ext_orphaned(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_total_sanity()
+        db_return = self.collection.stats_track_ext_orphaned()
         # self.debug_db(db_return)
-        self.assertTrue(db_return[0])  # True if count in both track t. equal
+        self.assertEqual(db_return, 0)
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_releases_matched(self):

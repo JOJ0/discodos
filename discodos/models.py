@@ -1316,12 +1316,27 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def stats_tracks_total_sanity(self):
-        '''Total tracks count should be the same in track and track_ext tables.
+    def stats_track_ext_orphaned(self):
+        '''Checks for orphaned rows in track_ext table.
+
+        track_ext saves user provided info about tracks: key, bpm, notes, ...
+
+        There is currently no job that would cleanup such a row if it is not
+        used anymore, e.g all above mentioned user provided info was deleted.
+
+        For now this is just a maintenance check-tool to keep track of this
+        issue.
         '''
-        if self.stats_tracks_total() == self.stats_tracks_total_ext():
-            return True
-        return False
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track_ext WHERE
+                        key IS NULL
+                        AND key_notes IS NULL
+                        AND bpm IS NULL
+                        AND notes IS NULL
+                        AND m_rec_id_override IS NULL
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
 
     def stats_releases_matched(self):
         sql_stats = '''
