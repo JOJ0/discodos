@@ -524,12 +524,17 @@ class View_common_cli(View_common):
     """ Common view utils, usable in CLI only.
     """
 
-    def p(self, message, logging=""):
+    def p(self, message, logging="", lead_nl=False, trail_nl=True):
         if logging == "debug":
             log.debug(message)
         if logging == "info":
             log.info(message)
-        print('' + str(message) + '\n')
+        if lead_nl is True and trail_nl is True:
+            print('\n' + str(message) + '\n')
+        elif lead_nl is True:
+            print('\n' + str(message))
+        elif trail_nl is True:
+            print('' + str(message) + '\n')
 
     def ask(self, text=""):
         ''' ask user for something and return answer '''
@@ -949,7 +954,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             ['Tracks in DiscoBASE', tracks_total],
             ['Tracks matched with *Brainz', tracks_matched],
         ]
-        self.p(tab(stats, tablefmt='plain'))
+        self.p(tab(stats, tablefmt='plain'), lead_nl=True)
 
 
 class User_int(object):
