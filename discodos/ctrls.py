@@ -1095,7 +1095,9 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         tracks_total = self.collection.stats_tracks_total()
         tracks_matched = self.collection.stats_tracks_matched()
         rel_coll_flag = self.collection.stats_releases_discogs_collection_flag()
+        mixtracks_total = self.collection.stats_mixtracks_total()
+        mixtracks_unique = self.collection.stats_mixtracks_unique()
         self.cli.tab_stats(
             releases_total, releases_matched, tracks_total, tracks_matched,
-            rel_coll_flag
+            rel_coll_flag, mixtracks_total, mixtracks_unique
         )

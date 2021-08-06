@@ -945,7 +945,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
 
     def tab_stats(
         self, releases_total, releases_matched, tracks_total, tracks_matched,
-        releases_collection_flag
+        releases_collection_flag, mixtracks_total, mixtracks_unique
     ):
         stats = [
             ['Releases in DiscoBASE', releases_total],
@@ -953,6 +953,8 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             ['Releases in Discogs Collection (DB flag)', releases_collection_flag],
             ['Tracks in DiscoBASE', tracks_total],
             ['Tracks matched with *Brainz', tracks_matched],
+            ['Tracks in mixes', mixtracks_total],
+            ['Unique tracks in mixes', mixtracks_unique],
         ]
         self.p(tab(stats, tablefmt='plain'), lead_nl=True)
 
