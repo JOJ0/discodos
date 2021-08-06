@@ -347,7 +347,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_match_method_release()
-        self.debug_db(db_return)
+        # self.debug_db(db_return)
         self.assertEqual(len(db_return), 3)  # should be a list with 4 Rows
         self.assertEqual(db_return[0]['m_match_method'], None)
         self.assertEqual(db_return[1]['m_match_method'], 'CatNo (exact)')
@@ -387,7 +387,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_releases_total()
         # self.debug_db(db_return)
-        self.assertEqual(db_return[0], 4)  # should be 4 releases in coll.
+        self.assertEqual(db_return, 4)  # should be 4 releases in coll.
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_total(self):
@@ -396,7 +396,7 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_total()
         # self.debug_db(db_return)
-        self.assertEqual(db_return[0], 5)  # should be 5 tracks in coll.
+        self.assertEqual(db_return, 5)  # should be 5 tracks in coll.
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_total_ext(self):
@@ -405,16 +405,16 @@ class TestCollection(unittest.TestCase):
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_total_ext()
         # self.debug_db(db_return)
-        self.assertEqual(db_return[0], 5)  # should be 5 tracks in track_ext t.
+        self.assertEqual(db_return, 5)  # should be 5 tracks in track_ext t.
         print("{} - {} - END".format(self.clname, name))
 
-    def test_stats_tracks_total_sanity(self):
+    def test_stats_track_ext_orphaned(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_total_sanity()
+        db_return = self.collection.stats_track_ext_orphaned()
         # self.debug_db(db_return)
-        self.assertTrue(db_return[0])  # True if count in both track t. equal
+        self.assertEqual(db_return, 0)
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_releases_matched(self):
@@ -422,7 +422,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_releases_matched()
-        self.assertEqual(db_return[0], 2)  # should be 2 matched releases
+        self.assertEqual(db_return, 2)  # should be 2 matched releases
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_matched(self):
@@ -430,7 +430,33 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_matched()
-        self.assertEqual(db_return[0], 1)  # should be 1 matched tracks
+        self.assertEqual(db_return, 1)  # should be 1 matched tracks
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_releases_discogs_collection_flag(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_releases_discogs_collection_flag()
+        self.assertEqual(db_return, 4)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_mixtracks_total(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_mixtracks_total()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return, 49)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_mixtracks_unique(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_mixtracks_unique()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return, 7)  # 7 unique tracks
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod
