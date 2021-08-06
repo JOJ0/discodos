@@ -1359,6 +1359,23 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_mixtracks_total(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM mix_track;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_mixtracks_unique(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM (
+                        SELECT DISTINCT d_release_id, d_track_no
+                        FROM mix_track
+                    );
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''

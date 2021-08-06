@@ -441,6 +441,24 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return, 4)
         print("{} - {} - END".format(self.clname, name))
 
+    def test_stats_mixtracks_total(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_mixtracks_total()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return, 49)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_mixtracks_unique(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_mixtracks_unique()
+        # self.debug_db(db_return)
+        self.assertEqual(db_return, 7)  # 7 unique tracks
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(self):
         name = inspect.currentframe().f_code.co_name
