@@ -745,19 +745,6 @@ class View_common_cli(View_common):
                     break
                 i += 1
 
-    def collection_and_mixes_stats(
-        self, releases_total, releases_matched, tracks_total, tracks_matched
-    ):
-        print()
-        print(
-            'Releases in DiscoBASE:\t\t{}'.format(releases_total),
-            'Releases matched with *Brainz:\t{}'.format(releases_matched),
-            'Tracks in DiscoBASE:\t\t{}'.format(tracks_total),
-            'Tracks matched with *Brainz:\t{}'.format(tracks_matched),
-            sep='\n'
-        )
-        print()
-
     def welcome_to_discodos(self):
         print(r'''
                             _______  _______ ________
@@ -950,6 +937,19 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         msg_proc='{}/{}'.format(processed, processed_total)
         log.info(msg_proc)
         print(msg_proc)
+
+    def tab_stats(
+        self, releases_total, releases_matched, tracks_total, tracks_matched,
+        releases_collection_flag
+    ):
+        stats = [
+            ['Releases in DiscoBASE', releases_total],
+            ['Releases matched with *Brainz', releases_matched],
+            ['Releases in Discogs Collection (DB flag)', releases_collection_flag],
+            ['Tracks in DiscoBASE', tracks_total],
+            ['Tracks matched with *Brainz', tracks_matched],
+        ]
+        self.p(tab(stats, tablefmt='plain'))
 
 
 class User_int(object):
