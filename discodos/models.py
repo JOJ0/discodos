@@ -1376,6 +1376,10 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_releases_online_total(self):
+        count = len(self.me.collection_folders[0].releases)
+        return count
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
