@@ -1377,7 +1377,11 @@ class Collection (Database):
         return stats[0] if stats else 0
 
     def stats_releases_online_total(self):
-        count = len(self.me.collection_folders[0].releases)
+        count = 0
+        try:
+            count = len(self.me.collection_folders[0].releases)
+        except Exception as Exc:
+            log.error("%s (Exception)", Exc)
         return count
 
     def d_get_first_catno(self, d_labels):
