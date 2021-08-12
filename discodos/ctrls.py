@@ -1091,8 +1091,8 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
 
     def view_stats(self):
         releases_total = self.collection.stats_releases_total()
-        rel_coll_flag = self.collection.stats_releases_discogs_collection_flag()
-        rel_coll_online = self.collection.stats_releases_online_total()
+        rel_coll_flag = self.collection.stats_releases_d_collection_flag()
+        rel_coll_online = self.collection.stats_releases_d_collection_online()
         releases_matched = self.collection.stats_releases_matched()
         tracks_total = self.collection.stats_tracks_total()
         tracks_matched = self.collection.stats_tracks_matched()

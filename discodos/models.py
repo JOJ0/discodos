@@ -1352,12 +1352,20 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def stats_releases_discogs_collection_flag(self):
+    def stats_releases_d_collection_flag(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM release WHERE in_d_collection == 1;
                     '''
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
+
+    def stats_releases_d_collection_online(self):
+        count = 0
+        try:
+            count = len(self.me.collection_folders[0].releases)
+        except Exception as Exc:
+            log.error("%s (Exception)", Exc)
+        return count
 
     def stats_mixtracks_total(self):
         sql_stats = '''
@@ -1375,14 +1383,6 @@ class Collection (Database):
                     '''
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
-
-    def stats_releases_online_total(self):
-        count = 0
-        try:
-            count = len(self.me.collection_folders[0].releases)
-        except Exception as Exc:
-            log.error("%s (Exception)", Exc)
-        return count
 
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
