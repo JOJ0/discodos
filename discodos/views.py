@@ -946,12 +946,14 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
 
     def tab_stats(
         self, releases_total, releases_matched, tracks_total, tracks_matched,
-        releases_collection_flag, mixtracks_total, mixtracks_unique
+        releases_collection_flag, releases_collection_online,
+        mixtracks_total, mixtracks_unique
     ):
         stats = [
             ['Releases in DiscoBASE', releases_total],
+            ['Releases in Collection (DB flag)', releases_collection_flag],
+            ['Releases in Collection (Discogs)', releases_collection_online],
             ['Releases matched with *Brainz', releases_matched],
-            ['Releases in Discogs Collection (DB flag)', releases_collection_flag],
             ['Tracks in DiscoBASE', tracks_total],
             ['Tracks matched with *Brainz', tracks_matched],
             ['Tracks in mixes', mixtracks_total],
