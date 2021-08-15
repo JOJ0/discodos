@@ -836,7 +836,7 @@ class Collection (Database):
 
     def prepare_tracklist_info(self, release_id, tracklist):  # discogs_client tracklist object
         '''takes a tracklist (just a list?) we received from a Discogs release
-            object and adds additional information from the database 
+            object and adds additional information from the database
             into the list'''
         tl=[]
         for i, track in enumerate(tracklist):
@@ -997,7 +997,7 @@ class Collection (Database):
                         = (?, ?, ?, ?, ?) WHERE discogs_id == ?;'''
                     upd_tuple = (release_title, datetime.today().isoformat(' ', 'seconds'),
                         release_artists, d_coll, d_catno, release_id)
-                    return self.execute_sql(upd_sql, upd_tuple, raise_err = True)
+                    return self.execute_sql(upd_sql, upd_tuple, raise_err=True)
                 except sqlerr as e:
                     log.error("MODEL: create_release: %s", e.args[0])
                     return False
@@ -1066,7 +1066,7 @@ class Collection (Database):
                              OR mix_track.track_pos == "{}") AND mix_track.mix_id == "{}"
                        ORDER BY mix_track.track_pos'''.format(
                                track_pos, track_pos_before, track_pos_after, mix_id)
-        tracks_snippet = self._select(sql_sel, fetchone = False)
+        tracks_snippet = self._select(sql_sel, fetchone=False)
         if not tracks_snippet:
             return False
         else:
@@ -1270,7 +1270,7 @@ class Collection (Database):
                           m_rec_id=?, m_match_method=?,
                           m_match_time=datetime('now', 'localtime'),
                           a_key=?, a_chords_key=?, a_bpm=?
-                          WHERE d_release_id=? AND d_track_no=?; 
+                          WHERE d_release_id=? AND d_track_no=?;
                           '''
                     tuple_u = (rec_id, match_method, key, chords_key, bpm,
                           release_id, track_no)
@@ -1445,11 +1445,11 @@ class Collection (Database):
                         LEFT OUTER JOIN track_ext
                         ON track.d_release_id = track_ext.d_release_id
                         AND track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track.d_release_id','discogs_id',
+        return self._select_simple(['track.d_release_id', 'discogs_id',
           'discogs_title', 'd_catno', 'track.d_artist', 'track.d_track_name',
           'track.d_track_no', 'track_ext.m_rec_id_override'],
            tables, condition=where, fetchone=True, orderby='release.discogs_id')
-           
+
     def upsert_track_ext(self, orig, edit_answers):
         track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
         release_id = orig['d_release_id']
@@ -1537,11 +1537,11 @@ class Brainz (object):
             return {}
 
     def search_mb_releases(self, artist, album, cat_no=False,
-          limit = 10, strict = False):
+          limit=10, strict=False):
         try:
             if cat_no:
                 return m.search_releases(artist=artist, release=album,
-                    catno = cat_no, limit=limit, strict=strict)
+                    catno=cat_no, limit=limit, strict=strict)
             else:
                 return m.search_releases(artist=artist, release=album,
                     limit=limit, strict=strict)
@@ -1558,7 +1558,7 @@ class Brainz (object):
         try:
             return m.get_release_by_id(mb_id, includes=["release-groups",
             "artists", "labels", "url-rels", "recordings",
-            "recording-rels", "recording-level-rels" ])
+            "recording-rels", "recording-level-rels"])
         except WebServiceError as websvcerr:
             log.error("requesting data from MusicBrainz: %s (WebServiceError)" % websvcerr)
             log.debug("MODELS: get_mb_release_by_id returns empty dict.")
@@ -1597,7 +1597,7 @@ class Brainz (object):
             return ''
 
     def _get_accousticbrainz(self, urlpart):
-        headers={'Accept': 'application/json' }
+        headers={'Accept': 'application/json'}
         url="https://acousticbrainz.org/api/v1/{}".format(urlpart)
         try:
             resp = requests.get(url, headers=headers, timeout=7)
@@ -1674,7 +1674,7 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
     def __init__(self, mb_user, mb_pass, mb_appid,
           d_release_id, d_release_title, d_catno, d_artist, d_track_name,
           d_track_no, d_track_no_num,
-          detail = 1):
+          detail=1):
         # FIXME we take mb credentials from passed coll_ctrl object
         super().__init__(mb_user, mb_pass, mb_appid)
         # we don't need to create a Brainz obj, we are a child of it
@@ -1714,21 +1714,21 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
             log.debug('strict release: {}'.format(self.d_release_title_orig))
             self.mb_releases = self.search_mb_releases(
                 self.d_artist_orig, self.d_release_title_orig,
-                self.d_catno_orig, limit = 5, strict = True)
+                self.d_catno_orig, limit=5, strict=True)
         else:  # fuzzy search
             self.mb_releases = self.search_mb_releases(
                 self.d_artist, self.d_release_title, self.d_catno,
-                  limit = 5, strict = False)
+                  limit=5, strict=False)
         return True  # FIXME error handling
 
-    def fetch_mb_matched_rel(self, rel_mbid = False): # mbid passable from outside
-        if rel_mbid: # given from outside, rest of necess. data from init
+    def fetch_mb_matched_rel(self, rel_mbid=False):  # mbid passable from outside
+        if rel_mbid:  # given from outside, rest of necess. data from init
             self.mb_matched_rel = self.get_mb_release_by_id(rel_mbid)
-        else: # we have it as class attribute already
+        else:  # we have it as class attribute already
             self.mb_matched_rel = self.get_mb_release_by_id(self.release_mbid)
-        return True # FIXME error handling
+        return True  # FIXME error handling
 
-    def match_release(self): # start a match run (multiple things are tried)
+    def match_release(self):  # start a match run (multiple things are tried)
         # first url-match
         self.release_mbid = self.url_match()
         # and then catno-match
@@ -1737,20 +1737,20 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
         # and now try again with some name variation tricks
         # sometimes digital releases have additional D at end or in between
         if not self.release_mbid:
-            self.release_mbid = self.catno_match(variations = True)
+            self.release_mbid = self.catno_match(variations=True)
         # if we still didn't find anything, we have logged already and are
         # returning empty string here
         return self.release_mbid
 
-    def match_recording(self): # start a match run (multiple things are tried)
-        #pprint.pprint(matched_rel) # human readable json
-        # get track position as a number from discogs release
-        #print(d_rel.tracklist[index])
-        #d_track_position = d_rel.tracklist[index]
+    def match_recording(self):  # start a match run (multiple things are tried)
+        # pprint.pprint(matched_rel) # human readable json
+        #  get track position as a number from discogs release
+        # print(d_rel.tracklist[index])
+        # d_track_position = d_rel.tracklist[index]
         rec_mbid = self.track_name_match()
         if not rec_mbid:
             rec_mbid = self.track_no_match()
-        return rec_mbid # if we didn't find, we logged already and return ''
+        return rec_mbid  # if we didn't find, we logged already and return ''
 
     # define matching methods as in update_track.... here
     def url_match(self):
@@ -1761,7 +1761,7 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
             log.info('CTRL: ...Discogs-URL-matching MB-Release:')
             log.info('CTRL: ..."{}"'.format(release['title']))
             full_mb_rel = self.get_mb_release_by_id(release['id'])
-            #pprint.pprint(full_mb_rel) # DEBUG
+            # pprint.pprint(full_mb_rel) # DEBUG
             urls = self.get_urls_from_mb_release(full_mb_rel)
             if urls:
                 for url in urls:
@@ -1773,15 +1773,15 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
                               'CTRL: Found MusicBrainz match (via Discogs URL)')
                             _mb_rel_id = release['id']
                             self.release_match_method = 'Discogs URL'
-                            return _mb_rel_id # found release match
+                            return _mb_rel_id  # found release match
         return False
 
-    def catno_match(self, variations = False):
+    def catno_match(self, variations=False):
         '''finds Release MBID by looking through catalog numbers.'''
         # reset match method var. FIXME is this the right place
         self.release_match_method = ''
         for release in self.mb_releases['release-list']:
-            #_mb_rel_id = False # this is what we are looking for
+            # _mb_rel_id = False # this is what we are looking for
             if variations:
                 log.info('CTRL: ...CatNo-matching (variations) MB-Release:')
                 log.info('CTRL: ..."{}"'.format(release['title']))
@@ -1794,10 +1794,10 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
             for mb_label_item in full_rel['release']['label-info-list']:
                 mb_catno_orig = self.get_catno_from_mb_label(mb_label_item)
                 mb_catno = mb_catno_orig.upper().replace(' ', '')
-                #log.debug(
-                #  'CTRL: ...MB CatNo (upper, no-ws): {}'.format(mb_catno))
+                # log.debug(
+                #   'CTRL: ...MB CatNo (upper, no-ws): {}'.format(mb_catno))
 
-                if variations == False: # this is the vanilla exact-match
+                if variations == False:  # this is the vanilla exact-match
                     log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
                     log.info('CTRL: ...MB CatNo: {}'.format(mb_catno_orig))
                     if mb_catno == self.d_catno:
@@ -1805,7 +1805,7 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
                         self._catno_match_found_msg()
                         return release['id']
 
-                else: # these are the variation matches
+                else:  # these are the variation matches
                     # log original DC CatNo only once
                     log.info('CTRL: ...DC CatNo: {}'.format(self.d_catno_orig))
 
@@ -1864,17 +1864,17 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
         # first thing: the tail is a number check, exit if not
         numtail = re.split('[^\d]', catno)[-1]
         if not numtail:
-            return False # should never happen, we catch it with _catno_has_numtail
+            return False  # should never happen, we catch it with _catno_has_numtail
         # before delimiter-term check
         beforenum = re.split('[^\D]', catno)[0]
-        #log.debug('CTRL: ...catno_cutter: beforenum {}'.format(beforenum))
+        # log.debug('CTRL: ...catno_cutter: beforenum {}'.format(beforenum))
         split_at_term = beforenum.split(term)
-        #log.debug('CTRL: ...catno_cutter: split_at_term {}'.format(split_at_term))
+        # log.debug('CTRL: ...catno_cutter: split_at_term {}'.format(split_at_term))
         ret_dict['before'] = split_at_term[0]
         ret_dict['term'] = term
         ret_dict['after'] = numtail
         log.debug('CTRL: ...catno_cutter: before: {}'.format(ret_dict['before']))
-        #log.debug('CTRL: ...catno_cutter: term: {}'.format(ret_dict['term']))
+        # log.debug('CTRL: ...catno_cutter: term: {}'.format(ret_dict['term']))
         log.debug('CTRL: ...catno_cutter: after: {}'.format(ret_dict['after']))
         return ret_dict
 
@@ -1885,18 +1885,18 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
               self.release_match_method))
 
     def track_name_match(self):
-        #pprint.pprint(_mb_release) # human readable json
+        # pprint.pprint(_mb_release) # human readable json
         self.rec_match_method = ''
         for medium in self.mb_matched_rel['release']['medium-list']:
             for track in medium['track-list']:
                 _rec_title = track['recording']['title']
-                _rec_title_low = _rec_title.lower() # we made discogs lower too
+                _rec_title_low = _rec_title.lower()  # we made discogs lower too
                 if _rec_title_low == self.d_track_name:
                     self.rec_mbid = track['recording']['id']
                     log.info('CTRL: Track name matches: {}'.format(
                         _rec_title))
                     log.info('CTRL: Recording MBID: {}'.format(
-                        self.rec_mbid)) # finally we have a rec MBID
+                        self.rec_mbid))  # finally we have a rec MBID
                     self.rec_match_method = 'Track Name'
                     return self.rec_mbid
         log.info('CTRL: No track name match: {} vs. {}'.format(
@@ -1904,20 +1904,20 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
         return False
 
     def track_no_match(self):
-        #pprint.pprint(_mb_release) # human readable json
+        # pprint.pprint(_mb_release) # human readable json
         self.rec_match_method = ''
         for medium in self.mb_matched_rel['release']['medium-list']:
-            #track_count = len(medium['track-list'])
+            # track_count = len(medium['track-list'])
             for track in medium['track-list']:
                 _rec_title = track['recording']['title']
-                track_number = track['number'].upper(), # could be A, AA, a, ..
-                track_position = int(track['position']) # starts at 1, ensure int
+                track_number = track['number'].upper(),  # could be A, AA, a, ..
+                track_position = int(track['position'])  # starts at 1, ensure int
                 if track_number == self.d_track_no:
                     self.rec_mbid = track['recording']['id']
                     log.info('CTRL: Track number matches: {}'.format(
                         _rec_title))
                     log.info('CTRL: Recording MBID: {}'.format(
-                        self.rec_mbid)) # finally we have a rec MBID
+                        self.rec_mbid))  # finally we have a rec MBID
                     self.rec_match_method = 'Track No'
                     return self.rec_mbid
                 elif track_position == self.d_track_no_num:
@@ -1925,7 +1925,7 @@ class Brainz_match (Brainz):  # we are based on Brainz, but it's not online
                     log.info('CTRL: Track number "numerical" matches: {}'.format(
                         _rec_title))
                     log.info('CTRL: Recording MBID: {}'.format(
-                        self.rec_mbid)) # finally we have a rec MBID
+                        self.rec_mbid))  # finally we have a rec MBID
                     self.rec_match_method = 'Track No (num)'
                     return self.rec_mbid
         log.info('CTRL: No track number or numerical position match: {} vs. {}'.format(
