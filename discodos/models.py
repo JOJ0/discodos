@@ -1106,7 +1106,7 @@ class Collection (Database):
         occurences_data = self._select_simple(
                 ['track_pos', 'mix_track.mix_id', 'mix.name'],
                  'mix_track INNER JOIN MIX ON mix.mix_id = mix_track.mix_id',
-                 'd_release_id == "{}" AND d_track_no == "{}"'.format(release_id, track_no))
+                 'd_release_id == "{}" AND d_track_no == "{}"'.format(release_id, track_no.upper()))
         log.info("MODEL: Returning track_report_occurences data.")
         return occurences_data
 
