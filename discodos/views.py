@@ -10,9 +10,26 @@ from datetime import timedelta
 log = logging.getLogger('discodos')
 
 
+class Headers_list():
+    # def __set_name__(self, owner, name):
+    #     self.name = name
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, obj, type=None) -> object:
+        return [val for val in obj.__dict__.get(self.name).values()]
+
+    # def __set__(self, obj, value) -> None:
+    #     obj.__dict__[self.name] = value
+
+
 class View_common():
     """ Common view utils, usable in CLI and GUI
     """
+    headers_list_mixtracks_all = Headers_list('headers_dict_mixtracks_all')
+    headers_list_mixtracks_all_short = Headers_list('headers_dict_mixtracks_all_short')
+
     def __init__(self):
         self.headers_dict_mixtracks_all = {
             'track_pos': '#', 'discogs_title': 'Release',
@@ -272,14 +289,6 @@ class View_common():
         d["minutes"], d["seconds"] = divmod(rem, 60)
         return fmt.format(**d)
 
-    @property
-    def headers_list_mixtracks_all(self):
-        return [val for val in self.headers_dict_mixtracks_all.values()]
-
-    @property
-    def headers_list_mixtracks_all_short(self):
-        return [val for val in self.headers_dict_mixtracks_all_short.values()]
-
 
 class Mix_view_common():
     ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
@@ -332,6 +341,12 @@ class Mix_view_common():
         self.column_defaults_mixes
         self.column_defaults_mixtracks
     '''
+    headers_list_mixinfo = Headers_list('headers_dict_mixinfo')
+    headers_list_mixes = Headers_list('headers_dict_mixes')
+    headers_list_mixtracks_brainz = Headers_list('headers_dict_mixtracks_brainz')
+    headers_list_mixtracks_brainz_short = Headers_list('headers_dict__mixtracks_brainz_short')
+    headers_list_mixtracks_basic = Headers_list('headers_dict_mixtracks_basic')
+    headers_list_mixtracks_basic_short = Headers_list('headers_dict_mixtracks_basic_short')
 
     def __init__(self):
         super().__init__()
@@ -407,30 +422,6 @@ class Mix_view_common():
         }
 
 
-    @property
-    def headers_list_mixes(self):
-        return [val for val in self.headers_dict_mixes.values()]
-
-    @property
-    def headers_list_mixinfo(self):
-        return [val for val in self.headers_dict_mixinfo.values()]
-
-    @property
-    def headers_list_mixtracks_brainz(self):
-        return [val for val in self.headers_dict_mixtracks_brainz.values()]
-
-    @property
-    def headers_list_mixtracks_brainz_short(self):
-        return [val for val in self.headers_dict_mixtracks_brainz_short.values()]
-
-    @property
-    def headers_list_mixtracks_basic(self):
-        return [val for val in self.headers_dict_mixtracks_basic.values()]
-
-    @property
-    def headers_list_mixtracks_basic_short(self):
-        return [val for val in self.headers_dict_mixtracks_basic_short.values()]
-
     def shorten_mixes_timestamps(self, mixes):
         ''' Reformats timestamps in a list of mixes.
 
@@ -467,6 +458,9 @@ class Collection_view_common():
     Column defaults for visible-state and width. Used in GUI:
         self.column_defaults_search_results
     """
+    headers_list_search_results = Headers_list('headers_dict_search_results')
+
+
     def __init__(self):
         super().__init__()
         # List of questions a user is asked when searching and editing a track.
@@ -515,11 +509,6 @@ class Collection_view_common():
             14: {"width": 100, "hidden": False},  # MusicBrainz Match M.
             15: {"width": 100, "hidden": False},  # MusicBrainz Match T.
         }
-
-    @property
-    def headers_list_search_results(self):
-        return [val for val in self.headers_dict_search_results.values()]
-
 
 
 class View_common_cli(View_common):
