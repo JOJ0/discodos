@@ -516,11 +516,6 @@ class Collection_view_common():
         }
 
 
-    @property
-    def headers_list_search_results(self):
-        return [val for val in self.headers_dict_search_results.values()]
-
-
 class View_common_cli(View_common):
     """ Common view utils, usable in CLI only.
     """
