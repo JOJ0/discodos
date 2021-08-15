@@ -643,8 +643,10 @@ class Mix (Database):
 
     def get_last_track(self):
         log.info('MODEL: Getting last track in current mix')
-        return self._select_simple(['MAX(track_pos)'], 'mix_track',
-            condition="mix_id = {}".format(self.id), fetchone=True)
+        return self._select_simple(
+            ['MAX(track_pos)'], 'mix_track',
+            condition="mix_id = {}".format(self.id), fetchone=True
+        )
 
     def get_tracks_of_one_mix(self, start_pos=False):
         log.info("MODEL: Getting tracks of a mix, from mix_track_table only)")
@@ -652,8 +654,9 @@ class Mix (Database):
             where = "mix_id == {}".format(self.id)
         else:
             where = "mix_id == {} and track_pos >= {}".format(self.id, start_pos)
-        return self._select_simple(['*'], 'mix_track', where,
-                fetchone=False, orderby='track_pos')
+        return self._select_simple(
+            ['*'], 'mix_track', where, fetchone=False, orderby='track_pos'
+        )
 
     def get_all_tracks_in_mixes(self):
         log.info('MODEL: Getting all tracks from mix_track table (only).')
@@ -716,10 +719,13 @@ class Mix (Database):
                           LEFT OUTER JOIN track_ext
                           ON mix_track.d_release_id = track_ext.d_release_id
                           AND mix_track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track_pos', 'mix_track.d_release_id',
-          'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
-          'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
-           tables, where, fetchone=False, orderby='mix_track.track_pos')
+        return self._select_simple(
+            ['track_pos', 'mix_track.d_release_id',
+             'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
+             'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
+            tables, where, fetchone=False, orderby='mix_track.track_pos'
+        )
+
 
     def get_all_mix_tracks_for_brainz_update(self, offset=0):
         log.info("MODEL: Getting all tracks of all mix. Preparing for Discogs or AcousticBrainz update.")
@@ -735,11 +741,13 @@ class Mix (Database):
                           LEFT OUTER JOIN track_ext
                           ON mix_track.d_release_id = track_ext.d_release_id
                           AND mix_track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track_pos', 'mix_track.d_release_id',
-          'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
-          'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
-           tables, fetchone=False, distinct=True, offset=offset,
-           orderby='mix_track.mix_id, mix_track.track_pos')
+        return self._select_simple(
+            ['track_pos', 'mix_track.d_release_id',
+             'discogs_id', 'discogs_title', 'd_catno', 'track.d_artist',
+             'd_track_name', 'mix_track.d_track_no', 'm_rec_id_override'],
+            tables, fetchone=False, distinct=True, offset=offset,
+            orderby='mix_track.mix_id, mix_track.track_pos'
+        )
 
 
 # record collection class
@@ -757,8 +765,8 @@ class Collection (Database):
     def discogs_connect(self, _userToken, _appIdentifier):
         try:
             self.d = discogs_client.Client(
-                    _appIdentifier,
-                    user_token=_userToken)
+                _appIdentifier, user_token=_userToken
+            )
             self.me = self.d.identity()
             global d
             d = self.d
@@ -774,10 +782,11 @@ class Collection (Database):
 
     def get_all_db_releases(self):
         # return db.all_releases(self.db_conn)
-        return self._select_simple(['d_catno', 'd_artist',
-            'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'
-            # 'import_timestamp', 'in_d_collection'], 'release', orderby='d_artist, discogs_title')
-            ], 'release', orderby='d_artist, discogs_title')
+        return self._select_simple(
+            ['d_catno', 'd_artist',
+             'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'],
+            'release', orderby='d_artist, discogs_title'
+        )
 
     def search_release_online(self, id_or_title):
         try:
@@ -828,7 +837,8 @@ class Collection (Database):
         rel_details['format'] = release.formats[0]['descriptions'][0]
         if len(release.formats[0]['descriptions']) > 1:
             rel_details['format'] += ' {}'.format(
-                  release.formats[0]['descriptions'][1])
+                release.formats[0]['descriptions'][1]
+            )
 
         log.info("prepare_release_info: rel_details: {}".format(
             rel_details))
@@ -842,8 +852,8 @@ class Collection (Database):
         for i, track in enumerate(tracklist):
             dbtrack = self.get_track(release_id, track.position)
             if dbtrack == None:
-                log.debug(
-                 "prepare_tracklist_info: Track not in DB. Adding title/track_no only.")
+                log.debug("MODEL: prepare_tracklist_info: Track not in DB. "
+                          "Adding title/track_no only.")
                 tl.append({
                     'track_no': track.position,
                     'track_title': track.title
@@ -864,16 +874,18 @@ class Collection (Database):
 
     def get_track(self, release_id, track_no):
         log.info("MODEL: Returning collection track {} from release {}.".format(
-              track_no, release_id))
+            track_no, release_id))
         where = 'track.d_release_id == {} AND track.d_track_no == "{}"'.format(
-              release_id, track_no.upper())  # we always save track_nos uppercase
+            release_id, track_no.upper())  # we always save track_nos uppercase
         join = '''track LEFT OUTER JOIN track_ext
                     ON track.d_release_id = track_ext.d_release_id
                     AND track.d_track_no = track_ext.d_track_no'''
-        return self._select_simple(['track.d_track_no', 'track.d_release_id',
-          'd_track_name', 'key', 'key_notes', 'bpm', 'notes', 'm_rec_id_override',
-          'a_key', 'a_chords_key', 'a_bpm'],
-          join, fetchone=True, condition=where)
+        return self._select_simple(
+            ['track.d_track_no', 'track.d_release_id',
+             'd_track_name', 'key', 'key_notes', 'bpm', 'notes', 'm_rec_id_override',
+             'a_key', 'a_chords_key', 'a_bpm'],
+            join, fetchone=True, condition=where
+        )
 
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
@@ -884,9 +896,12 @@ class Collection (Database):
                 raise Exc
         else:
             try:
-                releases = self._select_simple(['*'], 'release',
-                        'discogs_title LIKE "%{}%" OR d_artist LIKE "%{}%"'.format(
-                        id_or_title, id_or_title), fetchone=False, orderby='d_artist')
+                releases = self._select_simple(
+                    ['*'], 'release',
+                    'discogs_title LIKE "%{}%" OR d_artist LIKE "%{}%"'.format(
+                        id_or_title, id_or_title),
+                    fetchone=False, orderby='d_artist'
+                )
                 if releases:
                     log.debug("First found release: {}".format(releases[0]))
                     log.debug("All found releases: {}".format(releases))
@@ -977,26 +992,34 @@ class Collection (Database):
                 return False
 
     def search_release_id(self, release_id):
-        return self._select_simple(['*'], 'release',
-            'discogs_id == {}'.format(release_id), fetchone=True)
+        return self._select_simple(
+            ['*'], 'release',
+            'discogs_id == {}'.format(release_id), fetchone=True
+        )
 
     def create_release(self, release_id, release_title, release_artists, d_catno, d_coll=False):
         try:
             insert_sql = '''INSERT OR FAIL INTO release(discogs_id, discogs_title,
                                     import_timestamp, d_artist, in_d_collection, d_catno)
                                     VALUES(?, ?, ?, ?, ?, ?)'''
-            in_tuple = (release_id, release_title, datetime.today().isoformat(' ', 'seconds'),
-                    release_artists, d_coll, d_catno)
+            in_tuple = (
+                release_id, release_title,
+                datetime.today().isoformat(' ', 'seconds'), release_artists,
+                d_coll, d_catno
+            )
             return self.execute_sql(insert_sql, in_tuple, raise_err=True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
-                log.debug("Release already in DiscoBASE, updating ...")
+                log.debug("MODEL: Release already in DiscoBASE, updating ...")
                 try:
                     upd_sql = '''UPDATE release SET (discogs_title,
                         import_timestamp, d_artist, in_d_collection, d_catno)
                         = (?, ?, ?, ?, ?) WHERE discogs_id == ?;'''
-                    upd_tuple = (release_title, datetime.today().isoformat(' ', 'seconds'),
-                        release_artists, d_coll, d_catno, release_id)
+                    upd_tuple = (
+                        release_title,
+                        datetime.today().isoformat(' ', 'seconds'),
+                        release_artists, d_coll, d_catno, release_id
+                    )
                     return self.execute_sql(upd_sql, upd_tuple, raise_err=True)
                 except sqlerr as e:
                     log.error("MODEL: create_release: %s", e.args[0])
@@ -1036,35 +1059,40 @@ class Collection (Database):
         '''Discogs util: stay in 60/min rate limit'''
         if int(self.d._fetcher.rate_limit_remaining) < remaining:
             log.info(
-             "Discogs request rate limit is about to exceed, let's wait a little: %s",
-                          self.d._fetcher.rate_limit_remaining)
+                "Discogs request rate limit is about to exceed, "
+                "let's wait a little: %s",
+                self.d._fetcher.rate_limit_remaining
+            )
             # while int(self.d._fetcher.rate_limit_remaining) < remaining:
             time.sleep(sleep)
         else:
-            log.info("Discogs rate limit: %s remaining.",
-                          self.d._fetcher.rate_limit_remaining)
+            log.info(
+                "Discogs rate limit: %s remaining.",
+                self.d._fetcher.rate_limit_remaining
+            )
 
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1
         track_pos_after = track_pos + 1
-        sql_sel = '''SELECT track_pos, discogs_title, track.d_artist, d_track_name,
-                           mix_track.d_track_no,
-                           key, bpm, key_notes, trans_rating, trans_notes, notes,
-                           a_key, a_chords_key, a_bpm FROM'''
+        sql_sel = '''
+            SELECT track_pos, discogs_title, track.d_artist, d_track_name,
+                mix_track.d_track_no,
+                key, bpm, key_notes, trans_rating, trans_notes, notes,
+                a_key, a_chords_key, a_bpm FROM'''
         sql_sel+='''
-                           mix_track INNER JOIN mix
-                             ON mix.mix_id = mix_track.mix_id
-                               INNER JOIN release
-                               ON mix_track.d_release_id = release.discogs_id
-                                 LEFT OUTER JOIN track
-                                 ON mix_track.d_release_id = track.d_release_id
-                                 AND mix_track.d_track_no = track.d_track_no
-                                   LEFT OUTER JOIN track_ext
-                                   ON mix_track.d_release_id = track_ext.d_release_id
-                                   AND mix_track.d_track_no = track_ext.d_track_no
-                       WHERE (mix_track.track_pos == "{}" OR mix_track.track_pos == "{}"
-                             OR mix_track.track_pos == "{}") AND mix_track.mix_id == "{}"
-                       ORDER BY mix_track.track_pos'''.format(
+                mix_track INNER JOIN mix
+                  ON mix.mix_id = mix_track.mix_id
+                    INNER JOIN release
+                    ON mix_track.d_release_id = release.discogs_id
+                      LEFT OUTER JOIN track
+                      ON mix_track.d_release_id = track.d_release_id
+                      AND mix_track.d_track_no = track.d_track_no
+                        LEFT OUTER JOIN track_ext
+                        ON mix_track.d_release_id = track_ext.d_release_id
+                        AND mix_track.d_track_no = track_ext.d_track_no
+            WHERE (mix_track.track_pos == "{}" OR mix_track.track_pos == "{}"
+                  OR mix_track.track_pos == "{}") AND mix_track.mix_id == "{}"
+            ORDER BY mix_track.track_pos'''.format(
                                track_pos, track_pos_before, track_pos_after, mix_id)
         tracks_snippet = self._select(sql_sel, fetchone=False)
         if not tracks_snippet:
