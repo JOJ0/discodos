@@ -31,6 +31,7 @@ class View_common():
     headers_list_mixtracks_all_short = Headers_list('headers_dict_mixtracks_all_short')
 
     def __init__(self):
+        super().__init__()
         self.headers_dict_mixtracks_all = {
             'track_pos': '#', 'discogs_title': 'Release',
             'd_artist': 'Artist', 'd_track_name': 'Title',
