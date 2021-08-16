@@ -71,13 +71,13 @@ class Database (object):
                          c.lastrowid))
                 # log.info("DB: Committing NOW")
                 # self.db_conn.commit()
-            log.info("DB: Committing via context close NOW")
+            log.debug("DB: Committing via context close NOW")
             self.lastrowid = c.lastrowid
             return c.rowcount
         except sqlerr as e:
             # log.error("DB: %s", dir(e))
             if raise_err:
-                log.info("DB: Raising error to upper level.")
+                log.debug("DB: Raising error to upper level.")
                 raise e
             else:
                 log.error("DB: %s", e.args[0])
@@ -143,8 +143,8 @@ class Database (object):
             rows = self.cur.fetchall()
 
         if rows:
-            log.debug("DB: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
-                self.cur.rowcount, self.cur.lastrowid))
+            # log.debug("DB: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
+            #     self.cur.rowcount, self.cur.lastrowid))
             if fetchone:  # len will return column count
                 log.info('DB: Found 1 row containing {} columns.'.format(len(rows.keys())))
             else:  # len will return rows count
