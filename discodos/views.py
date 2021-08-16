@@ -10,9 +10,41 @@ from datetime import timedelta
 log = logging.getLogger('discodos')
 
 
+class Headers_list():
+    # def __set_name__(self, owner, name):
+    #     self.name = name
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, obj, type=None) -> object:
+        return [val for val in obj.__dict__.get(self.name).values()]
+
+    # def __set__(self, obj, value) -> None:
+    #     obj.__dict__[self.name] = value
+
+
 class View_common():
     """ Common view utils, usable in CLI and GUI
     """
+    headers_list_mixtracks_all = Headers_list('headers_dict_mixtracks_all')
+    headers_list_mixtracks_all_short = Headers_list('headers_dict_mixtracks_all_short')
+
+    def __init__(self):
+        super().__init__()
+        self.headers_dict_mixtracks_all = {
+            'track_pos': '#', 'discogs_title': 'Release',
+            'd_artist': 'Artist', 'd_track_name': 'Title',
+            'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
+            'key_notes': 'Key\nNotes', 'trans_rating': 'Transition\nRating',
+            'trans_notes': 'Transition\nNotes', 'notes': 'Track\nNotes'
+        }
+        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all.copy()
+        self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
+        self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
+        self.headers_dict_mixtracks_all_short['trans_rating'] = 'Trans.\nRating'
+        self.headers_dict_mixtracks_all_short['trans_notes'] = 'Trans.\nNotes'
+
     def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         try:
@@ -310,6 +342,12 @@ class Mix_view_common():
         self.column_defaults_mixes
         self.column_defaults_mixtracks
     '''
+    headers_list_mixinfo = Headers_list('headers_dict_mixinfo')
+    headers_list_mixes = Headers_list('headers_dict_mixes')
+    headers_list_mixtracks_brainz = Headers_list('headers_dict_mixtracks_brainz')
+    headers_list_mixtracks_brainz_short = Headers_list('headers_dict__mixtracks_brainz_short')
+    headers_list_mixtracks_basic = Headers_list('headers_dict_mixtracks_basic')
+    headers_list_mixtracks_basic_short = Headers_list('headers_dict_mixtracks_basic_short')
 
     def __init__(self):
         super().__init__()
@@ -340,19 +378,6 @@ class Mix_view_common():
             'mix_id': 'Mix', 'name': 'Name', 'created': 'Created', 'updated':
             'Updated', 'played': 'Played', 'venue': 'Venue'
         }
-        self.headers_dict_mixtracks_all = {
-            'track_pos': '#', 'discogs_title': 'Release',
-            'd_artist': 'Artist', 'd_track_name': 'Title',
-            'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-            'key_notes': 'Key\nNotes', 'trans_rating': 'Transition\nRating',
-            'trans_notes': 'Transition\nNotes', 'notes': 'Track\nNotes'
-        }
-        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all.copy()
-        self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
-        self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
-        self.headers_dict_mixtracks_all_short['trans_rating'] = 'Trans.\nRating'
-        self.headers_dict_mixtracks_all_short['trans_notes'] = 'Trans.\nNotes'
-
         self.headers_dict_mixtracks_brainz = {
             'track_pos': '#', 'discogs_title': 'Release', 'd_artist':
             'Track Artist', 'd_track_name': 'Track Name', 'd_track_no':
@@ -398,38 +423,6 @@ class Mix_view_common():
         }
 
 
-    @property
-    def headers_list_mixes(self):
-        return [val for val in self.headers_dict_mixes.values()]
-
-    @property
-    def headers_list_mixinfo(self):
-        return [val for val in self.headers_dict_mixinfo.values()]
-
-    @property
-    def headers_list_mixtracks_all(self):
-        return [val for val in self.headers_dict_mixtracks_all.values()]
-
-    @property
-    def headers_list_mixtracks_all_short(self):
-        return [val for val in self.headers_dict_mixtracks_all_short.values()]
-
-    @property
-    def headers_list_mixtracks_brainz(self):
-        return [val for val in self.headers_dict_mixtracks_brainz.values()]
-
-    @property
-    def headers_list_mixtracks_brainz_short(self):
-        return [val for val in self.headers_dict_mixtracks_brainz_short.values()]
-
-    @property
-    def headers_list_mixtracks_basic(self):
-        return [val for val in self.headers_dict_mixtracks_basic.values()]
-
-    @property
-    def headers_list_mixtracks_basic_short(self):
-        return [val for val in self.headers_dict_mixtracks_basic_short.values()]
-
     def shorten_mixes_timestamps(self, mixes):
         ''' Reformats timestamps in a list of mixes.
 
@@ -466,6 +459,9 @@ class Collection_view_common():
     Column defaults for visible-state and width. Used in GUI:
         self.column_defaults_search_results
     """
+    headers_list_search_results = Headers_list('headers_dict_search_results')
+
+
     def __init__(self):
         super().__init__()
         # List of questions a user is asked when searching and editing a track.
