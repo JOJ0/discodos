@@ -24,6 +24,20 @@ class Headers_list():
 
 class View_common():
     """ Common view utils, usable in CLI and GUI
+
+    Dictionaries containing SQL table fields translated to human readable
+    column names. Mostly used for tabulate CLI tables:
+
+        self.headers_dict_mixtracks_all:
+        self.headers_dict_mixtracks_all_short:
+            Same as headers_dict_mixtracks_all but some column's width is
+            shortened by using abbreviations and linebreaks. Used in mix-tracks
+            view (verbose mode: -v).
+
+    Plain lists derived from headers dictionaries. Mostly used in GUI:
+
+        self.headers_list_mixtracks_all:
+        self.headers_list_mixtracks_all_short:
     """
     headers_list_mixtracks_all = Headers_list()
     headers_list_mixtracks_all_short = Headers_list()
@@ -311,11 +325,6 @@ class Mix_view_common():
         self.headers_dict_mixes:
             Used in mixes overview.
         self.headers_dict_mixinfo:
-        self.headers_dict_mixtracks_all:
-        self.headers_dict_mixtracks_all_short:
-            Same as headers_dict_mixtracks_all but some column's width is shortened
-            by using abbreviations and linebreaks. Used in mix-tracks view (verbose
-            mode: -v).
         self.headers_dict_mixtracks_brainz:
         self.headers_dict_mixtracks_brainz_short:
             Shortened version of above. Used in mix-tracks view (*Brainz mode -vv).
@@ -329,8 +338,6 @@ class Mix_view_common():
         self.headers_list_mixtracks_brainz_short:
         self.headers_list_mixinfo:
             Used in the header line of mix-tracks view on CLI (all modes).
-        self.headers_list_mixtracks_all:
-        self.headers_list_mixtracks_all_short:
         self.headers_list_mixtracks_brainz:
         self.headers_list_mixtracks_brainz_short:
         self.headers_list_mixtracks_basic:
