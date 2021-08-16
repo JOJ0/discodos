@@ -168,12 +168,12 @@ class TableViewModel(QtCore.QAbstractTableModel):
         """
         return super().dropMimeData(data, action, row, 0, parent)
 
-    # def sort(self, column, order):
-    #     colname = self._data.columns.tolist()[column]
-    #     self.layoutAboutToBeChanged.emit()
-    #     self._data.sort_values(colname, ascending=order == QtCore.Qt.AscendingOrder, inplace=True)
-    #     self._data.reset_index(inplace=True, drop=True)
-    #     self.layoutChanged.emit()
+    def sort(self, column, order):
+        colname = self._data.columns.tolist()[column]
+        self.layoutAboutToBeChanged.emit()
+        self._data.sort_values(colname, ascending=order == QtCore.Qt.AscendingOrder, inplace=True)
+        # self._data.reset_index(inplace=True, drop=True)
+        self.layoutChanged.emit()
 
 
 class TableViewProxyStyle(QtWidgets.QProxyStyle):
@@ -211,6 +211,8 @@ class TableView(QtUtilsMixIn, QtWidgets.QTableView):
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
         self._create_context_menu(self.horizontalHeader)
+        self.setSortingEnabled(True)
+        # self.sortByColumn(1, Qt.AscendingOrder
 
 
 class TreeViewModel(QtCore.QAbstractTableModel):
