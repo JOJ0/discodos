@@ -145,10 +145,11 @@ class View_common():
     def trim_table_fields(self, tuple_table, cut_pos=16, exclude=[]):
         """this method puts \n after a configured amount of characters
         into _all_ fields of a sqlite row objects tuple list"""
-        log.info('VIEW: Trimming table field width to max {} chars'.format(cut_pos))
-        # first convert list of tuples to list of lists:
+        log.info("VIEW: Trimming table field width "
+                 "to max {} chars".format(cut_pos))
+        # First convert list of tuples to list of dicts:
         table_nl = [dict(row) for row in tuple_table]
-        # now put newlines if longer than cut_pos chars
+        # Now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for key, field in row.items():
                 if (
@@ -156,38 +157,57 @@ class View_common():
                     and field is not None
                     and key not in exclude
                 ):
-                    len_field = len(field)
-                    if len_field > cut_pos:
-                        possible_cuts = int(len_field / cut_pos)
-                        log.info("possible_cuts: {}".format(possible_cuts))
-                        edited_field = ''
-                        prev_cut_pos_space = 0
-                        log.debug("this is our range: {}".format(
-                            range(1, possible_cuts + 1)
-                        ))
-                        for cycle in range(1, possible_cuts + 1):  # run as often as cut possibilities exist
-                            log.debug("cycle {}".format(cycle))
-                            curr_cut_pos = cut_pos * cycle  # in each cycle we'd like to put \n _around_ here
-                            log.debug("curr_cut_pos index: %s", curr_cut_pos)
-                            cut_pos_space = field.find(' ', curr_cut_pos)
-                            log.debug("cut_pos_space index (next space after curr_cut_pos): %s", cut_pos_space)
-                            # if no space following (almost at end) don't add newline, just add as-is
-                            if cut_pos_space == -1:
-                                log.debug("No more space following. Add part and break loop!")
-                                log.debug("")
-                                edited_field += field[prev_cut_pos_space:]
-                                break
-                            else:
-                                edited_field += field[prev_cut_pos_space:cut_pos_space] + "\n"
-                            log.debug("from prev_cut_pos_space to cut_pos_space: {}".format(field[prev_cut_pos_space:cut_pos_space]))
-                            log.debug("")
-                            # save pos for next cycle and skip the space itself,
-                            # we don't want following lines to start with a space!
-                            prev_cut_pos_space = cut_pos_space + 1
-                        log.debug("FINAL with newlines:")
-                        log.debug("{}".format(edited_field))
+                    field_length = len(field)
+                    if field_length < cut_pos:  # Exit early on short fields
+                        continue
+                    log.debug("String to be cut: {}".format(field))
+                    possible_cuts = int(field_length / cut_pos)
+                    log.debug("possible_cuts: {}".format(possible_cuts))
+                    edited_field = ''
+                    prev_cut_pos_space = 0
+                    loops = range(1, possible_cuts + 1)
+                    log.debug("We will loop {} time(s)".format(len(loops)))
+
+                    # Run as often as cut possibilities exist
+                    for cycle in loops:
+                        log.debug("Cycle {}/{}".format(cycle, len(loops)))
+                        # In each cycle we'll put \n _roughly_around_here_.
+                        curr_cut_pos = cut_pos * cycle
+                        log.debug("cur_cut_pos: %s", curr_cut_pos)
+                        cut_pos_space = field.find(" ", curr_cut_pos)
+                        log.debug("Next space after curr_cut_pos is at %s",
+                                  cut_pos_space)
+                        # If no is space following (almost at end),
+                        # don't append newline, just append as-is!
+                        if cut_pos_space == -1:
+                            log.debug("No more space following. "
+                                      "Add part and break loop!")
+                            edited_field += field[prev_cut_pos_space:]
+                            break
+                        else:
+                            log.debug("Add part and continue loop "
+                                      "(if a cycle left)")
+                            edited_field += field[prev_cut_pos_space:cut_pos_space] + "\n"
+                        log.debug("From previous cut pos to current: {}".format(
+                            field[prev_cut_pos_space:cut_pos_space])
+                        )
                         log.debug("")
-                        table_nl[i][key] = edited_field
+                        # Save pos for next cycle and skip the space itself,
+                        # we don't want following lines to start with a space!
+                        prev_cut_pos_space = cut_pos_space + 1
+
+                    if field_length > cut_pos_space and cut_pos_space != -1:
+                        log.debug(
+                            "Loop done, appending remaining chars: "
+                            "{} to {}".format(cut_pos_space, field_length)
+                        )
+                        # Add 1 to pos, we don't want a leading space.
+                        edited_field += field[cut_pos_space + 1:]
+
+                    log.debug("FINAL with newlines:")
+                    log.debug("{}".format(edited_field))
+                    log.debug("")
+                    table_nl[i][key] = edited_field
         log.debug("table_nl has {} lines".format(len(table_nl)))
         return table_nl
 

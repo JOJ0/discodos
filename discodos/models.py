@@ -24,16 +24,16 @@ class Database (object):
     def __init__(self, db_conn=False, db_file=False, setup=False):
         self.db_not_found = False
         if db_conn:
-            log.debug("DB-NEW: db_conn argument was handed over.")
+            log.debug("DB: db_conn argument was handed over.")
             self.db_conn = db_conn
         else:
-            log.debug("DB-NEW: Creating connection to db_file.")
+            log.debug("DB: Creating connection to db_file.")
             if not db_file:
-                log.debug("DB-NEW: No db_file given, using default name.")
+                log.debug("DB: No db_file given, using default name.")
                 db_file = './discobase.db'
             self.db_conn = self.create_conn(db_file, setup)  # setup=True creates empty db
             if self.db_conn is None:
-                log.debug("DB-NEW: Creating database.")
+                log.debug("DB: Creating database.")
                 self.db_conn = self.create_conn(db_file, setup=True)
         self.db_conn.row_factory = sqlite3.Row  # also this was in each db.function before
         self.cur = self.db_conn.cursor()  # we had this in each db function before
@@ -48,39 +48,39 @@ class Database (object):
             return conn
         except sqlerr as e:
             if e.args[0] == 'unable to open database file':
-                e = "DB-NEW: create_conn: Database {} can't be opened.".format(db_file)
+                e = "DB: create_conn: Database {} can't be opened.".format(db_file)
                 log.debug(e)
                 self.db_not_found = True
                 return None
             else:
-                log.error("DB-NEW: Connection error: %s", e)
+                log.error("DB: Connection error: %s", e)
                 raise SystemExit(4)  # 4 = other db error. will SystemExit break gui?
 
     def execute_sql(self, sql, values_tuple=False, raise_err=False):
         '''used for eg. creating tables or inserts'''
-        log.info("DB-NEW: execute_sql: %s", sql)
+        log.info("DB: execute_sql: %s", sql)
         try:
             with self.db_conn:  # auto commits and auto rolls back on exceptions
                 c = self.cur  # connection close has to be done manually though!
                 if values_tuple:
-                    log.info("DB-NEW: ...with this tuple: {%s}", values_tuple)
+                    log.info("DB: ...with this tuple: {%s}", values_tuple)
                     c.execute(sql, values_tuple)
                 else:
                     c.execute(sql)
-                log.info("DB-NEW: rowcount: {}, lastrowid: {}".format(c.rowcount,
+                log.info("DB: rowcount: {}, lastrowid: {}".format(c.rowcount,
                          c.lastrowid))
-                # log.info("DB-NEW: Committing NOW")
+                # log.info("DB: Committing NOW")
                 # self.db_conn.commit()
-            log.info("DB-NEW: Committing via context close NOW")
+            log.debug("DB: Committing via context close NOW")
             self.lastrowid = c.lastrowid
             return c.rowcount
         except sqlerr as e:
-            # log.error("DB-NEW: %s", dir(e))
+            # log.error("DB: %s", dir(e))
             if raise_err:
-                log.info("DB-NEW: Raising error to upper level.")
+                log.debug("DB: Raising error to upper level.")
                 raise e
             else:
-                log.error("DB-NEW: %s", e.args[0])
+                log.error("DB: %s", e.args[0])
             return False
 
     def configure_db(self):
@@ -92,7 +92,7 @@ class Database (object):
         """This is a wrapper around the _select method.
            It puts together sql select statements as strings.
         """
-        log.info("DB-NEW: _select_simple: fetchone = {}".format(fetchone))
+        log.info("DB: _select_simple: fetchone = {}".format(fetchone))
         fields_str = ""
         for cnt, field in enumerate(fields_list):
             if cnt == 0:
@@ -135,7 +135,7 @@ class Database (object):
                 something found: a list of sqlite3.Row (dict-like) objects
                 nothing found: an empty list
         """
-        log.info("DB-NEW: _select: {}".format(sql_select))
+        log.info("DB: _select: {}".format(sql_select))
         self.cur.execute(sql_select)
         if fetchone:
             rows = self.cur.fetchone()
@@ -143,17 +143,17 @@ class Database (object):
             rows = self.cur.fetchall()
 
         if rows:
-            log.debug("DB-NEW: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
-                self.cur.rowcount, self.cur.lastrowid))
+            # log.debug("DB: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
+            #     self.cur.rowcount, self.cur.lastrowid))
             if fetchone:  # len will return column count
-                log.info('DB-NEW: Found 1 row containing {} columns.'.format(len(rows.keys())))
+                log.info('DB: Found 1 row containing {} columns.'.format(len(rows.keys())))
             else:  # len will return rows count
-                log.info('DB-NEW: Found {} rows containing {} columns.'.format(
+                log.info('DB: Found {} rows containing {} columns.'.format(
                     len(rows), len(rows[0])))
-            log.debug("DB-NEW: Returning row(s) as type: {}.".format(type(rows).__name__))
+            log.debug("DB: Returning row(s) as type: {}.".format(type(rows).__name__))
             return rows
         else:
-            log.info('DB-NEW: Nothing found - Returning type: {}.'.format(type(rows).__name__))
+            log.info('DB: Nothing found - Returning type: {}.'.format(type(rows).__name__))
             return rows  # was empty list before, now it's either empty list or NoneType
 
     def close_conn(self):  # manually close conn! - context manager (with) doesn't do it
