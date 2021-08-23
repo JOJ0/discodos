@@ -292,8 +292,16 @@ class TreeView(QtUtilsMixIn, QtWidgets.QTreeView):
         # Enable drag drop of column headers (reorder columns position), default
         # on in treeviews, set explicitely.
         self.header().setSectionsMovable(True)
+
         self._create_context_menu(self.header)
         self.setIndentation(0)
+
+        # FIXME sorting not working yet.
+        self.setSortingEnabled(True)
+        # print(self.isSortingEnabled())
+        self.header().setSortIndicatorShown(True)
+        # print(self.header().isSortIndicatorShown())
+        self.sortByColumn(1, Qt.AscendingOrder)
 
 
 class TabWidget(QtWidgets.QTabWidget):
