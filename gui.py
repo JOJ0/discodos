@@ -281,6 +281,17 @@ class TreeViewModel(QtCore.QAbstractTableModel):
         self._data = df
         self.layoutChanged.emit()
 
+    def sort(self, column, order):
+        colname = self._data.columns.tolist()[column]
+        self.layoutAboutToBeChanged.emit()
+        print(colname)
+        self._data.sort_values(
+            colname,
+            ascending=order == QtCore.Qt.AscendingOrder,
+            inplace=True
+        )
+        self.layoutChanged.emit()
+
 
 class TreeView(QtUtilsMixIn, QtWidgets.QTreeView):
     def __init__(self, parent, data):
