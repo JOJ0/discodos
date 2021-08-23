@@ -289,6 +289,9 @@ class TreeView(QtUtilsMixIn, QtWidgets.QTreeView):
         self.model = TreeViewModel(self._data)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
+        # Enable drag drop of column headers (reorder columns position), default
+        # on in treeviews, set explicitely.
+        self.header().setSectionsMovable(True)
         self._create_context_menu(self.header)
         self.setIndentation(0)
 
