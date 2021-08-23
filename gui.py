@@ -204,8 +204,19 @@ class TableView(QtUtilsMixIn, QtWidgets.QTableView):
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.SingleSelection)
         self.setShowGrid(False)
+
+        # Original drag drop stuff from embee
         self.setDragDropMode(self.InternalMove)
         self.setDragDropOverwriteMode(False)
+        # Enable drag drop of column headers (reorder columns position)
+        self.horizontalHeader().setSectionsMovable(True)
+        # Drag drop of lines (manual reordering) seems to work somehow,
+        # even without these two settings:
+        # self.horizontalHeader().setDropIndicatorShown(False)
+        # print(self.horizontalHeader().showDropIndicator())
+        # self.horizontalHeader().setDragEnabled(False)
+        # print(self.horizontalHeader().dragEnabled())
+
         self.setStyle(TableViewProxyStyle())
         self.model = TableViewModel(self._data)
         self.setModel(self.model)
