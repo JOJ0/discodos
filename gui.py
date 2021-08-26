@@ -125,7 +125,16 @@ class TableViewModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return Qt.ItemIsDropEnabled
         if index.row() < len(self._data):
-            return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+            # print(self._data.loc("Name"))
+            # print(self._data.columns[1])
+            # value = self._data.iloc[index.row()][index.column()]
+            # print(value)
+            # print(dir(index.column()))
+            # print(index.column())
+            if index.column() in [0, 1, 2, 3]:
+                return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+            else:
+                return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
         return Qt.ItemIsEnabled | Qt.ItemIsEditable
 
     def supportedDropActions(self) -> bool:
@@ -284,7 +293,6 @@ class TreeViewModel(QtCore.QAbstractTableModel):
     def sort(self, column, order):
         colname = self._data.columns.tolist()[column]
         self.layoutAboutToBeChanged.emit()
-        print(colname)
         self._data.sort_values(
             colname,
             ascending=order == QtCore.Qt.AscendingOrder,
