@@ -185,6 +185,16 @@ class TableViewModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
+class TableViewTracksModel(TableViewModel):
+    def __init__(self, data):
+        super().__init__(data)
+
+
+class TableViewResultsModel(TableViewModel):
+    def __init__(self, data):
+        super().__init__(data)
+
+
 class TableViewProxyStyle(QtWidgets.QProxyStyle):
 
     def drawPrimitive(self, element, option, painter, widget=None):
@@ -203,6 +213,7 @@ class TableViewProxyStyle(QtWidgets.QProxyStyle):
 
 
 class TableView(QtUtilsMixIn, QtWidgets.QTableView):
+    """Initializes common settings used in all tableviews."""
 
     def __init__(self, parent, data):
         super().__init__(parent)
@@ -227,12 +238,26 @@ class TableView(QtUtilsMixIn, QtWidgets.QTableView):
         # print(self.horizontalHeader().dragEnabled())
 
         self.setStyle(TableViewProxyStyle())
-        self.model = TableViewModel(self._data)
-        self.setModel(self.model)
         self.setAlternatingRowColors(True)
         self._create_context_menu(self.horizontalHeader)
         self.setSortingEnabled(True)
         # self.sortByColumn(1, Qt.AscendingOrder
+
+
+class TableViewTracks(TableView):
+    def __init__(self, parent, data):
+        super().__init__(parent, data)
+        self._data = data
+        self.model = TableViewTracksModel(self._data)
+        self.setModel(self.model)
+
+
+class TableViewResults(TableView):
+    def __init__(self, parent, data):
+        super().__init__(parent, data)
+        self._data = data
+        self.model = TableViewResultsModel(self._data)
+        self.setModel(self.model)
 
 
 class TreeViewModel(QtCore.QAbstractTableModel):
@@ -643,7 +668,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             mixtracks_list, columns=self.tableViewTracksHeader)
 
         if self.vboxTracks.isEmpty():
-            self.tableViewTracks = TableView(
+            self.tableViewTracks = TableViewTracks(
                 self, self.tableViewTracksDataFrame
             )
             self.vboxTracks.addWidget(self.tableViewTracks)
@@ -654,7 +679,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewResultsDataFrame = pd.DataFrame(
             [], columns=self.tableViewResultsHeader)
 
-        self.tableViewResults = TableView(self, self.tableViewResultsDataFrame)
+        self.tableViewResults = TableViewResults(self, self.tableViewResultsDataFrame)
         self.vboxResults.addWidget(self.tableViewResults)
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
         self.tableViewResults.keyPressEvent = self.keyPressEventTableViewResults
