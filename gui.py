@@ -189,10 +189,28 @@ class TableViewTracksModel(TableViewModel):
     def __init__(self, data):
         super().__init__(data)
 
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        if index.isValid():
+            if index.column() in [0, 1, 2, 3]:
+                return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+            else:
+                return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+        else:
+            return Qt.ItemIsDropEnabled
+
 
 class TableViewResultsModel(TableViewModel):
     def __init__(self, data):
         super().__init__(data)
+
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        if index.isValid():
+            if index.column() in [0, 1, 2, 3, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18]:
+                return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+            else:
+                return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+        else:
+            return Qt.ItemIsDropEnabled
 
 
 class TableViewProxyStyle(QtWidgets.QProxyStyle):
