@@ -198,6 +198,12 @@ class TableViewTracksModel(TableViewModel):
         else:
             return Qt.ItemIsDropEnabled
 
+    def setData(self, index: QModelIndex, value, role: int = ...) -> bool:
+        if role == Qt.EditRole:
+            self._data.iloc[index.row()][index.column()] = value
+            self.dataChanged.emit(index, index, (Qt.DisplayRole, ))
+        return True
+
 
 class TableViewResultsModel(TableViewModel):
     def __init__(self, data):
@@ -673,6 +679,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         mixtracks_list = []
         if mix_id is not None:
             mix = Mix(False, mix_id, db_file=self.conf.discobase)
+            self.active_mix_id = mix.id
             mixtracks = mix.get_full_mix(verbose=True)
 
         if mixtracks:
@@ -690,6 +697,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 self, self.tableViewTracksDataFrame
             )
             self.vboxTracks.addWidget(self.tableViewTracks)
+            self.tableViewTracks.model.dataChanged.connect(self.tableViewTracksWrite)
         else:
             self.tableViewTracks.model.update(self.tableViewTracksDataFrame)
 
@@ -840,6 +848,24 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # Horizontal spacer so text don't get stretched when moving
         # splitterHorizontal2 to left/right
         self.vboxLabelInfo.addItem(horizontalSpacervboxLabelInfo, idx, 2)
+
+    def tableViewTracksWrite(self, index):
+        track_pos = index.model().data(
+            self.tableViewTracks.selectedIndexes()[0]
+        )
+        # print(track_pos)
+        # print(index.column())
+        mix = Mix(False, self.active_mix_id, db_file=self.conf.discobase)
+        track_details = mix.get_one_mix_track(track_pos)
+        headerCaption = index.model().headerData(index.column(), Qt.Horizontal)
+        for col, caption in self.headers_dict_mixtracks_all.items():
+            if caption == headerCaption:
+                edited_col = col
+        edited_value = index.model()._data.iloc[index.row()][index.column()]
+        mix.update_mix_track_and_track_ext(
+            track_details, {edited_col: edited_value}
+        )
+        self.tableViewTracksLoad(self.active_mix_id)
 
 
 def main():
