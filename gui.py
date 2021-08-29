@@ -385,8 +385,8 @@ class TabWidget(QtWidgets.QTabWidget):
         self.TabWidgetSearchTab1 = QtWidgets.QWidget()
         self.TabWidgetSearchTab2 = QtWidgets.QWidget()
         self.TabWidgetSearchTab3 = QtWidgets.QWidget()
-        self.addTab(self.TabWidgetSearchTab1, 'Offline Search')
-        self.addTab(self.TabWidgetSearchTab2, 'Online Search')
+        self.addTab(self.TabWidgetSearchTab1, 'Offline')
+        self.addTab(self.TabWidgetSearchTab2, 'Online')
         self.addTab(self.TabWidgetSearchTab3, 'Suggest')
 
 
