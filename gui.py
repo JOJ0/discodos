@@ -436,7 +436,6 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         # Create TabWidget
         self.vboxTabWidgetSearchHorizontal = QtWidgets.QHBoxLayout()
-
         self.TabWidgetSearch = TabWidget(self)
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
@@ -457,14 +456,16 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchArtist, 0, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchRelease, 1, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchTrack, 2, 0)
-
-        verticaSpacerTabWidget = QtWidgets.QSpacerItem(0, 0,
-                                                       QtWidgets.QSizePolicy.Minimum,
-                                                       QtWidgets.QSizePolicy.Expanding)
-        horizontalSpecerTabWidget = QtWidgets.QSpacerItem(0, 0,
-                                                       QtWidgets.QSizePolicy.Expanding)
-
-        self.vboxTabWidgetSearchHorizontal.addItem(horizontalSpecerTabWidget)
+        verticaSpacerTabWidget = QtWidgets.QSpacerItem(
+            0, 0,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        horizontalSpacerTabWidget = QtWidgets.QSpacerItem(
+            0, 0,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        self.vboxTabWidgetSearchHorizontal.addItem(horizontalSpacerTabWidget)
         self.vboxTabWidgetSearchHorizontal.addWidget(self.pushButtonOfflineSearch)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
             self.vboxTabWidgetSearchHorizontal, 3, 0)
