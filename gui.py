@@ -461,21 +461,21 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
         self.pushButtonOfflineSearch.clicked.connect(self.tabWidgetOfflineSearchButtonOnClick)
         self.pushButtonOfflineSearch.setShortcut('Shift+S')
-        self.lineEditTrackOfflineSearchArtist = QtWidgets.QLineEdit()
-        self.lineEditTrackOfflineSearchArtist.setPlaceholderText('Artist')
-        self.lineEditTrackOfflineSearchArtist.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
-        self.lineEditTrackOfflineSearchRelease = QtWidgets.QLineEdit()
-        self.lineEditTrackOfflineSearchRelease.setPlaceholderText('Release')
-        self.lineEditTrackOfflineSearchRelease.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
-        self.lineEditTrackOfflineSearchTrack = QtWidgets.QLineEdit()
-        self.lineEditTrackOfflineSearchTrack.setPlaceholderText('Track')
-        self.lineEditTrackOfflineSearchTrack.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.lineEditOfflineSearchArtist = QtWidgets.QLineEdit()
+        self.lineEditOfflineSearchArtist.setPlaceholderText('Artist')
+        self.lineEditOfflineSearchArtist.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.lineEditOfflineSearchRelease = QtWidgets.QLineEdit()
+        self.lineEditOfflineSearchRelease.setPlaceholderText('Release')
+        self.lineEditOfflineSearchRelease.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.lineEditOfflineSearchTrack = QtWidgets.QLineEdit()
+        self.lineEditOfflineSearchTrack.setPlaceholderText('Track')
+        self.lineEditOfflineSearchTrack.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchArtist, 0, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchRelease, 1, 0)
-        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditTrackOfflineSearchTrack, 2, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditOfflineSearchArtist, 0, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditOfflineSearchRelease, 1, 0)
+        self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditOfflineSearchTrack, 2, 0)
         verticaSpacerTabWidget = QtWidgets.QSpacerItem(
             0, 0,
             QtWidgets.QSizePolicy.Minimum,
@@ -792,9 +792,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         search_results_list = []
         collection = Collection(False, self.conf.discobase)
         search_results = collection.search_release_track_offline(
-            self.lineEditTrackOfflineSearchArtist.text(),
-            self.lineEditTrackOfflineSearchRelease.text(),
-            self.lineEditTrackOfflineSearchTrack.text()
+            self.lineEditOfflineSearchArtist.text(),
+            self.lineEditOfflineSearchRelease.text(),
+            self.lineEditOfflineSearchTrack.text()
         )
         if search_results:
             search_results_key_bpm_replaced = self.replace_key_bpm(
