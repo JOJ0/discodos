@@ -490,6 +490,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         scroll.setWidgetResizable(True)
 
         self.splitterHorizontal2.addWidget(scroll)
+        # only after after adding the scroll widget we can scucessfully set the
+        # default stretchfactor
+        self.splitterHorizontal2.setStretchFactor(1, 1)
 
         self.label_list_box = dict()
         self.populate_info_box(self.tableViewResultsHeader)
