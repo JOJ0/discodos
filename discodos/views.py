@@ -434,17 +434,17 @@ class Mix_view_common():
         }
 
         self.column_defaults_mixtracks = {
-            0: {"width": 30, "hidden": False},     # Track Pos.
-            1: {"width": None, "hidden": True},    # Release
-            2: {"width": 120, "hidden": False},    # Artist
-            3: {"width": 180, "hidden": False},    # Title
-            4: {"width": 30, "hidden": False},     # Trk No
-            5: {"width": 50, "hidden": False},     # Key
-            6: {"width": 45, "hidden": False},     # BPM
-            7: {"width": 58, "hidden": False},     # Key Notes
-            8: {"width": 58, "hidden": False},     # Transition Rating
-            9: {"width": 58, "hidden": False},     # Transition Notes
-            10: {"width": 55, "hidden": False},    # Track Notes
+            0: {"col": "track_pos", "width": 30, "hidden": False, "edit": False},
+            1: {"col": "discogs_title", "width": None, "hidden": True, "edit": False},
+            2: {"col": "d_artist", "width": 120, "hidden": False, "edit": False},
+            3: {"col": "d_track_name", "width": 180, "hidden": False, "edit": False},
+            4: {"col": "track_no", "width": 30, "hidden": False, "edit": True},
+            5: {"col": "key", "width": 50, "hidden": False, "edit": True},
+            6: {"col": "bpm", "width": 45, "hidden": False, "edit": True},
+            7: {"col": "key_notes", "width": 58, "hidden": False, "edit": True},
+            8: {"col": "trans_rating", "width": 58, "hidden": False, "edit": True},
+            9: {"col": "trans_notes", "width": 58, "hidden": False, "edit": True},
+            10: {"col": "notes", "width": 55, "hidden": False, "edit": True},
         }
 
 
