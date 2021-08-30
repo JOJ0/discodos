@@ -524,16 +524,19 @@ class Collection_view_common():
             3: {"width": 30, "hidden": False},    # Trk No
             4: {"width": 50, "hidden": False},    # Key
             5: {"width": 45, "hidden": False},    # BPM
-            6: {"width": 58, "hidden": True},     # Key Notes
-            7: {"width": 58, "hidden": True},     # Track Notes
-            8: {"width": 70, "hidden": False},    # Discogs Release ID
-            9: {"width": None, "hidden": False},  # Import Timestamp
-            10: {"width": None, "hidden": True},  # Release Title
+            6: {"width": 58, "hidden": False},     # Key Notes
+            7: {"width": 58, "hidden": False},     # Track Notes
+            8: {"width": 70, "hidden": True},     # Discogs Release ID / link
+            9: {"width": None, "hidden": False},  # Release Title
+            10: {"width": None, "hidden": True},  # Import Timestamp
             11: {"width": 30, "hidden": True},    # In Discogs Coll.
-            12: {"width": 80, "hidden": False},   # MusicBrainz ID
-            13: {"width": 80, "hidden": False},   # MusicBrainz ID Overr.
-            14: {"width": 100, "hidden": False},  # MusicBrainz Match M.
-            15: {"width": 100, "hidden": False},  # MusicBrainz Match T.
+            12: {"width": 80, "hidden": True},    # MusicBrainz Rec. ID / link
+            13: {"width": 80, "hidden": False},   # MusicBrainz Rec. ID Overr.
+            14: {"width": 100, "hidden": True},  # MusicBrainz Rec. Match M.
+            15: {"width": 100, "hidden": True},  # MusicBrainz Rec. Match T.
+            16: {"width": 80, "hidden": True},    # MusicBrainz Rel. ID / link
+            17: {"width": 100, "hidden": True},  # MusicBrainz Rel. Match M.
+            18: {"width": 100, "hidden": True},  # MusicBrainz Rel. Match T.
         }
 
 
