@@ -58,8 +58,9 @@ class QtUtilsMixIn:
             setting_path (string): The path to the setting in the Qsettings
                 object aka the .ini file. Format: section/keyname.
             defaults (dict): Contains column ID and a subdict containing default
-                width and hidden state. Format:
-                0: {width: 50, hidden: True}, 1: {width: ...}, ...
+                width, hidden and editable state. Format:
+                0: {"width": 50, "hidden": True, "edit": True},
+                1: {width: ...}, ...
             header (method): Either a reference to a treeview.header() or a
                 tableview.horizontalHeader() method
 
@@ -184,14 +185,33 @@ class TableViewModel(QtCore.QAbstractTableModel):
         # self._data.reset_index(inplace=True, drop=True)
         self.layoutChanged.emit()
 
+    def get_locked_columns(self, defaults):
+        """Retrieves a list of non-editable columns from the provided dict.
 
-class TableViewTracksModel(TableViewModel):
+        Args:
+            defaults (dict): Contains column ID and a subdict containing default
+                width, hidden and editable state. Format as described in
+                QtUtilsMixiIn.restore_column_settings():
+
+        Returns:
+            list: containing id's (int) of non-editable columns
+        """
+        cols_list = []
+        for col_id, col_default in defaults.items():
+            edit = col_default.get("edit")
+            if edit is False or edit is None:
+                cols_list.append(col_id)
+        return cols_list
+
+
+class TableViewTracksModel(TableViewModel, Mix_view_common):
     def __init__(self, data):
         super().__init__(data)
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
         if index.isValid():
-            if index.column() in [0, 1, 2, 3]:
+            locked = self.get_locked_columns(self.column_defaults_mixtracks)
+            if index.column() in locked:
                 return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
             else:
                 return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
