@@ -35,18 +35,21 @@ class View_common():
     in CLI mostly) and lists as well, even if one or the other is not used.
 
     Dictionaries containing SQL table fields translated to human readable
-    column names. Mostly used for tabulate CLI tables:
+    column names.
 
         self.headers_dict_mixtracks_all:
+            canvas for headers_list...
         self.headers_dict_mixtracks_all_short:
-            Same as headers_dict_mixtracks_all but some column's width is
+            same as headers_dict_mixtracks_all but some column's width is
             shortened by using abbreviations and linebreaks. Used in mix-tracks
             view (verbose mode: -v).
 
-    Plain lists derived from headers dictionaries. Mostly used in GUI:
+    Plain lists derived from headers dictionaries.
 
         self.headers_list_mixtracks_all:
+            headers tracklist view in GUI
         self.headers_list_mixtracks_all_short:
+            unused
     """
     headers_list_mixtracks_all = Headers_list()
     headers_list_mixtracks_all_short = Headers_list()
@@ -343,26 +346,24 @@ class Mix_view_common():
     column names. Mostly used for tabulate CLI tables:
 
         self.headers_dict_mixes:
-            Used in mixes overview.
+            headers mixes overview.
         self.headers_dict_mixinfo:
-            The canvas for headers_list_mixinfo.
+            canvas for headers_list_mixinfo.
         self.headers_dict_mixtracks_brainz:
-        self.headers_dict_mixtracks_brainz_short:
-            Shortened version of above. Used in mix-tracks view (*Brainz mode -vv).
+            headers mix-tracks view (*brainz mode -vv).
         self.headers_dict_mixtracks_basic:
-        self.headers_dict_mixtracks_basic_short:
-            Shortened version of above. Used in mix-tracks view (basic mode).
+            headers mix-tracks view (basic mode).
 
     Plain lists derived from headers dictionaries. Mostly used in GUI:
 
         self.headers_list_mixes:
-        self.headers_list_mixtracks_brainz_short:
+            unused
         self.headers_list_mixinfo:
-            Used in the header line of mix-tracks view on CLI (all modes).
+            header line of mix-tracks view on CLI (all modes).
         self.headers_list_mixtracks_brainz:
-        self.headers_list_mixtracks_brainz_short:
+            unused
         self.headers_list_mixtracks_basic:
-        self.headers_list_mixtracks_basic_short:
+            unused
 
     Column defaults for visible-state and width. Used in GUI:
 
@@ -372,9 +373,7 @@ class Mix_view_common():
     headers_list_mixinfo = Headers_list()
     headers_list_mixes = Headers_list()
     headers_list_mixtracks_brainz = Headers_list()
-    headers_list_mixtracks_brainz_short = Headers_list()
     headers_list_mixtracks_basic = Headers_list()
-    headers_list_mixtracks_basic_short = Headers_list()
 
     def __init__(self):
         super().__init__()
@@ -395,38 +394,47 @@ class Mix_view_common():
             ["played", "Played ({}): "],
             ["venue", "Venue ({}): "]
         ]
-        # Mixes
+        # Mixes header
         self.headers_dict_mixes = {
-            'mix_id': '#', 'name': 'Name', 'played': 'Played',
-            'venue': 'Venue', 'created': 'Created', 'updated': 'Updated'
+            'mix_id': '#',
+            'name': 'Name',
+            'played': 'Played',
+            'venue': 'Venue',
+            'created': 'Created',
+            'updated': 'Updated'
         }
-        # Mixtracks
+        # Tracklist mix info
         self.headers_dict_mixinfo = {
-            'mix_id': 'Mix', 'name': 'Name', 'created': 'Created', 'updated':
-            'Updated', 'played': 'Played', 'venue': 'Venue'
+            'mix_id': 'Mix',
+            'name': 'Name',
+            'created': 'Created',
+            'updated': 'Updated',
+            'played': 'Played',
+            'venue': 'Venue'
         }
+        # Tracklist *brainz view header
         self.headers_dict_mixtracks_brainz = {
-            'track_pos': '#', 'discogs_title': 'Release', 'd_artist':
-            'Track Artist', 'd_track_name': 'Track Name', 'd_track_no':
-            'Trk\nNo', 'key': 'Key', 'bpm': 'BPM', 'd_catno': 'Discogs CatNo',
-            'methods': 'Release/Recording match via', 'times': 'Matched on',
+            'track_pos': '#',
+            'discogs_title': 'Release',
+            'd_artist': 'Track\nArtist',
+            'd_track_name': 'Track\nName',
+            'd_track_no': 'Trk\nNo',
+            'key': 'Key',
+            'bpm': 'BPM',
+            'd_catno': 'Discogs\nCatNo',
+            'methods': 'Rel match via\nRec match via',
+            'times': 'Matched\non',
             'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
         }
-        self.headers_dict_mixtracks_brainz_short = self.headers_dict_mixtracks_brainz.copy()
-        self.headers_dict_mixtracks_brainz_short['d_artist'] = 'Track\nArtist'
-        self.headers_dict_mixtracks_brainz_short['d_track_name'] = 'Track\nName'
-        self.headers_dict_mixtracks_brainz_short['d_track_no'] = 'Trk\nNo'
-        self.headers_dict_mixtracks_brainz_short['d_catno'] = 'Discogs\nCatNo'
-        self.headers_dict_mixtracks_brainz_short['methods'] = 'Rel match via\nRec match via'
-        self.headers_dict_mixtracks_brainz_short['times'] = 'Matched\non'
-
         self.headers_dict_mixtracks_basic = {
-            'track_pos': '#', 'd_catno': 'CatNo', 'discogs_title': 'Release',
-            'd_track_no': 'Trk\nNo', 'trans_rating': 'Transition\nRating',
-            'key': 'Key', 'bpm': 'BPM'
+            'track_pos': '#',
+            'd_catno': 'CatNo',
+            'discogs_title': 'Release',
+            'd_track_no': 'Trk\nNo',
+            'trans_rating': 'Trans.\nRating',
+            'key': 'Key',
+            'bpm': 'BPM'
         }
-        self.headers_dict_mixtracks_basic_short = self.headers_dict_mixtracks_basic.copy()
-        self.headers_dict_mixtracks_basic_short['trans_rating'] = 'Trans.\nRating'
 
         self.column_defaults_mixes = {
             0: {'width': 30, 'hidden': True},    # Mix ID
@@ -479,9 +487,12 @@ class Collection_view_common():
     Lists of questions. Used in CLI:
         self._edit_track_questions: when editing a collection-track.
 
-    Dictionaries containing SQL table fields translated to human readable
+    Dictionaries/lists containing SQL table fields translated to human readable
     column names:
-        self.headers_list_search_results: Used for headers in GUI Search Results
+        self.headers_dict_search_results:
+            canvas for headers_list_search_results
+        self.headers_list_search_results:
+            headers in GUI Search Results
 
     Column defaults for visible-state and width. Used in GUI:
         self.column_defaults_search_results
@@ -589,13 +600,13 @@ class View_common_cli(View_common):
             self.p(tab(
                 _mix_data_brainz_nl,
                 tablefmt='grid',
-                headers=self.headers_dict_mixtracks_brainz_short
+                headers=self.headers_dict_mixtracks_brainz
             ))
         else:
             self.p(tab(
                 _mix_data_nl,
                 tablefmt='pipe',
-                headers=self.headers_dict_mixtracks_basic_short
+                headers=self.headers_dict_mixtracks_basic
             ))
 
     def duration_stats(self, start_time, msg):
