@@ -25,6 +25,15 @@ class Headers_list():
 class View_common():
     """ Common view utils, usable in CLI and GUI
 
+    This class, Mix_view_common and Collection_view_common contain dicts and
+    lists with information. Different parts require different data formats, thus
+    each dict is translated into a list as well.  Potentially the contents of
+    this class is used in both CLI and GUI but some of them are rather used in
+    one or the other. Keeping all of them in this parent class (and not in
+    CLI/GUI specific child classes) should add to readability. For consistencies
+    sake all headers dict are available in full length an abbreviated form (used
+    in CLI mostly) and lists as well, even if one or the other is not used.
+
     Dictionaries containing SQL table fields translated to human readable
     column names. Mostly used for tabulate CLI tables:
 
@@ -326,15 +335,6 @@ class View_common():
 class Mix_view_common():
     ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
 
-    Contains dicts and lists with information. Different parts require
-    different data formats, thus each dict is translated into a list as well.
-    Potentially the contents of this class is used in both CLI and GUI but some
-    of them are rather used in one or the other. Keeping all of them in this
-    parent class (and not in CLI/GUI specific child classes) should add to
-    readability. For consistencies sake all headers dict are available in full
-    length an abbreviated form (used in CLI mostly) and lists as well, even if
-    one or the other is not used.
-
     Lists of questions. Used in CLI:
         self._edit_track_questions: when editing a mix-track.
         self._edit_mix_questions: when editing a mixes info.
@@ -345,12 +345,13 @@ class Mix_view_common():
         self.headers_dict_mixes:
             Used in mixes overview.
         self.headers_dict_mixinfo:
+            The canvas for headers_list_mixinfo.
         self.headers_dict_mixtracks_brainz:
         self.headers_dict_mixtracks_brainz_short:
             Shortened version of above. Used in mix-tracks view (*Brainz mode -vv).
         self.headers_dict_mixtracks_basic:
         self.headers_dict_mixtracks_basic_short:
-            Shortened version of above. Used in mix-tracks view (basic mode)
+            Shortened version of above. Used in mix-tracks view (basic mode).
 
     Plain lists derived from headers dictionaries. Mostly used in GUI:
 
@@ -364,6 +365,7 @@ class Mix_view_common():
         self.headers_list_mixtracks_basic_short:
 
     Column defaults for visible-state and width. Used in GUI:
+
         self.column_defaults_mixes
         self.column_defaults_mixtracks
     '''
