@@ -7,6 +7,7 @@ import webbrowser
 import re
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
+# import pprint
 
 from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
@@ -45,7 +46,7 @@ class QtUtilsMixIn:
         show_column = lambda checked: self.setColumnHidden(column_idx, not checked)
         return show_column
 
-    def restore_column_settings(self, settings, setting_path, defaults={},
+    def restore_column_settings(self, settings, setting_path, defaults=None,
                                 header=None):
         """ Restores column width and visible-state from Qsettings
 
@@ -57,10 +58,8 @@ class QtUtilsMixIn:
             settings (object): A QSettings object.
             setting_path (string): The path to the setting in the Qsettings
                 object aka the .ini file. Format: section/keyname.
-            defaults (dict): Contains column ID and a subdict containing default
-                width, hidden and editable state. Format:
-                0: {"width": 50, "hidden": True, "edit": True},
-                1: {width: ...}, ...
+            defaults (object): TableDefaults object containing
+                width, hidden and editable state.
             header (method): Either a reference to a treeview.header() or a
                 tableview.horizontalHeader() method
 
@@ -73,16 +72,18 @@ class QtUtilsMixIn:
         else:
             log.info("TableView.restore_column_settings: "
                      "No saved settings found. Using defaults.")
-            for column_id in defaults:
-                if defaults[column_id]['width']:
+
+            # pprint.pprint(defaults.cols)
+            for settings in defaults.cols.values():
+                if settings['width']:
                     self.setColumnWidth(
-                        column_id,
-                        defaults[column_id]['width']
+                        settings['order_id'],
+                        settings['width']
                     )
-                if defaults[column_id]['hidden']:
+                if settings['hidden']:
                     self.setColumnHidden(
-                        column_id,
-                        defaults[column_id]['hidden']
+                        settings['order_id'],
+                        settings['hidden']
                     )
 
         # Set context menu check marks according to visible-state of columns
@@ -185,24 +186,6 @@ class TableViewModel(QtCore.QAbstractTableModel):
         # self._data.reset_index(inplace=True, drop=True)
         self.layoutChanged.emit()
 
-    def get_locked_columns(self, defaults):
-        """Retrieves a list of non-editable columns from the provided dict.
-
-        Args:
-            defaults (dict): Contains column ID and a subdict containing default
-                width, hidden and editable state. Format as described in
-                QtUtilsMixiIn.restore_column_settings():
-
-        Returns:
-            list: containing id's (int) of non-editable columns
-        """
-        cols_list = []
-        for col_id, col_default in defaults.items():
-            edit = col_default.get("edit")
-            if edit is False or edit is None:
-                cols_list.append(col_id)
-        return cols_list
-
 
 class TableViewTracksModel(TableViewModel, Mix_view_common):
     def __init__(self, data):
@@ -210,7 +193,7 @@ class TableViewTracksModel(TableViewModel, Mix_view_common):
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
         if index.isValid():
-            locked = self.get_locked_columns(self.column_defaults_mixtracks)
+            locked = self.cols_mixtracks.get_locked_columns()
             if index.column() in locked:
                 return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
             else:
@@ -443,15 +426,15 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.groupBoxSearch.setLayout(self.vboxSearch)
 
         # Create treeviewmix
-        self.treeViewMixHeader = self.headers_list_mixes
+        self.treeViewMixHeader = self.cols_mixes.headers_list()
         self.treeViewMixLoad()
 
         # Create tableviewtracks
-        self.tableViewTracksHeader = self.headers_list_mixtracks_all
+        self.tableViewTracksHeader = self.cols_mixtracks.headers_list()
         self.tableViewTracksLoad(None)
 
         # Create tableviewresults
-        self.tableViewResultsHeader = self.headers_list_search_results
+        self.tableViewResultsHeader = self.cols_search_results.headers_list()
         self.tableViewResultsLoad()
 
         # Create TabWidget
@@ -582,19 +565,19 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewTracks.restore_column_settings(
             self.settings,
             "tableViewTracks/ColumnWidth",
-            defaults=self.column_defaults_mixtracks,
+            defaults=self.cols_mixtracks,
             header=self.tableViewTracks.horizontalHeader,
         )
         self.tableViewResults.restore_column_settings(
             self.settings,
             "tableViewResults/ColumnWidth",
-            defaults=self.column_defaults_search_results,
+            defaults=self.cols_search_results,
             header=self.tableViewResults.horizontalHeader,
         )
         self.treeViewMix.restore_column_settings(
             self.settings,
             'treeViewMix/ColumnWidth',
-            defaults=self.column_defaults_mixes,
+            defaults=self.cols_mixes,
             header=self.treeViewMix.header,
         )
 
