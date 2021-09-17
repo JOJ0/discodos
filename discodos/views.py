@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import date
 from time import time
 from datetime import timedelta
+# from collections import OrderedDict
 
 log = logging.getLogger('discodos')
 
@@ -20,6 +21,37 @@ class Headers_list():
 
     # def __set__(self, obj, value) -> None:
     #     obj.__dict__[self.name] = value
+
+
+class TableDefaults():
+    '''Describes default and general settings for CLI and GUI tables.
+
+    Generates headers dicts we use for CLI tables with tabulate.
+    Generates headers lists we use for Qt Tree/TableViews and CLI tables.
+    '''
+    def __init__(self):
+        # self.cols = OrderedDict()
+        self.cols = {}
+
+    def addcol(self, **kwargs):
+        self.cols[kwargs.get('name')] = kwargs
+        del(self.cols[kwargs.get('name')]['name'])
+
+    def headers_list(self):
+        return [col['caption'] for col in self.cols.values()]
+
+    def get_locked_columns(self):
+        """Retrieves a list of non-editable columns from self.cols dict.
+
+        Returns:
+            list: containing id's (int) of non-editable columns
+        """
+        cols_list = []
+        for col_id, col_default in self.cols.items():
+            edit = col_default.get("edit")
+            if edit is False or edit is None:
+                cols_list.append(col_id)
+        return cols_list
 
 
 class View_common():
@@ -51,8 +83,8 @@ class View_common():
         self.headers_list_mixtracks_all_short:
             unused
     """
-    headers_list_mixtracks_all = Headers_list()
-    headers_list_mixtracks_all_short = Headers_list()
+    # headers_list_mixtracks_all = Headers_list()
+    # headers_list_mixtracks_all_short = Headers_list()
 
     def __init__(self):
         super().__init__()
@@ -367,11 +399,11 @@ class Mix_view_common():
 
     Column defaults for visible-state and width. Used in GUI:
 
-        self.column_defaults_mixes
-        self.column_defaults_mixtracks
+        self.cols_mixes
+        self.cols_mixtracks
     '''
     headers_list_mixinfo = Headers_list()
-    headers_list_mixes = Headers_list()
+    # headers_list_mixes = Headers_list()
     headers_list_mixtracks_brainz = Headers_list()
     headers_list_mixtracks_basic = Headers_list()
 
@@ -426,6 +458,7 @@ class Mix_view_common():
             'times': 'Matched\non',
             'links': 'Links (MB Release, MB Recording, AB Recording, Discogs Release)'
         }
+        # Tracklist basic view header
         self.headers_dict_mixtracks_basic = {
             'track_pos': '#',
             'd_catno': 'CatNo',
@@ -435,28 +468,93 @@ class Mix_view_common():
             'key': 'Key',
             'bpm': 'BPM'
         }
-
-        self.column_defaults_mixes = {
-            0: {'width': 30, 'hidden': True},    # Mix ID
-            2: {'width': 90, 'hidden': None},    # Played
-            4: {'width': None, 'hidden': True},  # Created
-            5: {'width': None, 'hidden': True}   # Updated
-        }
-
-        self.column_defaults_mixtracks = {
-            0: {"col": "track_pos", "width": 30, "hidden": False, "edit": False},
-            1: {"col": "discogs_title", "width": None, "hidden": True, "edit": False},
-            2: {"col": "d_artist", "width": 120, "hidden": False, "edit": False},
-            3: {"col": "d_track_name", "width": 180, "hidden": False, "edit": False},
-            4: {"col": "track_no", "width": 30, "hidden": False, "edit": True},
-            5: {"col": "key", "width": 50, "hidden": False, "edit": True},
-            6: {"col": "bpm", "width": 45, "hidden": False, "edit": True},
-            7: {"col": "key_notes", "width": 58, "hidden": False, "edit": True},
-            8: {"col": "trans_rating", "width": 58, "hidden": False, "edit": True},
-            9: {"col": "trans_notes", "width": 58, "hidden": False, "edit": True},
-            10: {"col": "notes", "width": 55, "hidden": False, "edit": True},
-        }
-
+        # Leave old defaults_dict for now
+            # self.cols_mixes = {
+            #     0: {'width': 30, 'hidden': True},    # Mix ID
+            #     2: {'width': 90, 'hidden': False},    # Played
+            #     4: {'width': None, 'hidden': True},  # Created
+            #     5: {'width': None, 'hidden': True}   # Updated
+            # }
+        # Mixes column defaults
+        self.cols_mixes = TableDefaults()
+        self.cols_mixes.addcol(name='mix_id', order_id=0,
+                               width=30, hidden=True, edit=False,
+                               caption='#')
+        self.cols_mixes.addcol(name='name', order_id=1,
+                               width=None, hidden=False, edit=True,
+                               caption='Name')
+        self.cols_mixes.addcol(name='played', order_id=2,
+                               width=90, hidden=False, edit=True,
+                               caption='Played')
+        self.cols_mixes.addcol(name='venue', order_id=3,
+                               width=None, hidden=False, edit=True,
+                               caption='Venue')
+        self.cols_mixes.addcol(name='created', order_id=4,
+                               width=None, hidden=True, edit=False,
+                               caption='Created')
+        self.cols_mixes.addcol(name='updated', order_id=5,
+                               width=None, hidden=True, edit=False,
+                               caption='Updated')
+        # Leave old defaults_dict for now
+            # self.cols_mixtracks = {
+            #     0: {"col": "track_pos", "width": 30, "hidden": False, "edit": False},
+            #     1: {"col": "discogs_title", "width": None, "hidden": True, "edit": False},
+            #     2: {"col": "d_artist", "width": 120, "hidden": False, "edit": False},
+            #     3: {"col": "d_track_name", "width": 180, "hidden": False, "edit": False},
+            #     4: {"col": "track_no", "width": 30, "hidden": False, "edit": True},
+            #     5: {"col": "key", "width": 50, "hidden": False, "edit": True},
+            #     6: {"col": "bpm", "width": 45, "hidden": False, "edit": True},
+            #     7: {"col": "key_notes", "width": 58, "hidden": False, "edit": True},
+            #     8: {"col": "trans_rating", "width": 58, "hidden": False, "edit": True},
+            #     9: {"col": "trans_notes", "width": 58, "hidden": False, "edit": True},
+            #     10: {"col": "notes", "width": 55, "hidden": False, "edit": True},
+            # }
+        self.cols_mixtracks = TableDefaults()
+        self.cols_mixtracks.addcol(
+            name='track_pos',
+            order_id=0, width=30, hidden=False, edit=False,
+            caption='#')
+        self.cols_mixtracks.addcol(
+            name='discogs_title',
+            order_id=1, width=None, hidden=True, edit=False,
+            caption='Release')
+        self.cols_mixtracks.addcol(
+            name='d_artist',
+            order_id=2, width=120, hidden=False, edit=False,
+            caption='Artist', short_cap='Artist\nName')
+        self.cols_mixtracks.addcol(
+            name='d_track_name',
+            order_id=3, width=180, hidden=False, edit=False,
+            caption='Title', short_cap='Track\nName')
+        self.cols_mixtracks.addcol(
+            name='track_no',
+            order_id=4, width=30, hidden=False, edit=True,
+            caption='Trk\nNo')
+        self.cols_mixtracks.addcol(
+            name='key',
+            order_id=5, width=50, hidden=False, edit=True,
+            caption='Key')
+        self.cols_mixtracks.addcol(
+            name='bpm',
+            order_id=6, width=45, hidden=False, edit=True,
+            caption='BPM')
+        self.cols_mixtracks.addcol(
+            name='key_notes',
+            order_id=7, width=58, hidden=False, edit=True,
+            caption='Key\nNotes')
+        self.cols_mixtracks.addcol(
+            name='trans_rating',
+            order_id=8, width=58, hidden=False, edit=True,
+            caption='Transition\nRating', short_cap='Trans.\nRating')
+        self.cols_mixtracks.addcol(
+            name='trans_notes',
+            order_id=9, width=58, hidden=False, edit=True,
+            caption='Transition\nNotes', short_cap='Trans.\nNotes')
+        self.cols_mixtracks.addcol(
+            name='notes',
+            order_id=10, width=55, hidden=False, edit=True,
+            caption='Track\nNotes')
+        # print(self.cols_mixtracks.headers_list())
 
     def shorten_mixes_timestamps(self, mixes):
         ''' Reformats timestamps in a list of mixes.
@@ -495,11 +593,8 @@ class Collection_view_common():
             headers in GUI Search Results
 
     Column defaults for visible-state and width. Used in GUI:
-        self.column_defaults_search_results
+        self.cols_search_results
     """
-    headers_list_search_results = Headers_list()
-
-
     def __init__(self):
         super().__init__()
         # List of questions a user is asked when searching and editing a track.
@@ -530,27 +625,87 @@ class Collection_view_common():
             'release.m_match_time ': 'MusicBrainz\nRelease\nMatch-Time'
         }
 
-        self.column_defaults_search_results = {
-            0: {"width": 120, "hidden": False},   # Artist
-            1: {"width": 180, "hidden": False},   # Title
-            2: {"width": 90, "hidden": False},    # Catalog
-            3: {"width": 30, "hidden": False},    # Trk No
-            4: {"width": 50, "hidden": False},    # Key
-            5: {"width": 45, "hidden": False},    # BPM
-            6: {"width": 58, "hidden": False},     # Key Notes
-            7: {"width": 58, "hidden": False},     # Track Notes
-            8: {"width": 70, "hidden": True},     # Discogs Release ID / link
-            9: {"width": None, "hidden": False},  # Release Title
-            10: {"width": None, "hidden": True},  # Import Timestamp
-            11: {"width": 30, "hidden": True},    # In Discogs Coll.
-            12: {"width": 80, "hidden": True},    # MusicBrainz Rec. ID / link
-            13: {"width": 80, "hidden": False},   # MusicBrainz Rec. ID Overr.
-            14: {"width": 100, "hidden": True},  # MusicBrainz Rec. Match M.
-            15: {"width": 100, "hidden": True},  # MusicBrainz Rec. Match T.
-            16: {"width": 80, "hidden": True},    # MusicBrainz Rel. ID / link
-            17: {"width": 100, "hidden": True},  # MusicBrainz Rel. Match M.
-            18: {"width": 100, "hidden": True},  # MusicBrainz Rel. Match T.
-        }
+        # leave old defaults_dict for now
+            # self.cols_search_results = {
+            #     0: {"width": 120, "hidden": False},   # Artist
+            #     1: {"width": 180, "hidden": False},   # Title
+            #     2: {"width": 90, "hidden": False},    # Catalog
+            #     3: {"width": 30, "hidden": False},    # Trk No
+            #     4: {"width": 50, "hidden": False},    # Key
+            #     5: {"width": 45, "hidden": False},    # BPM
+            #     6: {"width": 58, "hidden": False},     # Key Notes
+            #     7: {"width": 58, "hidden": False},     # Track Notes
+            #     8: {"width": 70, "hidden": True},     # Discogs Release ID / link
+            #     9: {"width": None, "hidden": False},  # Release Title
+            #     10: {"width": None, "hidden": True},  # Import Timestamp
+            #     11: {"width": 30, "hidden": True},    # In Discogs Coll.
+            #     12: {"width": 80, "hidden": True},    # MusicBrainz Rec. ID / link
+            #     13: {"width": 80, "hidden": False},   # MusicBrainz Rec. ID Overr.
+            #     14: {"width": 100, "hidden": True},  # MusicBrainz Rec. Match M.
+            #     15: {"width": 100, "hidden": True},  # MusicBrainz Rec. Match T.
+            #     16: {"width": 80, "hidden": True},    # MusicBrainz Rel. ID / link
+            #     17: {"width": 100, "hidden": True},  # MusicBrainz Rel. Match M.
+            #     18: {"width": 100, "hidden": True},  # MusicBrainz Rel. Match T.
+            # }
+        # Search Results column defaults
+        self.cols_search_results = TableDefaults()
+        self.cols_search_results.addcol(name='d_artist', order_id=0,
+                                        width=120, hidden=False, edit=False,
+                                        caption='Artist')
+        self.cols_search_results.addcol(name='d_track_name', order_id=1,
+                                        width=180, hidden=False, edit=False,
+                                        caption='Title')
+        self.cols_search_results.addcol(name='d_catno', order_id=2,
+                                        width=90, hidden=False, edit=False,
+                                        caption='Catalog')
+        self.cols_search_results.addcol(name='d_track_no', order_id=3,
+                                        width=30, hidden=False, edit=False,
+                                        caption='Trk\nNo')
+        self.cols_search_results.addcol(name='key', order_id=4,
+                                        width=50, hidden=False, edit=False,
+                                        caption='Key')
+        self.cols_search_results.addcol(name='BPM', order_id=5,
+                                        width=45, hidden=False, edit=False,
+                                        caption='BPM')
+        self.cols_search_results.addcol(name='key_notes', order_id=6,
+                                        width=58, hidden=False, edit=False,
+                                        caption='Key\nNotes')
+        self.cols_search_results.addcol(name='', order_id=7,
+                                        width=58, hidden=False, edit=False,
+                                        caption='Track\nNotes')
+        self.cols_search_results.addcol(name='discogs_id', order_id=8,
+                                        width=70, hidden=False, edit=False,
+                                        caption='Discogs\nRelease')
+        self.cols_search_results.addcol(name='discogs_title', order_id=9,
+                                        width=None, hidden=True, edit=False,
+                                        caption='Release\nTitle')
+        self.cols_search_results.addcol(name='import_timestamp', order_id=10,
+                                        width=None, hidden=True, edit=False,
+                                        caption='Imported')
+        self.cols_search_results.addcol(name='in_d_coll', order_id=11,
+                                        width=30, hidden=True, edit=False,
+                                        caption='In D.\nColl.')
+        self.cols_search_results.addcol(name='m_rec_id', order_id=12,
+                                        width=80, hidden=True, edit=False,
+                                        caption='MusicBrainz\nRecording')
+        self.cols_search_results.addcol(name='m_rec_id_override', order_id=13,
+                                        width=80, hidden=False, edit=True,
+                                        caption='MusicBrainz\nRecording\nID-Override')
+        self.cols_search_results.addcol(name='recording_match_method', order_id=14,
+                                        width=100, hidden=True, edit=False,
+                                        caption='MusicBrainz\nRecording\nMatch-Method')
+        self.cols_search_results.addcol(name='recording_match_time', order_id=15,
+                                        width=100, hidden=True, edit=False,
+                                        caption='MusicBrainz\nRecording\nMatch-Time')
+        self.cols_search_results.addcol(name='m_rel_id', order_id=16,
+                                        width=80, hidden=True, edit=False,
+                                        caption='MusicBrainz\nRelease')
+        self.cols_search_results.addcol(name='release_match_method', order_id=17,
+                                        width=100, hidden=True, edit=False,
+                                        caption='MusicBrainz\nRelease\nMatch-Method')
+        self.cols_search_results.addcol(name='release_match_time', order_id=18,
+                                        width=100, hidden=True, edit=False,
+                                        caption='MusicBrainz\nRelease\nMatch-Time')
 
 
 class View_common_cli(View_common):
