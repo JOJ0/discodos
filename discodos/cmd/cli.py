@@ -110,10 +110,11 @@ class ArgParse():
     search_subparser.add_argument(
         "-t", "--track", type=str, dest='track_to_add', metavar='TRACK_NUMBER',
         help='''in combination with -m this option adds the given track number
-        (eg. A1, AA, B2, ...) to the mix selected using -m;
-        in combination with -z or -u the given track is
+        (eg. A1, AA, B2, ...) to the mix passed via -m;
+        in combination with -z, -zz or -u the given track is
         the one being updated with *Brainz or Discogs details; in combination
-        with -e the given track is to one to be edited.''')
+        with -e the given track is the one being edited. The special keyword
+        "all" can be used to process all tracks on the found release.''')
     search_subparser.add_argument(
         "-p", "--pos", type=str, dest='add_at_pos', metavar='POS_IN_MIX',
         help='''in combination with -m this option states that we'd like to
