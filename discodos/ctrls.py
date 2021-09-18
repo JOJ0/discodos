@@ -1,11 +1,11 @@
 from discodos.utils import is_number
 from discodos.config import Db_setup
 from discodos.models import Mix, Collection, Brainz, Brainz_match
-from discodos.views import Mix_view_cli, Collection_view_cli
+from discodos.view_cli import Mix_view_cli, Collection_view_cli
 from abc import ABC
 import logging
 import discogs_client.exceptions as errors
-import pprint as p
+# import pprint as p
 from time import time
 
 log = logging.getLogger('discodos')
