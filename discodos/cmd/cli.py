@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from discodos.utils import print_help  # , ask user
-from discodos.views import User_int
+from discodos.args_helper import User_int
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 from discodos.config import Db_setup, Config
 import logging
