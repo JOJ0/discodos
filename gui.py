@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import sys
 import pandas as pd
 import logging
@@ -10,12 +9,12 @@ from PyQt5.QtCore import Qt, QSettings, QModelIndex
 # import pprint
 
 from discodos.qt.MainWindow import Ui_MainWindow
-from discodos.models import Mix, Collection
+from discodos.model_mix import Mix
+from discodos.model_collection import Collection
 from discodos.config import Config
 from discodos.ctrls import Ctrl_common
 from discodos.view_common import View_common
 from discodos.view_common import Mix_view_common, Collection_view_common
-
 
 log = logging.getLogger('discodos')
 
