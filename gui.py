@@ -13,7 +13,8 @@ from discodos.qt.MainWindow import Ui_MainWindow
 from discodos.models import Mix, Collection
 from discodos.config import Config
 from discodos.ctrls import Ctrl_common
-from discodos.views import View_common, Mix_view_common, Collection_view_common
+from discodos.view_common import View_common
+from discodos.view_common import Mix_view_common, Collection_view_common
 
 
 log = logging.getLogger('discodos')
