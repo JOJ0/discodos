@@ -1,9 +1,9 @@
-#from discodos.utils import create_data_dir
 from discodos.config import create_data_dir
 import logging
 from pathlib import Path
 import os
 import sys
+
 
 def logger_init():
     # logger is not relying on Config class and handles paths itself

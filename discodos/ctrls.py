@@ -1,6 +1,9 @@
 from discodos.utils import is_number
 from discodos.config import Db_setup
-from discodos.models import Mix, Collection, Brainz, Brainz_match
+from discodos.model_mix import Mix
+from discodos.model_collection import Collection
+from discodos.model_brainz import Brainz
+from discodos.model_brainz_match import Brainz_match
 from discodos.view_cli import Mix_view_cli, Collection_view_cli
 from abc import ABC
 import logging
@@ -12,9 +15,6 @@ log = logging.getLogger('discodos')
 
 
 class Ctrl_common (ABC):
-    def __init__(self):
-        pass
-
     def setup_db(self, db_file):
         db_setup = Db_setup(db_file)
         db_setup.create_tables()
@@ -386,18 +386,18 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
     '''manages the record collection, offline and with help of discogs data'''
 
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
-            _db_file = False, _musicbrainz_user = False, _musicbrainz_pass = False):
-        self.user = _user_int # take an instance of the User_int class and set as attribute
-        self.cli = Collection_view_cli() # instantiate cli frontend class 
+                 _db_file=False, _musicbrainz_user=False, _musicbrainz_pass=False):
+        self.user = _user_int  # set instance of User_int class as attribute
+        self.cli = Collection_view_cli()  # instantiate cli frontend class
         self.collection = Collection(_db_conn, _db_file)
-        if self.collection.db_not_found == True:
+        if self.collection.db_not_found is True:
             self.cli.ask('Setting up DiscoBASE, press enter...')
             super(Coll_ctrl_cli, self).setup_db(_db_file)
             self.collection = Collection(_db_conn, _db_file)
         if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
-            else: # only try to initialize brainz if discogs is online already
+            else:  # only try to initialize brainz if discogs is online already
                 self.brainz = Brainz(_musicbrainz_user, _musicbrainz_pass, _appIdentifier)
         log.info("CTRL: Initial ONLINE status is %s", self.ONLINE)
         self.first_track_on_release = ""
@@ -453,25 +453,18 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 self.cli.p('Nothing found.')
                 return False
             else:
-                #if len(search_results) == 1:
-                #    self.cli.p('Found release: {} - {}'.format(search_results[0][3],
-                #                                          search_results[0][1]))
-                #    return search_results
-                #else:
                 self.cli.p('Found releases:')
-                for cnt,release in enumerate(search_results):
+                for cnt, release in enumerate(search_results):
                     self.cli.p('({}) {} - {}'.format(cnt, release[3], release[1]))
-                #num_search_results = [[cnt,rel] for cnt,rel in enumerate(search_results)]
-                #print(num_search_results)
                 answ = self.cli.ask('Which release? (0) ')
                 if answ == '':
                     answ = 0
                 else:
                     answ = int(answ)
                 return [search_results[answ]]
-                #return num_search_results[answ][0]
 
-    def print_and_return_first_d_release(self, discogs_results, _searchterm, _db_releases):
+    def print_and_return_first_d_release(self, discogs_results, _searchterm,
+                                         _db_releases):
         ''' formatted output _and return of Discogs release search results'''
         self.first_track_on_release = ''  # reset this in any case first
         # only show pages count if it's a Release Title Search
@@ -501,19 +494,16 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                     break
             try:
                 if result_item.id == dbr['discogs_id']:
-                    #return release_details[0]
                     log.info("Compiled Discogs release_details: {}".format(release_details))
                     return release_details
             except UnboundLocalError:
                 log.error("Discogs collection was not imported to DiscoBASE. Use 'disco import' command!")
-                #raise unb
+                # raise unb
                 raise SystemExit(1)
         return None
 
     def view_all_releases(self):
         self.cli.p("Showing all releases in DiscoBASE.")
-        #all_releases_result = self.cli.trim_table_fields(
-        #    self.collection.get_all_db_releases())
         all_releases_result = self.collection.get_all_db_releases()
         self.cli.tab_all_releases(all_releases_result)
 
@@ -558,7 +548,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 self.cli.p(msg)
             else:
                 self.cli.p("Asking Discogs if release ID {:d} is valid.".format(
-                       release_id))
+                           release_id))
                 result = self.collection.get_d_release(release_id)
                 if result:
                     artists = self.collection.d_artists_to_str(result.artists)
@@ -568,8 +558,10 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                     for folder in self.collection.me.collection_folders:
                         if folder.id == 1:
                             folder.add_release(release_id)
-                            last_row_id = self.collection.create_release(result.id,
-                                    result.title, artists, d_catno, d_coll = True)
+                            last_row_id = self.collection.create_release(
+                                result.id, result.title, artists, d_catno,
+                                d_coll=True
+                            )
                     if not last_row_id:
                         self.cli.error_not_the_release()
                     log.debug("Discogs release was maybe added to Collection")
@@ -584,30 +576,33 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
     def import_release(self, _release_id):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
-        #print(dir(me.collection_folders[0].releases))
-        #print(dir(me))
-        #print(me.collection_item)
-        #if not force == True:
+        # print(dir(me.collection_folders[0].releases))
+        # print(dir(me))
+        # print(me.collection_item)
+        # if not force == True:
         self.cli.p("Asking Discogs for release ID {:d}".format(
-               _release_id))
+                   _release_id))
         result = self.collection.get_d_release(_release_id)
         if not result:
             raise SystemExit(3)
         else:
             self.cli.p("Release ID is valid: {}\n".format(result.title) +
-                  "Let's see if it's in your collection, this might take some time...")
+                       "Let's see if it's in your collection, "
+                       "this might take some time...")
             in_coll = self.collection.is_in_d_coll(_release_id)
             if in_coll:
                 artists = self.collection.d_artists_to_str(in_coll.release.artists)
                 d_catno = self.collection.d_get_first_catno(in_coll.release.labels)
                 self.cli.p(
-                  "Found it in collection: {} - {} - {}.\nImporting to DiscoBASE.".format(
-                  in_coll.release.id, artists, in_coll.release.title))
-                self.collection.create_release(in_coll.release.id, in_coll.release.title,
-                  artists, d_catno, d_coll = True)
+                    "Found it in collection: {} - {} - {}.\n"
+                    "Importing to DiscoBASE.".format(
+                        in_coll.release.id, artists, in_coll.release.title))
+                self.collection.create_release(
+                    in_coll.release.id, in_coll.release.title,
+                    artists, d_catno, d_coll=True)
             else:
                 self.cli.error_not_the_release()
-        self.cli.duration_stats(start_time, 'Discogs import') # print time stats
+        self.cli.duration_stats(start_time, 'Discogs import')
 
     def import_collection(self, tracks=False):
         start_time = time()
@@ -626,39 +621,42 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
 
         for item in self.collection.me.collection_folders[0].releases:
             self.collection.rate_limit_slow_downer(remaining=15, sleep=3)
-            d_artists = item.release.artists # we'll need it again with tracks
+            d_artists = item.release.artists  # we'll need it again with tracks
             artists = self.collection.d_artists_to_str(d_artists)
             first_catno = self.collection.d_get_first_catno(item.release.labels)
             print('Release {} - "{}" - "{}"'.format(item.release.id, artists,
                   item.release.title))
-            rel_created = self.collection.create_release(item.release.id,
-                  item.release.title, artists, first_catno, d_coll = True)
+            rel_created = self.collection.create_release(
+                item.release.id, item.release.title, artists, first_catno,
+                d_coll=True
+            )
             # create_release will return False if unsuccessful
             if rel_created:
                 self.releases_added += 1
             else:
                 self.releases_db_errors += 1
                 log.error(
-                  'importing release "{}" Continuing anyway.'.format(
-                      item.release.title))
+                    'importing release "{}" '
+                    'Continuing anyway.'.format(item.release.title))
             if tracks:
                 try:
                     tracklist = item.release.tracklist
                     for track in tracklist:
                         tr_artists = self.collection.d_artists_parse(
-                          tracklist, track.position, d_artists)
+                            tracklist, track.position, d_artists)
                         tr_title = track.title
-                        if self.collection.upsert_track(item.release.id,
-                              track.position, tr_title, tr_artists):
+                        if self.collection.upsert_track(
+                            item.release.id, track.position, tr_title,
+                            tr_artists
+                        ):
                             self.tracks_added += 1
                             msg_tr_add = 'Track "{}" - "{}"'.format(
-                                  tr_artists, tr_title)
+                                tr_artists, tr_title)
                             log.info(msg_tr_add)
                             print(msg_tr_add)
                         else:
                             self.tracks_db_errors += 1
-                            log.error(
-                              'importing track. Continuing anyway.')
+                            log.error('importing track. Continuing anyway.')
                 except Exception as Exc:
                     self.tracks_discogs_errors += 1
                     log.error("Exception: %s", Exc)
@@ -670,7 +668,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 msg_trk_add="Tracks so far: {}".format(self.tracks_added)
                 log.info(msg_trk_add)
                 print(msg_trk_add)
-            print() # leave space after a release and all its tracks
+            print()  # leave some space after a release and all its tracks
             self.releases_processed += 1
 
         print('Processed releases: {}. Imported releases to DiscoBASE: {}.'.format(
@@ -684,52 +682,79 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             print('Database errors (track import): {}. Discogs errors (track import): {}.'.format(
                 self.tracks_db_errors, self.tracks_discogs_errors))
 
-        self.cli.duration_stats(start_time, 'Discogs import') # print time stats
+        self.cli.duration_stats(start_time, 'Discogs import')  # print time stats
 
     def bpm_report(self, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
         tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
         self.cli.p(tr_sugg_msg)
         if possible_tracks:
-            max_width = self.cli.get_max_width(possible_tracks,
-              ['chosen_key', 'chosen_bpm'], 3)
+            max_width = self.cli.get_max_width(
+                possible_tracks, ['chosen_key', 'chosen_bpm'], 3
+            )
             for tr in possible_tracks:
-                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
-                  ['chosen_key', 'chosen_bpm'], max_width)
-                catno = tr['d_catno'].replace(' ','')
-                self.cli.p('{}{} - {} [{} ({}) {}]'.format(
-                     key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
-                      catno, tr['d_track_no'], tr['discogs_title']))
+                key_bpm_and_space = self.cli.combine_fields_to_width(
+                    tr, ['chosen_key', 'chosen_bpm'], max_width
+                )
+                catno = tr['d_catno'].replace(' ', '')
+                self.cli.p(
+                    '{}{} - {} [{} ({}) {}]'.format(
+                        key_bpm_and_space,
+                        tr['d_artist'],
+                        tr['d_track_name'],
+                        catno,
+                        tr['d_track_no'],
+                        tr['discogs_title']
+                    )
+                )
 
     def key_report(self, key):
         possible_tracks = self.collection.get_tracks_by_key(key)
         tr_sugg_msg = '\nShowing tracks with key {}'.format(key)
         self.cli.p(tr_sugg_msg)
         if possible_tracks:
-            max_width = self.cli.get_max_width(possible_tracks,
-              ['chosen_key', 'chosen_bpm'], 3)
+            max_width = self.cli.get_max_width(
+                possible_tracks, ['chosen_key', 'chosen_bpm'], 3
+            )
             for tr in possible_tracks:
-                #print("in key_report: {}".format(tr['chosen_key']))
-                #print("in key report: {}".format(tr['chosen_bpm']))
-                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
-                  ['chosen_key', 'chosen_bpm'], max_width)
-                self.cli.p('{}{} - {} [{} ({}) {}]:'.format(
-                  key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
-                  tr['d_catno'], tr['d_track_no'], tr['discogs_title']))
+                # print("in key_report: {}".format(tr['chosen_key']))
+                # print("in key report: {}".format(tr['chosen_bpm']))
+                key_bpm_and_space = self.cli.combine_fields_to_width(
+                    tr, ['chosen_key', 'chosen_bpm'], max_width
+                )
+                self.cli.p(
+                    '{}{} - {} [{} ({}) {}]:'.format(
+                        key_bpm_and_space,
+                        tr['d_artist'],
+                        tr['d_track_name'],
+                        tr['d_catno'],
+                        tr['d_track_no'],
+                        tr['discogs_title']
+                    )
+                )
 
     def key_and_bpm_report(self, key, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_key_and_bpm(key, bpm, pitch_range)
         tr_sugg_msg = '\nShowing tracks with key "{}" and a BPM around {}. Pitch range is +/- {}%.'.format(key, bpm, pitch_range)
         self.cli.p(tr_sugg_msg)
         if possible_tracks:
-            max_width = self.cli.get_max_width(possible_tracks,
-              ['chosen_key', 'chosen_bpm'], 3)
+            max_width = self.cli.get_max_width(
+                possible_tracks, ['chosen_key', 'chosen_bpm'], 3
+            )
             for tr in possible_tracks:
-                key_bpm_and_space = self.cli.combine_fields_to_width(tr,
-                  ['chosen_key', 'chosen_bpm'], max_width)
-                self.cli.p('{}{} - {} [{} ({}) {}]:'.format(
-                  key_bpm_and_space, tr['d_artist'], tr['d_track_name'],
-                  tr['d_catno'], tr['d_track_no'], tr['discogs_title']))
+                key_bpm_and_space = self.cli.combine_fields_to_width(
+                    tr, ['chosen_key', 'chosen_bpm'], max_width
+                )
+                self.cli.p(
+                    '{}{} - {} [{} ({}) {}]:'.format(
+                        key_bpm_and_space,
+                        tr['d_artist'],
+                        tr['d_track_name'],
+                        tr['d_catno'],
+                        tr['d_track_no'],
+                        tr['discogs_title']
+                    )
+                )
 
     def update_tracks_from_discogs(self, track_list, offset=0):
         '''takes a list of tracks and updates tracknames/artists from Discogs.
@@ -759,37 +784,39 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 name, artist = "", ""
                 d_tracklist = self.d.release(d_release_id).tracklist
                 name = self.collection.d_tracklist_parse(
-                      d_tracklist, d_track_no)
+                    d_tracklist, d_track_no)
                 artist = self.collection.d_artists_parse(
-                      d_tracklist, d_track_no,
-                      self.d.release(d_release_id).artists)
+                    d_tracklist, d_track_no,
+                    self.d.release(d_release_id).artists)
             except errors.HTTPError as HtErr:
                 log.error('Track {} on "{}" ({}) not existing on Discogs ({})'.format(
-                      d_track_no, discogs_title, d_release_id, HtErr))
+                    d_track_no, discogs_title, d_release_id, HtErr))
                 self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 self.processed += 1
-                print("") # space for readability
-                continue # jump to next iteration, nothing more to do here
+                print("")  # space for readability
+                continue  # jump to next iteration, nothing more to do here
 
             if name or artist:
                 print('Adding Track {} on "{}" ({})'.format(
                       d_track_no, discogs_title, d_release_id))
                 print('{} - {}'.format(artist, name))
-                if self.collection.upsert_track(d_release_id,
-                      d_track_no, name, artist):
+                if self.collection.upsert_track(
+                    d_release_id, d_track_no, name, artist
+                ):
                     self.tracks_added += 1
                 else:
                     self.tracks_db_errors += 1
                 self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 self.processed += 1
-                print("") # space for readability
+                print("")  # space for readability
             else:
-                print('Either track or artist name not found on "{}" ({}) - Track {} really existing?'.format(
-                      discogs_title, d_release_id, d_track_no))
+                print('Either track or artist name not found on '
+                      '"{}" ({}) - Track {} really existing?'.format(
+                          discogs_title, d_release_id, d_track_no))
                 self.tracks_not_found_errors += 1
                 self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 self.processed += 1
-                print("") # space for readability
+                print("")  # space for readability
 
         if offset:
             processed_real = self.processed_total - offset
@@ -799,12 +826,13 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             processed_real, self.tracks_added))
         print('Database errors: {}. Not found on Discogs errors: {}.'.format(
             self.tracks_db_errors, self.tracks_not_found_errors))
-        print("") # space for readability
+        print("")  # space for readability
 
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True # we did at least something and thus were successfull
 
-    def update_single_track_or_release_from_discogs(self, rel_id, rel_title, track_no):
+    def update_single_track_or_release_from_discogs(self, rel_id, rel_title,
+                                                    track_no):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
         if track_no == '*' or track_no == 'all':
@@ -812,15 +840,15 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             tr_list = []
             for tr in full_release.tracklist:
                 tr_list.append({
-                  'd_release_id': rel_id,
-                  'discogs_title': rel_title,
-                  'd_track_no': tr.position
+                    'd_release_id': rel_id,
+                    'discogs_title': rel_title,
+                    'd_track_no': tr.position
                 })
         else:
             tr_list = [{
-                  'd_release_id': rel_id,
-                  'discogs_title': rel_title,
-                  'd_track_no': track_no
+                'd_release_id': rel_id,
+                'discogs_title': rel_title,
+                'd_track_no': track_no
             }]
         return self.update_tracks_from_discogs(tr_list)
 
@@ -830,8 +858,8 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             log.error("Didn't get sufficient data for *Brainz update. Quitting.")
             return False
         start_time = time()
-        log.debug('CTRL: update_track_from_brainz: match detail option is: {}'.format(
-              detail))
+        log.debug('CTRL: update_track_from_brainz: '
+                  'match detail option is: {}'.format(detail))
         if offset:
             processed = offset
             processed_total = len(track_list) + offset -1
@@ -843,10 +871,10 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         added_release, added_rec, added_key, added_chords_key, added_bpm = 0, 0, 0, 0, 0
         warns_discogs_fetches = 0
         for track in track_list:
-            release_mbid, rec_mbid = None, None # we are filling these
-            key, chords_key, bpm = None, None, None # searched later, in this order
-            #d_release_id = track['d_release_id'] # from track table
-            discogs_id = track['discogs_id'] # from release table
+            release_mbid, rec_mbid = None, None  # we are filling these
+            key, chords_key, bpm = None, None, None  # searched later, in this order
+            # d_release_id = track['d_release_id']  # from track table
+            discogs_id = track['discogs_id']  # from release table
             d_track_no = track['d_track_no']
             user_rec_mbid = track['m_rec_id_override']
 
@@ -854,18 +882,18 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 discogs_id, track['discogs_title']))
             d_rel = self.collection.get_d_release(discogs_id) # 404 is handled here
 
-            def _warn_skipped(m): # prints skipped-message and processed-count
+            def _warn_skipped(m):  # prints skipped-message and processed-count
                 log.warning(m)
                 self.cli.brainz_processed_so_far(processed, processed_total)
-                print('') # space for readability
+                print('')  # space for readability
 
             if not d_rel:
                 m = "Skipping. Cant't fetch Discogs release."
                 _warn_skipped(m)
                 processed += 1
-                continue # jump to next track
+                continue  # jump to next track
             else:
-                if not track['d_track_no']: # no track number in db -> not imported
+                if not track['d_track_no']:  # no track number in db -> not imported
                     # FIXME errors_not_imported
                     m = f'Skipping. No track number for '
                     m+= f'"{track["discogs_title"]}" in DiscoBASE.\n'
@@ -873,26 +901,26 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                     _warn_skipped(m)
                     errors_not_imported += 1
                     processed += 1
-                    continue # jump to next track
-                elif not track['d_track_name']: # no track name in db -> ask discogs
+                    continue  # jump to next track
+                elif not track['d_track_name']:  # no track name in db -> ask discogs
                     # FIXME why was get_d_release needed here? it's above already???
-                    #d_rel = self.collection.get_d_release(discogs_id) # 404 is handled here
+                    # d_rel = self.collection.get_d_release(discogs_id) # 404 is handled here
                     log.warning('No track name in DiscoBASE, asking Discogs...')
                     d_track_name = self.collection.d_tracklist_parse(
                         d_rel.tracklist, track['d_track_no'])
-                    if not d_track_name: # no track name on Discogs -> give up
+                    if not d_track_name:  # no track name on Discogs -> give up
                         m = f'Skipping. Track number {track["d_track_no"]} '
                         m+= f'not existing on release "{track["discogs_title"]}"'
                         _warn_skipped(m)
                         errors_not_found += 1
                         processed += 1
-                        continue # jump to next track
+                        continue  # jump to next track
                     print(f'Track name found on Discogs: "{d_track_name}"')
                     warns_discogs_fetches += 1
                 else:
-                    d_track_name = track['d_track_name'] # track name in db, good
+                    d_track_name = track['d_track_name']  # track name in db, good
 
-                if not track['d_catno']: # no CatNo in db -> ask discogs
+                if not track['d_catno']:  # no CatNo in db -> ask discogs
                     log.warning('No catalog number in DiscoBASE, asking Discogs...')
                     d_catno = d_rel.labels[0].data['catno']
                     print(f'Catalog number found on Discogs: "{d_artist}"')
@@ -910,8 +938,8 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                     d_artist = track['d_artist']
 
                 # get_discogs track number numerical
-                #print(dir(d_rel.tracklist[1]))
-                #d_rel_track_count = len(d_rel.tracklist)
+                # print(dir(d_rel.tracklist[1]))
+                # d_rel_track_count = len(d_rel.tracklist)
                 d_track_numerical = self.collection.d_tracklist_parse_numerical(
                     d_rel.tracklist, d_track_no)
 
@@ -1005,7 +1033,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                         track['d_track_no'], track['discogs_title']))
             self.cli.brainz_processed_so_far(processed, processed_total)
             processed += 1
-            print('') # space for readability
+            print('')  # space for readability
 
         if offset:
             processed_real = processed_total - offset
@@ -1016,20 +1044,20 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
           errors_not_found, errors_no_rec_AB, errors_not_imported,
           warns_discogs_fetches)
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
-        return True # we are through all tracks, in any way, this is a success
+        return True  # we are through all tracks, in any way, this is a success
 
     def update_all_tracks_from_brainz(self, detail=1, offset=0):
         if not self.ONLINE:
             self.cli.p("Not online, can't pull from AcousticBrainz...")
-            return False # exit method we are offline
+            return False  # exit method we are offline
         tracks = self.collection.get_all_tracks_for_brainz_update(
               offset=offset)
         match_ret = self.update_tracks_from_brainz(tracks, detail,
               offset=offset)
         return match_ret
 
-    def update_single_track_or_release_from_brainz(self, rel_id, rel_title, track_no,
-          detail):
+    def update_single_track_or_release_from_brainz(self, rel_id, rel_title,
+                                                   track_no, detail):
         def _err_cant_fetch(tr_no):
             m = 'Can\'t fetch "{}" on "{}". '.format(tr_no, rel_title)
             m+= 'Either track number not existing on release or '
