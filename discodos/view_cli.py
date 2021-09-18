@@ -264,7 +264,7 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         tabulated = tab(
             self.trim_table_fields(mixes_short_timestamps),
             tablefmt="simple",
-            headers=self.headers_dict_mixes  # data is dict, headers must be too
+            headers=self.cols_mixes.headers_dict()  # data is dict, headers too
         )
         self.p(tabulated)
 
