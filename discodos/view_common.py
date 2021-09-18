@@ -59,14 +59,8 @@ class TableDefaults():
 class View_common():
     """ Common view utils, usable in CLI and GUI
 
-    This class, Mix_view_common and Collection_view_common contain dicts and
-    lists with information. Different parts require different data formats, thus
-    each dict is translated into a list as well.  Potentially the contents of
-    this class is used in both CLI and GUI but some of them are rather used in
-    one or the other. Keeping all of them in this parent class (and not in
-    CLI/GUI specific child classes) should add to readability. For consistencies
-    sake all headers dict are available in full length an abbreviated form (used
-    in CLI mostly) and lists as well, even if one or the other is not used.
+    This class, Mix_view_common and Collection_view_common contain
+    (default)settings and utilities for displaying data in GUI and CLI.
 
     Dictionaries containing SQL table fields translated to human readable
     column names.
