@@ -1,6 +1,9 @@
 from discodos.utils import is_number
 from discodos.config import Db_setup
-from discodos.models import Mix, Collection, Brainz, Brainz_match
+from discodos.model_mix import Mix
+from discodos.model_collection import Collection
+from discodos.model_brainz import Brainz
+from discodos.model_brainz_match import Brainz_match
 from discodos.view_cli import Mix_view_cli, Collection_view_cli
 from abc import ABC
 import logging

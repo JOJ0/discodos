@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
 # config.py is kind of a controller - it sets up db and creates config
-from discodos.models import Database, sqlerr
+from discodos.model_database import Database, sqlerr
 from discodos.utils import read_yaml, print_help, ask_user
 import yaml
 import logging
