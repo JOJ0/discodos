@@ -47,7 +47,7 @@ class View_common_cli(View_common):
             self.p(tab(
                 _mix_data_nl,
                 tablefmt='pipe',
-                headers=self.headers_dict_mixtracks_all_short
+                headers=self.cols_mixtracks.headers_dict(short=True)
             ))
         elif brainz:
             _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
@@ -58,13 +58,13 @@ class View_common_cli(View_common):
             self.p(tab(
                 _mix_data_brainz_nl,
                 tablefmt='grid',
-                headers=self.headers_dict_mixtracks_brainz
+                headers=self.cols_mixtracks_brainz.headers_dict()
             ))
         else:
             self.p(tab(
                 _mix_data_nl,
                 tablefmt='pipe',
-                headers=self.headers_dict_mixtracks_basic
+                headers=self.cols_mixtracks_basic.headers_dict()
             ))
 
     def duration_stats(self, start_time, msg):
@@ -272,7 +272,7 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         self.p(tab(
             [mix_info],
             tablefmt="plain",
-            headers=self.headers_list_mixinfo
+            headers=self.cols_mixinfo.headers_list()
         ))
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
