@@ -1,6 +1,6 @@
 from discodos.utils import is_number, join_sep
 import logging
-#  import pprint
+# import pprint
 from datetime import datetime
 from datetime import date
 # from collections import OrderedDict
@@ -42,7 +42,6 @@ class TableDefaults():
             headers = {}
             for (name, settings) in self.cols.items():
                 if settings.get('short_cap'):
-                    print(settings['short_cap'])
                     headers[name] = settings['short_cap']
                 else:
                     headers[name] = settings['caption']
@@ -212,16 +211,16 @@ class View_common():
                                         width=30, hidden=False, edit=False,
                                         caption='Trk\nNo')
         self.cols_search_results.addcol(name='key', order_id=4,
-                                        width=50, hidden=False, edit=False,
+                                        width=50, hidden=False, edit=True,
                                         caption='Key')
         self.cols_search_results.addcol(name='BPM', order_id=5,
-                                        width=45, hidden=False, edit=False,
+                                        width=45, hidden=False, edit=True,
                                         caption='BPM')
         self.cols_search_results.addcol(name='key_notes', order_id=6,
-                                        width=58, hidden=False, edit=False,
+                                        width=58, hidden=False, edit=True,
                                         caption='Key\nNotes')
         self.cols_search_results.addcol(name='notes', order_id=7,
-                                        width=58, hidden=False, edit=False,
+                                        width=58, hidden=False, edit=True,
                                         caption='Track\nNotes')
         self.cols_search_results.addcol(name='discogs_id', order_id=8,
                                         width=70, hidden=False, edit=False,
@@ -233,7 +232,7 @@ class View_common():
                                         width=None, hidden=True, edit=False,
                                         caption='Imported')
         self.cols_search_results.addcol(name='in_d_coll', order_id=11,
-                                        width=30, hidden=True, edit=False,
+                                        width=30, hidden=True, edit=True,
                                         caption='In D.\nColl.')
         self.cols_search_results.addcol(name='m_rec_id', order_id=12,
                                         width=80, hidden=True, edit=False,
