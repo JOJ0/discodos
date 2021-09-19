@@ -47,7 +47,7 @@ class View_common_cli(View_common):
             self.p(tab(
                 _mix_data_nl,
                 tablefmt='pipe',
-                headers=self.headers_dict_mixtracks_all_short
+                headers=self.cols_mixtracks.headers_dict()
             ))
         elif brainz:
             _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)

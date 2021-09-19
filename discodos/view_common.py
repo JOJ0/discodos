@@ -49,10 +49,10 @@ class TableDefaults():
             list: containing id's (int) of non-editable columns
         """
         cols_list = []
-        for col_id, col_default in self.cols.items():
-            edit = col_default.get("edit")
+        for col_default in self.cols.values():
+            edit = col_default.get('edit')
             if edit is False or edit is None:
-                cols_list.append(col_id)
+                cols_list.append(col_default.get('order_id'))
         return cols_list
 
 
@@ -79,23 +79,55 @@ class View_common():
         self.headers_list_mixtracks_all_short:
             unused
     """
-    # headers_list_mixtracks_all = Headers_list()
-    # headers_list_mixtracks_all_short = Headers_list()
-
     def __init__(self):
         super().__init__()
-        self.headers_dict_mixtracks_all = {
-            'track_pos': '#', 'discogs_title': 'Release',
-            'd_artist': 'Artist', 'd_track_name': 'Title',
-            'd_track_no': 'Trk\nNo', 'key': 'Key', 'bpm': 'BPM',
-            'key_notes': 'Key\nNotes', 'trans_rating': 'Transition\nRating',
-            'trans_notes': 'Transition\nNotes', 'notes': 'Track\nNotes'
-        }
-        self.headers_dict_mixtracks_all_short = self.headers_dict_mixtracks_all.copy()
-        self.headers_dict_mixtracks_all_short['d_artist'] = 'Track\nArtist'
-        self.headers_dict_mixtracks_all_short['d_track_name'] = 'Track\nName'
-        self.headers_dict_mixtracks_all_short['trans_rating'] = 'Trans.\nRating'
-        self.headers_dict_mixtracks_all_short['trans_notes'] = 'Trans.\nNotes'
+        # Tracklist column defaults
+        self.cols_mixtracks = TableDefaults()
+        self.cols_mixtracks.addcol(
+            name='track_pos',
+            order_id=0, width=30, hidden=False, edit=False,
+            caption='#')
+        self.cols_mixtracks.addcol(
+            name='discogs_title',
+            order_id=1, width=None, hidden=True, edit=False,
+            caption='Release')
+        self.cols_mixtracks.addcol(
+            name='d_artist',
+            order_id=2, width=120, hidden=False, edit=False,
+            caption='Artist', short_cap='Artist\nName')
+        self.cols_mixtracks.addcol(
+            name='d_track_name',
+            order_id=3, width=180, hidden=False, edit=False,
+            caption='Title', short_cap='Track\nName')
+        self.cols_mixtracks.addcol(
+            name='track_no',
+            order_id=4, width=30, hidden=False, edit=True,
+            caption='Trk\nNo')
+        self.cols_mixtracks.addcol(
+            name='key',
+            order_id=5, width=50, hidden=False, edit=True,
+            caption='Key')
+        self.cols_mixtracks.addcol(
+            name='bpm',
+            order_id=6, width=45, hidden=False, edit=True,
+            caption='BPM')
+        self.cols_mixtracks.addcol(
+            name='key_notes',
+            order_id=7, width=58, hidden=False, edit=True,
+            caption='Key\nNotes')
+        self.cols_mixtracks.addcol(
+            name='trans_rating',
+            order_id=8, width=58, hidden=False, edit=True,
+            caption='Transition\nRating', short_cap='Trans.\nRating')
+        self.cols_mixtracks.addcol(
+            name='trans_notes',
+            order_id=9, width=58, hidden=False, edit=True,
+            caption='Transition\nNotes', short_cap='Trans.\nNotes')
+        self.cols_mixtracks.addcol(
+            name='notes',
+            order_id=10, width=55, hidden=False, edit=True,
+            caption='Track\nNotes')
+        # print(self.cols_mixtracks.headers_list())
 
     def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
@@ -474,53 +506,6 @@ class Mix_view_common():
         self.cols_mixes.addcol(name='updated', order_id=5,
                                width=None, hidden=True, edit=False,
                                caption='Updated')
-        # Tracklist column defaults
-        self.cols_mixtracks = TableDefaults()
-        self.cols_mixtracks.addcol(
-            name='track_pos',
-            order_id=0, width=30, hidden=False, edit=False,
-            caption='#')
-        self.cols_mixtracks.addcol(
-            name='discogs_title',
-            order_id=1, width=None, hidden=True, edit=False,
-            caption='Release')
-        self.cols_mixtracks.addcol(
-            name='d_artist',
-            order_id=2, width=120, hidden=False, edit=False,
-            caption='Artist', short_cap='Artist\nName')
-        self.cols_mixtracks.addcol(
-            name='d_track_name',
-            order_id=3, width=180, hidden=False, edit=False,
-            caption='Title', short_cap='Track\nName')
-        self.cols_mixtracks.addcol(
-            name='track_no',
-            order_id=4, width=30, hidden=False, edit=True,
-            caption='Trk\nNo')
-        self.cols_mixtracks.addcol(
-            name='key',
-            order_id=5, width=50, hidden=False, edit=True,
-            caption='Key')
-        self.cols_mixtracks.addcol(
-            name='bpm',
-            order_id=6, width=45, hidden=False, edit=True,
-            caption='BPM')
-        self.cols_mixtracks.addcol(
-            name='key_notes',
-            order_id=7, width=58, hidden=False, edit=True,
-            caption='Key\nNotes')
-        self.cols_mixtracks.addcol(
-            name='trans_rating',
-            order_id=8, width=58, hidden=False, edit=True,
-            caption='Transition\nRating', short_cap='Trans.\nRating')
-        self.cols_mixtracks.addcol(
-            name='trans_notes',
-            order_id=9, width=58, hidden=False, edit=True,
-            caption='Transition\nNotes', short_cap='Trans.\nNotes')
-        self.cols_mixtracks.addcol(
-            name='notes',
-            order_id=10, width=55, hidden=False, edit=True,
-            caption='Track\nNotes')
-        # print(self.cols_mixtracks.headers_list())
 
     def shorten_mixes_timestamps(self, mixes):
         ''' Reformats timestamps in a list of mixes.
