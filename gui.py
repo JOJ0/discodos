@@ -213,6 +213,12 @@ class TableViewResultsModel(TableViewModel, Collection_view_common, View_common)
         else:
             return Qt.ItemIsDropEnabled
 
+    def setData(self, index: QModelIndex, value, role: int = ...) -> bool:
+        if role == Qt.EditRole:
+            self._data.iloc[index.row()][index.column()] = value
+            self.dataChanged.emit(index, index, (Qt.DisplayRole, ))
+        return True
+
 
 class TableViewProxyStyle(QtWidgets.QProxyStyle):
 
@@ -708,6 +714,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.vboxResults.addWidget(self.tableViewResults)
         self.tableViewResults.clicked.connect(self.tableViewResultsOnClick)
         self.tableViewResults.keyPressEvent = self.keyPressEventTableViewResults
+        self.tableViewResults.model.dataChanged.connect(self.tableViewResultsWrite)
 
     def treeViewMixOnClick(self, index):
         mix_id = self.treeViewMix.model.data(
@@ -865,6 +872,25 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             track_details, {edited_col: edited_value}
         )
         self.tableViewTracksLoad(self.active_mix_id)
+
+    def tableViewResultsWrite(self, index):
+        release_id = index.model().data(
+            self.tableViewResults.selectedIndexes()[8]
+        )
+        track_no = index.model().data(
+            self.tableViewResults.selectedIndexes()[3]
+        )
+        coll = Collection(False, db_file=self.conf.discobase)
+        track_details = coll.get_track(release_id, track_no)
+        headerCaption = index.model().headerData(index.column(), Qt.Horizontal)
+        for colname, settings in self.cols_search_results.cols.items():
+            if settings['caption'] == headerCaption:
+                edited_col = colname
+        edited_value = index.model()._data.iloc[index.row()][index.column()]
+        coll.upsert_track_ext(
+            track_details, {edited_col: edited_value}
+        )
+        self.tableViewResultsLoad()
 
 
 def main():
