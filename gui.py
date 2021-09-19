@@ -857,9 +857,9 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         mix = Mix(False, self.active_mix_id, db_file=self.conf.discobase)
         track_details = mix.get_one_mix_track(track_pos)
         headerCaption = index.model().headerData(index.column(), Qt.Horizontal)
-        for col, caption in self.headers_dict_mixtracks_all.items():
-            if caption == headerCaption:
-                edited_col = col
+        for colname, settings in self.cols_mixtracks.cols.items():
+            if settings['caption'] == headerCaption:
+                edited_col = colname
         edited_value = index.model()._data.iloc[index.row()][index.column()]
         mix.update_mix_track_and_track_ext(
             track_details, {edited_col: edited_value}
