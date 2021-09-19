@@ -127,17 +127,8 @@ class TableViewModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return Qt.ItemIsDropEnabled
         if index.row() < len(self._data):
-            # print(self._data.loc("Name"))
-            # print(self._data.columns[1])
-            # value = self._data.iloc[index.row()][index.column()]
-            # print(value)
-            # print(dir(index.column()))
-            # print(index.column())
-            if index.column() in [0, 1, 2, 3]:
-                return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
-            else:
-                return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
-        return Qt.ItemIsEnabled | Qt.ItemIsEditable
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+        return Qt.ItemIsEnabled
 
     def supportedDropActions(self) -> bool:
         return Qt.MoveAction | Qt.CopyAction
@@ -187,7 +178,7 @@ class TableViewModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
-class TableViewTracksModel(TableViewModel, Mix_view_common):
+class TableViewTracksModel(TableViewModel, Mix_view_common, View_common):
     def __init__(self, data):
         super().__init__(data)
 
@@ -208,13 +199,14 @@ class TableViewTracksModel(TableViewModel, Mix_view_common):
         return True
 
 
-class TableViewResultsModel(TableViewModel):
+class TableViewResultsModel(TableViewModel, Collection_view_common, View_common):
     def __init__(self, data):
         super().__init__(data)
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
         if index.isValid():
-            if index.column() in [0, 1, 2, 3, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18]:
+            locked = self.cols_search_results.get_locked_columns()
+            if index.column() in locked:
                 return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
             else:
                 return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
