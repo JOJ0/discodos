@@ -37,7 +37,16 @@ class TableDefaults():
     def headers_list(self):
         return [col['caption'] for col in self.cols.values()]
 
-    def headers_dict(self):
+    def headers_dict(self, short=False):
+        if short:
+            headers = {}
+            for (name, settings) in self.cols.items():
+                if settings.get('short_cap'):
+                    print(settings['short_cap'])
+                    headers[name] = settings['short_cap']
+                else:
+                    headers[name] = settings['caption']
+            return headers
         return {
             name: settings['caption'] for (name, settings) in self.cols.items()
         }
@@ -100,7 +109,7 @@ class View_common():
             order_id=3, width=180, hidden=False, edit=False,
             caption='Title', short_cap='Track\nName')
         self.cols_mixtracks.addcol(
-            name='track_no',
+            name='d_track_no',
             order_id=4, width=30, hidden=False, edit=True,
             caption='Trk\nNo')
         self.cols_mixtracks.addcol(
