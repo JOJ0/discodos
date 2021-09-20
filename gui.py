@@ -394,7 +394,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
     def __init__(self, *args, obj=None, config_obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
-
+        # Settings
         self.conf = config_obj  # Save passed DiscoDOS config object
         self.splitterVertical.setStretchFactor(1, 2)
         ini_file = str(self.conf.discodos_data / 'gui_settings_autosave.ini')
@@ -402,40 +402,66 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.settings = QSettings(ini_file, QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)
 
-        # Create vbox layouts and add to setlayout groupbox
+        # MAIN ELEMENTS
+        # Create Mix vbox
         self.vboxMix = QtWidgets.QVBoxLayout()
         self.vboxMix.setContentsMargins(0, 0, 0, 0)
         self.vboxMix.setSpacing(2)
         self.groupBoxMix.setLayout(self.vboxMix)
-
+        # Create Tracks vbox
         self.vboxTracks = QtWidgets.QVBoxLayout()
         self.vboxTracks.setContentsMargins(0, 0, 0, 0)
         self.groupBoxTracks.setLayout(self.vboxTracks)
-
+        # Create Results vbox
         self.vboxResults = QtWidgets.QVBoxLayout()
         self.vboxResults.setContentsMargins(0, 0, 0, 0)
         self.groupBoxResults.setLayout(self.vboxResults)
-
+        # Create Search vbox
         self.vboxSearch = QtWidgets.QVBoxLayout()
         self.vboxSearch.setContentsMargins(0, 0, 0, 0)
         self.groupBoxSearch.setLayout(self.vboxSearch)
-
-        # Create treeviewmix
+        # Create Mix treeview
         self.treeViewMixHeader = self.cols_mixes.headers_list()
         self.treeViewMixLoad()
-
-        # Create tableviewtracks
+        # Create Tracks tableview
         self.tableViewTracksHeader = self.cols_mixtracks.headers_list()
         self.tableViewTracksLoad(None)
-
-        # Create tableviewresults
+        # Create Results tableview
         self.tableViewResultsHeader = self.cols_search_results.headers_list()
         self.tableViewResultsLoad()
 
-        # Create TabWidget
+        # MIXES BUTTONS AND INPUT
+        # Create vbox formlayout for mixes buttons and edit boxes
+        self.vboxFormLayout = QtWidgets.QFormLayout()
+        # Create lineedit mix
+        self.lineEditAddMix = QtWidgets.QLineEdit()
+        self.lineEditAddMix.setPlaceholderText('Mix name')
+        self.vboxFormLayout.addRow(self.lineEditAddMix)
+        # Create lineedit mixvenue
+        self.lineEditAddMixVenue = QtWidgets.QLineEdit()
+        self.lineEditAddMixVenue.setPlaceholderText('Venue')
+        self.vboxFormLayout.addRow(self.lineEditAddMixVenue)
+        # Create lineedit mixdate
+        self.lineEditAddMixDate = QtWidgets.QLineEdit()
+        self.lineEditAddMixDate.setPlaceholderText('2021-01-01')
+        self.vboxFormLayout.addRow(self.lineEditAddMixDate)
+        # Create pushbutton add
+        self.pushButtonAddMix = QtWidgets.QPushButton()
+        self.pushButtonAddMix.setText('Add')
+        self.pushButtonAddMix.clicked.connect(self.treeViewMixButtonAdd)
+        # Create pushbutton del
+        self.pushButtonDelMix = QtWidgets.QPushButton()
+        self.pushButtonDelMix.setText('Delete')
+        self.pushButtonDelMix.clicked.connect(self.treeViewMixButtonDel)
+        self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
+        # Add formlayout to mixes boxlayout
+        self.vboxMix.addLayout(self.vboxFormLayout)
+
+        # SEARCH TAB WIDGET
+        # Create Search tabwidget
         self.vboxTabWidgetSearchHorizontal = QtWidgets.QHBoxLayout()
         self.TabWidgetSearch = TabWidget(self)
-
+        # Create Search buttons and edit boxes
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
         self.pushButtonOfflineSearch.clicked.connect(self.buttonOfflineSearchOnClick)
         self.pushButtonOfflineSearch.setShortcut('Shift+S')
@@ -448,7 +474,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.lineEditOfflineSearchTrack = QtWidgets.QLineEdit()
         self.lineEditOfflineSearchTrack.setPlaceholderText('Track')
         self.lineEditOfflineSearchTrack.returnPressed.connect(self.buttonOfflineSearchOnClick)
-
+        # Create Search Tab1
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addWidget(self.lineEditOfflineSearchArtist, 0, 0)
@@ -467,15 +493,13 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.vboxTabWidgetSearchHorizontal.addWidget(self.pushButtonOfflineSearch)
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
             self.vboxTabWidgetSearchHorizontal, 3, 0)
-
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.addItem(
             verticaSpacerTabWidget, 4, 0)
-
         self.TabWidgetSearch.TabWidgetSearchTab1.setLayout(
             self.TabWidgetSearch.TabWidgetSearchTab1.layout)
-
         self.vboxSearch.addWidget(self.TabWidgetSearch)
 
+        # INFO BOX
         # Create Labels for info box
         self.vboxInfo = QtWidgets.QGridLayout()
         self.groupBoxInfo = QtWidgets.QGroupBox()
@@ -495,40 +519,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.labelsInfoBox = dict()
         self.infoBoxLoad(self.tableViewResultsHeader)
 
-
-        # Create vbox formlayout for mixes buttons and edit boxes
-        self.vboxFormLayout = QtWidgets.QFormLayout()
-
-        # Create lineedit mix
-        self.lineEditAddMix = QtWidgets.QLineEdit()
-        self.lineEditAddMix.setPlaceholderText('Mix name')
-        self.vboxFormLayout.addRow(self.lineEditAddMix)
-
-        # Create lineedit mixvenue
-        self.lineEditAddMixVenue = QtWidgets.QLineEdit()
-        self.lineEditAddMixVenue.setPlaceholderText('Venue')
-        self.vboxFormLayout.addRow(self.lineEditAddMixVenue)
-
-        # Create lineedit mixdate
-        self.lineEditAddMixDate = QtWidgets.QLineEdit()
-        self.lineEditAddMixDate.setPlaceholderText('2021-01-01')
-        self.vboxFormLayout.addRow(self.lineEditAddMixDate)
-
-        # Create pushbutton add
-        self.pushButtonAddMix = QtWidgets.QPushButton()
-        self.pushButtonAddMix.setText('Add')
-        self.pushButtonAddMix.clicked.connect(self.treeViewMixButtonAdd)
-
-        # Create pushbutton del
-        self.pushButtonDelMix = QtWidgets.QPushButton()
-        self.pushButtonDelMix.setText('Delete')
-        self.pushButtonDelMix.clicked.connect(self.treeViewMixButtonDel)
-        self.vboxFormLayout.addRow(self.pushButtonAddMix, self.pushButtonDelMix)
-
-        # Add formlayout to mixes boxlayout
-        self.vboxMix.addLayout(self.vboxFormLayout)
-
-        # on first load, only mixes are fetched and displayed in vboxMix
+        # On first load, only mixes are fetched and displayed in vboxMix
         self.treeViewMixLoad()
         # Restore layout from autosaved ini file
         self.readSettings()
