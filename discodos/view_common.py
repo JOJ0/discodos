@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from datetime import date
 # from collections import OrderedDict
+import re
 
 log = logging.getLogger('discodos')
 
@@ -520,6 +521,33 @@ class View_common():
         d["hours"], rem = divmod(tdelta.seconds, 3600)
         d["minutes"], d["seconds"] = divmod(rem, 60)
         return fmt.format(**d)
+
+    def html_link(self, url, caption=''):
+        '''Wraps a url into html. Optionally a caption can be passed.'''
+        caption = caption if caption else url
+        return f"<a href={url}>{caption}</font></a>"
+
+    def replace_linebreaks(self, text):
+        '''Generally replaces all linebreaks with spaces but keeps
+
+        the second found one (pidx < 3 --> part0 \n part2 \n).
+        This is e.g used to shorten left column labels in info box in GUI.
+        '''
+        name_parts = re.findall(r'\S+|\s', text)
+        new_text = ''
+        for pidx, part in enumerate(name_parts):
+            if pidx < 3:
+                if part == '\n':
+                    new_text += ' '
+                else:
+                    new_text += part
+            else:
+                if len(text) < 20 and part == '\n':
+                    new_text += ' '
+                else:
+                    new_text += part
+        return new_text
+
 
 
 class Mix_view_common():
