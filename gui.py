@@ -2,8 +2,6 @@
 import sys
 import pandas as pd
 import logging
-import webbrowser
-import re
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings, QModelIndex
 # import pprint
@@ -393,7 +391,6 @@ class TabWidget(QtWidgets.QTabWidget):
 
 class MainWindow(Collection_view_common, Mix_view_common, View_common,
                  QtWidgets.QMainWindow, Ui_MainWindow):
-
     def __init__(self, *args, obj=None, config_obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
@@ -724,23 +721,33 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewTracksLoad(mix_id)
 
     def tableViewResultsOnClick(self, index):
-        row = index.row()
-        value = self.tableViewResults.model.index(index.row(),
-                                                  index.column()).data()
-        if value.startswith('http://') or value.startswith('https://'):
-            webbrowser.open(value)
-
+        # Fill info box with track details
         for idx, header_name in enumerate(self.tableViewResultsHeader):
-            result = self.tableViewResults.model.index(row, idx).data()
-            if result.startswith('http://') or result.startswith('https://'):
-                url_link = " <a href=" + result + "> <color=blue>" + result + \
-                           "</font> </a>"
-                self.label_list_box[header_name + str(1)].setText(url_link)
-                self.label_list_box[
-                    header_name + str(1)].setOpenExternalLinks(
+            result = self.tableViewResults.model.index(index.row(), idx).data()
+            html_link = ''
+            if header_name == 'Discogs\nRelease':
+                html_link = self.html_link(
+                    self.link_to("discogs release", result),
+                    caption='Lookup Release')
+            elif header_name == 'MusicBrainz\nRecording':
+                html_link = self.html_link(
+                    self.link_to("musicbrainz recording", result),
+                    caption='Lookup Recording')
+            elif header_name == 'MusicBrainz\nRelease':
+                html_link = self.html_link(
+                    self.link_to("musicbrainz release", result),
+                    caption='Lookup Release')
+            elif header_name == 'In D.\nColl.':
+                result = 'Yes' if result == '1' else 'No'
+
+            if html_link:
+                self.label_list_box[header_name + '1'].setText(
+                    html_link
+                )
+                self.label_list_box[header_name + '1'].setOpenExternalLinks(
                     True)
             else:
-                self.label_list_box[header_name + str(1)].setText(result)
+                self.label_list_box[header_name + '1'].setText(result)
 
     def treeViewMixButtonDel(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
@@ -784,24 +791,10 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             )
             for row in search_results_key_bpm_replaced:
                 keys_list = []
-                #print(row)
-                for key, value in row.items():
-                    if key == 'm_rel_id' and value is not None:
-                        keys_list.append(
-                            str(self.link_to("musicbrainz release", value))
-                        )
-                    elif key == 'm_rec_id' and value is not None and value != 0:
-                        keys_list.append(
-                            str(self.link_to("musicbrainz recording", value))
-                        )
-                    elif key == 'discogs_id' and value is not None:
-                        keys_list.append(
-                            str(self.link_to("discogs release", value))
-                        )
-                    else:
-                        keys_list.append(
-                            str(self.none_replace(value))
-                        )
+                for value in row.values():
+                    keys_list.append(
+                        str(self.none_replace(value))
+                    )
                 search_results_list.append(keys_list)
 
             self.tableViewResultsDataFrame = pd.DataFrame(
@@ -819,22 +812,10 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         for idx, header_name in enumerate(headers_list):
             for idx2 in range(2):
                 label = QtWidgets.QLabel()
-                name_parts = re.findall(r'\S+|\s', header_name)
-                new_header_name = ''
-                for pidx, part in enumerate(name_parts):
-                    if pidx < 3:
-                        if part == '\n':
-                            new_header_name += ' '
-                        else:
-                            new_header_name += part
-                    else:
-                        if len(header_name) < 20 and part == '\n':
-                            new_header_name += ' '
-                        else:
-                            new_header_name += part
+                new_header_name = self.replace_linebreaks(header_name)
                 label.setObjectName(new_header_name + str(idx2))
 
-                if idx2 == 0:  # only show first column with text
+                if idx2 == 0:  # for now only set text in left box (caption:)
                     label.setText(new_header_name + ':')
 
                 # Keep referencs
@@ -890,7 +871,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         coll.upsert_track_ext(
             track_details, {edited_col: edited_value}
         )
-        self.tableViewResultsLoad()
+        # self.tableViewResultsLoad()
 
 
 def main():
