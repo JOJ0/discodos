@@ -476,23 +476,23 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         self.vboxSearch.addWidget(self.TabWidgetSearch)
 
-        # Create Labels for info
-        self.vboxLabelInfo = QtWidgets.QGridLayout()
+        # Create Labels for info box
+        self.vboxInfo = QtWidgets.QGridLayout()
         self.groupBoxInfo = QtWidgets.QGroupBox()
         self.groupBoxInfo.setObjectName('groupBoxInfo')
         self.groupBoxInfo.setTitle('Info')
-        self.groupBoxInfo.setLayout(self.vboxLabelInfo)
-
+        self.groupBoxInfo.setLayout(self.vboxInfo)
+        # Scroll widget for info box
         scroll = QtWidgets.QScrollArea()
         scroll.setWidget(self.groupBoxInfo)
         scroll.setWidgetResizable(True)
-
+        # Another spacer for info box resizing up/down
         self.splitterHorizontal2.addWidget(scroll)
-        # only after after adding the scroll widget we can scucessfully set the
-        # default stretchfactor
+        # Only after after adding the scroll widget we can successfully set the
+        # default stretch factor
         self.splitterHorizontal2.setStretchFactor(1, 1)
-
-        self.label_list_box = dict()
+        # We keep reference to our labels in this dict
+        self.labelsInfoBox = dict()
         self.infoBoxLoad(self.tableViewResultsHeader)
 
 
@@ -741,13 +741,13 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 result = 'Yes' if result == '1' else 'No'
 
             if html_link:
-                self.label_list_box[header_name + '1'].setText(
+                self.labelsInfoBox[header_name + '1'].setText(
                     html_link
                 )
-                self.label_list_box[header_name + '1'].setOpenExternalLinks(
+                self.labelsInfoBox[header_name + '1'].setOpenExternalLinks(
                     True)
             else:
-                self.label_list_box[header_name + '1'].setText(result)
+                self.labelsInfoBox[header_name + '1'].setText(result)
 
     def treeViewMixButtonDel(self, index):
         playlist_id = self.treeViewMix.model.data(self.treeViewMix.selectedIndexes()[0])
@@ -809,32 +809,41 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             self.tableViewResults.model.update(self.tableViewResultsDataFrame)
 
     def infoBoxLoad(self, headers_list):
-        for idx, header_name in enumerate(headers_list):
-            for idx2 in range(2):
+        for header_idx, header_name in enumerate(headers_list):
+            for col_idx in range(2):
                 label = QtWidgets.QLabel()
                 new_header_name = self.replace_linebreaks(header_name)
-                label.setObjectName(new_header_name + str(idx2))
-
-                if idx2 == 0:  # for now only set text in left box (caption:)
+                label.setObjectName(new_header_name + str(col_idx))
+                # Keep references to label objects in a dict
+                self.labelsInfoBox[header_name + str(col_idx)] = label
+                if col_idx == 0:  # for now only set text in left box (caption:)
                     label.setText(new_header_name + ':')
+                # Add label objects to vbox
+                self.vboxInfo.addWidget(label, header_idx, col_idx)
 
-                # Keep referencs
-                self.label_list_box[header_name + str(idx2)] = label
-
-                self.vboxLabelInfo.addWidget(label, idx, idx2)
-
-        verticalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
-                                                    QtWidgets.QSizePolicy.Maximum,
-                                                    QtWidgets.QSizePolicy.Expanding)
-
-        horizontalSpacervboxLabelInfo = QtWidgets.QSpacerItem(0, 0,
-                                                    QtWidgets.QSizePolicy.Expanding)
-        # idx+1 add verticalSpacer on last row
-        # This crops all labels to above
-        self.vboxLabelInfo.addItem(verticalSpacervboxLabelInfo, idx+1, 0)
-        # Horizontal spacer so text don't get stretched when moving
-        # splitterHorizontal2 to left/right
-        self.vboxLabelInfo.addItem(horizontalSpacervboxLabelInfo, idx, 2)
+        # Add vertical spacer in last row (header_idx + 1).
+        # This crops all labels to above.
+        verticalSpacerVboxInfo = QtWidgets.QSpacerItem(
+            0, 0,
+            QtWidgets.QSizePolicy.Maximum,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        self.vboxInfo.addItem(
+            verticalSpacerVboxInfo,
+            header_idx + 1,
+            0
+        )
+        # Add horizontal spacer so text don't get stretched when left/right
+        # moving splitterHorizontal2
+        horizontalSpacerVboxInfo = QtWidgets.QSpacerItem(
+            0, 0,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        self.vboxInfo.addItem(
+            horizontalSpacerVboxInfo,
+            header_idx,
+            2
+        )
 
     def tableViewTracksWrite(self, index):
         track_pos = index.model().data(
