@@ -437,17 +437,17 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.TabWidgetSearch = TabWidget(self)
 
         self.pushButtonOfflineSearch = QtWidgets.QPushButton('Search')
-        self.pushButtonOfflineSearch.clicked.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.pushButtonOfflineSearch.clicked.connect(self.buttonOfflineSearchOnClick)
         self.pushButtonOfflineSearch.setShortcut('Shift+S')
         self.lineEditOfflineSearchArtist = QtWidgets.QLineEdit()
         self.lineEditOfflineSearchArtist.setPlaceholderText('Artist')
-        self.lineEditOfflineSearchArtist.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.lineEditOfflineSearchArtist.returnPressed.connect(self.buttonOfflineSearchOnClick)
         self.lineEditOfflineSearchRelease = QtWidgets.QLineEdit()
         self.lineEditOfflineSearchRelease.setPlaceholderText('Release')
-        self.lineEditOfflineSearchRelease.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.lineEditOfflineSearchRelease.returnPressed.connect(self.buttonOfflineSearchOnClick)
         self.lineEditOfflineSearchTrack = QtWidgets.QLineEdit()
         self.lineEditOfflineSearchTrack.setPlaceholderText('Track')
-        self.lineEditOfflineSearchTrack.returnPressed.connect(self.tabWidgetOfflineSearchButtonOnClick)
+        self.lineEditOfflineSearchTrack.returnPressed.connect(self.buttonOfflineSearchOnClick)
 
         self.TabWidgetSearch.TabWidgetSearchTab1.layout = QtWidgets.QGridLayout()
         self.TabWidgetSearch.TabWidgetSearchTab1.layout.setContentsMargins(0, 0, 0, 0)
@@ -493,7 +493,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.splitterHorizontal2.setStretchFactor(1, 1)
 
         self.label_list_box = dict()
-        self.populate_info_box(self.tableViewResultsHeader)
+        self.infoBoxLoad(self.tableViewResultsHeader)
 
 
         # Create vbox formlayout for mixes buttons and edit boxes
@@ -777,7 +777,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # must be a better way to reload data on insert
         self.treeViewMixLoad()
 
-    def tabWidgetOfflineSearchButtonOnClick(self):
+    def buttonOfflineSearchOnClick(self):
         search_results_list = []
         collection = Collection(False, self.conf.discobase)
         search_results = collection.search_release_track_offline(
@@ -808,7 +808,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
                 [], columns=self.tableViewResultsHeader)
             self.tableViewResults.model.update(self.tableViewResultsDataFrame)
 
-    def populate_info_box(self, headers_list):
+    def infoBoxLoad(self, headers_list):
         for idx, header_name in enumerate(headers_list):
             for idx2 in range(2):
                 label = QtWidgets.QLabel()
