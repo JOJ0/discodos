@@ -77,11 +77,20 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
                 self.cli.p("No tracks in mix yet.")
             else:
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix, _verbose = True)
+                    self.cli.tab_mix_table(
+                        full_mix, _verbose = True,
+                        format=self.user.TABLE_FORMAT_OVERRIDE
+                    )
                 elif self.user.WANTS_MUSICBRAINZ_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix, brainz = True)
+                    self.cli.tab_mix_table(
+                        full_mix, brainz = True,
+                        format=self.user.TABLE_FORMAT_OVERRIDE
+                    )
                 else:
-                    self.cli.tab_mix_table(full_mix, _verbose = False)
+                    self.cli.tab_mix_table(
+                        full_mix, _verbose = False,
+                        format=self.user.TABLE_FORMAT_OVERRIDE
+                    )
         else:
             self.cli.p("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 

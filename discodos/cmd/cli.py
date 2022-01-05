@@ -148,6 +148,15 @@ class ArgParse():
         -vv shows when and how MusicBrainz matching was done and also direct
         weblinks to Discogs releases, MusicBrainz releases/recordings and
         AccousticBrainz recordings.''')
+    mix_subparser.add_argument(
+        "-f", "--format", dest="table_format", metavar='FORMAT',
+        type=str, default='',
+        help='''overrides the default output format for rendered tables. FORMAT
+        is passed through to the underlying library (tabulate). Choose
+        from: plain, simple, github, grid, fancy_grid, pipe, orgtbl, jira,
+        presto, pretty psql, rst, mediawiki, moinmoin, youtrack, html,
+        unsafehtml, latex, latex_raw latex_booktabs, latex_longtable, textile,
+        tsv.''')
     # only one of --create-mix OR --edit OR --add possible
     mix_subp_excl_group = mix_subparser.add_mutually_exclusive_group()
     mix_subp_excl_group.add_argument(

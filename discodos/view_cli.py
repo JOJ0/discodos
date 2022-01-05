@@ -37,7 +37,7 @@ class View_common_cli(View_common):
             return suggest
         return track_no
 
-    def tab_mix_table(self, mix_data, _verbose=False, brainz=False):
+    def tab_mix_table(self, mix_data, _verbose=False, brainz=False, format=""):
         mix_data_key_bpm = self.replace_key_bpm(mix_data)
         mix_data_nl = self.trim_table_fields(mix_data_key_bpm)
 
@@ -48,7 +48,7 @@ class View_common_cli(View_common):
         if _verbose:
             self.p(tab(
                 mix_data_nl,
-                tablefmt='pipe',
+                tablefmt='pipe' if not format else format,
                 headers=self.cols_mixtracks.headers_dict(short=True)
             ))
         elif brainz:
@@ -59,13 +59,13 @@ class View_common_cli(View_common):
             )
             self.p(tab(
                 mix_data_brainz_nl,
-                tablefmt='grid',
+                tablefmt='grid' if not format else format,
                 headers=self.cols_mixtracks_brainz.headers_dict()
             ))
         else:
             self.p(tab(
                 mix_data_nl,
-                tablefmt='pipe',
+                tablefmt='pipe' if not format else format,
                 headers=self.cols_mixtracks_basic.headers_dict()
             ))
 

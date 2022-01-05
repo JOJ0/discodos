@@ -116,6 +116,7 @@ class User_int(object):
 
         # MIX MODE
         if 'mix_name' in self.args:
+            self.TABLE_FORMAT_OVERRIDE = self.args.table_format
             if self.args.mix_name == "all":
                 self.WANTS_TO_SHOW_MIX_OVERVIEW = True
                 self.WANTS_ONLINE = False
