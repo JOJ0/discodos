@@ -37,32 +37,34 @@ class View_common_cli(View_common):
             return suggest
         return track_no
 
-    def tab_mix_table(self, _mix_data, _verbose=False, brainz=False):
-        _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
-        _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
-        # for row in _mix_data_nl: # debug only
+    def tab_mix_table(self, mix_data, _verbose=False, brainz=False):
+        mix_data_key_bpm = self.replace_key_bpm(mix_data)
+        mix_data_nl = self.trim_table_fields(mix_data_key_bpm)
+
+        # for row in mix_data_nl:  # DEBUG
         #    log.debug(str(row))
         # log.debug("")
+
         if _verbose:
             self.p(tab(
-                _mix_data_nl,
+                mix_data_nl,
                 tablefmt='pipe',
                 headers=self.cols_mixtracks.headers_dict(short=True)
             ))
         elif brainz:
-            _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
-            _mix_data_brainz_nl = self.trim_table_fields(
-                _mix_data_brainz,
+            mix_data_brainz = self.replace_brainz(mix_data_key_bpm)
+            mix_data_brainz_nl = self.trim_table_fields(
+                mix_data_brainz,
                 exclude=['methods']
             )
             self.p(tab(
-                _mix_data_brainz_nl,
+                mix_data_brainz_nl,
                 tablefmt='grid',
                 headers=self.cols_mixtracks_brainz.headers_dict()
             ))
         else:
             self.p(tab(
-                _mix_data_nl,
+                mix_data_nl,
                 tablefmt='pipe',
                 headers=self.cols_mixtracks_basic.headers_dict()
             ))
