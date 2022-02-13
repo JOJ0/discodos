@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from cgi import print_environ
 import inspect
 import unittest
 from sqlite3 import Row
@@ -38,9 +39,10 @@ class TestConfig(unittest.TestCase):
             # For now, do nothing if an existing config is used, i.e. we are
             # running from a local installation and not in a fresh installation
             # (e.g. from github actions).
-            pass
-            # conf = Config()  # wants user input
-            # self.assertEqual(conf.discogs_token, 'token123')
+            # pass
+            conf = Config()  # wants user input
+            print(os.environ)
+            self.assertEqual(conf.discogs_token, 'token123')
         else:
             # First ever config init prints info, creates config.yaml
             # and raises SystemExit(0)
