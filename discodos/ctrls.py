@@ -237,8 +237,12 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
         else:
             log.error("No release to add to mix.")
 
-    # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
+        """Low-level track add method,
+
+        intended to only be called from add_offline_track()
+        and add_discogs_track()
+        """
         if not _track_no:
             track_to_add = self.cli.ask_for_track()
         else:
