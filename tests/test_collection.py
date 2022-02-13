@@ -7,7 +7,7 @@ from shutil import copy2
 from sqlite3 import Row
 
 from discodos.config import Config
-from discodos.models import Collection
+from discodos.model_collection import Collection
 
 
 class TestCollection(unittest.TestCase):

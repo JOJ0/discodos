@@ -6,7 +6,7 @@ from pathlib import Path
 from shutil import copy2
 
 # from discodos.config import Config
-from discodos.models import Mix  # , log
+from discodos.model_mix import Mix  # , log
 
 
 class TestMix(unittest.TestCase):

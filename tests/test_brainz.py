@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 from shutil import copy2
-from discodos.models import *
-from discodos.utils import *
-from discodos.config import create_data_dir, Db_setup, Config
+from discodos.model_brainz import Brainz
+from discodos.model_brainz_match import Brainz_match
+from discodos.config import Config
 import inspect
 from pprint import pprint
 from pathlib import Path
