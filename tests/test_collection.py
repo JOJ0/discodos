@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from shutil import copy2
 from sqlite3 import Row
+from unittest.mock import Mock
 
 from discodos.config import Config
 from discodos.model_collection import Collection
@@ -317,27 +318,13 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        if self.collection.discogs_connect(self.conf.discogs_token,
-                                           self.conf.discogs_appid):
-            print('We are ONLINE')
-            # we need to fetch a release by id first - let's also check it
-            d_return = self.collection.search_release_online('69092')
-            self.assertEqual(len(d_return), 1)  # should be single release in a list!
-            self.assertEqual(int(d_return[0].id), 69092)  # we get it as a string!
-            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Out From Out Where')
-            # print(d_return[0].labels)
-            # for item in d_return[0].labels:
-                # print(dir(item.data))
-                # print(item.data.keys())
-            d_return_catno = self.collection.d_get_first_catno(d_return[0].labels)
-            self.assertEqual(d_return_catno, 'ZEN 70')
-        else:
-            print('We are OFFLINE, testing if we properly fail!')
-            d_return = self.collection.search_release_online('69092')
-            self.assertFalse(d_return)
-            # if release can't be fetched online it does not make sense to ask
-            # d_get_first_catno() to retrieve it. This should be handled elsewhere
+        label_item = Mock()  # Mock a label object.
+        label_item.data = {'catno': 'ZEN 70'}
+        mock_d_labels = [label_item]  # Mock list of label objects.
+        catno = self.collection.d_get_first_catno(  # And finally test.
+            mock_d_labels
+        )
+        self.assertEqual(catno, 'ZEN 70')
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_releases_total(self):
