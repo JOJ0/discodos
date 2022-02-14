@@ -24,61 +24,35 @@ class TestConfig(unittest.TestCase):
         self.config_file = self.discodos_data / 'config.yaml'
         print("{} - {} - END\n".format(self.clname, name))
 
-    @patch('builtins.input', return_value='token123')
+    @patch('builtins.input', return_value='token123')  # Patch user prompt.
     def test_config(self, input):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        log.info(f'This is self.tests_path: {self.tests_path}')
-        log.info(f'This is self.discodos_data: {self.discodos_data}')
-        log.info(f'This is self.config_file: {self.config_file}')
-        conf_exists = self.config_file.exists()
-        log.info(f'Config file exists: {conf_exists}')
-
-        # Different test depending on file exists or not
-        if conf_exists:
-            # For now, do nothing if an existing config is used, i.e. we are
-            # running from a local installation and not in a fresh installation
-            # (e.g. from github actions).
-            # pass
-            conf = Config()  # wants user input
-            print(os.environ)
-            self.assertEqual(conf.discogs_token, 'token123')
-        else:
-            # First ever config init prints info, creates config.yaml
+        print(f'self.tests_path is {self.tests_path}')
+        print(f'self.discodos_data is {self.discodos_data}')
+        # Depending on whether or not a config file was found we have to check
+        # for different behaviour.
+        if not self.config_file.exists():
+            print(f'This is a first-run, no config file found.')
+            # First ever Config initialization prints info, creates config.yaml
             # and raises SystemExit(0)
             with self.assertRaises(SystemExit) as cm:
                 Config()
                 self.assertEqual(cm.exception.code, 0)
-        print("{} - {} - END\n".format(self.clname, name))
-
-    def debug_db(self, db_return):
-        #print(db_return.keys())
-        print()
-        if isinstance(db_return, list):
-            print('db_return is a list')
-            for i in db_return:
-                stringed = ''
-                for j in i:
-                    stringed+='{}, '.format(j)
-                print(stringed)
-                print()
-        elif isinstance(db_return, Row):
-            print('db_return is a Row')
-            stringed = ''
-            for i in db_return:
-                stringed+='{}, '.format(i)
-            print(stringed)
-            print()
         else:
-            print('unknown datatype, cannot debug')
-        return True
-
+            print(f'Existing config file found: {self.config_file}')
+            conf = Config()  # Wants user input if discogs_token missing.
+            if os.environ.get('GITHUB_ACTIONS') == 'true':
+                # Check for dummy token when running from gh-actions.
+                self.assertEqual(conf.discogs_token, 'token123')
+            else:
+                print('Skipping discogs_token check, not a gh-actions run.')
+        print("{} - {} - END\n".format(self.clname, name))
 
     @classmethod
     def tearDownClass(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        #os.remove(self.db_path)
         print("{} - {} - END\n".format(self.clname, name))
 
 
