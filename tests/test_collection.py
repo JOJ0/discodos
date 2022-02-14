@@ -14,7 +14,7 @@ class TestCollection(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         name = inspect.currentframe().f_code.co_name
-        self.clname = self.__name__  # just handy a shortcut, used in test output
+        self.clname = self.__name__  # Classname, used in test output
         print("\n{} - {} - BEGIN".format(self.clname, name))
         # log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
         # log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
@@ -168,47 +168,6 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[1]['d_track_no'], 'A1')
         self.assertEqual(db_return[1]['chosen_bpm'], 125)
         print("{} - {} - END".format(self.clname, name))
-
-    def test_search_release_online_text_multiple(self):
-        print("\nTestMix.search_release_online_text_multiple: BEGIN")
-        self.collection = Collection(False, self.db_path)
-        if self.collection.discogs_connect(self.conf.discogs_token,
-                                           self.conf.discogs_appid):
-            print('We are ONLINE')
-            d_return = self.collection.search_release_online('Amon Tobin')  # artist or title
-            self.assertGreater(len(d_return), 770)  # list with more than 770 Release objects
-            self.assertGreater(d_return.pages, 17)  # _currently_ 18 pages
-            self.assertEqual(d_return.per_page, 50)  # 50 per_page
-            self.assertEqual(d_return[0].id, 3618346)
-            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Amon Tobin')  # yes, really!
-            self.assertEqual(d_return[1].id, 3620565)
-            self.assertEqual(d_return[1].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[1].title, 'Amon Tobin')  # yes, really!
-            self.assertEqual(d_return[1].tracklist[0].title, 'ISAM Live')
-        else:
-            print('We are OFFLINE, testing if we properly fail!')
-            db_return = self.collection.search_release_online('Amon Tobin')  # artist or title
-            self.assertFalse(db_return)
-        print("TestMix.search_release_online_text_multiple: DONE\n")
-
-    def test_search_release_online_number(self):
-        print("\nTestMix.search_release_online_number: BEGIN")
-        self.collection = Collection(False, self.db_path)
-        if self.collection.discogs_connect(self.conf.discogs_token,
-                                           self.conf.discogs_appid):
-            print('We are ONLINE')
-            d_return = self.collection.search_release_online('69092')
-            # print(dir(d_return))
-            self.assertEqual(len(d_return), 1)  # should be single release in a list!
-            self.assertEqual(int(d_return[0].id), 69092)  # we get it as a string!
-            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Out From Out Where')
-        else:
-            print('We are OFFLINE, testing if we properly fail!')
-            d_return = self.collection.search_release_online('69092')
-            self.assertFalse(d_return)  # FIXME returns list because d.release not throwing error
-        print("TestMix.search_release_online_number: DONE\n")
 
     def test_search_release_track_offline_artist(self):
         name = inspect.currentframe().f_code.co_name
