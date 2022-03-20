@@ -410,7 +410,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_bpm_brainz()
-        self.assertEqual(db_return, 1)  # should be X tracks with ab_bpm
+        self.assertEqual(db_return, 1)  # should be 1 track with ab_bpm
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_bpm_manual(self):
@@ -418,7 +418,7 @@ class TestCollection(unittest.TestCase):
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
         db_return = self.collection.stats_tracks_bpm_manual()
-        self.assertEqual(db_return, 1)  # should be X tracks with ab_bpm
+        self.assertEqual(db_return, 5)  # should be 5 tracks with manual bpm
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod
