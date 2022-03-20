@@ -405,6 +405,22 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return, 7)  # 7 unique tracks
         print("{} - {} - END".format(self.clname, name))
 
+    def test_stats_tracks_bpm_brainz(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_bpm_brainz()
+        self.assertEqual(db_return, 1)  # should be X tracks with ab_bpm
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_bpm_manual(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_bpm_manual()
+        self.assertEqual(db_return, 1)  # should be X tracks with ab_bpm
+        print("{} - {} - END".format(self.clname, name))
+
     @classmethod
     def tearDownClass(cls):
         name = inspect.currentframe().f_code.co_name
