@@ -439,7 +439,9 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
     def tab_stats(
         self, releases_total, releases_matched, tracks_total, tracks_matched,
         releases_collection_flag, releases_collection_online,
-        mixtracks_total, mixtracks_unique, tracks_bpm_brainz, tracks_bpm_manual
+        mixtracks_total, mixtracks_unique,
+        tracks_key_brainz, tracks_key_manual,
+        tracks_bpm_brainz, tracks_bpm_manual
     ):
         stats = [
             ['Releases in DiscoBASE', releases_total],
@@ -450,6 +452,8 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             ['Tracks matched with *Brainz', tracks_matched],
             ['Tracks in mixes', mixtracks_total],
             ['Unique tracks in mixes', mixtracks_unique],
+            ['Tracks with *Brainz key', tracks_key_brainz],
+            ['Tracks with user-provided key', tracks_key_manual],
             ['Tracks with *Brainz BPM', tracks_bpm_brainz],
             ['Tracks with user-provided BPM', tracks_bpm_manual],
         ]

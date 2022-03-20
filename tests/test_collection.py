@@ -405,6 +405,22 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return, 7)  # 7 unique tracks
         print("{} - {} - END".format(self.clname, name))
 
+    def test_stats_tracks_key_brainz(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_key_brainz()
+        self.assertEqual(db_return, 1)  # should be 1 track with ab_key
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_key_manual(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_key_manual()
+        self.assertEqual(db_return, 4)  # should be 4 tracks with manual key
+        print("{} - {} - END".format(self.clname, name))
+
     def test_stats_tracks_bpm_brainz(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))

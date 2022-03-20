@@ -684,6 +684,20 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_tracks_key_brainz(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track WHERE a_key IS NOT NULL;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_tracks_key_manual(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track_ext WHERE key IS NOT NULL;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
     def stats_tracks_bpm_brainz(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM track WHERE a_bpm IS NOT NULL;
