@@ -1131,21 +1131,17 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             raise SystemExit(1)
 
     def view_stats(self):
-        releases_total = self.collection.stats_releases_total()
-        rel_coll_flag = self.collection.stats_releases_d_collection_flag()
-        rel_coll_online = self.collection.stats_releases_d_collection_online()
-        releases_matched = self.collection.stats_releases_matched()
-        tracks_total = self.collection.stats_tracks_total()
-        tracks_matched = self.collection.stats_tracks_matched()
-        mixtracks_total = self.collection.stats_mixtracks_total()
-        mixtracks_unique = self.collection.stats_mixtracks_unique()
-        tracks_key_brainz = self.collection.stats_tracks_key_brainz()
-        tracks_key_manual = self.collection.stats_tracks_key_manual()
-        tracks_bpm_brainz = self.collection.stats_tracks_bpm_brainz()
-        tracks_bpm_manual = self.collection.stats_tracks_bpm_manual()
         self.cli.tab_stats(
-            releases_total, releases_matched, tracks_total, tracks_matched,
-            rel_coll_flag, rel_coll_online, mixtracks_total, mixtracks_unique,
-            tracks_key_brainz, tracks_key_manual,
-            tracks_bpm_brainz, tracks_bpm_manual
+            self.collection.stats_releases_total(),
+            self.collection.stats_releases_matched(),
+            self.collection.stats_tracks_total(),
+            self.collection.stats_tracks_matched(),
+            self.collection.stats_releases_d_collection_flag(),
+            self.collection.stats_releases_d_collection_online(),
+            self.collection.stats_mixtracks_total(),
+            self.collection.stats_mixtracks_unique(),
+            self.collection.stats_tracks_key_brainz(),
+            self.collection.stats_tracks_key_manual(),
+            self.collection.stats_tracks_bpm_brainz(),
+            self.collection.stats_tracks_bpm_manual(),
         )
