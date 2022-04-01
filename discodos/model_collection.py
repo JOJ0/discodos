@@ -744,12 +744,13 @@ class Collection (Database):
             log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
         return catno_str
 
-    def get_all_tracks_for_brainz_update(self, offset=0):
+    def get_all_tracks_for_brainz_update(self, offset=0, really_all=False):
         log.info("MODEL: Getting _all_ tracks in DiscoBASE. Preparing for "
                  "AcousticBrainz update.")
         if offset > 0:
             log.info('MODEL: Subtract 1 from offset (eg --resume 1 should not alter anything')
             offset = offset - 1
+        where = False if really_all else 'a_key IS NULL or a_bpm IS NULL'
         tables = '''release
                       LEFT OUTER JOIN track
                       ON release.discogs_id = track.d_release_id
@@ -760,7 +761,7 @@ class Collection (Database):
             'release.discogs_id', 'track.d_release_id', 'discogs_title',
             'd_catno', 'track.d_artist', 'track.d_track_name',
             'track.d_track_no', 'track_ext.m_rec_id_override'],
-            tables, condition=False,
+            tables, condition=where,
             fetchone=False, orderby='release.discogs_id', offset=offset
         )
 

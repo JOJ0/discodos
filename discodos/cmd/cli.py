@@ -307,22 +307,34 @@ class ArgParse():
         Note: This is the same as "disco search all -u".''')
     import_subp_excl_group.add_argument(
         '--brainz', '-z', dest='import_brainz', action="count", default=0,
-        help='''imports additional information from MusicBrainz/AcousticBrainz.
-        This action takes a long time. -z quick match, -zz detailed match (takes
-        even longer, but more results).
-        Notes: This is the same as "disco search all -z". Prior to using this
-        option, an extended Discogs import is recommended (disco import --tracks).
-        Otherwise only tracks that were already downloaded to the DiscoBASE (eg
-        used in mixes and updated using "disco mix -u")
-        will be updated.
+        help='''imports additional information from MusicBrainz/AcousticBrainz
+        (Release MBID, Recording MBID, musical key, chords key, BPM). Usually
+        this action takes a long time; -z tries to find a match quickly, -zz
+        tries harder but requires even more time. Only tracks already present
+        in the DiscoBASE (using any of the import possibilites, eg. disco mix
+        -u, disco import -u, disco search -u) will be updated. Tracks
+        containing *Brainz-fetched key/BPM already will be skipped. To really
+        update _all_ tracks in the collection an extended Discogs import (disco
+        import -u) is required prior to using -z, -zz. Also note that "disco
+        search all -z" is synonym to this option.
         ''')
     import_subparser.add_argument(
-        "--resume", dest="import_offset", metavar='OFFSET',
+        "--resume", "--offset", dest="import_offset", metavar='OFFSET',
         type=int, default=0,
         help='''resumes long-running processes at the given offset position
         (expects a number). You can combine this option currently
         with the *Brainz matching import operation only
-        (-z, -zz)
+        (-z, -zz). Note: By default, tracks containing key and BPM already will
+        be skipped. On a re-run using this option, the total number might be
+        different already since the count of tracks without key and BPM might
+        have changed.
+        ''')
+    import_subparser.add_argument(
+        "--force-brainz", "-f", dest="import_brainz_force",
+        action='store_true',
+        help='''on MusicBrainz/AcousticBrainz updates (-z, -zz), also
+        tracks containing key and BPM information in the DiscoBASE already,
+        will tried to be matched and updated.
         ''')
     ### STATS subparser ##########################################################
     stats_subparser = subparsers.add_parser(
@@ -597,7 +609,8 @@ def _main():
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
         coll_ctrl.update_all_tracks_from_brainz(
             detail=user.BRAINZ_SEARCH_DETAIL,
-            offset=user.RESUME_OFFSET
+            offset=user.RESUME_OFFSET,
+            force=user.BRAINZ_FORCE_UPDATE
         )
 
 
