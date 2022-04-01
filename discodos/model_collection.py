@@ -745,11 +745,11 @@ class Collection (Database):
         return catno_str
 
     def get_all_tracks_for_brainz_update(self, offset=0, really_all=False):
-        log.info("MODEL: Getting _all_ tracks in DiscoBASE. Preparing for "
-                 "AcousticBrainz update.")
+        log.info("MODEL: Getting tracks. Preparing *Brainz mass update.")
         if offset > 0:
-            log.info('MODEL: Subtract 1 from offset (eg --resume 1 should not alter anything')
             offset = offset - 1
+            log.info("MODEL: Subtracted 1 from offset (--resume 1 should "
+                     "not alter anything).")
         where = False if really_all else 'a_key IS NULL or a_bpm IS NULL'
         tables = '''release
                       LEFT OUTER JOIN track
@@ -766,7 +766,7 @@ class Collection (Database):
         )
 
     def get_track_for_brainz_update(self, rel_id, track_no):
-        log.info("MODEL: Getting track. Preparing for AcousticBrainz update.")
+        log.info("MODEL: Getting track. Preparing *Brainz update.")
         where = 'track.d_release_id == {} AND track.d_track_no == "{}"'.format(
             rel_id, track_no)
         tables = '''release
