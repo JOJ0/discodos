@@ -936,7 +936,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 if not track['d_catno']:  # no CatNo in db -> ask discogs
                     log.warning('No catalog number in DiscoBASE, asking Discogs...')
                     d_catno = d_rel.labels[0].data['catno']
-                    print(f'Catalog number found on Discogs: "{d_artist}"')
+                    print(f'Catalog number found on Discogs: "{d_catno}"')
                     warns_discogs_fetches += 1
                 else:
                     d_catno = track['d_catno']
