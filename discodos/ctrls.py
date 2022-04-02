@@ -1010,14 +1010,16 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                     else:
                         print("Recording MBID: {}".format(rec_mbid))
 
-                print("Key: {}, Chords Key: {}, BPM: {}".format(
-                    key, chords_key, bpm))
+                print("Key: {}  |  Chords Key: {}  |  BPM: {}".format(
+                    key if key else '---',
+                    chords_key if chords_key else '---',
+                    bpm if bpm else '---')
+                )
 
                 # update release table
                 ok_release = self.collection.update_release_brainz(discogs_id,
                     release_mbid, bmatch.release_match_method)
                 if ok_release:
-                    print('Release table updated successfully.')
                     log.info('Release table updated successfully.')
                     added_release += 1
                 else:
@@ -1031,7 +1033,6 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
 
                 if ok_rec:
                     if rec_mbid: added_rec += 1
-                    print('Track table updated successfully.')
                     log.info('Track table updated successfully.')
                     if key: added_key += 1
                     if chords_key: added_chords_key += 1

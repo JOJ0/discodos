@@ -128,7 +128,7 @@ class Brainz (object):
         except requests.exceptions.HTTPError as errh:
             log.debug("fetching AcousticBrainz MBID: %s (HTTPError)", errh)
             if "Not found" in errh.response.text:
-                log.warning("AcousticBrainz doesn't have this recording yet. Consider submitting it!")
+                log.warning("AcousticBrainz missing recording. Consider submitting it!")
             return None
         except requests.exceptions.ConnectionError as errc:
             log.error("fetching AcousticBrainz MBID: %s (ConnectionError)", errc)
