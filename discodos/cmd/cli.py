@@ -336,6 +336,15 @@ class ArgParse():
         tracks containing key and BPM information in the DiscoBASE already,
         will tried to be matched and updated.
         ''')
+    import_subparser.add_argument(
+        "--skip-unmatched", "-s", dest="import_brainz_skip_unmatched",
+        action='store_true',
+        help='''this option is useful on re-runs of MusicBrainz/AcousticBrainz
+        updates (-z, -zz) to speed up things a little. Only tracks that
+        previosuly where matched with MusicBrainz successfully (have a
+        MusicBrainz Recording ID already saved in the DiscoBASE), are tried to
+        be matched and updated.
+        ''')
     ### STATS subparser ##########################################################
     stats_subparser = subparsers.add_parser(
         name='stats',
@@ -610,7 +619,8 @@ def _main():
         coll_ctrl.update_all_tracks_from_brainz(
             detail=user.BRAINZ_SEARCH_DETAIL,
             offset=user.RESUME_OFFSET,
-            force=user.BRAINZ_FORCE_UPDATE
+            force=user.BRAINZ_FORCE_UPDATE,
+            skip_unmatched=user.BRAINZ_SKIP_UNMATCHED
         )
 
 

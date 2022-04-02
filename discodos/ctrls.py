@@ -1059,12 +1059,13 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True  # we are through all tracks, in any way, this is a success
 
-    def update_all_tracks_from_brainz(self, detail=1, offset=0, force=False):
+    def update_all_tracks_from_brainz(self, detail=1, offset=0, force=False,
+                                      skip_unmatched=False):
         if not self.ONLINE:
             self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False  # exit method we are offline
         tracks = self.collection.get_all_tracks_for_brainz_update(
-              offset=offset, really_all=force)
+              offset=offset, really_all=force, skip_unmatched=skip_unmatched)
         match_ret = self.update_tracks_from_brainz(tracks, detail,
               offset=offset)
         return match_ret
