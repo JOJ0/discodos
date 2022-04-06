@@ -102,7 +102,9 @@ Your starting point for further documentation is the [Quickstart Guuide](QUICKST
 
 Most Linux distributions come with a compatible Python3 version in there package repositories already. Please refer to the [contribution manual](CONTRIBUTION.md#macos-or-linux---install-system-wide) on how to install the DiscoDOS Python package.
 
-If you use Debian GNU/Linux or any distribution that is based on it: DiscoDOS v1.0_rc2 is available in Debian unstable. It is also available in the current Ubuntu release as well as in Ubuntu Studio, Linux Mint and other Ubuntu-based distros. Just `apt install discodos` and you are good to go. If you'd like to use the latest version of DiscoDOS please be patient or even better: Install DiscoDOS as a Python package. Learn how by following above link to the contribution manual.
+~~If you use Debian GNU/Linux or any distribution that is based on it: DiscoDOS v1.0_rc2 is available in Debian unstable. It is also available in the current Ubuntu release as well as in Ubuntu Studio, Linux Mint and other Ubuntu-based distros. Just `apt install discodos` and you are good to go. If you'd like to use the latest version of DiscoDOS please be patient or even better: Install DiscoDOS as a Python package. Learn how by following above link to the contribution manual.~~
+
+_Note: The DiscoDOS package for Debian is no longer maintained. If you think that's a shame or would welcome any other form of (Linux-)packaging, please [drop me a line](https://github.com/JOJ0/discodos/issues) and let's discuss it._
 
 ## Configure Discogs API access
 
