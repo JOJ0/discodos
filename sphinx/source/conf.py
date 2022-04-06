@@ -95,3 +95,6 @@ html_static_path = ['_static']
 
 # MyST configuration
 myst_heading_anchors = 7
+myst_enable_extensions = [
+    "strikethrough",
+]
