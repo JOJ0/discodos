@@ -164,7 +164,7 @@ which discosync
 
 If `which` didn't find those commands, make sure your $PATH environment variable contains the path the wrappers where installed to. Usually this is `~/.local/bin/`
 
-_Note: On Debian-based systems there might be a file `/usr/bin/disco` on your system already provided by package mono-devel, thus depending on the order of paths in `$PATH`, `/usr/bin/disco` might be found before the DiscoDOS wrapper. Change `$PATH` to first search in `~/.local/bin` (export it in `.zshrc`, or `.bashrc` or whatever shell you are using)_
+_Note: On Debian-based systems there might be a file `/usr/bin/disco` on your system already provided by package mono-devel, thus depending on the order of paths in `$PATH`, `/usr/bin/disco` might be found before the DiscoDOS wrapper. Change `$PATH` to first search in `~/.local/bin` (export it in `.zshrc`, `.bashrc` or whatever shell you are using)_
 
 Launch DiscoDOS' main command:
 
