@@ -3,8 +3,8 @@
 
 - [Install development version](#install-development-version)
   - [Prerequisites](#prerequisites)
-  - [Windows - Install into virtual environment](#windows---install-into-virtual-environment)
-  - [macOS or Linux - Install into virtual environment](#macos-or-linux---install-into-virtual-environment)
+  - [Windows - Install to virtual environment](#windows---install-to-virtual-environment)
+  - [macOS or Linux - Install to virtual environment](#macos-or-linux---install-to-virtual-environment)
   - [macOS or Linux - Install to user environment](#macos-or-linux---install-to-user-environment)
 
 
@@ -42,7 +42,7 @@ During the Python setup on Windows choose "Customize installation" and select th
 - Add Python to environment variables
 
 
-### Windows - Install into virtual environment
+### Windows - Install to virtual environment
 
 _[Skip this chapter](#macos-or-linux---install-into-virtual-environment) if you are on macOS or Linux!_
 
@@ -84,7 +84,7 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"`
 
 
-### macOS or Linux - Install into virtual environment
+### macOS or Linux - Install to virtual environment
 
 Jump to your homedirectory, clone the repo and change into the cloned repo directory.
 
