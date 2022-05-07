@@ -5,7 +5,7 @@
   - [Prerequisites](#prerequisites)
   - [Windows - Install into virtual environment](#windows---install-into-virtual-environment)
   - [macOS or Linux - Install into virtual environment](#macos-or-linux---install-into-virtual-environment)
-  - [macOS or Linux - Install system-wide](#macos-or-linux---install-system-wide)
+  - [macOS or Linux - Install to user environment](#macos-or-linux---install-to-user-environment)
 
 
 ## Install development version
@@ -129,9 +129,9 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `source ~/.venvs/discodos/bin/activate`
 
 
-### macOS or Linux - Install system-wide
+### macOS or Linux - Install to user environment
 
-This chapter describes how to install the DiscoDOS package into your global Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
+This chapter describes how to install the DiscoDOS package into your user's Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
 
 Install Python 3. On Debian based distros (Ubuntu, Linux Mint, ...), do something like this:
 
@@ -142,9 +142,8 @@ on RedHat based (Fedora, CentOS, ...):
 `yum install python3`
 
 
-Download the latest source package (`DiscoDOS_version.tar.gz`) from the [release page](https://github.com/JOJ0/discodos/releases)
 
-_**or**_ clone the latest development version from github:
+Clone the latest development version from github:
 
 ```
 cd
@@ -152,9 +151,9 @@ git clone https://github.com/JOJ0/discodos.git
 cd discodos
 ```
 
-Install DiscoDOS into your global Python environment:
+Install DiscoDOS into your user's Python environment:
 
-`python3 setup.py install`
+`pip install . -e`
 
 Some command wrappers should have been installed. Verify if they exist:
 
@@ -163,7 +162,9 @@ which disco
 which discosync
 ```
 
-_Note: On Debian-based systems there might be a file `/usr/bin/disco` on your system already provided by package mono-devel, thus writing the wrappers will fail.  Use [the venv installation](#macos-or-linux---install-into-virtual-environment) in that case.
+If `which` didn't find those commands, make sure your $PATH environment variable contains the path the wrappers where installed to. Usually this is `~/.local/bin/`
+
+_Note: On Debian-based systems there might be a file `/usr/bin/disco` on your system already provided by package mono-devel, thus depending on the order of paths in `$PATH`, `/usr/bin/disco` might be found before the DiscoDOS wrapper. Change `$PATH` to first search in `~/.local/bin` (export it in `.zshrc`, or `.bashrc` or whatever shell you are using)_
 
 Launch DiscoDOS' main command:
 
