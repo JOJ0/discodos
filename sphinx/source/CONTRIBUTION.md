@@ -163,6 +163,8 @@ which disco
 which discosync
 ```
 
+_Note: On Debian-based systems there might be a file `/usr/bin/disco` on your system already provided by package mono-devel, thus writing the wrappers will fail.  Use [the venv installation](#macos-or-linux---install-into-virtual-environment) in that case.
+
 Launch DiscoDOS' main command:
 
 `disco`
@@ -184,3 +186,4 @@ Your starting point for further documentation is the [Quickstart Guide](QUICKSTA
  - The DiscoDOS configuration file (`config.yaml`)
  - The DiscoBASE (`discobase.db`)
  - A logfile (`debug.log`)
+
