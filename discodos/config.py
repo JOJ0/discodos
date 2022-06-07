@@ -117,7 +117,7 @@ class Db_setup(Database):
                  'Add field track_ext.m_rec_id_override': 'ALTER TABLE track_ext ADD m_rec_id_override TEXT;',
                  'Add field release.m_rel_id': 'ALTER TABLE release ADD m_rel_id TEXT;',
                  'Add field release.m_rel_id_override': 'ALTER TABLE release ADD m_rel_id_override TEXT;',
-                 'Add field release.m_match_method': 'ALTER TABLE release ADD m_atch_method TEXT;',
+                 'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
                  'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
                  'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
               }
