@@ -81,8 +81,9 @@ files metadata on the user's harddisk. There is loads of tools existing already
 that manage to find out key, BPM and other things and tag files accordingly.
 Each track in the DiscoDOS `tracks` table could be matched with a file in the
 user's digital music collection, best by using an awesome tool that is already
-existing: https://beets.io. The beets database of a user could be queried to
-find out where a specific releases tracks are located on the harddisk.
+existing: [Beets](https://beets.io). The Beets database of a user could be
+queried to find out where a specific releases tracks are located on the
+harddisk.
 
 Since python3-discogs-client (which DiscoDOS uses to access discogs.com) was
 extended to handle a user's sales inventory, I was thinking to build a `disco
