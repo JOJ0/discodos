@@ -28,6 +28,8 @@ about your music (e.g key and BPM).
 - [Windows Installer](https://github.com/JOJ0/discodos/releases/download/v1.1.0/DiscoDOS-1.1.0-Win.exe)
 - [macOS Installer](https://github.com/JOJ0/discodos/releases/download/v1.1.0/DiscoDOS-1.1.0-macOS.dmg)
 - Linux - read the [Installation Guide](https://discodos.readthedocs.io/en/latest/INSTALLATION.html#linux)
+- Install [the latest development version](https://discodos.readthedocs.io/en/latest/CONTRIBUTION.html)
+directly from git master
 
 DiscoDOS guides you through its setup automatically on first run. For further
 assistance especially on accessing your personal Discogs record collection,
@@ -84,7 +86,9 @@ user's digital music collection, best by using an awesome tool that is already
 existing: [Beets](https://beets.io). The Beets database of a user could be
 queried to find out where a specific releases tracks are located on the
 harddisk.
-
+DiscoDOS guides you through its setup automatically on first run. For further
+assistance especially on accessing your personal Discogs record collection,
+read [this chapter](https://discodos.readthedocs.io/en/latest/INSTALLATION.html#configure-discogs-api-access)
 Since python3-discogs-client (which DiscoDOS uses to access discogs.com) was
 extended to handle a user's sales inventory, I was thinking to build a `disco
 sell` command into DiscoDOS.
