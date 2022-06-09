@@ -684,6 +684,34 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_tracks_key_brainz(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track WHERE a_key IS NOT NULL;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_tracks_key_manual(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track_ext WHERE key IS NOT NULL;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_tracks_bpm_brainz(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track WHERE a_bpm IS NOT NULL;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_tracks_bpm_manual(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM track_ext WHERE bpm IS NOT NULL;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
     def d_get_first_catno(self, d_labels):
         '''get first found catalog number from discogs label object'''
         catno_str = ''
@@ -716,12 +744,16 @@ class Collection (Database):
             log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
         return catno_str
 
-    def get_all_tracks_for_brainz_update(self, offset=0):
-        log.info("MODEL: Getting _all_ tracks in DiscoBASE. Preparing for "
-                 "AcousticBrainz update.")
+    def get_all_tracks_for_brainz_update(self, offset=0, really_all=False,
+                                         skip_unmatched=False):
+        log.info("MODEL: Getting tracks. Preparing *Brainz mass update.")
         if offset > 0:
-            log.info('MODEL: Subtract 1 from offset (eg --resume 1 should not alter anything')
             offset = offset - 1
+            log.info("MODEL: Subtracted 1 from offset (--resume 1 should "
+                     "not alter anything).")
+        where = '(a_key IS NULL or a_bpm IS NULL)' if not really_all else ''
+        where += ' AND' if skip_unmatched and not really_all else ''
+        where += ' m_rec_id IS NOT NULL' if skip_unmatched else ''
         tables = '''release
                       LEFT OUTER JOIN track
                       ON release.discogs_id = track.d_release_id
@@ -732,12 +764,12 @@ class Collection (Database):
             'release.discogs_id', 'track.d_release_id', 'discogs_title',
             'd_catno', 'track.d_artist', 'track.d_track_name',
             'track.d_track_no', 'track_ext.m_rec_id_override'],
-            tables, condition=False,
+            tables, condition=where,
             fetchone=False, orderby='release.discogs_id', offset=offset
         )
 
     def get_track_for_brainz_update(self, rel_id, track_no):
-        log.info("MODEL: Getting track. Preparing for AcousticBrainz update.")
+        log.info("MODEL: Getting track. Preparing *Brainz update.")
         where = 'track.d_release_id == {} AND track.d_track_no == "{}"'.format(
             rel_id, track_no)
         tables = '''release

@@ -5,25 +5,26 @@ import unittest
 from pathlib import Path
 from shutil import copy2
 from sqlite3 import Row
+from unittest.mock import Mock
 
 from discodos.config import Config
-from discodos.models import Collection
+from discodos.model_collection import Collection
 
 
 class TestCollection(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         name = inspect.currentframe().f_code.co_name
-        self.clname = self.__name__  # just handy a shortcut, used in test output
-        print("\n{} - {} - BEGIN".format(self.clname, name))
+        cls.clname = cls.__name__  # Classname, used in test output
+        print("\n{} - {} - BEGIN".format(cls.clname, name))
         # log.handlers[0].setLevel("INFO")  # handler 0 is the console handler
         # log.handlers[0].setLevel("DEBUG")  # handler 0 is the console handler
-        self.conf = Config()  # doesn't get path of test-db, so...
+        cls.conf = Config()  # doesn't get path of test-db, so...
         discodos_tests = Path(os.path.dirname(os.path.abspath(__file__)))
         empty_db_path = discodos_tests / 'fixtures' / 'discobase_empty.db'
-        self.db_path = discodos_tests / 'discobase.db'
-        print('Database: {}'.format(copy2(empty_db_path, self.db_path)))
-        print("{} - {} - END\n".format(self.clname, name))
+        cls.db_path = discodos_tests / 'discobase.db'
+        print('Database: {}'.format(copy2(empty_db_path, cls.db_path)))
+        print("{} - {} - END\n".format(cls.clname, name))
 
     def debug_db(self, db_return):
         # print(db_return.keys())
@@ -168,47 +169,6 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return[1]['d_track_no'], 'A1')
         self.assertEqual(db_return[1]['chosen_bpm'], 125)
         print("{} - {} - END".format(self.clname, name))
-
-    def test_search_release_online_text_multiple(self):
-        print("\nTestMix.search_release_online_text_multiple: BEGIN")
-        self.collection = Collection(False, self.db_path)
-        if self.collection.discogs_connect(self.conf.discogs_token,
-                                           self.conf.discogs_appid):
-            print('We are ONLINE')
-            d_return = self.collection.search_release_online('Amon Tobin')  # artist or title
-            self.assertGreater(len(d_return), 770)  # list with more than 770 Release objects
-            self.assertGreater(d_return.pages, 17)  # _currently_ 18 pages
-            self.assertEqual(d_return.per_page, 50)  # 50 per_page
-            self.assertEqual(d_return[0].id, 3618346)
-            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Amon Tobin')  # yes, really!
-            self.assertEqual(d_return[1].id, 3620565)
-            self.assertEqual(d_return[1].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[1].title, 'Amon Tobin')  # yes, really!
-            self.assertEqual(d_return[1].tracklist[0].title, 'ISAM Live')
-        else:
-            print('We are OFFLINE, testing if we properly fail!')
-            db_return = self.collection.search_release_online('Amon Tobin')  # artist or title
-            self.assertFalse(db_return)
-        print("TestMix.search_release_online_text_multiple: DONE\n")
-
-    def test_search_release_online_number(self):
-        print("\nTestMix.search_release_online_number: BEGIN")
-        self.collection = Collection(False, self.db_path)
-        if self.collection.discogs_connect(self.conf.discogs_token,
-                                           self.conf.discogs_appid):
-            print('We are ONLINE')
-            d_return = self.collection.search_release_online('69092')
-            # print(dir(d_return))
-            self.assertEqual(len(d_return), 1)  # should be single release in a list!
-            self.assertEqual(int(d_return[0].id), 69092)  # we get it as a string!
-            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Out From Out Where')
-        else:
-            print('We are OFFLINE, testing if we properly fail!')
-            d_return = self.collection.search_release_online('69092')
-            self.assertFalse(d_return)  # FIXME returns list because d.release not throwing error
-        print("TestMix.search_release_online_number: DONE\n")
 
     def test_search_release_track_offline_artist(self):
         name = inspect.currentframe().f_code.co_name
@@ -358,27 +318,13 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        if self.collection.discogs_connect(self.conf.discogs_token,
-                                           self.conf.discogs_appid):
-            print('We are ONLINE')
-            # we need to fetch a release by id first - let's also check it
-            d_return = self.collection.search_release_online('69092')
-            self.assertEqual(len(d_return), 1)  # should be single release in a list!
-            self.assertEqual(int(d_return[0].id), 69092)  # we get it as a string!
-            self.assertEqual(d_return[0].artists[0].name, 'Amon Tobin')
-            self.assertEqual(d_return[0].title, 'Out From Out Where')
-            # print(d_return[0].labels)
-            # for item in d_return[0].labels:
-                # print(dir(item.data))
-                # print(item.data.keys())
-            d_return_catno = self.collection.d_get_first_catno(d_return[0].labels)
-            self.assertEqual(d_return_catno, 'ZEN 70')
-        else:
-            print('We are OFFLINE, testing if we properly fail!')
-            d_return = self.collection.search_release_online('69092')
-            self.assertFalse(d_return)
-            # if release can't be fetched online it does not make sense to ask
-            # d_get_first_catno() to retrieve it. This should be handled elsewhere
+        label_item = Mock()  # Mock a label object.
+        label_item.data = {'catno': 'ZEN 70'}
+        mock_d_labels = [label_item]  # Mock list of label objects.
+        catno = self.collection.d_get_first_catno(  # And finally test.
+            mock_d_labels
+        )
+        self.assertEqual(catno, 'ZEN 70')
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_releases_total(self):
@@ -459,12 +405,44 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(db_return, 7)  # 7 unique tracks
         print("{} - {} - END".format(self.clname, name))
 
-    @classmethod
-    def tearDownClass(self):
+    def test_stats_tracks_key_brainz(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        os.remove(self.db_path)
-        print("{} - {} - END\n".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_key_brainz()
+        self.assertEqual(db_return, 1)  # should be 1 track with ab_key
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_key_manual(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_key_manual()
+        self.assertEqual(db_return, 4)  # should be 4 tracks with manual key
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_bpm_brainz(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_bpm_brainz()
+        self.assertEqual(db_return, 1)  # should be 1 track with ab_bpm
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_stats_tracks_bpm_manual(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        self.collection = Collection(False, self.db_path)
+        db_return = self.collection.stats_tracks_bpm_manual()
+        self.assertEqual(db_return, 5)  # should be 5 tracks with manual bpm
+        print("{} - {} - END".format(self.clname, name))
+
+    @classmethod
+    def tearDownClass(cls):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(cls.clname, name))
+        os.remove(cls.db_path)
+        print("{} - {} - END\n".format(cls.clname, name))
 
 
 if __name__ == '__main__':

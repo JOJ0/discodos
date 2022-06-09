@@ -36,6 +36,8 @@ class User_int(object):
         self.WANTS_TO_PULL_BRAINZ_INFO = False
         self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
         self.BRAINZ_SEARCH_DETAIL = 1
+        self.BRAINZ_FORCE_UPDATE = False
+        self.BRAINZ_SKIP_UNMATCHED = False
         self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = False
         self.WANTS_TO_EDIT_MIX = False
         self.DID_NOT_PROVIDE_COMMAND = False
@@ -116,6 +118,7 @@ class User_int(object):
 
         # MIX MODE
         if 'mix_name' in self.args:
+            self.TABLE_FORMAT_OVERRIDE = self.args.table_format
             if self.args.mix_name == "all":
                 self.WANTS_TO_SHOW_MIX_OVERVIEW = True
                 self.WANTS_ONLINE = False
@@ -263,6 +266,10 @@ class User_int(object):
                     self.BRAINZ_SEARCH_DETAIL = self.args.import_brainz
                     if self.args.import_brainz > 1:
                         self.BRAINZ_SEARCH_DETAIL = 2
+                    if self.args.import_brainz_force:
+                        self.BRAINZ_FORCE_UPDATE = True
+                    if self.args.import_brainz_skip_unmatched:
+                        self.BRAINZ_SKIP_UNMATCHED = True
                     if self.args.import_offset > 0:
                         self.RESUME_OFFSET = self.args.import_offset
                 else:

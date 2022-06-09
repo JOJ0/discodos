@@ -28,3 +28,4 @@ AUTHORS
 build_app/
 dist_app/
 DiscoDOS-*-macOS.dmg
+.python-version

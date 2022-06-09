@@ -15,8 +15,8 @@ OPTIONS = {
     #'emulate_shell_environment': 'true',
     'verbose': 'true',
     'plist': {
-        'CFBundleVersion': '1.0.1',
-        'CFBundleShortVersionString': '1.0.1',
+        'CFBundleVersion': '1.1.0',
+        'CFBundleShortVersionString': '1.1.0',
         'CFBundleName': 'DiscoDOS',
         'CFBundleDisplayName': 'DiscoDOS',
         'CFBundleGetInfoString': 'DiscoDOS is the geekiest DJ tool on the planet',

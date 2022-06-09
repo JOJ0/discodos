@@ -22,14 +22,14 @@
 # -- Project information -----------------------------------------------------
 
 project = 'DiscoDOS - the geekiest DJ tool on the planet'
-copyright = '2018-2021, J0J0 Todos'
+copyright = '2018-2022, J0J0 Todos'
 author = 'J0J0 Todos'
 
 # The short X.Y version
-version = '1.0'
+# version = '1.0'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.1'
+release = '1.1.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -95,3 +95,6 @@ html_static_path = ['_static']
 
 # MyST configuration
 myst_heading_anchors = 7
+myst_enable_extensions = [
+    "strikethrough",
+]

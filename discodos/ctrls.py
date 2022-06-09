@@ -77,11 +77,20 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
                 self.cli.p("No tracks in mix yet.")
             else:
                 if self.user.WANTS_VERBOSE_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix, _verbose = True)
+                    self.cli.tab_mix_table(
+                        full_mix, _verbose = True,
+                        format=self.user.TABLE_FORMAT_OVERRIDE
+                    )
                 elif self.user.WANTS_MUSICBRAINZ_MIX_TRACKLIST:
-                    self.cli.tab_mix_table(full_mix, brainz = True)
+                    self.cli.tab_mix_table(
+                        full_mix, brainz = True,
+                        format=self.user.TABLE_FORMAT_OVERRIDE
+                    )
                 else:
-                    self.cli.tab_mix_table(full_mix, _verbose = False)
+                    self.cli.tab_mix_table(
+                        full_mix, _verbose = False,
+                        format=self.user.TABLE_FORMAT_OVERRIDE
+                    )
         else:
             self.cli.p("Mix \"{}\" is not existing yet!".format(self.mix.name_or_id))
 
@@ -228,8 +237,12 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
         else:
             log.error("No release to add to mix.")
 
-    # _add_track should only be called from add_offline_track() and add_discogs_track()
     def _add_track(self, _release_id, _release_title, _track_no, _pos):
+        """Low-level track add method,
+
+        intended to only be called from add_offline_track()
+        and add_discogs_track()
+        """
         if not _track_no:
             track_to_add = self.cli.ask_for_track()
         else:
@@ -923,7 +936,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                 if not track['d_catno']:  # no CatNo in db -> ask discogs
                     log.warning('No catalog number in DiscoBASE, asking Discogs...')
                     d_catno = d_rel.labels[0].data['catno']
-                    print(f'Catalog number found on Discogs: "{d_artist}"')
+                    print(f'Catalog number found on Discogs: "{d_catno}"')
                     warns_discogs_fetches += 1
                 else:
                     d_catno = track['d_catno']
@@ -997,14 +1010,16 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
                     else:
                         print("Recording MBID: {}".format(rec_mbid))
 
-                print("Key: {}, Chords Key: {}, BPM: {}".format(
-                    key, chords_key, bpm))
+                print("Key: {}  |  Chords Key: {}  |  BPM: {}".format(
+                    key if key else '---',
+                    chords_key if chords_key else '---',
+                    bpm if bpm else '---')
+                )
 
                 # update release table
                 ok_release = self.collection.update_release_brainz(discogs_id,
                     release_mbid, bmatch.release_match_method)
                 if ok_release:
-                    print('Release table updated successfully.')
                     log.info('Release table updated successfully.')
                     added_release += 1
                 else:
@@ -1018,7 +1033,6 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
 
                 if ok_rec:
                     if rec_mbid: added_rec += 1
-                    print('Track table updated successfully.')
                     log.info('Track table updated successfully.')
                     if key: added_key += 1
                     if chords_key: added_chords_key += 1
@@ -1046,12 +1060,13 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         self.cli.duration_stats(start_time, 'Updating track info') # print time stats
         return True  # we are through all tracks, in any way, this is a success
 
-    def update_all_tracks_from_brainz(self, detail=1, offset=0):
+    def update_all_tracks_from_brainz(self, detail=1, offset=0, force=False,
+                                      skip_unmatched=False):
         if not self.ONLINE:
             self.cli.p("Not online, can't pull from AcousticBrainz...")
             return False  # exit method we are offline
         tracks = self.collection.get_all_tracks_for_brainz_update(
-              offset=offset)
+              offset=offset, really_all=force, skip_unmatched=skip_unmatched)
         match_ret = self.update_tracks_from_brainz(tracks, detail,
               offset=offset)
         return match_ret
@@ -1118,15 +1133,17 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             raise SystemExit(1)
 
     def view_stats(self):
-        releases_total = self.collection.stats_releases_total()
-        rel_coll_flag = self.collection.stats_releases_d_collection_flag()
-        rel_coll_online = self.collection.stats_releases_d_collection_online()
-        releases_matched = self.collection.stats_releases_matched()
-        tracks_total = self.collection.stats_tracks_total()
-        tracks_matched = self.collection.stats_tracks_matched()
-        mixtracks_total = self.collection.stats_mixtracks_total()
-        mixtracks_unique = self.collection.stats_mixtracks_unique()
         self.cli.tab_stats(
-            releases_total, releases_matched, tracks_total, tracks_matched,
-            rel_coll_flag, rel_coll_online, mixtracks_total, mixtracks_unique
+            self.collection.stats_releases_total(),
+            self.collection.stats_releases_matched(),
+            self.collection.stats_tracks_total(),
+            self.collection.stats_tracks_matched(),
+            self.collection.stats_releases_d_collection_flag(),
+            self.collection.stats_releases_d_collection_online(),
+            self.collection.stats_mixtracks_total(),
+            self.collection.stats_mixtracks_unique(),
+            self.collection.stats_tracks_key_brainz(),
+            self.collection.stats_tracks_key_manual(),
+            self.collection.stats_tracks_bpm_brainz(),
+            self.collection.stats_tracks_bpm_manual(),
         )

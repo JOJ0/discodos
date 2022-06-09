@@ -37,33 +37,35 @@ class View_common_cli(View_common):
             return suggest
         return track_no
 
-    def tab_mix_table(self, _mix_data, _verbose=False, brainz=False):
-        _mix_data_key_bpm = self.replace_key_bpm(_mix_data)
-        _mix_data_nl = self.trim_table_fields(_mix_data_key_bpm)
-        # for row in _mix_data_nl: # debug only
+    def tab_mix_table(self, mix_data, _verbose=False, brainz=False, format=""):
+        mix_data_key_bpm = self.replace_key_bpm(mix_data)
+        mix_data_nl = self.trim_table_fields(mix_data_key_bpm)
+
+        # for row in mix_data_nl:  # DEBUG
         #    log.debug(str(row))
         # log.debug("")
+
         if _verbose:
             self.p(tab(
-                _mix_data_nl,
-                tablefmt='pipe',
+                mix_data_nl,
+                tablefmt='pipe' if not format else format,
                 headers=self.cols_mixtracks.headers_dict(short=True)
             ))
         elif brainz:
-            _mix_data_brainz = self.replace_brainz(_mix_data_key_bpm)
-            _mix_data_brainz_nl = self.trim_table_fields(
-                _mix_data_brainz,
+            mix_data_brainz = self.replace_brainz(mix_data_key_bpm)
+            mix_data_brainz_nl = self.trim_table_fields(
+                mix_data_brainz,
                 exclude=['methods']
             )
             self.p(tab(
-                _mix_data_brainz_nl,
-                tablefmt='grid',
+                mix_data_brainz_nl,
+                tablefmt='grid' if not format else format,
                 headers=self.cols_mixtracks_brainz.headers_dict()
             ))
         else:
             self.p(tab(
-                _mix_data_nl,
-                tablefmt='pipe',
+                mix_data_nl,
+                tablefmt='pipe' if not format else format,
                 headers=self.cols_mixtracks_basic.headers_dict()
             ))
 
@@ -435,9 +437,12 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
         print(msg_proc)
 
     def tab_stats(
-        self, releases_total, releases_matched, tracks_total, tracks_matched,
+        self, releases_total, releases_matched,
+        tracks_total, tracks_matched,
         releases_collection_flag, releases_collection_online,
-        mixtracks_total, mixtracks_unique
+        mixtracks_total, mixtracks_unique,
+        tracks_key_brainz, tracks_key_manual,
+        tracks_bpm_brainz, tracks_bpm_manual
     ):
         stats = [
             ['Releases in DiscoBASE', releases_total],
@@ -446,6 +451,10 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             ['Releases matched with *Brainz', releases_matched],
             ['Tracks in DiscoBASE', tracks_total],
             ['Tracks matched with *Brainz', tracks_matched],
+            ['Tracks with *Brainz key', tracks_key_brainz],
+            ['Tracks with *Brainz BPM', tracks_bpm_brainz],
+            ['Tracks with user-provided key', tracks_key_manual],
+            ['Tracks with user-provided BPM', tracks_bpm_manual],
             ['Tracks in mixes', mixtracks_total],
             ['Unique tracks in mixes', mixtracks_unique],
         ]
