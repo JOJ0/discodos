@@ -429,6 +429,16 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         # Create Results tableview
         self.tableViewResultsHeader = self.cols_search_results.headers_list()
         self.tableViewResultsLoad()
+        # Create add/remove track to mix buttons
+        self.pushButtonAddTrack = QtWidgets.QPushButton()
+        self.pushButtonAddTrack.setText('Add Track')
+        self.pushButtonRemTrack = QtWidgets.QPushButton()
+        self.pushButtonRemTrack.setText('Rem Track')
+        # Create vbox formlayout for add/remove track buttons
+        self.vboxResultsFormLayout = QtWidgets.QFormLayout()
+        self.vboxResultsFormLayout.addRow(self.pushButtonAddTrack,
+                                          self.pushButtonRemTrack)
+        self.vboxResults.addLayout(self.vboxResultsFormLayout)
 
         # MIXES BUTTONS AND INPUT
         # Create vbox formlayout for mixes buttons and edit boxes
