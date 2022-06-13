@@ -427,17 +427,27 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
         self.tableViewTracksHeader = self.cols_mixtracks.headers_list()
         self.tableViewTracksLoad(None)
 
+        # BUTTONS BELOW tableViewTracks
         # Create add/remove track to mix buttons
         self.pushButtonAddTrack = QtWidgets.QPushButton()
         self.pushButtonAddTrack.setText('Add Track')
+        self.pushButtonAddTrack.setMinimumWidth(90)
+        self.pushButtonAddTrack.setSizePolicy(
+            QtWidgets.QSizePolicy.Maximum,  # Vertical
+            QtWidgets.QSizePolicy.Fixed  # Horizontal
+        )
         self.pushButtonRemTrack = QtWidgets.QPushButton()
-        self.pushButtonRemTrack.setText('Rem Track')
+        self.pushButtonRemTrack.setText('Remove Track')
+        self.pushButtonRemTrack.setMinimumWidth(90)
+        self.pushButtonRemTrack.setSizePolicy(
+            QtWidgets.QSizePolicy.Maximum,  # Vertical
+            QtWidgets.QSizePolicy.Fixed  # Horizontal
+        )
         # Create vbox formlayout for add/remove track buttons
-        self.vboxResultsFormLayout = QtWidgets.QFormLayout()
-        self.vboxResultsFormLayout.addRow(self.pushButtonAddTrack,
+        self.vboxButtonsFormLayout = QtWidgets.QFormLayout()
+        self.vboxButtonsFormLayout.addRow(self.pushButtonAddTrack,
                                           self.pushButtonRemTrack)
-        self.vboxResults.addLayout(self.vboxResultsFormLayout)
-
+        self.vboxTracks.addLayout(self.vboxButtonsFormLayout)
         # Create Results tableview
         self.tableViewResultsHeader = self.cols_search_results.headers_list()
         self.tableViewResultsLoad()
