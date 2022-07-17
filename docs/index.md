@@ -64,14 +64,14 @@ DiscoDOS is Free and Open Source Software and licensed under the GNU General Pub
 Well, there is no actual roadmap but just some ideas in what direction this
 software could advance and things that I personally would find nice to have.
 If you have any preference or ideas yourself, please let me know ([file a
-github issue](https://github.com/JOJ0/discodos/issues))
+github issue](https://github.com/JOJ0/discodos/issues/new))
 
 Primarily DiscoDOS was built to help me write down and analyze my Vinyl sets
 but often I play both Vinyl and Digital. It would be cool if DiscoDOS could
 view an internal playlist together with lists from digital DJing software. I
 did some research already and think it should be doable without too much
-hassle. In order of my personal preference (and ease of implementation) the
-DJing systems I am talking about are:
+hassle. In order of my personal preference (and supposed ease of
+implementation) the DJing systems I am talking about are:
 
   - NI Traktor
   - Mixxx
@@ -81,14 +81,12 @@ An alternative approach to finding out musical key and BPM via AcousticBrainz
 (which will be discontinued in 2023) is to use the information saved in media
 files metadata on the user's harddisk. There is loads of tools existing already
 that manage to find out key, BPM and other things and tag files accordingly.
-Each track in the DiscoDOS `tracks` table could be matched with a file in the
+Each track in the DiscoDOS `track` table could be matched with a file in the
 user's digital music collection, best by using an awesome tool that is already
 existing: [Beets](https://beets.io). The Beets database of a user could be
 queried to find out where a specific releases tracks are located on the
 harddisk.
-DiscoDOS guides you through its setup automatically on first run. For further
-assistance especially on accessing your personal Discogs record collection,
-read [this chapter](https://discodos.readthedocs.io/en/latest/INSTALLATION.html#configure-discogs-api-access)
+
 Since python3-discogs-client (which DiscoDOS uses to access discogs.com) was
 extended to handle a user's sales inventory, I was thinking to build a `disco
 sell` command into DiscoDOS.
@@ -123,7 +121,7 @@ of [Discodos 1.1](https://github.com/JOJ0/discodos/releases/tag/v1.1) for
 details on how to try it out.
 
 Any other ideas how DiscoDOS could be improved? [Let me
-know!](https://github.com/JOJ0/discodos/issues)
+know!](https://github.com/JOJ0/discodos/issues/new)
 
 ## Changelog
 
