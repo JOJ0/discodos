@@ -429,6 +429,7 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
 
         # BUTTONS BELOW tableViewTracks
         # Create add/remove track to mix buttons
+        # Add
         self.pushButtonAddTrack = QtWidgets.QPushButton()
         self.pushButtonAddTrack.setText('Add Track')
         self.pushButtonAddTrack.setMinimumWidth(90)
@@ -436,6 +437,8 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             QtWidgets.QSizePolicy.Maximum,  # Vertical
             QtWidgets.QSizePolicy.Fixed  # Horizontal
         )
+        self.pushButtonAddTrack.clicked.connect(self.buttonAddTrackOnClick)
+        # Remove
         self.pushButtonRemTrack = QtWidgets.QPushButton()
         self.pushButtonRemTrack.setText('Remove Track')
         self.pushButtonRemTrack.setMinimumWidth(90)
@@ -894,6 +897,18 @@ class MainWindow(Collection_view_common, Mix_view_common, View_common,
             track_details, {edited_col: edited_value}
         )
         # self.tableViewResultsLoad()
+
+    def buttonAddTrackOnClick():
+        release_id = index.model().data(
+            self.tableViewResults.selectedIndexes()[8]
+        )
+        track_no = index.model().data(
+            self.tableViewResults.selectedIndexes()[3]
+        )
+
+
+        current_id = self.mix.add_track(_release_id,
+                                        track_to_add, track_pos = _pos)
 
 
 def main():
