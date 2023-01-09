@@ -17,18 +17,24 @@ args = None
 user = None
 
 
-
-@click.group()
-def main_cmd():
+@click.group(
+    invoke_without_command=True,
+    context_settings=dict(help_option_names=["-h", "--help"]))
+@click.option(
+    "-v", "--verbose", "verbose_count", count=True, default=0,
+    help="""increases output verbosity / shows what DiscoDOS is doing under
+    the hood (-v is INFO level, -vv is DEBUG level).""")
+@click.option(
+    "-o", "--offline", "offline_mode", is_flag=True,
+    help="""DiscoDOS checks for connectivity to online services
+    (Discogs, MusicBrainz, AcousticBrainz) itself. This option
+    forces offline mode. A lot of options work in on- and
+    offline mode. Some behave differently, depending on connection state.""")
+@click.pass_context
+def main_cmd(context, verbose_count, offline_mode):
     conf = Config()
     log.handlers[0].setLevel(conf.log_level)  # set configured console log lvl
-    user = helper.User()
-    # log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    coll_ctrl = Coll_ctrl_cli(
-        False, user,
-        conf.discogs_token, conf.discogs_appid, conf.discobase,
-        conf.musicbrainz_user, conf.musicbrainz_password
-    )
+    context.obj = helper.User(conf, verbose_count, offline_mode,)
 
 
 # Add commands
