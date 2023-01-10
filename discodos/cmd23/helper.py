@@ -7,6 +7,10 @@ class User(object):
     """ CLI user interaction class - holds info about what user wants to do,
     """
     def __init__(self, conf, verbose, offline):
+        self.conf = conf
+        self.verbose = verbose
+        self.offline = offline
+        self.set_console_log_level()
         self.WANTS_ONLINE = True
         self.WANTS_TO_LIST_ALL_RELEASES = False
         self.WANTS_TO_SEARCH_FOR_RELEASE = False
@@ -53,3 +57,25 @@ class User(object):
         self.WANTS_TO_SHOW_STATS = False
 
 
+    def set_console_log_level(self):
+        """ Handles console log level setting.
+
+        Check if console log level should be left default, set as defined in
+        config file, or set as requested by an override via --verbose.
+
+        Expects a global variable named log containing a logger object (The
+        logger 'discodos' we get at the top of this file). Handler index 0 is
+        supposed to be the console logger we are about to alter.
+        """
+        log.info(
+            "Console log level set to {} via config.yaml or default".format(
+                logging.getLevelName(log.handlers[0].level))
+        )
+        # Sets log level to WARN going more verbose for each new -v.
+        cli_level = max(3 - self.verbose, 0) * 10
+        if cli_level < log.handlers[0].level:  # 10=DEBUG, 20=INFO, 30=WARNING
+            log.handlers[0].setLevel(cli_level)
+            log.warning(
+                "Console log level set to {} via override from CLI.".format(
+                    logging.getLevelName(log.handlers[0].level))
+            )

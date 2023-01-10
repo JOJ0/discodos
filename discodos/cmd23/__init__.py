@@ -34,7 +34,7 @@ user = None
 def main_cmd(context, verbose_count, offline_mode):
     conf = Config()
     log.handlers[0].setLevel(conf.log_level)  # set configured console log lvl
-    context.obj = helper.User(conf, verbose_count, offline_mode,)
+    context.obj = helper.User(conf, verbose_count, offline_mode)
 
 
 # Add commands
