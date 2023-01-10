@@ -1,9 +1,12 @@
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 from click_option_group import RequiredAnyOptionGroup
+import logging
 
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 
+
+log = logging.getLogger('discodos')
 
 @click.command(name='search')
 @click.argument('release_search', metavar='SEARCH_TERMS')
@@ -73,6 +76,134 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
     updated. Note that this is exactely the same as "disco import" in
     combination with those options.
     """
-    # coll_ctrl = Coll_ctrl_cli(
-    #     False, helper, conf.discogs_token, conf.discogs_appid, conf.discobase,
-    #     conf.musicbrainz_user, conf.musicbrainz_password )
+    def update_user_interaction_helper(user):
+        if release_search == "all":
+            if search_discogs_update is True:
+                # discogs update all
+                user.WANTS_ONLINE = True
+                user.WANTS_TO_LIST_ALL_RELEASES = True
+                user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
+                if search_offset > 0:
+                    user.RESUME_OFFSET = search_offset
+                    m_r ='Resuming is not possible in combination with '
+                    m_r+='"search all -u/--discogs-update". Try it with '
+                    m_r+='"mix -u/--discogs-update". Also it works '
+                    m_r+='together with "import -zz/brainz-update" '
+                    m_r+='and "mix -zz/--brainz-update"'
+                    log.error(m_r)
+                    raise SystemExit(1)
+            elif search_brainz_update != 0:
+                # brainz update all
+                user.WANTS_ONLINE = True
+                user.WANTS_TO_LIST_ALL_RELEASES = True
+                user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
+                if search_brainz_update > 1:
+                    user.BRAINZ_SEARCH_DETAIL = 2
+                if search_offset > 0:
+                    user.RESUME_OFFSET = search_offset
+            else:
+                # just list all
+                user.WANTS_ONLINE = False
+                user.WANTS_TO_LIST_ALL_RELEASES = True
+        else:
+            user.WANTS_TO_SEARCH_FOR_RELEASE = True
+            if add_to_mix != 0 and track_to_add != 0 and add_at_pos:
+                user.WANTS_TO_ADD_AT_POSITION = True
+            if add_to_mix !=0 and track_to_add !=0:
+                user.WANTS_TO_ADD_TO_MIX = True
+            if add_to_mix !=0:
+                user.WANTS_TO_ADD_TO_MIX = True
+
+            if search_discogs_update !=0:
+                if user.offline is True:
+                    log.error("You can't do that in offline mode!")
+                    raise SystemExit(1)
+                user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
+            elif search_brainz_update !=0:
+                if user.offline is True:
+                    log.error("You can't do that in offline mode!")
+                    raise SystemExit(1)
+                user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
+                user.BRAINZ_SEARCH_DETAIL = search_brainz_update
+                if search_brainz_update > 1:
+                    user.BRAINZ_SEARCH_DETAIL = 2
+            elif search_edit_track is True:
+                user.WANTS_TO_SEARCH_AND_EDIT_TRACK = True
+        return user
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = Coll_ctrl_cli(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
+    if user.WANTS_TO_LIST_ALL_RELEASES:
+        if user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
+            coll_ctrl.import_collection(tracks=True)
+        elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
+            coll_ctrl.update_all_tracks_from_brainz(
+                detail=user.BRAINZ_SEARCH_DETAIL,
+                offset=user.RESUME_OFFSET
+            )
+        else:
+            coll_ctrl.view_all_releases()
+    elif user.WANTS_TO_SEARCH_FOR_RELEASE:
+        searchterm = release_search
+        msg_use = "Nothing more to do. Use -m <mix> to add to a "
+        msg_use+= "mix, -e to edit, -u to update with Discogs information "
+        msg_use+= "or -zz to update with *Brainz information. "
+        msg_use+= "You can combine these options with -t too."
+        if coll_ctrl.ONLINE:
+            discogs_rel_found = coll_ctrl.search_release(searchterm)
+            if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
+                mix_ctrl = Mix_ctrl_cli(
+                    False, add_to_mix, user, user.conf.discobase
+                )
+                mix_ctrl.add_discogs_track(
+                    discogs_rel_found, track_to_add, add_at_pos,
+                    track_no_suggest=coll_ctrl.first_track_on_release
+                )
+            elif user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS:
+                # online search gave us exactely one release in a list
+                # print(discogs_rel_found)
+                coll_ctrl.update_single_track_or_release_from_discogs(
+                    discogs_rel_found['id'],
+                    discogs_rel_found['title'],
+                    track_to_add
+                )
+            elif user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ:
+                coll_ctrl.update_single_track_or_release_from_brainz(
+                    discogs_rel_found['id'],
+                    discogs_rel_found['title'],
+                    track_to_add,
+                    detail=user.BRAINZ_SEARCH_DETAIL
+                )
+            elif user.WANTS_TO_SEARCH_AND_EDIT_TRACK:
+                coll_ctrl.edit_track(
+                    discogs_rel_found['id'],
+                    discogs_rel_found['title'],
+                    track_to_add
+                )
+            else:
+                # if discogs_rel_found: # prevents msg when nothing's found anyway
+                print_help(msg_use)
+        else:  # when OFFLINE
+            database_rel_found = coll_ctrl.search_release(searchterm)
+            if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
+                mix_ctrl = Mix_ctrl_cli(
+                    False, add_to_mix, user, user.conf.discobase
+                )
+                mix_ctrl.add_offline_track(
+                    database_rel_found, track_to_add,
+                    add_at_pos
+                )
+            elif user.WANTS_TO_SEARCH_AND_EDIT_TRACK:
+                coll_ctrl.edit_track(
+                    database_rel_found[0]['discogs_id'],
+                    database_rel_found[0]['discogs_title'],
+                    track_to_add
+                )
+            else:
+                if database_rel_found:  # prevents msg when nothing's found anyway
+                    print_help(msg_use)
