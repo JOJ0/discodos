@@ -4,6 +4,8 @@ import logging
 
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 
+log = logging.getLogger('discodos')
+
 
 @click.command(name='import')
 @click.argument('import_id', metavar='RELEASE_ID', type=int, required=False,
@@ -79,4 +81,8 @@ def import_cmd(helper, import_id, import_add_coll, import_tracks,
     That is the reason why the recommended way of adding newly gained releases
     is using the -a option (import -a RELEASE_ID).
     """
-    click.echo(f'Hello {import_id}')
+    def update_user_interaction_helper(user):
+        pass
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)

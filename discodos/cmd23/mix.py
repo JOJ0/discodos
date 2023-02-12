@@ -6,6 +6,8 @@ import logging
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 
 
+log = logging.getLogger('discodos')
+
 @click.command(name='mix')
 @click.argument('mix_name', metavar='MIX_NAME', default='all', required=False)
 @click.option(
@@ -118,4 +120,8 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
     out, the list of existing mixes is displayed and all other arguments are
     ignored.
     """
-    click.echo(f'The mix command draft {mix_name}')
+    def update_user_interaction_helper(user):
+        pass
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
