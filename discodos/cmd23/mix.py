@@ -104,13 +104,19 @@ log = logging.getLogger('discodos')
     help='''resumes long-running processes at the given offset position
     (expects a number). You can combine this option currently
     with "all tracks in mixes Discogs update" (disco mix -u) or with
-    "all tracks in mixes *Brainz matching" (disco mix -z, disco mix -zz).
-    ''')
+    "all tracks in mixes *Brainz matching" (disco mix -z, disco mix -zz).''')
+@click.option(
+    "-s", "--sort", "mix_sort", metavar='COLUMN',
+    type=str, default='track_pos asc',
+    help='''sort tracklist by specified column. add "asc" or "desc" to
+    specify ascending or descending sort order. "track_pos asc" is the
+    default. Experimental feature: currently expects sql column names.''')
 @click.pass_obj
 def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
-            delete_mix, edit_mix_track, edit_mix, bulk_edit, add_release_to_mix,
-            reorder_from_pos, delete_track_pos, copy_mix, discogs_update,
-            brainz_update, mix_mode_add_at_pos, mix_offset):
+            delete_mix, edit_mix_track, edit_mix, bulk_edit,
+            add_release_to_mix, reorder_from_pos, delete_track_pos, copy_mix,
+            discogs_update, brainz_update, mix_mode_add_at_pos, mix_offset,
+            mix_sort):
     """Manages mixes.
 
     Mixes essentially are ordered collections of tracks from a user's
@@ -121,7 +127,197 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
     ignored.
     """
     def update_user_interaction_helper(user):
-        pass
+        if 'mix_name':
+            user.TABLE_FORMAT_OVERRIDE = table_format
+            if mix_name == "all":
+                user.WANTS_TO_SHOW_MIX_OVERVIEW = True
+                user.WANTS_ONLINE = False
+                if create_mix is True:
+                    log.error("Please provide a mix name to be created!")
+                    log.error('(Mix name "all" is not valid.)')
+                    raise SystemExit(1)
+                elif delete_mix is True:
+                    log.error("Please provide a mix name or ID to be deleted!")
+                    raise SystemExit(1)
+                if discogs_update:
+                    user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
+                    user.WANTS_ONLINE = True
+                    if mix_offset > 0:
+                        user.RESUME_OFFSET = mix_offset
+                if brainz_update:
+                    user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
+                    user.WANTS_ONLINE = True
+                    user.BRAINZ_SEARCH_DETAIL = brainz_update
+                    if brainz_update > 1:
+                        user.BRAINZ_SEARCH_DETAIL = 2
+                    if mix_offset > 0:
+                        user.RESUME_OFFSET = mix_offset
+            else:
+                user.WANTS_TO_SHOW_MIX_TRACKLIST = True
+                user.WANTS_ONLINE = False
+                if mix_sort:
+                    user.MIX_SORT = mix_sort
+                if create_mix:
+                    user.WANTS_TO_CREATE_MIX = True
+                    user.WANTS_ONLINE = False
+                if edit_mix_track:
+                    user.WANTS_TO_EDIT_MIX_TRACK = True
+                    user.WANTS_ONLINE = False
+                if verbose_tracklist == 1:
+                    user.WANTS_VERBOSE_MIX_TRACKLIST = True
+                    user.WANTS_ONLINE = False
+                if verbose_tracklist == 2:
+                    user.WANTS_MUSICBRAINZ_MIX_TRACKLIST = True
+                    user.WANTS_ONLINE = False
+                if reorder_from_pos:
+                    user.WANTS_TO_REORDER_MIX_TRACKLIST = True
+                    user.WANTS_ONLINE = False
+                if delete_track_pos:
+                    user.WANTS_TO_DELETE_MIX_TRACK = True
+                    user.WANTS_ONLINE = False
+                if add_release_to_mix:
+                    user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE = True
+                    user.WANTS_ONLINE = True
+                    if mix_mode_add_at_pos:
+                        user.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = True
+                if copy_mix:
+                    user.WANTS_TO_COPY_MIX = True
+                    user.WANTS_ONLINE = False
+                if discogs_update:
+                    user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE = True
+                    user.WANTS_ONLINE = True
+                    if mix_offset > 0:
+                        m_r ="Resuming is not possible in single-mix "
+                        m_r+="-u/--discogs-update. "
+                        m_r+="Use -p/--pos instead."
+                        log.error(m_r)
+                        raise SystemExit(1)
+                if delete_mix:
+                    user.WANTS_TO_DELETE_MIX = True
+                    user.WANTS_ONLINE = False
+                if bulk_edit:
+                    user.WANTS_TO_BULK_EDIT = True
+                if brainz_update:
+                    user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = True
+                    user.WANTS_ONLINE = True
+                    user.BRAINZ_SEARCH_DETAIL = brainz_update
+                    if brainz_update > 1:
+                        user.BRAINZ_SEARCH_DETAIL = 2
+                    if mix_offset > 0:
+                        m_r ="Resuming is not possible in single-mix "
+                        m_r+="-z/--brainz-update. "
+                        m_r+="Use -p/--pos instead."
+                        log.error(m_r)
+                        raise SystemExit(1)
+                if edit_mix:
+                    user.WANTS_TO_EDIT_MIX = True
+                    user.WANTS_ONLINE = False
+        return user
 
     user = update_user_interaction_helper(helper)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = Coll_ctrl_cli(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
+    ### NO MIX ID GIVEN ########################################################
+    ### SHOW LIST OF MIXES #######################################################
+    if user.WANTS_TO_SHOW_MIX_OVERVIEW:
+        mix_ctrl = Mix_ctrl_cli(False, mix_name, user, user.conf.discobase)
+        if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
+            mix_ctrl.pull_track_info_from_discogs(
+                coll_ctrl,
+                offset=user.RESUME_OFFSET
+            )
+        elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
+            mix_ctrl.update_track_info_from_brainz(
+                coll_ctrl,
+                detail=user.BRAINZ_SEARCH_DETAIL,
+                offset=user.RESUME_OFFSET
+            )
+        else:
+            mix_ctrl.view_mixes_list()
+
+    ### MIX ID GIVEN ###########################################################
+    ### SHOW MIX DETAILS #######################################################
+    elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
+        log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
+        mix_ctrl = Mix_ctrl_cli(
+            False, mix_name, user, user.conf.discobase
+        )
+        # coll_ctrl = Coll_ctrl_cli(conn, user)
+        ### CREATE A NEW MIX ###################################################
+        if user.WANTS_TO_CREATE_MIX:
+            mix_ctrl.create()
+            # mix is created (or not), nothing else to do
+            raise SystemExit(0)
+        ### DELETE A MIX #######################################################
+        if user.WANTS_TO_DELETE_MIX:
+            mix_ctrl.delete()
+            # mix is deleted (or not), nothing else to do
+            raise SystemExit(0)
+        ### DO STUFF WITH EXISTING MIXES #######################################
+        ### EDIT A MIX-TRACK ###################################################
+        if user.WANTS_TO_EDIT_MIX_TRACK:
+            mix_ctrl.edit_track(edit_mix_track)
+        ### REORDER TRACKLIST ##################################################
+        elif user.WANTS_TO_REORDER_MIX_TRACKLIST:
+            print_help("Tracklist reordering starting at position {}".format(
+                       reorder_from_pos))
+            mix_ctrl.reorder_tracks(reorder_from_pos)
+        ### DELETE A TRACK FROM MIX ############################################
+        elif user.WANTS_TO_DELETE_MIX_TRACK:
+            mix_ctrl.delete_track(delete_track_pos)
+        ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode) ###
+        elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
+            if mix_ctrl.mix.id_existing:  # accessing a mix attr directly is bad practice
+                if coll_ctrl.ONLINE:
+                    # search_release returns an online or offline releases type object
+                    # depending on the models online-state
+                    discogs_rel_found = coll_ctrl.search_release(
+                        add_release_to_mix
+                    )
+                    mix_ctrl.add_discogs_track(
+                        discogs_rel_found, False,
+                        mix_mode_add_at_pos,
+                        track_no_suggest=coll_ctrl.first_track_on_release
+                    )
+                else:
+                    database_rel_found = coll_ctrl.search_release(
+                        add_release_to_mix
+                    )
+                    mix_ctrl.add_offline_track(
+                        database_rel_found,
+                        False,
+                        mix_mode_add_at_pos
+                    )
+            else:
+                log.error("Mix not existing.")
+        #### COPY A MIX ########################################################
+        elif user.WANTS_TO_COPY_MIX:
+            mix_ctrl.copy_mix()
+        #### EDIT MIX INFO #####################################################
+        elif user.WANTS_TO_EDIT_MIX:
+            mix_ctrl.edit_mix()
+        #### UPDATE TRACKS WITH DISCOGS INFO ###################################
+        elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
+            mix_ctrl.pull_track_info_from_discogs(
+                coll_ctrl,
+                start_pos=mix_mode_add_at_pos
+            )
+        #### UPDATE TRACKS WITH MUSICBRAINZ & ACOUSTICBRAINZ INFO ##############
+        elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
+            mix_ctrl.update_track_info_from_brainz(
+                coll_ctrl,
+                start_pos=mix_mode_add_at_pos,
+                detail=user.BRAINZ_SEARCH_DETAIL
+            )
+        #### BULK EDIT MIX COLUMNS #############################################
+        elif user.WANTS_TO_BULK_EDIT:
+            mix_ctrl.bulk_edit_tracks(
+                bulk_edit, mix_mode_add_at_pos
+            )
+        #### JUST SHOW MIX-TRACKLIST ###########################################
+        elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
+            mix_ctrl.view()
