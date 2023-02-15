@@ -1,6 +1,8 @@
 import click
 import logging
 
+from discodos.ctrls import Coll_ctrl_cli
+
 
 log = logging.getLogger('discodos')
 
@@ -15,7 +17,14 @@ def stats_cmd(helper):
     and which additional metadata is present, are availalbe.
     """
     def update_user_interaction_helper(user):
-        pass
+        log.debug("Entered stats mode.")
+        user.WANTS_TO_SHOW_STATS = True
+        return user
 
     user = update_user_interaction_helper(helper)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = Coll_ctrl_cli(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+    coll_ctrl.view_stats()
