@@ -1,14 +1,8 @@
 #!/usr/bin/env python
-
-from discodos.utils import print_help
-from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
-from discodos.config import Db_setup, Config
+from discodos.config import Config
 from discodos.cmd23 import helper, import_, mix, search, setup, stats, suggest
 import logging
-import sys
-import textwrap
 import click
-import pprint
 
 
 # globals we use for logging, argparser and user interaction object
@@ -44,5 +38,3 @@ main_cmd.add_command(import_.import_cmd)
 main_cmd.add_command(suggest.suggest_cmd)
 main_cmd.add_command(stats.stats_cmd)
 main_cmd.add_command(setup.setup_cmd)
-
-
