@@ -464,16 +464,17 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             search_results = self.collection.search_release_offline(_searchterm)
             if not search_results:
                 self.cli.p('Nothing found.')
-                return False
+                return
             else:
                 self.cli.p('Found releases:')
-                for cnt, release in enumerate(search_results):
-                    self.cli.p('({}) {} - {}'.format(cnt, release[3], release[1]))
-                answ = self.cli.ask('Which release? (0) ')
-                if answ == '':
-                    answ = 0
+                if isinstance(search_results, list):
+                    for cnt, release in enumerate(search_results):
+                        self.cli.p('({}) {} - {}'.format(cnt, release[3], release[1]))
+                    answ = self.cli.ask('Which release? (0) ')
+                    answ = 0 if answ == '' else int(answ)
                 else:
-                    answ = int(answ)
+                    self.cli.p('{} - {}'.format(search_results[3], search_results[1]))
+                    return [search_results]
                 return [search_results[answ]]
 
     def print_and_return_first_d_release(self, discogs_results, _searchterm,

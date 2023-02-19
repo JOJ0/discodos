@@ -114,12 +114,12 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                     user.WANTS_TO_ADD_TO_MIX = True
 
             if search_discogs_update:
-                if user.offline:
+                if not user.WANTS_ONLINE:
                     log.error("You can't do that in offline mode!")
                     raise SystemExit(1)
                 user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
             elif search_brainz_update !=0:
-                if user.offline:
+                if not user.WANTS_ONLINE:
                     log.error("You can't do that in offline mode!")
                     raise SystemExit(1)
                 user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
@@ -189,6 +189,8 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                 coll_ctrl.cli.p(msg_use)
         else:  # when OFFLINE
             database_rel_found = coll_ctrl.search_release(searchterm)
+            if not database_rel_found:
+                return
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(
                     False, add_to_mix, user, user.conf.discobase

@@ -469,6 +469,8 @@ def _main():
                 print_help(msg_use)
         else:  # when OFFLINE
             database_rel_found = coll_ctrl.search_release(searchterm)
+            if not database_rel_found:
+                return
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
                 mix_ctrl = Mix_ctrl_cli(
                     False, args.add_to_mix, user, conf.discobase

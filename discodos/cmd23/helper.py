@@ -9,9 +9,8 @@ class User(object):
     def __init__(self, conf, verbose, offline):
         self.conf = conf
         self.verbose = verbose
-        self.offline = offline
         self.set_console_log_level()
-        self.WANTS_ONLINE = True
+        self.WANTS_ONLINE = False if offline else True
         self.WANTS_TO_LIST_ALL_RELEASES = False
         self.WANTS_TO_SEARCH_FOR_RELEASE = False
         self.WANTS_TO_ADD_TO_MIX = False
