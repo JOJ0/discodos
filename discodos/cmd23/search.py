@@ -11,7 +11,8 @@ log = logging.getLogger('discodos')
 @click.command(name='search')
 @click.argument('release_search', metavar='SEARCH_TERMS')
 @click.option(
-    "-t", "--track", 'track_to_add', type=str, metavar='TRACK_NUMBER',
+    "-t", "--track", 'track_to_add', metavar='TRACK_NUMBER',
+    type=str, default=None,
     help='''In combination with -m this option adds the given track number (eg.
     A1, AA, B2, ...) to the mix passed via -m; in combination with -z, -zz or
     -u the given track is the one being updated with *Brainz or Discogs
@@ -19,11 +20,11 @@ log = logging.getLogger('discodos')
     The special keyword "all" can be used to process all tracks on the found
     release.''')
 @click.option(
-    "-p", "--pos", 'add_at_pos', type=str, metavar='POS_IN_MIX',
+    "-p", "--pos", 'add_at_pos', metavar='POS_IN_MIX',
+    type=int, default=None,
     help='''In combination with -m this option states that we'd like to insert
     the track at the given position (eg. 1, 14, ...), rather than at the end of
-    the mix; in combination with -z, -zz, -u or -e this option is ignored.''',
-    default=0)
+    the mix; in combination with -z, -zz, -u or -e this option is ignored.''' )
 @click.option(
     "--resume", "search_offset", metavar='OFFSET',
     type=int, default=0,
@@ -32,18 +33,17 @@ log = logging.getLogger('discodos')
     matching operations only (-z, -zz) ''')
 @optgroup.group("Actions", cls=MutuallyExclusiveOptionGroup)
 @optgroup.option(
-    "-m", "--mix", 'add_to_mix', type=str, default=0,
-    metavar='MIX_NAME',
+    "-m", "--mix", 'add_to_mix', metavar='MIX_NAME',
+    type=str, default=None,
     help='''Adds a track of the found release to the given mix ID (asks which
     track to add in case -t is missing).''')
 @optgroup.option(
     "-u", "--discogs-update", 'search_discogs_update', is_flag=True,
-    default=0,
     help='''Updates found release/track with Discogs track/artist details (asks
     which track to update in case -t is missing).''')
 @optgroup.option(
-    "-z", "--brainz-update", 'search_brainz_update', count=True,
-    default=0,
+    "-z", "--brainz-update", 'search_brainz_update',
+    count=True, default=0,
     help='''Updates found release/track with additional info from MusicBrainz
     and AcousticBrainz. (asks which track to update in case -t is missing) -z
     quick match, -zz detailed match (takes longer, but more results).''')
@@ -78,7 +78,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
     """
     def update_user_interaction_helper(user):
         if release_search == "all":
-            if search_discogs_update is True:
+            if search_discogs_update:
                 # discogs update all
                 user.WANTS_ONLINE = True
                 user.WANTS_TO_LIST_ALL_RELEASES = True
@@ -92,7 +92,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                     m_r+='and "mix -zz/--brainz-update"'
                     log.error(m_r)
                     raise SystemExit(1)
-            elif search_brainz_update != 0:
+            elif search_brainz_update:
                 # brainz update all
                 user.WANTS_ONLINE = True
                 user.WANTS_TO_LIST_ALL_RELEASES = True
@@ -107,27 +107,26 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                 user.WANTS_TO_LIST_ALL_RELEASES = True
         else:
             user.WANTS_TO_SEARCH_FOR_RELEASE = True
-            if add_to_mix != 0 and track_to_add != 0 and add_at_pos:
-                user.WANTS_TO_ADD_AT_POSITION = True
-            if add_to_mix !=0 and track_to_add !=0:
-                user.WANTS_TO_ADD_TO_MIX = True
-            if add_to_mix !=0:
-                user.WANTS_TO_ADD_TO_MIX = True
+            if add_to_mix:
+                if track_to_add and add_at_pos:
+                    user.WANTS_TO_ADD_AT_POSITION = True
+                else:
+                    user.WANTS_TO_ADD_TO_MIX = True
 
-            if search_discogs_update !=0:
-                if user.offline is True:
+            if search_discogs_update:
+                if user.offline:
                     log.error("You can't do that in offline mode!")
                     raise SystemExit(1)
                 user.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = True
             elif search_brainz_update !=0:
-                if user.offline is True:
+                if user.offline:
                     log.error("You can't do that in offline mode!")
                     raise SystemExit(1)
                 user.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = True
                 user.BRAINZ_SEARCH_DETAIL = search_brainz_update
                 if search_brainz_update > 1:
                     user.BRAINZ_SEARCH_DETAIL = 2
-            elif search_edit_track is True:
+            elif search_edit_track:
                 user.WANTS_TO_SEARCH_AND_EDIT_TRACK = True
         return user
 
@@ -187,7 +186,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                 )
             else:
                 # if discogs_rel_found: # prevents msg when nothing's found anyway
-                print_help(msg_use)
+                coll_ctrl.cli.p(msg_use)
         else:  # when OFFLINE
             database_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
