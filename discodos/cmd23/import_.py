@@ -8,8 +8,8 @@ log = logging.getLogger('discodos')
 
 
 @click.command(name='import')
-@click.argument('import_id', metavar='RELEASE_ID', type=int, required=False,
-                 default='0')
+@click.argument('import_id', metavar='RELEASE_ID', required=False,
+                type=int, default='0')
 @optgroup.group("Actions", cls=MutuallyExclusiveOptionGroup)
 @optgroup.option(
     '--add-to-collection', '-a', 'import_add_coll', is_flag=True,
@@ -39,8 +39,8 @@ log = logging.getLogger('discodos')
     required prior to using -z, -zz. Also note that "disco search all -z" is
     synonym to this option.''')
 @click.option(
-    "--resume", "--offset", "import_offset", metavar='OFFSET', type=int,
-    default=0,
+    "--resume", "--offset", "import_offset", metavar='OFFSET',
+    type=int, default=0,
     help='''resumes long-running processes at the given offset position
     (expects a number). You can combine this option currently with the *Brainz
     matching import operation only (-z, -zz). Note: By default, tracks
@@ -53,8 +53,7 @@ log = logging.getLogger('discodos')
     containing key and BPM information in the DiscoBASE already, will tried to
     be matched and updated.''')
 @click.option(
-    "--skip-unmatched", "-s", "import_brainz_skip_unmatched",
-    is_flag=True,
+    "--skip-unmatched", "-s", "import_brainz_skip_unmatched", is_flag=True,
     help='''this option is useful on re-runs of MusicBrainz/AcousticBrainz
     updates (-z, -zz) to speed up things a little. Only tracks that previosuly
     where matched with MusicBrainz successfully (have a MusicBrainz Recording
@@ -63,8 +62,7 @@ log = logging.getLogger('discodos')
 @click.pass_obj
 def import_cmd(helper, import_id, import_add_coll, import_tracks,
                import_brainz, import_offset, import_brainz_force,import_brainz_skip_unmatched):
-    """
-    Imports a Discogs collection or adds single releases to the collection.
+    """Imports a Discogs collection or adds single releases to the collection.
 
     The local database is referred to as DiscoBASE. RELEASE_ID is the Discogs
     release ID you want to import to the DiscoBASE. If left out, the whole
@@ -132,9 +130,9 @@ def import_cmd(helper, import_id, import_add_coll, import_tracks,
     if user.WANTS_TO_IMPORT_COLLECTION:
         coll_ctrl.import_collection()
     if user.WANTS_TO_IMPORT_RELEASE:
-        coll_ctrl.import_release(args.import_id)
+        coll_ctrl.import_release(import_id)
     if user.WANTS_TO_ADD_AND_IMPORT_RELEASE:
-        coll_ctrl.add_release(args.import_id)
+        coll_ctrl.add_release(import_id)
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS:
         coll_ctrl.import_collection(tracks=True)
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
