@@ -2,10 +2,10 @@ import click
 import logging
 
 from discodos.config import Db_setup
-from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
-
+from discodos.ctrls import Coll_ctrl_cli
 
 log = logging.getLogger('discodos')
+
 
 @click.command(name='setup')
 @click.option(
