@@ -3,8 +3,8 @@ import logging
 
 from discodos.ctrls import Coll_ctrl_cli
 
-
 log = logging.getLogger('discodos')
+
 
 @click.command(name='stats')
 @click.pass_obj
