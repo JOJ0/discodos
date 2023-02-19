@@ -1,12 +1,11 @@
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
-from click_option_group import RequiredAnyOptionGroup
 import logging
 
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 
-
 log = logging.getLogger('discodos')
+
 
 @click.command(name='mix')
 @click.argument('mix_name', metavar='MIX_NAME', default='all', required=False)
@@ -221,8 +220,8 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
-    ### NO MIX ID GIVEN ########################################################
-    ### SHOW LIST OF MIXES #######################################################
+    # NO MIX ID GIVEN #########################################################
+    # SHOW LIST OF MIXES ######################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
         mix_ctrl = Mix_ctrl_cli(False, mix_name, user, user.conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
@@ -239,42 +238,42 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
         else:
             mix_ctrl.view_mixes_list()
 
-    ### MIX ID GIVEN ###########################################################
-    ### SHOW MIX DETAILS #######################################################
+    # MIX ID GIVEN ############################################################
+    # SHOW MIX DETAILS ########################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
         log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
         mix_ctrl = Mix_ctrl_cli(
             False, mix_name, user, user.conf.discobase
         )
         # coll_ctrl = Coll_ctrl_cli(conn, user)
-        ### CREATE A NEW MIX ###################################################
+        # CREATE A NEW MIX ####################################################
         if user.WANTS_TO_CREATE_MIX:
             mix_ctrl.create()
             # mix is created (or not), nothing else to do
             raise SystemExit(0)
-        ### DELETE A MIX #######################################################
+        # DELETE A MIX ########################################################
         if user.WANTS_TO_DELETE_MIX:
             mix_ctrl.delete()
             # mix is deleted (or not), nothing else to do
             raise SystemExit(0)
-        ### DO STUFF WITH EXISTING MIXES #######################################
-        ### EDIT A MIX-TRACK ###################################################
+        # DO STUFF WITH EXISTING MIXES ########################################
+        # EDIT A MIX-TRACK ####################################################
         if user.WANTS_TO_EDIT_MIX_TRACK:
             mix_ctrl.edit_track(edit_mix_track)
-        ### REORDER TRACKLIST ##################################################
+        # REORDER TRACKLIST ###################################################
         elif user.WANTS_TO_REORDER_MIX_TRACKLIST:
-            print_help("Tracklist reordering starting at position {}".format(
-                       reorder_from_pos))
+            coll_ctrl.cli.p(f"Tracklist reordering starting at position "
+                            f"{reorder_from_pos}")
             mix_ctrl.reorder_tracks(reorder_from_pos)
-        ### DELETE A TRACK FROM MIX ############################################
+        # DELETE A TRACK FROM MIX #############################################
         elif user.WANTS_TO_DELETE_MIX_TRACK:
             mix_ctrl.delete_track(delete_track_pos)
-        ### SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode) ###
+        # SEARCH FOR A RELEASE AND ADD IT TO MIX (same as in release mode) ####
         elif user.WANTS_TO_ADD_RELEASE_IN_MIX_MODE:
-            if mix_ctrl.mix.id_existing:  # accessing a mix attr directly is bad practice
+            if mix_ctrl.mix.id_existing:  # FIXME direct accessing of mix attr
                 if coll_ctrl.ONLINE:
-                    # search_release returns an online or offline releases type object
-                    # depending on the models online-state
+                    # search_release returns an online or offline releases type
+                    # object depending on the models online-state
                     discogs_rel_found = coll_ctrl.search_release(
                         add_release_to_mix
                     )
@@ -294,30 +293,30 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
                     )
             else:
                 log.error("Mix not existing.")
-        #### COPY A MIX ########################################################
+        # COPY A MIX ##########################################################
         elif user.WANTS_TO_COPY_MIX:
             mix_ctrl.copy_mix()
-        #### EDIT MIX INFO #####################################################
+        # EDIT MIX INFO #######################################################
         elif user.WANTS_TO_EDIT_MIX:
             mix_ctrl.edit_mix()
-        #### UPDATE TRACKS WITH DISCOGS INFO ###################################
+        # UPDATE TRACKS WITH DISCOGS INFO #####################################
         elif user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(
                 coll_ctrl,
                 start_pos=mix_mode_add_at_pos
             )
-        #### UPDATE TRACKS WITH MUSICBRAINZ & ACOUSTICBRAINZ INFO ##############
+        # UPDATE TRACKS WITH MUSICBRAINZ & ACOUSTICBRAINZ INFO ################
         elif user.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE:
             mix_ctrl.update_track_info_from_brainz(
                 coll_ctrl,
                 start_pos=mix_mode_add_at_pos,
                 detail=user.BRAINZ_SEARCH_DETAIL
             )
-        #### BULK EDIT MIX COLUMNS #############################################
+        # BULK EDIT MIX COLUMNS ###############################################
         elif user.WANTS_TO_BULK_EDIT:
             mix_ctrl.bulk_edit_tracks(
                 bulk_edit, mix_mode_add_at_pos
             )
-        #### JUST SHOW MIX-TRACKLIST ###########################################
+        # JUST SHOW MIX-TRACKLIST #############################################
         elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
             mix_ctrl.view()
