@@ -2,7 +2,7 @@ import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 import logging
 
-from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
+from discodos.ctrls import Coll_ctrl_cli
 
 log = logging.getLogger('discodos')
 
@@ -61,20 +61,21 @@ log = logging.getLogger('discodos')
     ''')
 @click.pass_obj
 def import_cmd(helper, import_id, import_add_coll, import_tracks,
-               import_brainz, import_offset, import_brainz_force,import_brainz_skip_unmatched):
+               import_brainz, import_offset, import_brainz_force,
+               import_brainz_skip_unmatched):
     """Imports a Discogs collection or adds single releases to the collection.
 
     The local database is referred to as DiscoBASE. RELEASE_ID is the Discogs
     release ID you want to import to the DiscoBASE. If left out, the whole
     collection will be imported. Option -a adds the release to the Discogs
     collection _and_ additionally imports it to the DiscoBASE.
-    
+
     Note that a regular import of a given release ID (import RELEASE_ID) is
     rather slow: Technical limitations that are out of our hands require us to
     run through all of the releases in the collection via the Discogs API.
     Unfortunately Discogs does not allow us to search for release IDs in the
     user collection directly.
-    
+
     That is the reason why the recommended way of adding newly gained releases
     is using the -a option (import -a RELEASE_ID).
     """
