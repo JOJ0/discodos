@@ -56,7 +56,6 @@ class User(object):
         self.WANTS_TO_SHOW_STATS = False
         self.TABLE_FORMAT_OVERRIDE = False
 
-
     def set_console_log_level(self):
         """ Handles console log level setting.
 
