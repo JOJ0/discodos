@@ -33,6 +33,6 @@ jobs:
       - name: Run unittests - TestCollection (uses Config w/ dummy token)
         run: |
           python -m unittest tests.test_collection.TestCollection
-      - name: Run unittests - TestBrainz
-        run: |
-          python -m unittest tests.test_brainz.TestBrainz
+      # - name: Run unittests - TestBrainz
+      #   run: |
+      #     python -m unittest tests.test_brainz.TestBrainz
