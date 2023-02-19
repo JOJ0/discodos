@@ -1,12 +1,11 @@
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
-from click_option_group import RequiredAnyOptionGroup
 import logging
 
 from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
 
-
 log = logging.getLogger('discodos')
+
 
 @click.command(name='search')
 @click.argument('release_search', metavar='SEARCH_TERMS')
@@ -24,13 +23,13 @@ log = logging.getLogger('discodos')
     type=int, default=None,
     help='''In combination with -m this option states that we'd like to insert
     the track at the given position (eg. 1, 14, ...), rather than at the end of
-    the mix; in combination with -z, -zz, -u or -e this option is ignored.''' )
+    the mix; in combination with -z, -zz, -u or -e this option is ignored.''')
 @click.option(
     "--resume", "search_offset", metavar='OFFSET',
     type=int, default=0,
     help='''Resumes long-running processes at the given offset position
     (expects a number). You can combine this option currently with *Brainz
-    matching operations only (-z, -zz) ''')
+    matching operations only (-z, -zz)''')
 @optgroup.group("Actions", cls=MutuallyExclusiveOptionGroup)
 @optgroup.option(
     "-m", "--mix", 'add_to_mix', metavar='MIX_NAME',
@@ -57,7 +56,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                add_to_mix, search_discogs_update, search_brainz_update,
                search_edit_track):
     """Searches collection and launches actions on found items.
-    
+
     Searches for releases and tracks in the Discogs collection. Several actions
     can be executed on the found items, eg. adding to a mix, updating track
     info from Discogs or fetching additional information from
@@ -207,4 +206,4 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
                 )
             else:
                 if database_rel_found:  # prevents msg when nothing's found anyway
-                    print_help(msg_use)
+                    coll_ctrl.cli.p(msg_use)
