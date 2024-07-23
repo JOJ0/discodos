@@ -17,4 +17,4 @@ fi
 
 $DRY git tag -d v$VERS
 $DRY git push origin --delete v$VERS
-$DRY bumpversion build --new-version $VERS --commit --tag --verbose
+$DRY bump2version build --new-version $VERS --commit --tag --verbose
