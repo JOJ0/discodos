@@ -77,7 +77,7 @@ Install the necessary dependencies into your environment:
 
 Launch DiscoDOS' main command and follow the steps shown:
 
-`disco`
+`dsc`
 
 _**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
 
@@ -116,13 +116,13 @@ Install the necessary dependencies into your virtual environment:
 Some command wrappers should have been installed too. Verify if they exist inside your `~/.venvs/discodos/bin` directory:
 
 ```
-which disco
+which dsc
 which discosync
 ```
 
 Launch DiscoDOS' main command and follow the steps shown:
 
-`disco`
+`dsc`
 
 _**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
 
@@ -158,19 +158,19 @@ Install DiscoDOS into your user's Python environment:
 Some command wrappers should have been installed. Verify if they exist:
 
 ```
-which disco
+which dsc
 which discosync
 ```
 
 If `which` didn't find those commands, make sure your $PATH environment variable contains the path the wrappers where installed to. Usually this is `~/.local/bin/`
 
-_Note: On Debian-based systems there might be a file `/usr/bin/disco` on your system already provided by package mono-devel, thus depending on the order of paths in `$PATH`, `/usr/bin/disco` might be found before the DiscoDOS wrapper. Change `$PATH` to first search in `~/.local/bin` (export it in `.zshrc`, `.bashrc` or whatever shell you are using)_
+_Note: On Debian-based systems there might be a file `/usr/bin/dsc` on your system already provided by package mono-devel, thus depending on the order of paths in `$PATH`, `/usr/bin/dsc` might be found before the DiscoDOS wrapper. Change `$PATH` to first search in `~/.local/bin` (export it in `.zshrc`, `.bashrc` or whatever shell you are using)_
 
 Launch DiscoDOS' main command:
 
-`disco`
+`dsc`
 
-On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](INSTALLATION.md#configure-discogs-api-access), then come back here!
+On first launch, `dsc` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](INSTALLATION.md#configure-discogs-api-access), then come back here!
 
 Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
 
@@ -180,7 +180,7 @@ If the connection to Discogs is working, setup asks you to view a little tutoria
 
 Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
-**Note: The `disco` and `discosync` commands are now installed globally and will work in any terminal emulator.**
+**Note: The `dsc` and `discosync` commands are now installed globally and will work in any terminal emulator.**
 
 **Note: DiscoDOS generates the following files which are kept in `~/.discodos/`:**
 

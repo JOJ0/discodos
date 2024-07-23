@@ -26,9 +26,9 @@ Download the latest Windows installer (`DiscoDOS_version.exe`) from the [release
 
 Click Start Menu - DiscoDOS - DiscoDOS
 
-A new command prompt window opens and the DiscoDOS main command `disco` runs automatically.
+A new command prompt window opens and the DiscoDOS main command `dsc` runs automatically.
 
-On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
+On first launch, `dsc` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
 
 
 Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
@@ -39,7 +39,7 @@ If the connection to Discogs is working, setup asks you to view a little tutoria
 
 Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
-**Note: The `disco` and `discosync` commands are installed globally, you can use the Start Menu entry to run them but they also work in any cmd.exe window.**
+**Note: The `dsc` and `discosync` commands are installed globally, you can use the Start Menu entry to run them but they also work in any cmd.exe window.**
 
 
 **Note: DiscoDOS generates the following files which are kept in `C:\Users\your_name\Documents\discodos\` (path may vary depending on your OS-language):**
@@ -60,7 +60,7 @@ I would highly recommend installing "Microsoft Windows Terminal". It will provid
    - or one of the preview version (I'd recommend them, they are usually stable enough!)
 
 ##### Some features worth trying out
-  - Zoom in/out (resize terminal text) using "ctrl + mouse wheel" (e.g handy when showing mixes in verbose view (`disco mix mix_name -v`)
+  - Zoom in/out (resize terminal text) using "ctrl + mouse wheel" (e.g handy when showing mixes in verbose view (`dsc mix mix_name -v`)
     - Alternatively zoom in/out using "ctrl +/ctrl -"
   - Paste text from clipboard using "right/secondary mouse button"
   - Command completion using "tab key" (cmd.exe had this already, yes - anyway it feels a little better here IMHO)
@@ -77,9 +77,9 @@ Doubleclick the .dmg file - Drag and drop `DiscoDOS.app` to `Applications` folde
 
 Launch DiscoDOS.app
 
-A new Terminal window opens and the DiscoDOS main command `disco` runs automatically.
+A new Terminal window opens and the DiscoDOS main command `dsc` runs automatically.
 
-On first launch, `disco` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
+On first launch, `dsc` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](#configure-discogs-api-access), then come back here!
 
 Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
 
@@ -89,7 +89,7 @@ If the connection to Discogs is working, setup asks you to view a little tutoria
 
 Your starting point for further documentation is the [Quickstart Guuide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
 
-**Note: The `disco` and `discosync` commands are now installed globally, you can launch DiscoDOS.app to open a Terminal but they also work in any other Terminal window.**
+**Note: The `dsc` and `discosync` commands are now installed globally, you can launch DiscoDOS.app to open a Terminal but they also work in any other Terminal window.**
 
 **Note: DiscoDOS generates the following files which are kept in `/Users/your_name/Documents/DiscoDOS/`:**
 
@@ -115,7 +115,7 @@ To access your Discogs collection you need to generate an API login token and pu
 - Select _Settings_
 - Switch to section _Developers_
 - Click _Generate new token_
-- Run `disco` - you'll be prompted to put in the token.
+- Run `dsc` - you'll be prompted to put in the token.
 
 **Note: If you are updating from a previous DiscoDOS version, your config.yaml is existing and has a token set up already, thus you won't be bothered!**
 
