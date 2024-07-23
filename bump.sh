@@ -5,7 +5,7 @@ VERS=$1
 DRY="echo"
 
 if [ -z $1 ]; then
-    echo "Usage: ./bump.s <version> [doit]"
+    echo "Usage: ./bump.sh <version> [doit]"
     exit 0
 fi
 
