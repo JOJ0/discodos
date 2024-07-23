@@ -25,8 +25,8 @@ services [MusicBrainz](https://musicbrainz.org) and
 about your music (e.g key and BPM).
 
 ## Installation
-- [Windows Installer](https://github.com/JOJ0/discodos/releases/download/v1.1.0/DiscoDOS-1.1.0-Win.exe)
-- [macOS Installer](https://github.com/JOJ0/discodos/releases/download/v1.1.0/DiscoDOS-1.1.0-macOS.dmg)
+- [Windows Installer](https://github.com/JOJ0/discodos/releases/download/v2.0.0/DiscoDOS-2.0.0-Win.exe)
+- [macOS Installer](https://github.com/JOJ0/discodos/releases/download/v2.0.0/DiscoDOS-2.0.0-macOS.dmg)
 - Linux - read the [Installation Guide](https://discodos.readthedocs.io/en/latest/INSTALLATION.html#linux)
 - Install [the latest development version](https://discodos.readthedocs.io/en/latest/CONTRIBUTION.html)
 directly from git master
