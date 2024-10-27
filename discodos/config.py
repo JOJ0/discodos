@@ -105,9 +105,9 @@ class Db_setup(Database):
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """}
 
-        self.sql_upgrades = [      # list element 0 contains a dict
-            {'schema_version': 2,  # this dict contains 2 entries: schema and tasks
-             'tasks': {            # tasks entry contains another dict with a lot of entries
+        self.sql_upgrades = [{    # list element 0 contains a dict
+            'schema_version': 2,  # this dict contains 2 entries: schema and tasks
+             'tasks': {           # tasks entry contains another dict with a lot of entries
                  'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
                  'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
                  'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
@@ -120,14 +120,14 @@ class Db_setup(Database):
                  'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
                  'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
                  'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
-              }
-            }                        # list element 0 ends here
-            # {'schema_version': 3,  # list element 1 starts here
-            #  'tasks': {
-            #      'Add field track.test_upgrade': 'ALTER TABLE track ADD test_upgrade TEXT;',
-            #  }
-            # }                      # list element 1 ends here
-        ]                            # list closes here
+            }
+        },  # list element 0 ends here
+        {
+            'schema_version': 3,
+            'tasks': {
+                'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;'
+            }
+        }]
 
     def create_tables(self):  # initial db setup
         for table, sql in self.sql_initial.items():
