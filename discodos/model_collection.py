@@ -46,12 +46,12 @@ class Collection (Database):
         self.ONLINE = _ONLINE
         return _ONLINE
 
-    def get_all_db_releases(self):
+    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
         # return db.all_releases(self.db_conn)
         return self._select_simple(
             ['d_catno', 'd_artist',
              'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'],
-            'release', orderby='d_artist, discogs_title'
+            'release', orderby=orderby
         )
 
     def search_release_online(self, id_or_title):
