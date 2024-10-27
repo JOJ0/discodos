@@ -9,6 +9,20 @@ log = logging.getLogger('discodos')
 
 @click.group(name='import')
 def import_group():
+    """Imports a Discogs collection or adds further data to it.
+
+    A typical workflow involves running import commands in this order:
+
+    \b
+    * basic
+    * details --tracks
+
+    Optionally:
+
+    \b
+    * details --brainz
+    * release`
+    """
     pass
 
 
