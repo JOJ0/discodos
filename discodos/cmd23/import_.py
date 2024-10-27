@@ -12,6 +12,41 @@ def import_group():
     pass
 
 
+@import_group.command(name='basic')
+@click.pass_obj
+def import_basic_cmd(helper ):
+    """Initially imports a Discogs collection.
+
+    A very basic subset of the Discogs collection data is imported to the
+    DiscoBASE. Currently this includes artist, release title, catalog number, a
+    timestamp of the import time, and a flag named is_in_d_collection.
+
+    The basic import can be re-run any time. It
+    overwrites any existing data in the release table of the DiscoBASE, though
+    additional information like the sales date is not overwritten when present
+    already.
+
+    The purpose of the is_in_d_collection flag marks releases that are not in
+    the online Discogs collection anymore with a 0 (false). This helps to get
+    the releases table in sync when releases have been removed using the Discogs
+    web interface.
+    """
+    def update_user_interaction_helper(user):
+        log.debug("Entered collection and details import mode.")
+        user.WANTS_TO_IMPORT_COLLECTION = True
+        return user
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = Coll_ctrl_cli(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
+    if user.WANTS_TO_IMPORT_COLLECTION:
+        coll_ctrl.import_collection()
+
+
 @import_group.command(name='details')
 @optgroup.group("Actions", cls=MutuallyExclusiveOptionGroup)
 @optgroup.option(
@@ -53,10 +88,13 @@ def import_group():
     ID already saved in the DiscoBASE), are tried to be matched and updated.
     ''')
 @click.pass_obj
-def import_cmd(helper, import_tracks, import_brainz, import_offset,
+def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
                import_brainz_force, import_brainz_skip_unmatched):
-    """Initially imports a Discogs collection or enriches it with more details.
+    """Enriches the collection with more details.
 
+    Details currently are information about tracks on a Discogs release and
+    running a "matching process" with MusicBrainz. The latter adds MB album and
+    recording ID's.
     """
     def update_user_interaction_helper(user):
         log.debug("Entered collection and details import mode.")
@@ -82,8 +120,6 @@ def import_cmd(helper, import_tracks, import_brainz, import_offset,
                 user.BRAINZ_SKIP_UNMATCHED = True
             if import_offset > 0:
                 user.RESUME_OFFSET = import_offset
-        else:
-            user.WANTS_TO_IMPORT_COLLECTION = True
         return user
 
     user = update_user_interaction_helper(helper)
@@ -93,8 +129,6 @@ def import_cmd(helper, import_tracks, import_brainz, import_offset,
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
-    if user.WANTS_TO_IMPORT_COLLECTION:
-        coll_ctrl.import_collection()
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS:
         coll_ctrl.import_collection(tracks=True)
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
@@ -121,7 +155,7 @@ def import_cmd(helper, import_tracks, import_brainz, import_offset,
     duplicates.''')
 @click.pass_obj
 def import_release_cmd(helper, import_id, import_add_coll):
-    """Imports a single release to the DiscoBASE.
+    """Imports a single release.
 
     Note that currently this is a rather time consuming process: Technical
     limitations that are out of our hands require running through all of the
