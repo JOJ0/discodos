@@ -7,7 +7,12 @@ from discodos.ctrls import Coll_ctrl_cli
 log = logging.getLogger('discodos')
 
 
-@click.command(name='import')
+@click.group(name='import')
+def import_group():
+    pass
+
+
+@import_group.command(name='details')
 @click.argument('import_id', metavar='RELEASE_ID', required=False,
                 type=int, default='0')
 @optgroup.group("Actions", cls=MutuallyExclusiveOptionGroup)
