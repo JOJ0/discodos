@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 from discodos.config import Config
-from discodos.cmd23 import helper, import_, mix, search, setup, stats, suggest
+from discodos.cmd23 import (
+    helper,
+    import_,
+    mix,
+    search,
+    setup,
+    stats,
+    suggest,
+    ls,
+)
 import logging
 import click
 
@@ -38,3 +47,4 @@ main_cmd.add_command(import_.import_cmd)
 main_cmd.add_command(suggest.suggest_cmd)
 main_cmd.add_command(stats.stats_cmd)
 main_cmd.add_command(setup.setup_cmd)
+main_cmd.add_command(ls.ls_cmd)

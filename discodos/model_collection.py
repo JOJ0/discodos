@@ -54,6 +54,33 @@ class Collection (Database):
             'release', orderby=orderby
         )
 
+    def key_value_search_releases(self, search_key_value=None, orderby='d_artist, discogs_title'):
+        replace_cols = {
+            "artist": "d_artist",
+            "title": "discogs_title",
+            "id": "discogs_id",
+            "cat": "d_catno",
+        }
+        where = " AND ".join(
+            [
+                f'{replace_cols.get(k, k)} LIKE "%{v}%"'
+                for k, v in search_key_value.items()
+            ]
+        )
+
+        return self._select_simple(
+            [
+                "discogs_id",
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "in_d_collection",
+                "sold",
+            ],
+            "release", fetchone=False, orderby=orderby, condition=where,
+        )
+
+
     def search_release_online(self, id_or_title):
         try:
             if is_number(id_or_title):

@@ -1148,3 +1148,21 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
             self.collection.stats_tracks_bpm_brainz(),
             self.collection.stats_tracks_bpm_manual(),
         )
+
+    def ls_releases(self, search_terms):
+        """search_terms is a key value dict: eg: d_artist: artistname"""
+
+        search_results = []
+        self.cli.p('Searching database for: {}'.format(search_terms))
+        try:
+            search_results = self.collection.key_value_search_releases(
+                search_key_value=search_terms
+            )
+        except Exception as error:
+            self.cli.p(error)
+
+        if not search_results:
+            self.cli.p('Nothing found.')
+        else:
+            self.cli.p('Found releases:')
+            self.cli.tab_ls_releases(search_results)

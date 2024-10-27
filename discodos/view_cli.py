@@ -317,6 +317,15 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
                 'format': 'Format'
             }))
 
+    def tab_ls_releases(self, _result_list):
+        self.p(
+            tab(
+                _result_list,
+                tablefmt="simple",
+                headers=["ID", "Cat. #", "Artist", "Title", "D. Coll.", "Sold"],
+            )
+        )
+
     def online_search_results_tracklist(self, _tracklist):
         for tr in _tracklist:
             try:
