@@ -67,36 +67,35 @@ def import_basic_cmd(helper ):
     '--tracks', '-u', 'import_tracks', is_flag=True,
     help='''extends the Discogs import (releases and also tracks will be
     downloaded) - takes siginficantly longer than the regular import. Note:
-    This is the same as "disco search all -u".''')
+    This is the same as "dsc search all -u".''')
 @optgroup.option(
     '--brainz', '-z', 'import_brainz', count=True, default=0,
-    help='''imports additional information from MusicBrainz/AcousticBrainz
-    (Release MBID, Recording MBID, musical key, chords key, BPM). Usually this
+    help='''imports additional information from MusicBrainz
+    (Release MBID, Recording MBID). Usually this
     action takes a long time; -z tries to find a match quickly, -zz tries
     harder but requires even more time. Only tracks already present in the
-    DiscoBASE (using any of the import possibilites, eg. disco mix -u, disco
-    import -u, disco search -u) will be updated. Tracks containing
-    *Brainz-fetched key/BPM already will be skipped. To really update _all_
-    tracks in the collection an extended Discogs import (disco import -u) is
-    required prior to using -z, -zz. Also note that "disco search all -z" is
+    DiscoBASE (using any of the import possibilites, eg. dsc mix -u, dsc
+    import details -u, dsc search -u) will be updated. To really update _all_
+    tracks in the collection an extended Discogs import (dsc import details -u) is
+    required prior to using -z, -zz. Also note that "dsc search all -z" is
     synonym to this option.''')
 @click.option(
     "--resume", "--offset", "import_offset", metavar='OFFSET',
     type=int, default=0,
     help='''resumes long-running processes at the given offset position
     (expects a number). You can combine this option currently with the *Brainz
-    matching import operation only (-z, -zz). Note: By default, tracks
+    matching import operation only (-z, -zz). Note [deprecated]: By default, tracks
     containing key and BPM already will be skipped. On a re-run using this
     option, the total number might be different already since the count of
     tracks without key and BPM might have changed.''')
 @click.option(
     "--force-brainz", "-f", "import_brainz_force", is_flag=True,
-    help='''on MusicBrainz/AcousticBrainz updates (-z, -zz), also tracks
+    help='''[deprecated] on MusicBrainz updates (-z, -zz), also tracks
     containing key and BPM information in the DiscoBASE already, will tried to
     be matched and updated.''')
 @click.option(
     "--skip-unmatched", "-s", "import_brainz_skip_unmatched", is_flag=True,
-    help='''this option is useful on re-runs of MusicBrainz/AcousticBrainz
+    help='''this option is useful on re-runs of MusicBrainz
     updates (-z, -zz) to speed up things a little. Only tracks that previosuly
     where matched with MusicBrainz successfully (have a MusicBrainz Recording
     ID already saved in the DiscoBASE), are tried to be matched and updated.
@@ -117,10 +116,10 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
             if import_offset > 0:
                 user.RESUME_OFFSET = import_offset
                 m_r ='Resuming is not possible in combination with '
-                m_r+='"import -u/--discogs-update". Try it with '
-                m_r+='"mix -u/--discogs-update". Also it works '
-                m_r+='together with "import -zz/brainz-update" '
-                m_r+='and "mix -zz/--brainz-update"'
+                m_r+='"import details -u". Try it with '
+                m_r+='"mix -u". It also works '
+                m_r+='together with "import details -zz" '
+                m_r+='and "mix -zz"'
                 log.error(m_r)
                 raise SystemExit(1)
         elif import_brainz:
