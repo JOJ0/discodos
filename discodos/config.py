@@ -125,8 +125,14 @@ class Db_setup(Database):
         {
             'schema_version': 3,
             'tasks': {
-                'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;'
-            }
+                'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;',
+                'New table sales':
+                """ CREATE TABLE sales (
+                      d_listing_id INTEGER NOT NULL,
+                      d_release_id INTEGER NOT NULL,
+                      PRIMARY KEY (d_listing_id, d_release_id)
+                      ); """,
+                }
         }]
 
     def create_tables(self):  # initial db setup
