@@ -74,37 +74,35 @@ class Database (object):
         settings = "PRAGMA foreign_keys = ON;"
         self.execute_sql(settings)
 
-    def _select_simple(self, fields_list, table, condition=False, offset=0,
-                       fetchone=False, orderby=False, distinct=False):
+    def _select_simple(
+        self,
+        fields_list,
+        table,
+        condition=False,
+        offset=0,
+        fetchone=False,
+        orderby=False,
+        distinct=False,
+        join=None,
+    ):
         """This is a wrapper around the _select method.
-           It puts together sql select statements as strings.
+        It puts together SQL select statements as strings with support for JOIN.
         """
-        log.info("DB: _select_simple: fetchone = {}".format(fetchone))
-        fields_str = ""
-        for cnt, field in enumerate(fields_list):
-            if cnt == 0:
-                fields_str += field
-            else:
-                fields_str += ", {}".format(field)
-        if condition:
-            where_or_not = "WHERE {}".format(condition)
-        else:
-            where_or_not = ""
-        if orderby:
-            orderby_or_not = "ORDER BY {}".format(orderby)
-        else:
-            orderby_or_not = ""
-        if distinct:
-            select = 'SELECT DISTINCT'
-        else:
-            select = 'SELECT'
-        if offset:
-            limit = 'LIMIT -1 OFFSET {}'.format(offset)
-        else:
-            limit = ''
-        select_str = "{} {} FROM {} {} {} {};".format(
-            select, fields_str, table,
-            where_or_not, orderby_or_not, limit)
+        log.info(f"DB: _select_simple: fetchone = {fetchone}")
+        fields_str = ", ".join(fields_list)
+        join_clause = ""
+        if join:
+            # Expecting join as a list of tuples: [(join_type, table, condition), ...]
+            for join_type, join_table, join_condition in join:
+                join_clause += f" {join_type.upper()} JOIN {join_table} ON {join_condition}"
+        where_or_not = f"WHERE {condition}" if condition else ""
+        orderby_or_not = f"ORDER BY {orderby}" if orderby else ""
+        select = "SELECT DISTINCT" if distinct else "SELECT"
+        limit = f"LIMIT -1 OFFSET {offset}" if offset else ""
+        select_str = (
+            f"{select} {fields_str} FROM {table} {join_clause} {where_or_not} "
+            f"{orderby_or_not} {limit};"
+        )
         return self._select(select_str, fetchone)
 
     def _select(self, sql_select, fetchone=False):
