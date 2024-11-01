@@ -200,3 +200,23 @@ def import_release_cmd(helper, import_id, import_add_coll):
         coll_ctrl.import_release(import_id)
     if user.WANTS_TO_ADD_AND_IMPORT_RELEASE:
         coll_ctrl.add_release(import_id)
+
+
+@import_group.command(name='sales')
+@click.pass_obj
+def import_sales_cmd(helper):
+    """Imports the marketplace inventory.
+    """
+
+    def update_user_interaction_helper(user):
+        log.debug("Entered import sales inventory mode.")
+        return user
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = Coll_ctrl_cli(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
+    coll_ctrl.import_sales_inventory()

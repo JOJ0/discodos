@@ -1166,3 +1166,12 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         else:
             self.cli.p('Found releases:')
             self.cli.tab_ls_releases(search_results)
+
+    def import_sales_inventory(self):
+        """Import sales inventory"""
+        start_time = time()
+        self.cli.exit_if_offline(self.collection.ONLINE)
+        self.cli.p("Importing Discogs sales inventory into DiscoBASE")
+        for item in self.collection.me.inventory:
+            self.collection.create_sales_entry(item.release.id, item.id)
+        self.cli.duration_stats(start_time, 'Discogs sales inventory import')

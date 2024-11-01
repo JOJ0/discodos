@@ -80,7 +80,6 @@ class Collection (Database):
             "release", fetchone=False, orderby=orderby, condition=where,
         )
 
-
     def search_release_online(self, id_or_title):
         try:
             if is_number(id_or_title):
@@ -857,3 +856,20 @@ class Collection (Database):
             else:
                 log.error("MODEL: %s", e.args[0])
                 return False
+
+    def create_sales_entry(self, release_id, listing_id):
+        """Creates a single entry to sales table and ensures up to date data.
+        """
+        try:
+            insert_sql = """
+            INSERT INTO sales (d_release_id, d_listing_id)
+            VALUES (?, ?)
+            ON CONFLICT(d_listing_id, d_release_id) DO UPDATE SET
+                d_listing_id = excluded.d_listing_id,
+                d_release_id = excluded.d_release_id;
+            """
+            in_tuple = (release_id, listing_id)
+            return self.execute_sql(insert_sql, in_tuple, raise_err=True)
+        except sqlerr as e:
+            log.error("MODEL: create_sales_entry: %s", e.args[0])
+            return False
