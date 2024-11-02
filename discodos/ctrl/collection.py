@@ -10,7 +10,7 @@ from discodos.model_brainz import Brainz
 from discodos.model_brainz_match import Brainz_match
 from discodos.model_collection import Collection
 from discodos.utils import is_number
-from discodos.view_cli import CollectionViewCommandline
+from discodos.view import CollectionViewCommandline
 
 log = logging.getLogger('discodos')
 

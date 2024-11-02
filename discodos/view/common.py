@@ -1,8 +1,7 @@
 import logging
-import re
-# import pprint
-# from collections import OrderedDict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from time import time
+from tabulate import tabulate as tab
 
 from discodos.utils import is_number, join_sep
 
@@ -11,59 +10,15 @@ log = logging.getLogger('discodos')
 
 class HeadersList():
     """Currently unused"""
+    # def __set__(self, obj, value) -> None:
+    #     obj.__dict__[self.name] = value
+
     def __set_name__(self, owner, name) -> str:
         self.name = name
         self.dict_name = self.name.replace('_list_', '_dict_')
 
     def __get__(self, obj, type=None) -> object:
         return [val for val in obj.__dict__.get(self.dict_name).values()]
-
-    # def __set__(self, obj, value) -> None:
-    #     obj.__dict__[self.name] = value
-
-
-class TableDefaults():
-    '''Describes default and general settings for CLI and GUI tables.
-
-    Generates headers dicts we use for CLI tables with tabulate.
-    Generates headers lists we use for Qt Tree/TableViews and CLI tables.
-    '''
-    def __init__(self):
-        # self.cols = OrderedDict()
-        self.cols = {}
-
-    def addcol(self, **kwargs):
-        self.cols[kwargs.get('name')] = kwargs
-        del(self.cols[kwargs.get('name')]['name'])
-
-    def headers_list(self):
-        return [col['caption'] for col in self.cols.values()]
-
-    def headers_dict(self, short=False):
-        if short:
-            headers = {}
-            for (name, settings) in self.cols.items():
-                if settings.get('short_cap'):
-                    headers[name] = settings['short_cap']
-                else:
-                    headers[name] = settings['caption']
-            return headers
-        return {
-            name: settings['caption'] for (name, settings) in self.cols.items()
-        }
-
-    def get_locked_columns(self):
-        """Retrieves a list of non-editable columns from self.cols dict.
-
-        Returns:
-            list: containing id's (int) of non-editable columns
-        """
-        cols_list = []
-        for col_default in self.cols.values():
-            edit = col_default.get('edit')
-            if edit is False or edit is None:
-                cols_list.append(col_default.get('order_id'))
-        return cols_list
 
 
 class ViewCommon():
@@ -550,70 +505,289 @@ class ViewCommon():
         return new_text
 
 
-class MixViewCommon():
-    ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
+class ViewCommonCommandline(ViewCommon):
+    """ Common view utils, usable in CLI only.
+    """
 
-    Lists of questions. Used in CLI:
-        self._edit_track_questions: when editing a mix-track.
-        self._edit_mix_questions: when editing a mixes info.
+    def p(self, message, logging="", lead_nl=False, trail_nl=True):
+        if logging == "debug":
+            log.debug(message)
+        if logging == "info":
+            log.info(message)
+        if lead_nl is True and trail_nl is True:
+            print('\n' + str(message) + '\n')
+        elif lead_nl is True:
+            print('\n' + str(message))
+        elif trail_nl is True:
+            print('' + str(message) + '\n')
+
+    def ask(self, text=""):
+        ''' ask user for something and return answer '''
+        return input(text)
+
+    def ask_for_track(self, suggest='A1'):
+        track_no = self.ask("Which track? ({}) ".format(suggest))
+        if track_no == '':
+            return suggest
+        return track_no
+
+    def tab_mix_table(self, mix_data, _verbose=False, brainz=False, format=""):
+        mix_data_key_bpm = self.replace_key_bpm(mix_data)
+        mix_data_nl = self.trim_table_fields(mix_data_key_bpm)
+
+        # for row in mix_data_nl:  # DEBUG
+        #    log.debug(str(row))
+        # log.debug("")
+
+        if _verbose:
+            self.p(tab(
+                mix_data_nl,
+                tablefmt='pipe' if not format else format,
+                headers=self.cols_mixtracks.headers_dict(short=True)
+            ))
+        elif brainz:
+            mix_data_brainz = self.replace_brainz(mix_data_key_bpm)
+            mix_data_brainz_nl = self.trim_table_fields(
+                mix_data_brainz,
+                exclude=['methods']
+            )
+            self.p(tab(
+                mix_data_brainz_nl,
+                tablefmt='grid' if not format else format,
+                headers=self.cols_mixtracks_brainz.headers_dict()
+            ))
+        else:
+            self.p(tab(
+                mix_data_nl,
+                tablefmt='pipe' if not format else format,
+                headers=self.cols_mixtracks_basic.headers_dict()
+            ))
+
+    def duration_stats(self, start_time, msg):
+        took_seconds = time() - start_time
+        if took_seconds >= 86400:
+            days_part = "{days} days "
+        else:
+            days_part = ""
+        took_str = self.strfdelta(
+            timedelta(seconds=took_seconds),
+            days_part + "{hours} hours {minutes} minutes {seconds} seconds"
+        )
+        msg_took = "{} took {}".format(msg, took_str)
+        log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
+        log.info('CTRLS: {}'.format(msg_took))
+        print(msg_took)
+
+    def edit_ask_details(self, orig_data, edit_questions):
+        # collect answers from user input
+        answers = {}
+        for db_field, question in edit_questions:
+            # some special treatments for track_pos handling...
+            if db_field == 'track_pos':
+                answers['track_pos'] = self.ask(question.format(orig_data['track_pos']))
+                if answers['track_pos'] == '':
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers['track_pos'])
+                elif not is_number(answers['track_pos']):
+                    while not is_number(answers['track_pos']):
+                        log.warning("Answer was not a number, asking again.")
+                        if answers['track_pos'] == '':
+                            del(answers['track_pos'])
+                            break
+                        else:
+                            answers['track_pos'] = self.ask(question.format(orig_data['track_pos']))
+                else:
+                    move_to = int(answers['track_pos'])
+                    if move_to < orig_data['track_pos']:
+                        mvmsg = 'Note: Tracks new position will be right _before_ '
+                        mvmsg+= 'current track {}'.format(move_to)
+                        log.debug(mvmsg)
+                        print(mvmsg)
+                    elif move_to > orig_data['track_pos']:
+                        mvmsg = 'Note: Tracks new position will be right _after_ '
+                        mvmsg+= 'current track {}'.format(move_to)
+                        log.debug(mvmsg)
+                        print(mvmsg)
+            elif db_field == 'trans_rating':
+                allowed = ['++', '+', '~', '-', '--']
+                answers['trans_rating'] = self.ask(question.format(
+                    orig_data['trans_rating']
+                ))
+                if answers['trans_rating'] == '':
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers['trans_rating'])
+                else:
+                    while not answers['trans_rating'] in allowed:
+                        log.warning("Please use one of the following: "
+                                    "++, +, ~, -, --")
+                        if answers['trans_rating'] == '':
+                            del(answers['trans_rating'])
+                            break
+                        else:
+                            answers['trans_rating'] = self.ask(question.format(orig_data['trans_rating']))
+            elif db_field == 'name':
+                # initial user question
+                answers['name'] = self.ask(question.format(orig_data['name']))
+                # sanity checking loop
+                while answers['name'] == orig_data['name']:
+                    log.warning("Just press enter if you want to leave as-is.")
+                    answers['name'] = self.ask(question.format(orig_data['name']))
+                # after loop we know that existing and new are different
+                # if answer is empty, leave as-is (no empty mixname allowed)
+                if answers['name'] == '':
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers['name'])
+            else:
+                answers[db_field] = self.ask(question.format(
+                    orig_data[db_field]
+                ))
+                if answers[db_field] == "":
+                    log.info("Answer was empty, dropping item from update.")
+                    del(answers[db_field])
+
+        log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
+        return answers
+
+    def view_tutorial(self):
+        tutorial_items = [
+            '\n\nFirst things first: Whenever DiscoDOS asks you a question, '
+            'you will be shown a default value in (brackets). If you '
+            'are fine with the default, just press enter.'
+            '\nWhen it\'s a yes/no question, the default will be presented as a '
+            'capital letter. Let\'s try this right now:',
+
+            '\n\nI will show a couple of basic commands now. Best you open a '
+            'second terminal window (macOS/Linux) or command prompt window (Windows), '
+            'so you can try out the commands over there, while watching this tutorial.',
+
+            '\n\nImport your collection (1000 releases take about a minute or two '
+            'to import):'
+            '\ndisco import',
+
+            '\n\nCreate a mix:'
+            '\ndisco mix my_mix -c',
+
+            '\n\nSearch in your collection and add tracks to the mix:\n'
+            'disco mix my_mix -a "search terms"',
+
+            '\n\nView your mix. Leave out mix-name '
+            'to view a list of all your mixes:'
+            '\ndisco mix my_mix',
+
+            '\n\nDiscoDOS by default is minimalistic. The initial import only '
+            'gave us release-titles/artists and CatNos. Now fetch track-names '
+            'and track-artists:'
+            '\ndisco mix my_mix -u',
+
+            '\n\nNow let\'s have a look into the tracklist again. '
+            '(-v enables a more detailed view, it includes eg '
+            'track-names, artists, transition rating, notes, etc.)'
+            '\ndisco mix my_mix -v',
+
+            '\n\nMatch the tracks with MusicBrainz/AcousticBrainz and get '
+            'BPM and musical key information (-z is quicker but not as accurate):'
+            '\ndisco mix my_mix -zz',
+
+            '\n\nIf we were lucky, some tracks will show BPM and key information. '
+            'Hint if you\'re new to CLI tools: We typed this command already, you '
+            'don\'t have to type or copy/paste it again, just use '
+            'your terminals command history, usually by hitting the "cursor up" key '
+            'until you see this command and just pressing enter:'
+            '\ndisco mix my_mix -v',
+
+            '\n\nView weblinks pointing directly to your Discogs & MusicBrainz releases, '
+            'find out interesting details about your music via AcousticBrainz, '
+            'and see how the actual matching went:'
+            '\ndisco mix my_mix -vv',
+
+            "\n\nIf a track couldn't be matched automatically, you could head over "
+            'to the MusicBrainz website yourself, find a Recording MBID and put it '
+            'into DiscoBASE by using the "edit track command" below. '
+            'If you\'re done with editing, re-run the match-command from above '
+            '(the one with -zz in the end ;-). Again: use the command history! '
+            '\ndisco mix my_mix -e 1',
+
+            '\n\nIf you\'re just interested in a tracks details and don\'t want to '
+            'add it to a mix, use the search command. You can also combine it with '
+            'the Discogs update or MusicBrainz update options.'
+            '\ndisco search "search terms"'
+            '\ndisco search "search terms" -u'
+            '\ndisco search "search terms" -zz',
+
+            "\n\nThere's a lot more you can do. Each subcommand has it's own help command:"
+            '\ndisco mix -h'
+            '\ndisco search -h'
+            '\ndisco suggest -h',
+
+            "\nStill questions? Check out the README or open an issue on Github: "
+            'https://github.com/JOJ0/discodos'
+        ]
+
+        view_tut = self.ask('Do you want to see a tutorial on how DiscoDOS '
+                            'basically works? (Y/n): ')
+        if view_tut.lower() == 'y' or view_tut == '':
+            # print(tutorial_items[0])
+            i = 0
+            while i < len(tutorial_items):
+                print(tutorial_items[i])
+                if i == len(tutorial_items) - 1:
+                    break
+                continue_tut = self.ask('\nContinue tutorial? (Y/n) ')
+                if continue_tut.lower() == 'n':
+                    break
+                i += 1
+
+    def welcome_to_discodos(self):
+        print(r'''
+                            _______  _______ ________
+                           /       \        /       /
+                          /  ___   /  ___  /  _____/
+                         /  /  /  /  /  /  \____  \
+                        /  /__/  /  /__/  _____/  /
+Welcome to  D i s c o  /                /        /
+                      /_______/\_______/________/
+              ''')
+
+
+class TableDefaults():
+    '''Describes default and general settings for CLI and GUI tables.
+
+    Generates headers dicts we use for CLI tables with tabulate.
+    Generates headers lists we use for Qt Tree/TableViews and CLI tables.
     '''
     def __init__(self):
-        super().__init__()
-        # Edit questions
-        self._edit_track_questions = [
-            ["key", "Key ({}): "],
-            ["bpm", "BPM ({}): "],
-            ["d_track_no", "Track # on record ({}): "],
-            ["track_pos", "Move track's position ({}): "],
-            ["key_notes", "Key notes/bassline/etc. ({}): "],
-            ["trans_rating", "Transition rating ({}): "],
-            ["trans_notes", "Transition notes ({}): "],
-            ["notes", "Other track notes: ({}): "],
-            ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
-        ]
-        self._edit_mix_questions = [
-            ["name", "Name ({}): "],
-            ["played", "Played ({}): "],
-            ["venue", "Venue ({}): "]
-        ]
+        # self.cols = OrderedDict()
+        self.cols = {}
 
-    def shorten_mixes_timestamps(self, mixes):
-        ''' Reformats timestamps in a list of mixes.
+    def addcol(self, **kwargs):
+        self.cols[kwargs.get('name')] = kwargs
+        del(self.cols[kwargs.get('name')]['name'])
 
-        Argument mixes, usually an sqlite tuples list, will be translated into a
-        list of mutable dicts. If it's one already, it's done anyway.
-        '''
-        mixes = [dict(row) for row in mixes]
-        for i, mix in enumerate(mixes):
-            mixes[i]['created'] = self.shorten_timestamp(
-                mix['created'],
-                text=True
-            )
-            mixes[i]['played'] = self.format_date_month(
-                mix['played'],
-                text=True
-            )
-            mixes[i]['updated'] = self.shorten_timestamp(
-                mix['updated'],
-                text=True
-            )
-        return mixes
+    def headers_list(self):
+        return [col['caption'] for col in self.cols.values()]
 
+    def headers_dict(self, short=False):
+        if short:
+            headers = {}
+            for (name, settings) in self.cols.items():
+                if settings.get('short_cap'):
+                    headers[name] = settings['short_cap']
+                else:
+                    headers[name] = settings['caption']
+            return headers
+        return {
+            name: settings['caption'] for (name, settings) in self.cols.items()
+        }
 
-class CollectionViewCommon():
-    """Collection view utils, usable in CLI and GUI, related to Collection only
+    def get_locked_columns(self):
+        """Retrieves a list of non-editable columns from self.cols dict.
 
-    Lists of questions. Used in CLI:
-        self._edit_track_questions: when editing a collection-track.
-    """
-    def __init__(self):
-        super().__init__()
-        # List of questions a user is asked when searching and editing a track.
-        # First list item is the related db-field, second is the question
-        self._edit_track_questions = [
-            ["key", "Key ({}): "],
-            ["bpm", "BPM ({}): "],
-            ["key_notes", "Key notes/bassline/etc. ({}): "],
-            ["notes", "Other track notes: ({}): "],
-            ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
-        ]
+        Returns:
+            list: containing id's (int) of non-editable columns
+        """
+        cols_list = []
+        for col_default in self.cols.values():
+            edit = col_default.get('edit')
+            if edit is False or edit is None:
+                cols_list.append(col_default.get('order_id'))
+        return cols_list

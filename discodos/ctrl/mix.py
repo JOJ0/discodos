@@ -5,7 +5,7 @@ from abc import ABC
 from discodos.ctrl.common import ControlCommon
 from discodos.model_mix import Mix
 from discodos.utils import is_number
-from discodos.view_cli import MixViewCommandline
+from discodos.view import MixViewCommandline
 
 log = logging.getLogger('discodos')
 
