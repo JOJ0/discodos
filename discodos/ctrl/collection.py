@@ -10,7 +10,7 @@ from discodos.model_brainz import Brainz
 from discodos.model_brainz_match import Brainz_match
 from discodos.model_collection import Collection
 from discodos.utils import is_number
-from discodos.view_cli import Collection_view_cli
+from discodos.view_cli import CollectionViewCommandline
 
 log = logging.getLogger('discodos')
 
@@ -27,7 +27,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
                  _db_file=False, _musicbrainz_user=False, _musicbrainz_pass=False):
         self.user = _user_int  # set instance of User_int class as attribute
-        self.cli = Collection_view_cli()  # instantiate cli frontend class
+        self.cli = CollectionViewCommandline()  # instantiate cli frontend class
         self.collection = Collection(_db_conn, _db_file)
         if self.collection.db_not_found is True:
             self.cli.ask('Setting up DiscoBASE, press enter...')

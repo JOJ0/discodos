@@ -5,7 +5,7 @@ from abc import ABC
 from discodos.ctrl.common import ControlCommon
 from discodos.model_mix import Mix
 from discodos.utils import is_number
-from discodos.view_cli import Mix_view_cli
+from discodos.view_cli import MixViewCommandline
 
 log = logging.getLogger('discodos')
 
@@ -23,7 +23,7 @@ class MixControlCommandline (ControlCommon, MixControlCommon):
 
     def __init__(self, db_conn, mix_name_or_id, _user_int, db_file = False):
         self.user = _user_int # take an instance of the User_int class and set as attribute
-        self.cli = Mix_view_cli() # instantiatie the Mix view class (the CLI)
+        self.cli = MixViewCommandline() # instantiatie the Mix view class (the CLI)
         self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
         if self.mix.db_not_found == True:
             self.cli.ask('Setting up DiscoBASE, press enter...')

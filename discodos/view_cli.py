@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 #  import pprint
 from time import time
+# from collections import OrderedDict
 from tabulate import tabulate as tab
 
 from discodos.view_common import (
@@ -10,13 +11,10 @@ from discodos.view_common import (
     ViewCommon,
 )
 
-# from collections import OrderedDict
-
-
 log = logging.getLogger('discodos')
 
 
-class ViewCommon_cli(ViewCommon):
+class ViewCommonCommandline(ViewCommon):
     """ Common view utils, usable in CLI only.
     """
 
@@ -260,11 +258,11 @@ Welcome to  D i s c o  /                /        /
               ''')
 
 
-class Mix_view_cli(MixViewCommon, ViewCommon_cli, ViewCommon):
+class MixViewCommandline(MixViewCommon, ViewCommonCommandline, ViewCommon):
     """ Viewing mixes outputs on CLI.
     """
     def __init__(self):
-        super(Mix_view_cli, self).__init__()
+        super(MixViewCommandline, self).__init__()
 
     def tab_mixes_list(self, mixes_data):
         mixes_short_timestamps = self.shorten_mixes_timestamps(mixes_data)
@@ -308,11 +306,13 @@ class Mix_view_cli(MixViewCommon, ViewCommon_cli, ViewCommon):
         return False
 
 
-class Collection_view_cli(CollectionViewCommon, ViewCommon_cli, ViewCommon):
+class CollectionViewCommandline(
+    CollectionViewCommon, ViewCommonCommandline, ViewCommon
+):
     """ Viewing collection (search) outputs on CLI.
     """
     def __init__(self):
-        super(Collection_view_cli, self).__init__()
+        super(CollectionViewCommandline, self).__init__()
 
     def tab_online_search_results(self, _result_list):
         self.p(
