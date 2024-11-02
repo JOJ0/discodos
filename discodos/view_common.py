@@ -65,10 +65,10 @@ class TableDefaults():
         return cols_list
 
 
-class View_common():
+class ViewCommon():
     """ Common view utils, usable in CLI and GUI
 
-    This class, Mix_view_common and Collection_view_common contain
+    This class, MixViewCommon and CollectionViewCommon contain
     (default) settings and utilities for displaying data in GUI and CLI.
 
     Column defaults and headers. Used in GUI and CLI:
@@ -550,7 +550,7 @@ class View_common():
 
 
 
-class Mix_view_common():
+class MixViewCommon():
     ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
 
     Lists of questions. Used in CLI:
@@ -600,7 +600,7 @@ class Mix_view_common():
         return mixes
 
 
-class Collection_view_common():
+class CollectionViewCommon():
     """Collection view utils, usable in CLI and GUI, related to Collection only
 
     Lists of questions. Used in CLI:

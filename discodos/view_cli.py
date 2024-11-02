@@ -4,8 +4,11 @@ from datetime import timedelta
 from time import time
 from tabulate import tabulate as tab
 
-from discodos.view_common import (Collection_view_common, Mix_view_common,
-                                  View_common)
+from discodos.view_common import (
+    CollectionViewCommon,
+    MixViewCommon,
+    ViewCommon,
+)
 
 # from collections import OrderedDict
 
@@ -13,7 +16,7 @@ from discodos.view_common import (Collection_view_common, Mix_view_common,
 log = logging.getLogger('discodos')
 
 
-class View_common_cli(View_common):
+class ViewCommon_cli(ViewCommon):
     """ Common view utils, usable in CLI only.
     """
 
@@ -257,7 +260,7 @@ Welcome to  D i s c o  /                /        /
               ''')
 
 
-class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
+class Mix_view_cli(MixViewCommon, ViewCommon_cli, ViewCommon):
     """ Viewing mixes outputs on CLI.
     """
     def __init__(self):
@@ -305,7 +308,7 @@ class Mix_view_cli(Mix_view_common, View_common_cli, View_common):
         return False
 
 
-class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
+class Collection_view_cli(CollectionViewCommon, ViewCommon_cli, ViewCommon):
     """ Viewing collection (search) outputs on CLI.
     """
     def __init__(self):
