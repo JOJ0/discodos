@@ -60,6 +60,7 @@ class Collection (Database):
             "title": "discogs_title",
             "id": "discogs_id",
             "cat": "d_catno",
+            "forsale": "d_listing_id",
         }
         where = " AND ".join(
             [
@@ -67,6 +68,7 @@ class Collection (Database):
                 for k, v in search_key_value.items()
             ]
         )
+        join = [("LEFT", "sales", "discogs_id = d_release_id")]
 
         return self._select_simple(
             [
@@ -75,9 +77,10 @@ class Collection (Database):
                 "d_artist",
                 "discogs_title",
                 "in_d_collection",
-                "sold",
+                "d_listing_id"
             ],
-            "release", fetchone=False, orderby=orderby, condition=where,
+            "release",
+            fetchone=False, orderby=orderby, condition=where, join=join
         )
 
     def search_release_online(self, id_or_title):

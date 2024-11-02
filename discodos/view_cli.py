@@ -322,7 +322,7 @@ class Collection_view_cli(Collection_view_common, View_common_cli, View_common):
             tab(
                 _result_list,
                 tablefmt="simple",
-                headers=["ID", "Cat. #", "Artist", "Title", "D. Coll.", "Sold"],
+                headers=["ID", "Cat. #", "Artist", "Title", "D. Coll.", "For Sale"],
             )
         )
 

@@ -1173,5 +1173,6 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.p("Importing Discogs sales inventory into DiscoBASE")
         for item in self.collection.me.inventory:
+            # print(item.release.id, item.id, item.release.artists[0], item.release.title)
             self.collection.create_sales_entry(item.release.id, item.id)
         self.cli.duration_stats(start_time, 'Discogs sales inventory import')
