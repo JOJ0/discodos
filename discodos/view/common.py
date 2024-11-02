@@ -578,7 +578,7 @@ class ViewCommonCommandline(ViewCommon):
         log.info('CTRLS: {}'.format(msg_took))
         print(msg_took)
 
-    def edit_ask_details(self, orig_data, edit_questions):
+    def edit_ask_details(self, orig_data, edit_questions):  # pylint: disable=R0912,R0915
         # collect answers from user input
         answers = {}
         for db_field, question in edit_questions:

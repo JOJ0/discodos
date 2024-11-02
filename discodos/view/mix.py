@@ -6,7 +6,7 @@ from discodos.view import ViewCommonCommandline
 
 log = logging.getLogger('discodos')
 
-class MixViewCommon():
+class MixViewCommon(ViewCommonCommandline):
     ''' Constants and utils used for viewing Mixes. Usable in CLI and GUI.
 
     Lists of questions. Used in CLI:
@@ -36,8 +36,8 @@ class MixViewCommon():
     def shorten_mixes_timestamps(self, mixes):
         ''' Reformats timestamps in a list of mixes.
 
-        Argument mixes, usually an sqlite tuples list, will be translated into a
-        list of mutable dicts. If it's one already, it's done anyway.
+        Argument mixes, usually an sqlite tuples list, will be translated into
+        a list of mutable dicts. If it's one already, it's done anyway.
         '''
         mixes = [dict(row) for row in mixes]
         for i, mix in enumerate(mixes):
@@ -59,8 +59,8 @@ class MixViewCommon():
 class MixViewCommandline(MixViewCommon, ViewCommonCommandline, ViewCommon):
     """ Viewing mixes outputs on CLI.
     """
-    def __init__(self):
-        super(MixViewCommandline, self).__init__()
+    def __init__(self):  # pylint: disable=useless-parent-delegation
+        super().__init__()
 
     def tab_mixes_list(self, mixes_data):
         mixes_short_timestamps = self.shorten_mixes_timestamps(mixes_data)
@@ -80,25 +80,25 @@ class MixViewCommandline(MixViewCommon, ViewCommonCommandline, ViewCommon):
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
         _answ = self.ask(
-            'Add "{}" on "{}" to mix #{}, at position {}? (Y/n) '.format(
-                track_to_add.upper(),
-                release_name,
-                int(mix_id), pos)
+            f'Add "{track_to_add.upper()}" on "{release_name}" to '
+            f'mix #{mix_id}, at position {pos}? (Y/n) '
         )
         if _answ.lower() == "y" or _answ == "":
             return True
+        return False
 
     def really_delete_track(self, track_pos, mix_name):
-        really_del = self.ask('Delete Track {} from mix "{}"? (y/N) '.format(
-                              track_pos, mix_name))
+        really_del = self.ask(f'Delete Track {track_pos} '
+                              f'from mix "{mix_name}"? (y/N) ')
         if really_del.lower() == "y":
             return True
         return False
 
     def really_delete_mix(self, mix_id, mix_name):
         really_delete = self.ask(
-            'Are you sure you want to delete mix "{} - {}" and all its containing tracks? '.format(
-                mix_id, mix_name))
+            f'Are you sure you want to delete mix "{mix_id} - {mix_name} "'
+            'and all its containing tracks?'
+        )
         if really_delete.lower() == "y":
             return True
         return False
