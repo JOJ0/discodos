@@ -1,12 +1,14 @@
 import logging
-from tabulate import tabulate as tab
+from datetime import timedelta
 #  import pprint
 from time import time
-from datetime import timedelta
+from tabulate import tabulate as tab
+
+from discodos.view_common import (Collection_view_common, Mix_view_common,
+                                  View_common)
+
 # from collections import OrderedDict
 
-from discodos.view_common import View_common
-from discodos.view_common import Mix_view_common, Collection_view_common
 
 log = logging.getLogger('discodos')
 

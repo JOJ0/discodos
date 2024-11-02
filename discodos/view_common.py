@@ -1,10 +1,10 @@
-from discodos.utils import is_number, join_sep
 import logging
-# import pprint
-from datetime import datetime
-from datetime import date
-# from collections import OrderedDict
 import re
+# import pprint
+# from collections import OrderedDict
+from datetime import date, datetime
+
+from discodos.utils import is_number, join_sep
 
 log = logging.getLogger('discodos')
 
