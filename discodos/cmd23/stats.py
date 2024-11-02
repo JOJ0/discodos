@@ -1,7 +1,7 @@
-import click
 import logging
+import click
 
-from discodos.ctrls import Coll_ctrl_cli
+from discodos.ctrl import Coll_ctrl_cli
 
 log = logging.getLogger('discodos')
 

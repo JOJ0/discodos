@@ -1,8 +1,8 @@
+import logging
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
-import logging
 
-from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
+from discodos.ctrl import Coll_ctrl_cli, Mix_ctrl_cli
 
 log = logging.getLogger('discodos')
 
