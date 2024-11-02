@@ -9,7 +9,8 @@ from discodos.utils import is_number, join_sep
 log = logging.getLogger('discodos')
 
 
-class Headers_list():
+class HeadersList():
+    """Currently unused"""
     def __set_name__(self, owner, name) -> str:
         self.name = name
         self.dict_name = self.name.replace('_list_', '_dict_')
@@ -547,7 +548,6 @@ class ViewCommon():
                 else:
                     new_text += part
         return new_text
-
 
 
 class MixViewCommon():
