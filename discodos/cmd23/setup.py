@@ -2,7 +2,7 @@ import logging
 import click
 
 from discodos.config import Db_setup
-from discodos.ctrl import Coll_ctrl_cli
+from discodos.ctrl import CollectionControlCommandline
 
 log = logging.getLogger('discodos')
 
@@ -24,7 +24,7 @@ def setup_cmd(helper, force_upgrade_schema):
 
     user = update_user_interaction_helper(helper)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    coll_ctrl = Coll_ctrl_cli(
+    coll_ctrl = CollectionControlCommandline(
         False, user, user.conf.discogs_token, user.conf.discogs_appid,
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)

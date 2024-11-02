@@ -1,7 +1,7 @@
-from discodos.ctrl.collection import Coll_ctrl_cli
-from discodos.ctrl.mix import Mix_ctrl_cli
+from discodos.ctrl.collection import CollectionControlCommandline
+from discodos.ctrl.mix import MixControlCommandline
 
 __ALL__ = [
-    Coll_ctrl_cli,
-    Mix_ctrl_cli
+    CollectionControlCommandline,
+    MixControlCommandline
 ]

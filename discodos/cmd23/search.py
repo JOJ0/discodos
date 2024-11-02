@@ -2,7 +2,7 @@ import logging
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 
-from discodos.ctrl import Coll_ctrl_cli, Mix_ctrl_cli
+from discodos.ctrl import CollectionControlCommandline, MixControlCommandline
 
 log = logging.getLogger('discodos')
 
@@ -131,7 +131,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
 
     user = update_user_interaction_helper(helper)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    coll_ctrl = Coll_ctrl_cli(
+    coll_ctrl = CollectionControlCommandline(
         False, user, user.conf.discogs_token, user.conf.discogs_appid,
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
@@ -155,7 +155,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
         if coll_ctrl.ONLINE:
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
-                mix_ctrl = Mix_ctrl_cli(
+                mix_ctrl = MixControlCommandline(
                     False, add_to_mix, user, user.conf.discobase
                 )
                 mix_ctrl.add_discogs_track(
@@ -191,7 +191,7 @@ def search_cmd(helper, release_search, track_to_add, add_at_pos, search_offset,
             if not database_rel_found:
                 return
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
-                mix_ctrl = Mix_ctrl_cli(
+                mix_ctrl = MixControlCommandline(
                     False, add_to_mix, user, user.conf.discobase
                 )
                 mix_ctrl.add_offline_track(

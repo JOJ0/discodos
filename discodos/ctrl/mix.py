@@ -2,7 +2,7 @@ import logging
 from abc import ABC
 # import pprint as p
 
-from discodos.ctrl.common import Ctrl_common
+from discodos.ctrl.common import ControlCommon
 from discodos.model_mix import Mix
 from discodos.utils import is_number
 from discodos.view_cli import Mix_view_cli
@@ -11,14 +11,14 @@ log = logging.getLogger('discodos')
 
 
 # mix controller class (abstract) - common attrs and methods  for gui and cli
-class Mix_ctrl_common (ABC):
+class MixControlCommon (ABC):
     """Common controller functionality for mixes"""
     def __init__(self):
         pass
 
 
 # mix controller class CLI implementation
-class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
+class MixControlCommandline (ControlCommon, MixControlCommon):
     """Controls CLI logic for mixes """
 
     def __init__(self, db_conn, mix_name_or_id, _user_int, db_file = False):
@@ -27,7 +27,7 @@ class Mix_ctrl_cli (Ctrl_common, Mix_ctrl_common):
         self.mix = Mix(db_conn, mix_name_or_id, db_file) # instantiate the Mix model class
         if self.mix.db_not_found == True:
             self.cli.ask('Setting up DiscoBASE, press enter...')
-            super(Mix_ctrl_cli, self).setup_db(db_file)
+            super(MixControlCommandline, self).setup_db(db_file)
             self.mix = Mix(db_conn, db_file)
 
     def create(self):

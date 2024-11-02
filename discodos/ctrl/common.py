@@ -6,7 +6,7 @@ from discodos.config import Db_setup
 log = logging.getLogger('discodos')
 
 
-class Ctrl_common (ABC):
+class ControlCommon (ABC):
     """Common controller functionality"""
     def setup_db(self, db_file):
         """Manages database initialization and schema upgrades"""

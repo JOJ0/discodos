@@ -5,7 +5,7 @@ from time import time
 
 import discogs_client.exceptions as errors
 
-from discodos.ctrl.common import Ctrl_common
+from discodos.ctrl.common import ControlCommon
 from discodos.model_brainz import Brainz
 from discodos.model_brainz_match import Brainz_match
 from discodos.model_collection import Collection
@@ -15,15 +15,13 @@ from discodos.view_cli import Collection_view_cli
 log = logging.getLogger('discodos')
 
 
-# Collection controller common methods
-class Coll_ctrl_common (ABC):
+class CollectionControlCommon (ABC):
     """Common controller functionality for the Discogs user profile"""
     def __init__(self):
         pass
 
 
-# Collection controller class
-class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
+class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     """CLI level controller functionality, offline & Discogs user profile"""
 
     def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
@@ -33,7 +31,7 @@ class Coll_ctrl_cli (Ctrl_common, Coll_ctrl_common):
         self.collection = Collection(_db_conn, _db_file)
         if self.collection.db_not_found is True:
             self.cli.ask('Setting up DiscoBASE, press enter...')
-            super(Coll_ctrl_cli, self).setup_db(_db_file)
+            super(CollectionControlCommandline, self).setup_db(_db_file)
             self.collection = Collection(_db_conn, _db_file)
         if self.user.WANTS_ONLINE:
             if not self.collection.discogs_connect(_userToken, _appIdentifier):
