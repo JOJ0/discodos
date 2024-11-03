@@ -18,7 +18,7 @@ def ls_cmd(helper, search_terms):
     """Searches and lists collection items - offline only!.
     """
     def update_user_interaction_helper(user):
-        user.WANTS_ONLINE = False
+        user.WANTS_ONLINE = True
         user.WANTS_TO_SEARCH_FOR_RELEASE = True
         if not search_terms:
             user.WANTS_TO_LIST_ALL_RELEASES = True

@@ -832,4 +832,5 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         if not search_results:
             self.cli.p('Nothing found.')
             return
+        #self.collection.get_sales_listing_details(55192468)
         self.cli.tui_ls_releases(search_results)

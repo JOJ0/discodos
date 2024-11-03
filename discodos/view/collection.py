@@ -47,7 +47,6 @@ class DiscodosListApp(App):
         ("e", "edit_release", "Set to draft"),
         ("E", "edit_sale", "Edit sales listing"),
     ]
-    """docstring"""
     def __init__(self, rows, headers):
         super().__init__()
         self.rows = rows

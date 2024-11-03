@@ -876,3 +876,9 @@ class Collection (Database):
         except sqlerr as e:
             log.error("MODEL: create_sales_entry: %s", e.args[0])
             return False
+
+    def get_sales_listing_details(self, listing_id):
+        print(self.me.inventory)
+        for item in self.me.inventory:
+            if item.id == listing_id:
+                return item
