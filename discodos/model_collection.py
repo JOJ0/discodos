@@ -15,15 +15,8 @@ from discodos.utils import is_number  # most of this should only be in view
 
 log = logging.getLogger('discodos')
 
-
-class Collection (Database):  # pylint: disable=too-many-public-methods
-    """Discogs record collection class."""
-    def __init__(self, db_conn, db_file=False):
-        super().__init__(db_conn, db_file)
-        self.d = False
-        self.me = False
-        self.ONLINE = False # set True by discogs_connect method
-
+class DiscogsMixin:
+    """Discogs connection and fetch methods."""
     def discogs_connect(self, _userToken, _appIdentifier):
         """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
         """
@@ -36,6 +29,15 @@ class Collection (Database):  # pylint: disable=too-many-public-methods
         except Exception:  # pylint: disable=broad-exception-caught
             self.ONLINE = False
         return self.ONLINE
+
+
+class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods
+    """Discogs record collection class."""
+    def __init__(self, db_conn, db_file=False):
+        super().__init__(db_conn, db_file)
+        self.d = False
+        self.me = False
+        self.ONLINE = False # set True by discogs_connect method
 
     def get_all_db_releases(self, orderby='d_artist, discogs_title'):
         # return db.all_releases(self.db_conn)
