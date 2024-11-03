@@ -816,3 +816,20 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 custom_progress.update(task, advance=1)
 
         self.cli.duration_stats(start_time, 'Inventory import')
+
+    def tui_ls_releases(self, search_terms):
+        """search_terms is a key value dict: eg: d_artist: artistname"""
+
+        search_results = []
+        self.cli.p('Searching database for: {}'.format(search_terms))
+        try:
+            search_results = self.collection.key_value_search_releases(
+                search_key_value=search_terms
+            )
+        except Exception as error:
+            self.cli.p(error)
+
+        if not search_results:
+            self.cli.p('Nothing found.')
+            return
+        self.cli.tui_ls_releases(search_results)

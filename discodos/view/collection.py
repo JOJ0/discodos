@@ -1,5 +1,17 @@
 import logging
 from tabulate import tabulate as tab
+from textual.app import App
+from textual.containers import Grid, Horizontal, Vertical
+from textual.screen import Screen
+from textual.widgets import (
+    Button,
+    DataTable,
+    Footer,
+    Header,
+    Label,
+    Static,
+)
+
 
 from discodos.view import ViewCommon, ViewCommonCommandline
 
@@ -22,6 +34,74 @@ class CollectionViewCommon():
             ["notes", "Other track notes: ({}): "],
             ["m_rec_id_override", "Override MusicBrainz Recording ID: ({}): "]
         ]
+
+
+class DiscodosListApp(App):
+    """Inline Textual app to view and edit dsc ls results."""
+    CSS_PATH = "tui_ls.tcss"
+    BINDINGS = [
+        ("m", "toggle_dark", "Toggle dark mode"),
+        ("q", "request_quit", "Quit"),
+        ("l", "list_sale", "List for sale"),
+        ("d", "draft_sale", "Set to draft"),
+        ("e", "edit_release", "Set to draft"),
+        ("E", "edit_sale", "Edit sales listing"),
+    ]
+    """docstring"""
+    def __init__(self, rows, headers):
+        super().__init__()
+        self.rows = rows
+        self.headers = headers
+
+    def compose(self):
+        #yield Header()
+        ls_results_list = DataTable(classes="ls_results-list")
+        ls_results_list.focus()
+        ls_results_list.add_columns(*self.headers)
+        ls_results_list.cursor_type = "row"
+        ls_results_list.zebra_stripes = True
+        # add_button = Button("Add", variant="success", id="add")
+        # add_button.focus()
+        # buttons_panel = Vertical(
+        #     add_button,
+        #     Button("Delete", variant="warning", id="delete"),
+        #     Static(classes="separator"),
+        #     Button("Clear All", variant="error", id="clear"),
+        #     classes="buttons-panel",
+        # )
+        #yield Horizontal(ls_results_list, buttons_panel)
+        yield Horizontal(ls_results_list)
+        yield ls_results_list
+        yield Footer()
+
+    def action_toggle_dark(self):
+        self.dark = not self.dark
+
+    def action_request_quit(self):
+        self.exit()
+
+    def action_list_sale(self):
+        pass
+
+    def action_draft_sale(self):
+        pass
+
+    def action_edit_release(self):
+        pass
+
+    def action_edit_sale(self):
+        pass
+
+    def on_mount(self):
+        self.title = "DiscoDOS ls results"
+        self.sub_title = "Use keystrokes to edit/sell/view details, ..."
+        self._load_ls_results()
+
+    def _load_ls_results(self):
+        ls_results_list = self.query_one(DataTable)
+        for list_entry_data in self.rows:
+            row_id, *list_entry = list_entry_data
+            ls_results_list.add_row(*list_entry, key=row_id)
 
 
 class CollectionViewCommandline(
@@ -191,3 +271,18 @@ class CollectionViewCommandline(
             ['Unique tracks in mixes', mixtracks_unique],
         ]
         self.p(tab(stats, tablefmt='plain'), lead_nl=True)
+
+    def tui_ls_releases(self, _result_list):
+        app = DiscodosListApp(
+            rows=_result_list,
+            headers=[
+                "ID",
+                "Cat. #",
+                "Artist",
+                "Title",
+                "D. Coll.",
+                "For Sale",
+            ],
+        )
+        app.run(inline=True)
+        # app.run(inline=False)

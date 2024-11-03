@@ -42,5 +42,9 @@ def ls_cmd(helper, search_terms):
 
     if user.WANTS_TO_LIST_ALL_RELEASES:
         coll_ctrl.view_all_releases()
-    else:
-        coll_ctrl.ls_releases(search_key_value)
+        # maybe put a rich pager here?
+        return
+    if user.conf.enable_tui:
+        coll_ctrl.tui_ls_releases(search_key_value)
+        return
+    coll_ctrl.ls_releases(search_key_value)
