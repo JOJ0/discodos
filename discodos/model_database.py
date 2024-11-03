@@ -18,45 +18,63 @@ class Database():
             log.debug("DB: Creating connection to db_file.")
             if not db_file:
                 log.debug("DB: No db_file given, using default name.")
-                db_file = './discobase.db'
-            self.db_conn = self.create_conn(db_file, setup)  # setup=True creates empty db
+                db_file = "./discobase.db"
+            self.db_conn = self.create_conn(
+                db_file, setup
+            )  # setup=True creates empty db
             if self.db_conn is None:
                 log.debug("DB: Creating database.")
                 self.db_conn = self.create_conn(db_file, setup=True)
-        self.db_conn.row_factory = sqlite3.Row  # also this was in each db.function before
-        self.cur = self.db_conn.cursor()  # we had this in each db function before
+        self.db_conn.row_factory = (
+            sqlite3.Row
+        )  # also this was in each db.function before
+        self.cur = (
+            self.db_conn.cursor()
+        )  # we had this in each db function before
         self.configure_db()  # set PRAGMA options
 
     def create_conn(self, db_file, setup=False):
-        try:  # format ensures db_file is string. uri rw mode throws error if non-existen
+        # format() ensures db_file is string. uri rw mode throws error if
+        # non-existent
+        try:
             if setup:
-                conn = sqlite3.connect('file:{}'.format(db_file), uri=True)
+                conn = sqlite3.connect("file:{}".format(db_file), uri=True)
             else:
-                conn = sqlite3.connect('file:{}?mode=rw'.format(db_file), uri=True)
+                conn = sqlite3.connect(
+                    "file:{}?mode=rw".format(db_file), uri=True
+                )
             return conn
         except sqlerr as e:
-            if e.args[0] == 'unable to open database file':
-                e = "DB: create_conn: Database {} can't be opened.".format(db_file)
+            if e.args[0] == "unable to open database file":
+                e = "DB: create_conn: Database {} can't be opened.".format(
+                    db_file
+                )
                 log.debug(e)
                 self.db_not_found = True
                 return None
             else:
                 log.error("DB: Connection error: %s", e)
-                raise SystemExit(4)  # 4 = other db error. will SystemExit break gui?
+                # 4 = other db error. will SystemExit break gui?
+                raise SystemExit(4)
 
     def execute_sql(self, sql, values_tuple=False, raise_err=False):
-        '''used for eg. creating tables or inserts'''
+        """used for eg. creating tables or inserts"""
         log.info("DB: execute_sql: %s", sql)
         try:
             with self.db_conn:  # auto commits and auto rolls back on exceptions
-                c = self.cur  # connection close has to be done manually though!
+                c = (
+                    self.cur
+                )  # connection close has to be done manually though!
                 if values_tuple:
                     log.info("DB: ...with this tuple: {%s}", values_tuple)
                     c.execute(sql, values_tuple)
                 else:
                     c.execute(sql)
-                log.info("DB: rowcount: {}, lastrowid: {}".format(c.rowcount,
-                         c.lastrowid))
+                log.info(
+                    "DB: rowcount: {}, lastrowid: {}".format(
+                        c.rowcount, c.lastrowid
+                    )
+                )
                 # log.info("DB: Committing NOW")
                 # self.db_conn.commit()
             log.debug("DB: Committing via context close NOW")
@@ -132,14 +150,27 @@ class Database():
             # log.debug("DB: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
             #     self.cur.rowcount, self.cur.lastrowid))
             if fetchone:  # len will return column count
-                log.info('DB: Found 1 row containing {} columns.'.format(len(rows.keys())))
+                log.info(
+                    "DB: Found 1 row containing {} columns.".format(
+                        len(rows.keys())
+                    )
+                )
             else:  # len will return rows count
-                log.info('DB: Found {} rows containing {} columns.'.format(
-                    len(rows), len(rows[0])))
-            log.debug("DB: Returning row(s) as type: {}.".format(type(rows).__name__))
+                log.info(
+                    "DB: Found {} rows containing {} columns.".format(
+                        len(rows), len(rows[0])
+                    )
+                )
+            log.debug(
+                "DB: Returning row(s) as type: {}.".format(type(rows).__name__)
+            )
             return rows
         else:
-            log.info('DB: Nothing found - Returning type: {}.'.format(type(rows).__name__))
+            log.info(
+                "DB: Nothing found - Returning type: {}.".format(
+                    type(rows).__name__
+                )
+            )
             return rows  # was empty list before, now it's either empty list or NoneType
 
     def debug_db(self, db_return):
@@ -147,9 +178,9 @@ class Database():
         print()
         for i in db_return:
             # print(i.keys())
-            stringed = ''
+            stringed = ""
             for j in i:
-                stringed+='{}, '.format(j)
+                stringed += "{}, ".format(j)
             print(stringed)
             print()
         return True
