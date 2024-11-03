@@ -2,8 +2,9 @@ import logging
 from abc import ABC
 # import pprint as p
 from time import time
-
 import discogs_client.exceptions as errors
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
+                           TaskProgressColumn, )
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model_brainz import Brainz
@@ -797,8 +798,21 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         """Import sales inventory"""
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
-        self.cli.p("Importing Discogs sales inventory into DiscoBASE")
-        for item in self.collection.me.inventory:
-            # print(item.release.id, item.id, item.release.artists[0], item.release.title)
-            self.collection.create_sales_entry(item.release.id, item.id)
-        self.cli.duration_stats(start_time, 'Discogs sales inventory import')
+        self.cli.p("Importing Discogs sales inventory into DiscoBASE...")
+        custom_progress = Progress(
+            MofNCompleteColumn(),
+            BarColumn(),
+            TaskProgressColumn(),
+        )
+        total_items = len(self.collection.me.inventory)
+
+        with custom_progress:
+            task = custom_progress.add_task(
+                "[cyan] Status: ",
+                total=total_items,
+            )
+            for item in self.collection.me.inventory:
+                self.collection.create_sales_entry(item.release.id, item.id)
+                custom_progress.update(task, advance=1)
+
+        self.cli.duration_stats(start_time, 'Inventory import')
