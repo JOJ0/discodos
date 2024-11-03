@@ -1,22 +1,22 @@
-from discodos.utils import is_number  # most of this should only be in view
 import logging
 # import pprint
-import discogs_client
-import discogs_client.exceptions
-import requests.exceptions
-import urllib3.exceptions
-from sqlite3 import Error as sqlerr
 import time
 from datetime import datetime
-import requests
 from socket import gaierror
+from sqlite3 import Error as sqlerr
+import discogs_client
+import discogs_client.exceptions
+import requests
+import requests.exceptions
+import urllib3.exceptions
 
 from discodos.model_database import Database
+from discodos.utils import is_number  # most of this should only be in view
 
 log = logging.getLogger('discodos')
 
 
-class Collection (Database):
+class Collection (Database):  # pylint: disable=too-many-public-methods
     """Discogs record collection class."""
     def __init__(self, db_conn, db_file=False):
         super().__init__(db_conn, db_file)
@@ -45,7 +45,9 @@ class Collection (Database):
             'release', orderby=orderby
         )
 
-    def key_value_search_releases(self, search_key_value=None, orderby='d_artist, discogs_title'):
+    def key_value_search_releases(
+        self, search_key_value=None, orderby="d_artist, discogs_title"
+    ):
         replace_cols = {
             "artist": "d_artist",
             "title": "discogs_title",
@@ -87,31 +89,25 @@ class Collection (Database):
             return releases
         except discogs_client.exceptions.HTTPError as HtErr:
             log.error("%s (HTTPError)", HtErr)
-            return None
         except urllib3.exceptions.NewConnectionError as ConnErr:
             log.error("%s (NewConnectionError)", ConnErr)
-            return None
         except urllib3.exceptions.MaxRetryError as RetryErr:
             log.error("%s (MaxRetryError)", RetryErr)
-            return None
         except requests.exceptions.ConnectionError as ConnErr:
             log.error("%s (ConnectionError)", ConnErr)
-            return None
         except gaierror as GaiErr:
             log.error("%s (socket.gaierror)", GaiErr)
-            return None
         except TypeError as TypeErr:
             log.error("%s (TypeError)", TypeErr)
-            return None
         except Exception as Exc:
             log.error("%s (Exception)", Exc)
             raise Exc
-            return None
+        return None
 
-    def prepare_release_info(self, release):  # discogs_client Release object
-        '''takes a discogs_client Release object and returns prepares "relevant"
-           data into a dict with named keys. We use it eg for a nicely formatted
-           release view using tabulate'''
+    def prepare_release_info(self, release):
+        """Takes a discogs_client Release object and returns the relevant data
+        as a dictionary. We use it for a nicely formatted release view using
+        tabulate"""
         rel_details={}
         rel_details['id'] = release.id
         rel_details['artist'] = release.artists[0].name
@@ -130,12 +126,11 @@ class Collection (Database):
             rel_details))
         return rel_details
 
-    def prepare_tracklist_info(self, release_id, tracklist):  # discogs_client tracklist object
-        '''takes a tracklist (just a list?) we received from a Discogs release
-            object and adds additional information from the database
-            into the list'''
+    def prepare_tracklist_info(self, release_id, tracklist):
+        """Takes a tracklist (list) we received from a Discogs release object
+        and augments it with additional DiscoBASE data"""
         tl=[]
-        for i, track in enumerate(tracklist):
+        for track in tracklist:
             dbtrack = self.get_track(release_id, track.position)
             if dbtrack is None:
                 log.debug("MODEL: prepare_tracklist_info: Track not in DB. "
@@ -283,11 +278,13 @@ class Collection (Database):
             'discogs_id == {}'.format(release_id), fetchone=True
         )
 
-    def create_release(self, release_id, release_title, release_artists, d_catno, d_coll=False):
+    def create_release(
+        self, release_id, release_title, release_artists, d_catno, d_coll=False
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         try:
-            insert_sql = '''INSERT OR FAIL INTO release(discogs_id, discogs_title,
-                                    import_timestamp, d_artist, in_d_collection, d_catno)
-                                    VALUES(?, ?, ?, ?, ?, ?)'''
+            insert_sql = '''INSERT OR FAIL INTO
+                release(discogs_id, discogs_title, import_timestamp, d_artist,
+                in_d_collection, d_catno) VALUES(?, ?, ?, ?, ?, ?)'''
             in_tuple = (
                 release_id, release_title,
                 datetime.today().isoformat(' ', 'seconds'), release_artists,
@@ -307,8 +304,8 @@ class Collection (Database):
                         release_artists, d_coll, d_catno, release_id
                     )
                     return self.execute_sql(upd_sql, upd_tuple, raise_err=True)
-                except sqlerr as e:
-                    log.error("MODEL: create_release: %s", e.args[0])
+                except sqlerr as ee:
+                    log.error("MODEL: create_release: %s", ee.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
@@ -806,7 +803,7 @@ class Collection (Database):
             orderby='release.discogs_id'
         )
 
-    def upsert_track_ext(self, orig, edit_answers):
+    def upsert_track_ext(self, orig, edit_answers):  # pylint: disable=too-many-locals
         track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
         release_id = orig['d_release_id']
 
@@ -836,7 +833,9 @@ class Collection (Database):
             return self.execute_sql(sql_i, tuple_i, raise_err=True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
-                log.debug("Track already in DiscoBASE (track_ext), updating ...")
+                log.debug(
+                    "Track existing in track_ext table, updating ..."
+                )
                 try:
                     sql_u='''
                         UPDATE track_ext SET {}
@@ -844,8 +843,8 @@ class Collection (Database):
                         fields_upd)
                     tuple_u = tuple(values_list) + (release_id, track_no)
                     return self.execute_sql(sql_u, tuple_u, raise_err=True)
-                except sqlerr as e:
-                    log.error("MODEL: upsert_track_ext: %s", e.args[0])
+                except sqlerr as ee:
+                    log.error("MODEL: upsert_track_ext: %s", ee.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
@@ -870,6 +869,7 @@ class Collection (Database):
 
     def get_sales_listing_details(self, listing_id):
         print(self.me.inventory)
-        for item in self.me.inventory:
+        for item in self.me.inventory:  # pylint: disable=not-an-iterable
             if item.id == listing_id:
                 return item
+        return None
