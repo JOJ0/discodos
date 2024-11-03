@@ -6,7 +6,8 @@ import sqlite3
 log = logging.getLogger('discodos')
 
 
-class Database (object):
+class Database():
+    """Shared database backend methods."""
 
     def __init__(self, db_conn=False, db_file=False, setup=False):
         self.db_not_found = False
@@ -140,9 +141,6 @@ class Database (object):
         else:
             log.info('DB: Nothing found - Returning type: {}.'.format(type(rows).__name__))
             return rows  # was empty list before, now it's either empty list or NoneType
-
-    def close_conn(self):  # manually close conn! - context manager (with) doesn't do it
-        self.db_conn.close()
 
     def debug_db(self, db_return):
         # print(dbr.keys())
