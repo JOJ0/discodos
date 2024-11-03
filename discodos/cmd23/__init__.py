@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+import logging
+import click
+
 from discodos.config import Config
 from discodos.cmd23 import (
     helper,
@@ -10,14 +12,10 @@ from discodos.cmd23 import (
     suggest,
     ls,
 )
-import logging
-import click
 
 
 # globals we use for logging, argparser and user interaction object
 log = logging.getLogger('discodos')
-args = None
-user = None
 
 
 @click.group(
@@ -29,10 +27,10 @@ user = None
     the hood (-v is INFO level, -vv is DEBUG level).""")
 @click.option(
     "-o", "--offline", "offline_mode", is_flag=True,
-    help="""DiscoDOS checks for connectivity to online services
-    (Discogs, MusicBrainz, AcousticBrainz) itself. This option
-    forces offline mode. A lot of options work in on- and
-    offline mode. Some behave differently, depending on connection state.""")
+    help="""Enabling this flag prevents DiscoDOS to check for connectivity to
+    online services (Discogs, MusicBrainz) and forces offline mode. A lot of
+    DiscoDOS' functionality works well in on- and offline mode but might behave
+    differently, depending on connection state.""")
 @click.pass_context
 def main_cmd(context, verbose_count, offline_mode):
     conf = Config()
