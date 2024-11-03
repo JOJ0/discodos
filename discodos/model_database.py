@@ -75,8 +75,8 @@ class Database():
                         c.rowcount, c.lastrowid
                     )
                 )
-                # log.info("DB: Committing NOW")
-                # self.db_conn.commit()
+                log.info("DB: Committing NOW")
+                self.db_conn.commit()
             log.debug("DB: Committing via context close NOW")
             self.lastrowid = c.lastrowid
             return c.rowcount
