@@ -194,8 +194,9 @@ class Db_setup(Database):
                 return True
 
 
-class Config():
-    def __init__(self, no_create_conf=False):
+class Config():  # pylint: disable=too-many-instance-attributes
+    """Provides access to the DiscoDOS configuration file."""
+    def __init__(self, no_create_conf=False):  # pylint: disable=too-many-branches,too-many-statements
         # is set to true on initial run and config create
         self.config_created = False
         self.no_create_conf = no_create_conf
@@ -285,6 +286,7 @@ class Config():
             self.webdav_user = self._get_config_entry('webdav_user')
             self.webdav_password = self._get_config_entry('webdav_password')
             self.webdav_url = self._get_config_entry('webdav_url')
+            self.enable_tui = self._get_config_entry('enable_tui')
 
             # discogs_token is essential, bother user until we have one
             # but not when no_ask_token is set (macOS)
@@ -583,7 +585,8 @@ class Config():
             'webdav_user': '',
             'webdav_password': '',
             'webdav_url': '',
-            'discobase_file': 'discobase.db'
+            'discobase_file': 'discobase.db',
+            'enable_tui': 'true'
         }
         create_msg = '\nSeems like you are running DiscoDOS for the first time, '
         create_msg+= 'a config file will be created...\n'
