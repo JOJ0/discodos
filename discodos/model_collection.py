@@ -16,35 +16,26 @@ from discodos.model_database import Database
 log = logging.getLogger('discodos')
 
 
-# record collection class
 class Collection (Database):
-
+    """Discogs record collection class."""
     def __init__(self, db_conn, db_file=False):
-        super(Collection, self).__init__(db_conn, db_file)
-        # discogs api objects are online set when discogs_connect method is called
+        super().__init__(db_conn, db_file)
         self.d = False
         self.me = False
-        self.ONLINE = False
+        self.ONLINE = False # set True by discogs_connect method
 
-    # discogs connect try,except wrapper, sets attributes d and me
-    # leave globals for compatibility for now
     def discogs_connect(self, _userToken, _appIdentifier):
+        """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
+        """
         try:
             self.d = discogs_client.Client(
                 _appIdentifier, user_token=_userToken
             )
             self.me = self.d.identity()
-            global d
-            d = self.d
-            global me
-            me = self.me
-            _ONLINE = True
-        # except Exception as Exc:
-        except Exception:
-            _ONLINE = False
-            # raise Exc
-        self.ONLINE = _ONLINE
-        return _ONLINE
+            self.ONLINE = True
+        except Exception:  # pylint: disable=broad-exception-caught
+            self.ONLINE = False
+        return self.ONLINE
 
     def get_all_db_releases(self, orderby='d_artist, discogs_title'):
         # return db.all_releases(self.db_conn)
