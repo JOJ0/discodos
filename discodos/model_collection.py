@@ -16,7 +16,7 @@ from discodos.utils import is_number  # most of this should only be in view
 log = logging.getLogger('discodos')
 
 class DiscogsMixin:
-    """Discogs connection and fetch methods."""
+    """Discogs connection, fetchers and helpers."""
     def discogs_connect(self, user_token=None, app_identifier=None,
                         discogs=None):
         """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
@@ -38,66 +38,7 @@ class DiscogsMixin:
 
         return self.ONLINE
 
-    def get_sales_listing_details(self, listing_id):
-        listing = self.d.listing(listing_id)
-        l = [
-            listing.condition,
-            listing.external_id,
-            str(listing.format_quantity),
-            str(listing.allow_offers),
-            listing.location,
-            str(listing.price.value),
-            datetime.strftime(listing.posted, "%Y-%m-%d"),
-        ]
-        return ", ".join(l)
-
-
-class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods
-    """Discogs record collection class."""
-    def __init__(self, db_conn, db_file=False):
-        super().__init__(db_conn, db_file)
-        self.d = False
-        self.me = False
-        self.ONLINE = False # set True by discogs_connect method
-
-    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
-        # return db.all_releases(self.db_conn)
-        return self._select_simple(
-            ['d_catno', 'd_artist',
-             'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'],
-            'release', orderby=orderby
-        )
-
-    def key_value_search_releases(
-        self, search_key_value=None, orderby="d_artist, discogs_title"
-    ):
-        replace_cols = {
-            "artist": "d_artist",
-            "title": "discogs_title",
-            "id": "discogs_id",
-            "cat": "d_catno",
-            "forsale": "d_listing_id",
-        }
-        where = " AND ".join(
-            [
-                f'{replace_cols.get(k, k)} LIKE "%{v}%"'
-                for k, v in search_key_value.items()
-            ]
-        )
-        join = [("LEFT", "sales", "discogs_id = d_release_id")]
-
-        return self._select_simple(
-            [
-                "discogs_id",
-                "d_catno",
-                "d_artist",
-                "discogs_title",
-                "in_d_collection",
-                "d_listing_id"
-            ],
-            "release",
-            fetchone=False, orderby=orderby, condition=where, join=join
-        )
+    # Actual online fetchers
 
     def search_release_online(self, id_or_title):
         try:
@@ -175,6 +116,191 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                     'a_bpm': dbtrack['a_bpm']
                 })
         return tl
+
+    def get_d_release(self, release_id, catch=True):
+        try:
+            r = self.d.release(release_id)
+            if catch is True:
+                log.debug("try to access r here to catch err {}".format(r.title))
+            return r
+        except discogs_client.exceptions.HTTPError as HtErr:
+            log.error('Release not existing on Discogs ({})'.format(HtErr))
+            return False
+        except urllib3.exceptions.NewConnectionError as ConnErr:
+            log.error("%s", ConnErr)
+            return False
+        except urllib3.exceptions.MaxRetryError as RetryErr:
+            log.error("%s", RetryErr)
+            return False
+        except Exception as Exc:
+            log.error("Exception: %s", Exc)
+            return False
+
+    def is_in_d_coll(self, release_id):
+        # successful = False
+        for r in self.me.collection_folders[0].releases:
+            # self.rate_limit_slow_downer(d, remaining=5, sleep=2)
+            if r.release.id == release_id:
+                return r
+        return False
+
+    def stats_releases_d_collection_online(self):
+        count = 0
+        try:
+            count = len(self.me.collection_folders[0].releases)
+        except Exception as Exc:
+            log.error("%s (Exception)", Exc)
+        return count
+
+    def get_sales_listing_details(self, listing_id):
+        listing = self.d.listing(listing_id)
+        l = [
+            listing.condition,
+            listing.external_id,
+            str(listing.format_quantity),
+            str(listing.allow_offers),
+            listing.location,
+            str(listing.price.value),
+            datetime.strftime(listing.posted, "%Y-%m-%d"),
+        ]
+        return ", ".join(l)
+
+    def rate_limit_slow_downer(self, remaining=10, sleep=2):
+        '''Discogs util: stay in 60/min rate limit'''
+        if int(self.d._fetcher.rate_limit_remaining) < remaining:
+            log.info(
+                "Discogs request rate limit is about to exceed, "
+                "let's wait a little: %s",
+                self.d._fetcher.rate_limit_remaining
+            )
+            # while int(self.d._fetcher.rate_limit_remaining) < remaining:
+            time.sleep(sleep)
+        else:
+            log.info(
+                "Discogs rate limit: %s remaining.",
+                self.d._fetcher.rate_limit_remaining
+            )
+
+    # Discogs data helpers
+
+    def d_artists_to_str(self, d_artists):
+        '''gets a combined string from discogs artistlist object'''
+        artist_str=''
+        for cnt, artist in enumerate(d_artists):
+            if cnt == 0:
+                artist_str = artist.name
+            else:
+                artist_str += ' / {}'.format(artist.name)
+        log.info('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
+        return artist_str
+
+    def d_artists_parse(self, d_tracklist, track_number, d_artists):
+        '''gets Artist name from discogs release (child)objects via track_number, eg. A1
+           params d_artist: FIXME'''
+        for tr in d_tracklist:
+            # log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
+            # log.debug("d_artists_parse: this is the tr object: {}".format(tr))
+            if tr.position.upper() == track_number.upper():
+                # log.info("d_tracklist_parse: found by track number.")
+                if len(tr.artists) == 1:
+                    name = tr.artists[0].name
+                    log.info("MODEL: d_artists_parse: just one artist, returning name: {}".format(name))
+                    return name
+                elif len(tr.artists) == 0:
+                    # log.info(
+                    #   "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
+                    #             dir(tr.artists)))
+                    log.info(
+                        "MODEL: d_artists_parse: no artists in tracklist, "
+                        "checking d_artists object..")
+                    combined_name = self.d_artists_to_str(d_artists)
+                    return combined_name
+                else:
+                    log.info("tr.artists len: {}".format(len(tr.artists)))
+                    for a in tr.artists:
+                        log.info("release.artists debug loop: {}".format(a.name))
+                    combined_name = self.d_artists_to_str(tr.artists)
+                    log.info(
+                        "MODEL: d_artists_parse: several artists, "
+                        "returning combined named {}".format(combined_name))
+                    return combined_name
+        log.debug('d_artists_parse: Track {} not existing on release.'.format(
+            track_number))
+
+    def d_tracklist_parse(self, d_tracklist, track_number):
+        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
+        for tr in d_tracklist:
+            # log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
+            # log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
+            if (track_number is not None
+                    and tr.position.upper() == track_number.upper()):
+                return tr.title
+        log.debug(
+            'd_tracklist_parse: Track {} not existing on release.'.format(
+                track_number)
+        )
+        return False  # we didn't find the tracknumber
+
+    def d_tracklist_parse_numerical(self, d_tracklist, track_number):
+        '''get numerical track pos from discogs tracklist object via
+           track_number, eg. A1'''
+        for num, tr in enumerate(d_tracklist):
+            if tr.position.lower() == track_number.lower():
+                return num + 1  # return human readable (matches brainz position)
+        log.debug("d_tracklist_parse_numerical: "
+                  "Track {} not existing on release.".format(track_number))
+        return False  # we didn't find the tracknumber
+
+    def d_get_first_catno(self, d_labels):
+        '''get first found catalog number from discogs label object'''
+        catno_str = ''
+        if len(d_labels) == 0:
+            log.warning("MODEL: Discogs release without Label/CatNo. "
+                        "This is weird!")
+        else:
+            for cnt, label in enumerate(d_labels):
+                if cnt == 0:
+                    catno_str = label.data['catno']
+                else:
+                    log.warning('MODEL: Found multiple CatNos, '
+                                'not adding "{}"'.format(label.data['catno']))
+            log.info('MODEL: Found Discogs CatNo "{}"'.format(catno_str))
+        return catno_str
+
+    def d_get_all_catnos(self, d_labels):
+        '''get all found catalog number from discogs label object concatinated
+           with newline'''
+        catno_str = ''
+        if len(d_labels) == 0:
+            log.warning("MODEL: Discogs release without Label/CatNo. "
+                        "This is weird!")
+        else:
+            for cnt, label in enumerate(d_labels):
+                if cnt == 0:
+                    catno_str = label.data['catno']
+                else:
+                    catno_str += '\n{}'.format(label.data['catno'])
+            log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
+        return catno_str
+
+
+class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods
+    """Record collection class."""
+    def __init__(self, db_conn, db_file=False):
+        super().__init__(db_conn, db_file)
+        self.d = False
+        self.me = False
+        self.ONLINE = False # set True by discogs_connect method
+
+    # Base fetchers and inserts
+
+    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
+        # return db.all_releases(self.db_conn)
+        return self._select_simple(
+            ['d_catno', 'd_artist',
+             'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'],
+            'release', orderby=orderby
+        )
 
     def get_track(self, release_id, track_no):
         log.info("MODEL: Returning collection track {} from release {}.".format(
@@ -270,6 +396,12 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         # log.debug(self.debug_db(tracks))
         return tracks
 
+    def search_release_id(self, release_id):
+        return self._select_simple(
+            ['*'], 'release',
+            'discogs_id == {}'.format(release_id), fetchone=True
+        )
+
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         track_no = track_no.upper()  # always save uppercase track numbers
         try:
@@ -295,11 +427,52 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 log.error("MODEL: %s", e.args[0])
                 return False
 
-    def search_release_id(self, release_id):
-        return self._select_simple(
-            ['*'], 'release',
-            'discogs_id == {}'.format(release_id), fetchone=True
-        )
+    def upsert_track_ext(self, orig, edit_answers):  # pylint: disable=too-many-locals
+        track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
+        release_id = orig['d_release_id']
+
+        fields_ins = ''
+        fields_ins_vals = ''
+        fields_upd = ''
+        values_list = []
+        for key, answer in edit_answers.items():
+            log.debug('key: {}, value: {}'.format(key, answer))
+            # update fields key = ? snippets
+            if fields_upd == '':
+                fields_upd += "{} = ? ".format(key)
+            else:
+                fields_upd += ", {} = ? ".format(key)
+            # insert fields (keys) and values (list of ?)
+            fields_ins += ", {}".format(key)
+            fields_ins_vals += ", ?"
+            values_list.append(answer)
+
+        if len(edit_answers) == 0:  # only update if necessary
+            return True
+
+        try:
+            sql_i='''INSERT INTO track_ext(d_release_id, d_track_no{})
+                        VALUES(?, ?{});'''.format(fields_ins, fields_ins_vals)
+            tuple_i = (release_id, track_no) + tuple(values_list)
+            return self.execute_sql(sql_i, tuple_i, raise_err=True)
+        except sqlerr as e:
+            if "UNIQUE constraint failed" in e.args[0]:
+                log.debug(
+                    "Track existing in track_ext table, updating ..."
+                )
+                try:
+                    sql_u='''
+                        UPDATE track_ext SET {}
+                          WHERE d_release_id = ? AND d_track_no = ?;'''.format(
+                        fields_upd)
+                    tuple_u = tuple(values_list) + (release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u, raise_err=True)
+                except sqlerr as ee:
+                    log.error("MODEL: upsert_track_ext: %s", ee.args[0])
+                    return False
+            else:
+                log.error("MODEL: %s", e.args[0])
+                return False
 
     def create_release(
         self, release_id, release_title, release_artists, d_catno, d_coll=False
@@ -334,48 +507,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 log.error("MODEL: %s", e.args[0])
                 return False
 
-    def get_d_release(self, release_id, catch=True):
-        try:
-            r = self.d.release(release_id)
-            if catch is True:
-                log.debug("try to access r here to catch err {}".format(r.title))
-            return r
-        except discogs_client.exceptions.HTTPError as HtErr:
-            log.error('Release not existing on Discogs ({})'.format(HtErr))
-            return False
-        except urllib3.exceptions.NewConnectionError as ConnErr:
-            log.error("%s", ConnErr)
-            return False
-        except urllib3.exceptions.MaxRetryError as RetryErr:
-            log.error("%s", RetryErr)
-            return False
-        except Exception as Exc:
-            log.error("Exception: %s", Exc)
-            return False
-
-    def is_in_d_coll(self, release_id):
-        # successful = False
-        for r in self.me.collection_folders[0].releases:
-            # self.rate_limit_slow_downer(d, remaining=5, sleep=2)
-            if r.release.id == release_id:
-                return r
-        return False
-
-    def rate_limit_slow_downer(self, remaining=10, sleep=2):
-        '''Discogs util: stay in 60/min rate limit'''
-        if int(self.d._fetcher.rate_limit_remaining) < remaining:
-            log.info(
-                "Discogs request rate limit is about to exceed, "
-                "let's wait a little: %s",
-                self.d._fetcher.rate_limit_remaining
-            )
-            # while int(self.d._fetcher.rate_limit_remaining) < remaining:
-            time.sleep(sleep)
-        else:
-            log.info(
-                "Discogs rate limit: %s remaining.",
-                self.d._fetcher.rate_limit_remaining
-            )
+    # Suggest fetchers
 
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1
@@ -419,74 +551,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         )
         log.info("MODEL: Returning track_report_occurences data.")
         return occurences_data
-
-    def d_artists_to_str(self, d_artists):
-        '''gets a combined string from discogs artistlist object'''
-        artist_str=''
-        for cnt, artist in enumerate(d_artists):
-            if cnt == 0:
-                artist_str = artist.name
-            else:
-                artist_str += ' / {}'.format(artist.name)
-        log.info('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
-        return artist_str
-
-    def d_artists_parse(self, d_tracklist, track_number, d_artists):
-        '''gets Artist name from discogs release (child)objects via track_number, eg. A1
-           params d_artist: FIXME'''
-        for tr in d_tracklist:
-            # log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
-            # log.debug("d_artists_parse: this is the tr object: {}".format(tr))
-            if tr.position.upper() == track_number.upper():
-                # log.info("d_tracklist_parse: found by track number.")
-                if len(tr.artists) == 1:
-                    name = tr.artists[0].name
-                    log.info("MODEL: d_artists_parse: just one artist, returning name: {}".format(name))
-                    return name
-                elif len(tr.artists) == 0:
-                    # log.info(
-                    #   "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
-                    #             dir(tr.artists)))
-                    log.info(
-                        "MODEL: d_artists_parse: no artists in tracklist, "
-                        "checking d_artists object..")
-                    combined_name = self.d_artists_to_str(d_artists)
-                    return combined_name
-                else:
-                    log.info("tr.artists len: {}".format(len(tr.artists)))
-                    for a in tr.artists:
-                        log.info("release.artists debug loop: {}".format(a.name))
-                    combined_name = self.d_artists_to_str(tr.artists)
-                    log.info(
-                        "MODEL: d_artists_parse: several artists, "
-                        "returning combined named {}".format(combined_name))
-                    return combined_name
-        log.debug('d_artists_parse: Track {} not existing on release.'.format(
-            track_number))
-
-    def d_tracklist_parse(self, d_tracklist, track_number):
-        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
-        for tr in d_tracklist:
-            # log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
-            # log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if (track_number is not None
-                    and tr.position.upper() == track_number.upper()):
-                return tr.title
-        log.debug(
-            'd_tracklist_parse: Track {} not existing on release.'.format(
-                track_number)
-        )
-        return False  # we didn't find the tracknumber
-
-    def d_tracklist_parse_numerical(self, d_tracklist, track_number):
-        '''get numerical track pos from discogs tracklist object via
-           track_number, eg. A1'''
-        for num, tr in enumerate(d_tracklist):
-            if tr.position.lower() == track_number.lower():
-                return num + 1  # return human readable (matches brainz position)
-        log.debug("d_tracklist_parse_numerical: "
-                  "Track {} not existing on release.".format(track_number))
-        return False  # we didn't find the tracknumber
 
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
@@ -592,42 +656,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             min_bpm, max_bpm, min_bpm, max_bpm, key)
         return self._select(sql_bpm, fetchone=False)
 
-    def upsert_track_brainz(self, release_id, track_no, rec_id,
-                            match_method, key, chords_key, bpm):
-        track_no = track_no.upper()  # always save uppercase track numbers
-        try:
-            sql_i = '''INSERT INTO track(d_release_id, d_track_no,
-                  m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
-                  VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?);'''
-            tuple_i = (release_id, track_no, rec_id, match_method, key,
-                       chords_key, bpm)
-            return self.execute_sql(sql_i, tuple_i, raise_err=True)
-        except sqlerr as e:
-            if "UNIQUE constraint failed" in e.args[0]:
-                log.debug("Track already in DiscoBASE, updating ...")
-                try:
-                    sql_u = ''' UPDATE track SET
-                          m_rec_id=?, m_match_method=?,
-                          m_match_time=datetime('now', 'localtime'),
-                          a_key=?, a_chords_key=?, a_bpm=?
-                          WHERE d_release_id=? AND d_track_no=?;
-                          '''
-                    tuple_u = (rec_id, match_method, key, chords_key, bpm,
-                               release_id, track_no)
-                    return self.execute_sql(sql_u, tuple_u)
-                except sqlerr as e:
-                    log.error("MODEL: create_release: %s", e.args[0])
-                    return False
-            else:
-                log.error("MODEL: %s", e.args[0])
-                return False
-
-    def update_release_brainz(self, release_id, mbid, match_method):
-        sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
-                       m_match_time) = (?, ?, datetime('now', 'localtime'))
-                       WHERE discogs_id == ?;'''
-        tuple_upd = (mbid, match_method, release_id)
-        return self.execute_sql(sql_upd, tuple_upd)
+    # Stats fetchers
 
     def stats_match_method_release(self):
         sql_stats = '''
@@ -699,14 +728,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def stats_releases_d_collection_online(self):
-        count = 0
-        try:
-            count = len(self.me.collection_folders[0].releases)
-        except Exception as Exc:
-            log.error("%s (Exception)", Exc)
-        return count
-
     def stats_mixtracks_total(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM mix_track;
@@ -752,37 +773,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def d_get_first_catno(self, d_labels):
-        '''get first found catalog number from discogs label object'''
-        catno_str = ''
-        if len(d_labels) == 0:
-            log.warning("MODEL: Discogs release without Label/CatNo. "
-                        "This is weird!")
-        else:
-            for cnt, label in enumerate(d_labels):
-                if cnt == 0:
-                    catno_str = label.data['catno']
-                else:
-                    log.warning('MODEL: Found multiple CatNos, '
-                                'not adding "{}"'.format(label.data['catno']))
-            log.info('MODEL: Found Discogs CatNo "{}"'.format(catno_str))
-        return catno_str
-
-    def d_get_all_catnos(self, d_labels):
-        '''get all found catalog number from discogs label object concatinated
-           with newline'''
-        catno_str = ''
-        if len(d_labels) == 0:
-            log.warning("MODEL: Discogs release without Label/CatNo. "
-                        "This is weird!")
-        else:
-            for cnt, label in enumerate(d_labels):
-                if cnt == 0:
-                    catno_str = label.data['catno']
-                else:
-                    catno_str += '\n{}'.format(label.data['catno'])
-            log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
-        return catno_str
+    # Brainz fetchers and inserts
 
     def get_all_tracks_for_brainz_update(self, offset=0, really_all=False,
                                          skip_unmatched=False):
@@ -826,52 +817,44 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             orderby='release.discogs_id'
         )
 
-    def upsert_track_ext(self, orig, edit_answers):  # pylint: disable=too-many-locals
-        track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
-        release_id = orig['d_release_id']
-
-        fields_ins = ''
-        fields_ins_vals = ''
-        fields_upd = ''
-        values_list = []
-        for key, answer in edit_answers.items():
-            log.debug('key: {}, value: {}'.format(key, answer))
-            # update fields key = ? snippets
-            if fields_upd == '':
-                fields_upd += "{} = ? ".format(key)
-            else:
-                fields_upd += ", {} = ? ".format(key)
-            # insert fields (keys) and values (list of ?)
-            fields_ins += ", {}".format(key)
-            fields_ins_vals += ", ?"
-            values_list.append(answer)
-
-        if len(edit_answers) == 0:  # only update if necessary
-            return True
-
+    def upsert_track_brainz(self, release_id, track_no, rec_id,
+                            match_method, key, chords_key, bpm):
+        track_no = track_no.upper()  # always save uppercase track numbers
         try:
-            sql_i='''INSERT INTO track_ext(d_release_id, d_track_no{})
-                        VALUES(?, ?{});'''.format(fields_ins, fields_ins_vals)
-            tuple_i = (release_id, track_no) + tuple(values_list)
+            sql_i = '''INSERT INTO track(d_release_id, d_track_no,
+                  m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
+                  VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?);'''
+            tuple_i = (release_id, track_no, rec_id, match_method, key,
+                       chords_key, bpm)
             return self.execute_sql(sql_i, tuple_i, raise_err=True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
-                log.debug(
-                    "Track existing in track_ext table, updating ..."
-                )
+                log.debug("Track already in DiscoBASE, updating ...")
                 try:
-                    sql_u='''
-                        UPDATE track_ext SET {}
-                          WHERE d_release_id = ? AND d_track_no = ?;'''.format(
-                        fields_upd)
-                    tuple_u = tuple(values_list) + (release_id, track_no)
-                    return self.execute_sql(sql_u, tuple_u, raise_err=True)
-                except sqlerr as ee:
-                    log.error("MODEL: upsert_track_ext: %s", ee.args[0])
+                    sql_u = ''' UPDATE track SET
+                          m_rec_id=?, m_match_method=?,
+                          m_match_time=datetime('now', 'localtime'),
+                          a_key=?, a_chords_key=?, a_bpm=?
+                          WHERE d_release_id=? AND d_track_no=?;
+                          '''
+                    tuple_u = (rec_id, match_method, key, chords_key, bpm,
+                               release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u)
+                except sqlerr as e:
+                    log.error("MODEL: create_release: %s", e.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
                 return False
+
+    def update_release_brainz(self, release_id, mbid, match_method):
+        sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
+                       m_match_time) = (?, ?, datetime('now', 'localtime'))
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (mbid, match_method, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)
+
+    # Newer fetchers and inserts
 
     def create_sales_entry(self, release_id, listing_id):
         """Creates a single entry to sales table and ensures up to date data.
@@ -889,3 +872,34 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         except sqlerr as e:
             log.error("MODEL: create_sales_entry: %s", e.args[0])
             return False
+
+    def key_value_search_releases(
+        self, search_key_value=None, orderby="d_artist, discogs_title"
+    ):
+        replace_cols = {
+            "artist": "d_artist",
+            "title": "discogs_title",
+            "id": "discogs_id",
+            "cat": "d_catno",
+            "forsale": "d_listing_id",
+        }
+        where = " AND ".join(
+            [
+                f'{replace_cols.get(k, k)} LIKE "%{v}%"'
+                for k, v in search_key_value.items()
+            ]
+        )
+        join = [("LEFT", "sales", "discogs_id = d_release_id")]
+
+        return self._select_simple(
+            [
+                "discogs_id",
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "in_d_collection",
+                "d_listing_id"
+            ],
+            "release",
+            fetchone=False, orderby=orderby, condition=where, join=join
+        )
