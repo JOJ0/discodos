@@ -11,7 +11,7 @@ from discodos.model_brainz import Brainz
 from discodos.model_brainz_match import Brainz_match
 from discodos.model_collection import Collection
 from discodos.utils import is_number
-from discodos.view import CollectionViewCommandline
+from discodos.view import CollectionViewCommandline, DiscodosListApp
 
 log = logging.getLogger('discodos')
 
@@ -56,7 +56,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     @property
     def me(self):
-        discogs_me_o = self.collection.d
+        discogs_me_o = self.collection.me
         log.debug("CTRL: Getting Collection.me instance from MODEL: %s", discogs_me_o)
         return discogs_me_o
 
@@ -832,5 +832,18 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         if not search_results:
             self.cli.p('Nothing found.')
             return
-        #self.collection.get_sales_listing_details(55192468)
-        self.cli.tui_ls_releases(search_results)
+
+        app = DiscodosListApp(
+            rows=search_results,
+            headers=[
+                "ID",
+                "Cat. #",
+                "Artist",
+                "Title",
+                "D. Coll.",
+                "For Sale",
+            ],
+            discogs_me=self.me
+        )
+        app.run(inline=True)
+        return

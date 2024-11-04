@@ -14,6 +14,7 @@ from textual.widgets import (
 
 
 from discodos.view import ViewCommon, ViewCommonCommandline
+from discodos.model_collection import DiscogsMixin
 
 log = logging.getLogger('discodos')
 
@@ -36,7 +37,7 @@ class CollectionViewCommon():
         ]
 
 
-class DiscodosListApp(App):
+class DiscodosListApp(App, DiscogsMixin):
     """Inline Textual app to view and edit dsc ls results."""
     CSS_PATH = "tui_ls.tcss"
     BINDINGS = [
@@ -47,8 +48,10 @@ class DiscodosListApp(App):
         ("e", "edit_release", "Set to draft"),
         ("E", "edit_sale", "Edit sales listing"),
     ]
-    def __init__(self, rows, headers):
+    def __init__(self, rows, headers, discogs_me=None):
         super().__init__()
+        super().discogs_connect(user_token=None, app_identifier=None,
+                                discogs_me=discogs_me)
         self.rows = rows
         self.headers = headers
 
@@ -270,18 +273,3 @@ class CollectionViewCommandline(
             ['Unique tracks in mixes', mixtracks_unique],
         ]
         self.p(tab(stats, tablefmt='plain'), lead_nl=True)
-
-    def tui_ls_releases(self, _result_list):
-        app = DiscodosListApp(
-            rows=_result_list,
-            headers=[
-                "ID",
-                "Cat. #",
-                "Artist",
-                "Title",
-                "D. Coll.",
-                "For Sale",
-            ],
-        )
-        app.run(inline=True)
-        # app.run(inline=False)

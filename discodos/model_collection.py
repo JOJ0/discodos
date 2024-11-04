@@ -17,18 +17,31 @@ log = logging.getLogger('discodos')
 
 class DiscogsMixin:
     """Discogs connection and fetch methods."""
-    def discogs_connect(self, _userToken, _appIdentifier):
+    def discogs_connect(self, user_token=None, app_identifier=None,
+                        discogs_me=None ):
         """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
         """
+        if discogs_me:
+            self.me = discogs_me
+            self.ONLINE = True
+            return self.ONLINE
+
         try:
             self.d = discogs_client.Client(
-                _appIdentifier, user_token=_userToken
+                app_identifier, user_token=user_token
             )
             self.me = self.d.identity()
             self.ONLINE = True
         except Exception:  # pylint: disable=broad-exception-caught
             self.ONLINE = False
+
         return self.ONLINE
+
+    def get_sales_listing_details(self, listing_id):
+        for item in self.me.inventory:  # pylint: disable=not-an-iterable
+            if item.id == listing_id:
+                return item
+        return None
 
 
 class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods
@@ -868,10 +881,3 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         except sqlerr as e:
             log.error("MODEL: create_sales_entry: %s", e.args[0])
             return False
-
-    def get_sales_listing_details(self, listing_id):
-        print(self.me.inventory)
-        for item in self.me.inventory:  # pylint: disable=not-an-iterable
-            if item.id == listing_id:
-                return item
-        return None
