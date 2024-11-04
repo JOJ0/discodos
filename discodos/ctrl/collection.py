@@ -869,7 +869,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "D. Coll.",
                 "For Sale",
             ],
-            discogs_me=self.me
+            discogs=self.d
         )
         app.run(inline=True)
         return

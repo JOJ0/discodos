@@ -18,11 +18,12 @@ log = logging.getLogger('discodos')
 class DiscogsMixin:
     """Discogs connection and fetch methods."""
     def discogs_connect(self, user_token=None, app_identifier=None,
-                        discogs_me=None ):
+                        discogs=None):
         """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
         """
-        if discogs_me:
-            self.me = discogs_me
+        if discogs:
+            self.d = discogs
+            self.me = discogs.identity()
             self.ONLINE = True
             return self.ONLINE
 
@@ -38,10 +39,17 @@ class DiscogsMixin:
         return self.ONLINE
 
     def get_sales_listing_details(self, listing_id):
-        for item in self.me.inventory:  # pylint: disable=not-an-iterable
-            if item.id == listing_id:
-                return item
-        return None
+        listing = self.d.listing(listing_id)
+        l = [
+            listing.condition,
+            listing.external_id,
+            str(listing.format_quantity),
+            str(listing.allow_offers),
+            listing.location,
+            str(listing.price.value),
+            datetime.strftime(listing.posted, "%Y-%m-%d"),
+        ]
+        return ", ".join(l)
 
 
 class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods

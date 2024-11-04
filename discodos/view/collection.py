@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from tabulate import tabulate as tab
 from textual.app import App
 from textual.containers import Grid, Horizontal, Vertical
@@ -48,19 +49,23 @@ class DiscodosListApp(App, DiscogsMixin):
         ("e", "edit_release", "Set to draft"),
         ("E", "edit_sale", "Edit sales listing"),
     ]
-    def __init__(self, rows, headers, discogs_me=None):
+    def __init__(self, rows, headers, discogs=None):
         super().__init__()
-        super().discogs_connect(user_token=None, app_identifier=None,
-                                discogs_me=discogs_me)
+        super().discogs_connect(
+            user_token=None,
+            app_identifier=None,
+            discogs=discogs,
+        )
         self.rows = rows
         self.headers = headers
+        self.details_panel = None
 
     def compose(self):
-        #yield Header()
+        # yield Header()
         ls_results_list = DataTable(classes="ls_results-list")
         ls_results_list.focus()
         ls_results_list.add_columns(*self.headers)
-        ls_results_list.cursor_type = "row"
+        ls_results_list.cursor_type = "cell"
         ls_results_list.zebra_stripes = True
         # add_button = Button("Add", variant="success", id="add")
         # add_button.focus()
@@ -71,8 +76,8 @@ class DiscodosListApp(App, DiscogsMixin):
         #     Button("Clear All", variant="error", id="clear"),
         #     classes="buttons-panel",
         # )
-        #yield Horizontal(ls_results_list, buttons_panel)
-        yield Horizontal(ls_results_list)
+        self.details_panel = Label("Hit enter on a cell to view details here!")
+        yield Horizontal(ls_results_list, self.details_panel)
         yield ls_results_list
         yield Footer()
 
@@ -98,6 +103,13 @@ class DiscodosListApp(App, DiscogsMixin):
         self.title = "DiscoDOS ls results"
         self.sub_title = "Use keystrokes to edit/sell/view details, ..."
         self._load_ls_results()
+
+    def on_data_table_cell_selected(self, event):
+        log.debug(event.coordinate)
+        if event.coordinate.column != 4 or event.value is None:
+            return
+        result = self.get_sales_listing_details(event.value)
+        self.details_panel.update(result)
 
     def _load_ls_results(self):
         ls_results_list = self.query_one(DataTable)
