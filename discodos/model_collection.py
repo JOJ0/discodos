@@ -137,11 +137,15 @@ class DiscogsMixin:
             return False
 
     def is_in_d_coll(self, release_id):
-        # successful = False
-        for r in self.me.collection_folders[0].releases:
-            # self.rate_limit_slow_downer(d, remaining=5, sleep=2)
-            if r.release.id == release_id:
-                return r
+        release_instances = self.me.collection_items(release_id)
+        for i, instance in enumerate(release_instances):
+            # print(instance.folder_id, instance)
+            if i > 1:
+                log.debug(
+                    "MODEL: Multiple instances of %s %s in collection",
+                    release_id, instance.release.label.catno[0]
+                )
+            return instance.release
         return False
 
     def stats_releases_d_collection_online(self):
@@ -285,7 +289,7 @@ class DiscogsMixin:
 
 
 class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods
-    """Record collection class."""
+    """Offline record collection class."""
     def __init__(self, db_conn, db_file=False):
         super().__init__(db_conn, db_file)
         self.d = False

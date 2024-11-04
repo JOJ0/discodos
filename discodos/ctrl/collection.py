@@ -258,14 +258,14 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                        "this might take some time...")
             in_coll = self.collection.is_in_d_coll(_release_id)
             if in_coll:
-                artists = self.collection.d_artists_to_str(in_coll.release.artists)
-                d_catno = self.collection.d_get_first_catno(in_coll.release.labels)
+                artists = self.collection.d_artists_to_str(in_coll.artists)
+                d_catno = self.collection.d_get_first_catno(in_coll.labels)
                 self.cli.p(
                     "Found it in collection: {} - {} - {}.\n"
                     "Importing to DiscoBASE.".format(
-                        in_coll.release.id, artists, in_coll.release.title))
+                        in_coll.id, artists, in_coll.title))
                 self.collection.create_release(
-                    in_coll.release.id, in_coll.release.title,
+                    in_coll.id, in_coll.title,
                     artists, d_catno, d_coll=True)
             else:
                 self.cli.error_not_the_release()
