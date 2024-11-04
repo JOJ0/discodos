@@ -25,40 +25,66 @@ class CollectionControlCommon (ABC):
 class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     """CLI level controller functionality, offline & Discogs user profile"""
 
-    def __init__(self, _db_conn, _user_int, _userToken, _appIdentifier,
-                 _db_file=False, _musicbrainz_user=False, _musicbrainz_pass=False):
-        self.user = _user_int  # set instance of User_int class as attribute
-        self.cli = CollectionViewCommandline()  # instantiate cli frontend class
-        self.collection = Collection(_db_conn, _db_file)
+    def __init__(
+        self,
+        db_conn,
+        user_int,
+        userToken,
+        appIdentifier,
+        db_file=False,
+        musicbrainz_user=False,
+        musicbrainz_pass=False,
+    ):
+        self.user = user_int  # set instance of User_int class as attribute
+        self.cli = (
+            CollectionViewCommandline()
+        )  # instantiate cli frontend class
+        self.collection = Collection(db_conn, db_file)
+
         if self.collection.db_not_found is True:
-            self.cli.ask('Setting up DiscoBASE, press enter...')
-            super(CollectionControlCommandline, self).setup_db(_db_file)
-            self.collection = Collection(_db_conn, _db_file)
+            self.cli.ask("Setting up DiscoBASE, press enter...")
+            super().setup_db(db_file)
+            self.collection = Collection(db_conn, db_file)
+
         if self.user.WANTS_ONLINE:
-            if not self.collection.discogs_connect(_userToken, _appIdentifier):
+            if not self.collection.discogs_connect(userToken, appIdentifier):
                 log.error("connecting to Discogs API, let's stay offline!\n")
             else:  # only try to initialize brainz if discogs is online already
-                self.brainz = Brainz(_musicbrainz_user, _musicbrainz_pass, _appIdentifier)
-        log.info("CTRL: Initial ONLINE status is %s", self.ONLINE)
+                self.brainz = Brainz(
+                    musicbrainz_user, musicbrainz_pass, appIdentifier
+                )
+        print()
+        log.info("CTRL: ONLINE=%s in %s", self.ONLINE, __class__.__name__)
         self.first_track_on_release = ""
 
     @property
     def ONLINE(self):
         status = self.collection.ONLINE
-        log.debug("CTRL: Collection model has ONLINE status %s", status)
+        log.debug(
+            "CTRL: ONLINE=%s in %s", status, self.collection.__class__.__name__
+        )
         return status
 
     @property
     def d(self):
-        discogs_cli_o = self.collection.d
-        log.debug("CTRL: Getting Collection.d instance from MODEL: %s", discogs_cli_o)
-        return discogs_cli_o
+        discogs_client = self.collection.d
+        log.debug(
+            "CTRL: Retrieving %s instance from %s",
+            discogs_client.__class__.__name__,
+            self.collection.__class__.__name__
+        )
+        return discogs_client
 
     @property
     def me(self):
-        discogs_me_o = self.collection.me
-        log.debug("CTRL: Getting Collection.me instance from MODEL: %s", discogs_me_o)
-        return discogs_me_o
+        discogs_me = self.collection.me
+        log.debug(
+            "CTRL: Retrieving %s instance from %s",
+            discogs_me.__class__.__name__,
+            self.collection.__class__.__name__,
+
+        )
+        return discogs_me
 
     def search_release(self, _searchterm):  # online or offline search is
         if self.collection.ONLINE:          # decided in this method
