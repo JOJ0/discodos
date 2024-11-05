@@ -3,8 +3,9 @@ from abc import ABC
 # import pprint as p
 from time import time
 import discogs_client.exceptions as errors
-from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
-                           TaskProgressColumn, )
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress, TextColumn,
+                           TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
+from rich.text import Text
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model_brainz import Brainz
@@ -243,21 +244,33 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         """Import a specific collection release into the DiscoBASE."""
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
-        self.cli.p(f"Looking up {release_id:d} on Discogs ...", trail_nl=False)
-        result = self.collection.get_d_release(release_id)
-        if not result:
-            raise SystemExit(3)
-        else:
-            self.cli.p(f"Release ID is valid: {result.title}", trail_nl=False)
-            self.cli.p("Let's find it in your Discogs collection ...")
+
+        custom_progress = Progress(
+            SpinnerColumn(),
+            BarColumn(),
+            SpinnerColumn(),
+        )
+        with custom_progress as progress:
+            task1 = progress.add_task("...",start=1, total=5)
+
+            progress.console.print(f"Looking up {release_id:d} on Discogs")
+            result = self.collection.get_d_release(release_id)
+            progress.update(task1, advance=1)
+            if not result:
+                raise SystemExit(3)
+
+            progress.console.print(f"Release ID is valid: {result.title}")
+            progress.update(task1, advance=1)
+            progress.console.print("Let's find it in your Discogs collection")
             coll_item = self.collection.release_from_collection(release_id)
+            progress.update(task1, advance=1)
+
             if coll_item:
                 artists = self.collection.d_artists_to_str(coll_item.artists)
                 d_catno = self.collection.d_get_first_catno(coll_item.labels)
-                self.cli.p(
-                    "Found: "
-                    f"{coll_item.id} - {artists} - {coll_item.title}.\n"
-                    "(Re-)importing to DiscoBASE ..."
+                progress.console.print(
+                    "Found and importing: "
+                    f"{coll_item.id} - {artists} - {coll_item.title}"
                 )
                 self.collection.create_release(
                     coll_item.id,
@@ -268,7 +281,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 )
             else:
                 self.cli.error_not_the_release()
-        self.cli.duration_stats(start_time, "Discogs import")
+
+            progress.update(task1, advance=1)
+            self.cli.duration_stats(start_time, "Discogs import")
+            progress.update(task1, completed=5)
 
     def import_collection(self, tracks=False):
         start_time = time()
