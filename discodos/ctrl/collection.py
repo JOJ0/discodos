@@ -286,85 +286,127 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.cli.duration_stats(start_time, "Discogs import")
             progress.update(task1, completed=5)
 
+    # Import collection and helpers
+
+    def process_tracks(self, release_id, tracklist, d_artists):
+        tracks_added = 0
+        tracks_db_errors = 0
+        tracks_discogs_errors = 0
+
+        try:
+            for track in tracklist:
+                tr_artists = self.collection.d_artists_parse(
+                    tracklist, track.position, d_artists
+                )
+                tr_title = track.title
+                if self.collection.upsert_track(
+                    release_id, track.position, tr_title, tr_artists
+                ):
+                    tracks_added += 1
+                    msg_tr_add = f'Track "{tr_artists}" - "{tr_title}"'
+                    log.info(msg_tr_add)
+                    print(msg_tr_add)
+                else:
+                    tracks_db_errors += 1
+                    log.error("importing track. Continuing anyway.")
+        except Exception as Exc:
+            tracks_discogs_errors += 1
+            log.error(f"Exception: {Exc}")
+
+        return tracks_added, tracks_db_errors, tracks_discogs_errors
+
+    def create_release_entry(self, item):
+        d_artists = item.release.artists
+        artists = self.collection.d_artists_to_str(d_artists)
+        first_catno = self.collection.d_get_first_catno(item.release.labels)
+        self.log_release_info(item.release.id, artists, item.release.title)
+
+        rel_created = self.collection.create_release(
+            item.release.id, item.release.title, artists, first_catno,
+            d_coll=True
+        )
+        return rel_created, d_artists, artists
+
+    def log_release_info(self, release_id, artists, title):
+        print(f'Release {release_id} - "{artists}" - "{title}"')
+
     def import_collection(self, tracks=False):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
-        self.releases_processed = 0
-        self.releases_added = 0
-        self.releases_db_errors = 0
-        if tracks:
-            self.cli.p("Importing Discogs collection into DiscoBASE (extended import - releases and tracks)")
-            self.tracks_processed = 0
-            self.tracks_added = 0
-            self.tracks_db_errors = 0
-            self.tracks_discogs_errors = 0
-        else:
-            self.cli.p("Importing Discogs collection into DiscoBASE (regular import - just releases)")
 
-        for item in self.collection.me.collection_folders[0].releases:
-            self.collection.rate_limit_slow_downer(remaining=15, sleep=3)
-            d_artists = item.release.artists  # we'll need it again with tracks
-            artists = self.collection.d_artists_to_str(d_artists)
-            first_catno = self.collection.d_get_first_catno(item.release.labels)
-            print('Release {} - "{}" - "{}"'.format(item.release.id, artists,
-                  item.release.title))
-            rel_created = self.collection.create_release(
-                item.release.id, item.release.title, artists, first_catno,
-                d_coll=True
+        releases_processed = releases_added = releases_db_errors = 0
+        tracks_processed = tracks_added = tracks_db_errors = tracks_discogs_errors = 0
+
+        if tracks:
+            self.cli.p(
+                "Importing Discogs collection into DiscoBASE "
+                "(extended import - releases and tracks)"
             )
-            # create_release will return False if unsuccessful
-            if rel_created:
-                self.releases_added += 1
-            else:
-                self.releases_db_errors += 1
-                log.error(
-                    'importing release "{}" '
-                    'Continuing anyway.'.format(item.release.title))
-            if tracks:
-                try:
-                    tracklist = item.release.tracklist
-                    for track in tracklist:
-                        tr_artists = self.collection.d_artists_parse(
-                            tracklist, track.position, d_artists)
-                        tr_title = track.title
-                        if self.collection.upsert_track(
-                            item.release.id, track.position, tr_title,
-                            tr_artists
-                        ):
-                            self.tracks_added += 1
-                            msg_tr_add = 'Track "{}" - "{}"'.format(
-                                tr_artists, tr_title)
-                            log.info(msg_tr_add)
-                            print(msg_tr_add)
-                        else:
-                            self.tracks_db_errors += 1
-                            log.error('importing track. Continuing anyway.')
-                except Exception as Exc:
-                    self.tracks_discogs_errors += 1
-                    log.error("Exception: %s", Exc)
+        else:
+            self.cli.p(
+                "Importing Discogs collection into DiscoBASE "
+                "(regular import - just releases)"
+            )
 
-            msg_rel_add="Releases so far: {}".format(self.releases_added)
-            log.info(msg_rel_add)
-            print(msg_rel_add)
-            if tracks:
-                msg_trk_add="Tracks so far: {}".format(self.tracks_added)
-                log.info(msg_trk_add)
-                print(msg_trk_add)
-            print()  # leave some space after a release and all its tracks
-            self.releases_processed += 1
+        releases = self.collection.me.collection_folders[0].releases
+        total_releases = len(releases)
 
-        print('Processed releases: {}. Imported releases to DiscoBASE: {}.'.format(
-            self.releases_processed, self.releases_added))
-        print('Database errors (release import): {}.'.format(
-            self.releases_db_errors))
+        with Progress() as progress:
+            task = progress.add_task("Processing releases...", total=total_releases)
+
+            for item in releases:
+                rel_created, d_artists, artists = self.create_release_entry(item)
+
+                if not rel_created:
+                    releases_db_errors += 1
+                    log.error(
+                        f'importing release "{item.release.title}" Continuing anyway.'
+                    )
+                    progress.update(task, advance=1)
+                    continue
+
+                releases_added += 1
+
+                if tracks:
+                    tracks_count, db_errors, discogs_errors = self.process_tracks(
+                        item.release.id, item.release.tracklist, d_artists
+                    )
+                    tracks_added += tracks_count
+                    tracks_db_errors += db_errors
+                    tracks_discogs_errors += discogs_errors
+
+                msg_rel_add = f"Releases so far: {releases_added}"
+                log.info(msg_rel_add)
+                print(msg_rel_add)
+
+                if tracks:
+                    msg_trk_add = f"Tracks so far: {tracks_added}"
+                    log.info(msg_trk_add)
+                    print(msg_trk_add)
+
+                print()  # leave some space after a release and all its tracks
+                releases_processed += 1
+                progress.update(task, advance=1)
+
+        print(
+            f"Processed releases: {releases_processed}. "
+            f"Imported releases to DiscoBASE: {releases_added}."
+        )
+        print(f"Database errors (release import): {releases_db_errors}.")
 
         if tracks:
-            print('Processed tracks: {}. Imported tracks to DiscoBASE: {}.'.format(
-                self.tracks_processed, self.tracks_added))
-            print('Database errors (track import): {}. Discogs errors (track import): {}.'.format(
-                self.tracks_db_errors, self.tracks_discogs_errors))
+            print(
+                f"Processed tracks: {tracks_processed}. "
+                f"Imported tracks to DiscoBASE: {tracks_added}."
+            )
+            print(
+                f"Database errors (track import): {tracks_db_errors}. "
+                f"Discogs errors (track import): {tracks_discogs_errors}."
+            )
 
-        self.cli.duration_stats(start_time, 'Discogs import')  # print time stats
+        self.cli.duration_stats(start_time, "Discogs import")
+
+    # Misc
 
     def bpm_report(self, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
