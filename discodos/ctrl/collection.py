@@ -239,37 +239,36 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     self.cli.duration_stats(start_time, 'Adding Release to Collection')
                     return False
 
-    # import specific release ID into DB
-    def import_release(self, _release_id):
+    def import_release(self, release_id):
+        """Import a specific collection release into the DiscoBASE."""
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
-        # print(dir(me.collection_folders[0].releases))
-        # print(dir(me))
-        # print(me.collection_item)
-        # if not force == True:
-        self.cli.p("Asking Discogs for release ID {:d}".format(
-                   _release_id))
-        result = self.collection.get_d_release(_release_id)
+        self.cli.p(f"Looking up {release_id:d} on Discogs ...", trail_nl=False)
+        result = self.collection.get_d_release(release_id)
         if not result:
             raise SystemExit(3)
         else:
-            self.cli.p("Release ID is valid: {}\n".format(result.title) +
-                       "Let's see if it's in your collection, "
-                       "this might take some time...")
-            in_coll = self.collection.is_in_d_coll(_release_id)
-            if in_coll:
-                artists = self.collection.d_artists_to_str(in_coll.artists)
-                d_catno = self.collection.d_get_first_catno(in_coll.labels)
+            self.cli.p(f"Release ID is valid: {result.title}", trail_nl=False)
+            self.cli.p("Let's find it in your Discogs collection ...")
+            coll_item = self.collection.release_from_collection(release_id)
+            if coll_item:
+                artists = self.collection.d_artists_to_str(coll_item.artists)
+                d_catno = self.collection.d_get_first_catno(coll_item.labels)
                 self.cli.p(
-                    "Found it in collection: {} - {} - {}.\n"
-                    "Importing to DiscoBASE.".format(
-                        in_coll.id, artists, in_coll.title))
+                    "Found: "
+                    f"{coll_item.id} - {artists} - {coll_item.title}.\n"
+                    "(Re-)importing to DiscoBASE ..."
+                )
                 self.collection.create_release(
-                    in_coll.id, in_coll.title,
-                    artists, d_catno, d_coll=True)
+                    coll_item.id,
+                    coll_item.title,
+                    artists,
+                    d_catno,
+                    d_coll=True,
+                )
             else:
                 self.cli.error_not_the_release()
-        self.cli.duration_stats(start_time, 'Discogs import')
+        self.cli.duration_stats(start_time, "Discogs import")
 
     def import_collection(self, tracks=False):
         start_time = time()

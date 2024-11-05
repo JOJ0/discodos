@@ -121,7 +121,10 @@ class DiscogsMixin:
         try:
             r = self.d.release(release_id)
             if catch is True:
-                log.debug("try to access r here to catch err {}".format(r.title))
+                log.debug(
+                    "Proactively accessing Release object to catch errors: %s",
+                    r.title,
+                )
             return r
         except discogs_client.exceptions.HTTPError as HtErr:
             log.error('Release not existing on Discogs ({})'.format(HtErr))
@@ -136,17 +139,18 @@ class DiscogsMixin:
             log.error("Exception: %s", Exc)
             return False
 
-    def is_in_d_coll(self, release_id):
+    def release_from_collection(self, release_id):
         release_instances = self.me.collection_items(release_id)
-        for i, instance in enumerate(release_instances):
-            # print(instance.folder_id, instance)
-            if i > 1:
+        if not release_instances:
+            return None
+        for count, instance in enumerate(release_instances, start=1):
+            if count > 0:
                 log.debug(
-                    "MODEL: Multiple instances of %s %s in collection",
-                    release_id, instance.release.label.catno[0]
+                    "MODEL: Multiple instances of %s %s in collection: %s",
+                    release_id, instance.release.title, count
                 )
-            return instance.release
-        return False
+            release = instance.release
+        return release
 
     def stats_releases_d_collection_online(self):
         count = 0

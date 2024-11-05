@@ -509,17 +509,21 @@ class ViewCommonCommandline(ViewCommon):
     """ Common view utils, usable in CLI only.
     """
 
-    def p(self, message, logging="", lead_nl=False, trail_nl=True):
-        if logging == "debug":
+    def p(self, message, _log="", lead_nl=False, trail_nl=True):
+        """Prints with leading/trailing newlines, optionally logs."""
+        if _log == "debug":
             log.debug(message)
-        if logging == "info":
+        if _log == "info":
             log.info(message)
-        if lead_nl is True and trail_nl is True:
+        if lead_nl and trail_nl:
             print('\n' + str(message) + '\n')
-        elif lead_nl is True:
+        elif lead_nl:
             print('\n' + str(message))
-        elif trail_nl is True:
-            print('' + str(message) + '\n')
+        elif trail_nl:
+            print(str(message) + '\n')
+        else:
+            print(str(message))
+        return
 
     def ask(self, text=""):
         ''' ask user for something and return answer '''
