@@ -928,5 +928,5 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             ],
             discogs=self.d
         )
-        app.run(inline=True)
+        app.run(inline=False)
         return

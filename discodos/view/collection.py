@@ -3,8 +3,8 @@ import asyncio
 from tabulate import tabulate as tab
 from textual.app import App
 from textual.widgets import DataTable, Label, Footer
-from textual.containers import Container, Grid, Horizontal, Vertical
-#from textual.css import StyleSheet
+from textual.containers import Container, Grid, Horizontal, Vertical, HorizontalScroll, VerticalScroll, ScrollableContainer
+# from textual.css import StyleSheet
 
 from discodos.view import ViewCommon, ViewCommonCommandline
 from discodos.model_collection import DiscogsMixin
@@ -30,7 +30,6 @@ class CollectionViewCommon():
         ]
 
 
-
 class DiscodosListApp(App, DiscogsMixin):
     """Inline Textual app to view and edit dsc ls results."""
     CSS_PATH = "tui_ls.tcss"
@@ -53,6 +52,12 @@ class DiscodosListApp(App, DiscogsMixin):
         self.rows = rows
         self.headers = headers
         self.details_panel = None
+        self.left_column = None
+        self.middle_column = None
+        self.right_column = None
+        self.left_column_label = None
+        self.middle_column_label = None
+        self.right_column_label = None
 
     def compose(self):
         table = DataTable(classes="ls_results-list")
@@ -60,19 +65,19 @@ class DiscodosListApp(App, DiscogsMixin):
         table.add_columns(*self.headers)
         table.cursor_type = "cell"
         table.zebra_stripes = True
-        # Create a 3-column container for the details panel with equal widths
-        self.left_column = Label("Left column data", expand=True)
-        self.middle_column = Label("Middle column", expand=True)
-        self.right_column = Label("Right column", expand=True)
-        # Use Horizontal to arrange the columns with equal flex (equal width)
-        self.details_panel = Horizontal(
-            self.left_column,
-            self.middle_column,
-            self.right_column,
-            classes="details-panel"
+        # Layout
+        self.left_column_label = Label("Left column data")
+        self.middle_column_label = Label("Middle column")
+        self.right_column_label = Label("Right column")
+        self.details_panel = HorizontalScroll(
+            VerticalScroll(self.left_column_label),
+            VerticalScroll(self.middle_column_label),
+            VerticalScroll(self.right_column_label),
+            classes="details-panel",
         )
-        yield Horizontal(table, self.details_panel)
+
         yield table
+        yield self.details_panel
         yield Footer()
 
     def action_toggle_dark(self):
@@ -100,21 +105,19 @@ class DiscodosListApp(App, DiscogsMixin):
 
     def on_data_table_cell_selected(self, event):
         log.debug(event.coordinate)
-        if event.coordinate.column != 4 or event.value is None:
+        if event.coordinate.column != 5 or event.value is None:
             return
         result = self.get_sales_listing_details(event.value)
         # Load data into the left column
-        self.left_column.update(result)
-        self.middle_column.update("Middle column updated!")  # Example update
-        self.right_column.update("Right column updated!")  # Example update
+        self.left_column_label.update(result)
+        self.middle_column_label.update("Middle column updated!")  # Example update
+        self.right_column_label.update("Right column updated!")  # Example update
 
     def _load_ls_results(self):
         table_widget = self.query_one(DataTable)
         for row in self.rows:
-            row_id, *row_data = row
-            table_widget.add_row(*row_data, key=row_id)
-
-
+            row_id, *_ = row
+            table_widget.add_row(*row, key=row_id)
 
 
 class CollectionViewCommandline(
