@@ -2,7 +2,7 @@ import logging
 import asyncio
 from tabulate import tabulate as tab
 from textual.app import App
-from textual.widgets import DataTable, Label, Footer
+from textual.widgets import DataTable, Label, Footer, Digits
 from textual.containers import Container, Grid, Horizontal, Vertical, HorizontalScroll, VerticalScroll, ScrollableContainer
 # from textual.css import StyleSheet
 
@@ -58,27 +58,7 @@ class DiscodosListApp(App, DiscogsMixin):
         self.left_column_label = None
         self.middle_column_label = None
         self.right_column_label = None
-
-    def compose(self):
-        table = DataTable(classes="ls_results-list")
-        table.focus()
-        table.add_columns(*self.headers)
-        table.cursor_type = "cell"
-        table.zebra_stripes = True
-        # Layout
-        self.left_column_label = Label("Left column data")
-        self.middle_column_label = Label("Middle column")
-        self.right_column_label = Label("Right column")
-        self.details_panel = HorizontalScroll(
-            VerticalScroll(self.left_column_label),
-            VerticalScroll(self.middle_column_label),
-            VerticalScroll(self.right_column_label),
-            classes="details-panel",
-        )
-
-        yield table
-        yield self.details_panel
-        yield Footer()
+        self.sales_price = None
 
     def action_toggle_dark(self):
         self.dark = not self.dark
@@ -98,6 +78,12 @@ class DiscodosListApp(App, DiscogsMixin):
     def action_edit_sale(self):
         pass
 
+    def _load_ls_results(self):
+        table_widget = self.query_one(DataTable)
+        for row in self.rows:
+            row_id, *_ = row
+            table_widget.add_row(*row, key=row_id)
+
     def on_mount(self):
         self.title = "DiscoDOS ls results"
         self.sub_title = "Use keystrokes to edit/sell/view details, ..."
@@ -109,15 +95,33 @@ class DiscodosListApp(App, DiscogsMixin):
             return
         result = self.get_sales_listing_details(event.value)
         # Load data into the left column
-        self.left_column_label.update(result)
-        self.middle_column_label.update("Middle column updated!")  # Example update
-        self.right_column_label.update("Right column updated!")  # Example update
+        # self.left_column_label.update(result)
+        self.sales_price.update(result['price'])
+        # self.right_column_label.update("Right column updated!")  # Example update
 
-    def _load_ls_results(self):
-        table_widget = self.query_one(DataTable)
-        for row in self.rows:
-            row_id, *_ = row
-            table_widget.add_row(*row, key=row_id)
+    def compose(self):
+        table = DataTable(classes="ls_results-list")
+        table.focus()
+        table.add_columns(*self.headers)
+        table.cursor_type = "cell"
+        table.zebra_stripes = True
+        # Layout
+        self.left_column_label = Label("")
+        self.middle_column_label = Label("[b]Price[/b]")
+        self.right_column_label = Label("")
+        self.sales_price = Digits("0", id="pi")
+        self.details_panel = HorizontalScroll(
+            VerticalScroll(self.left_column_label),
+            VerticalScroll(
+                self.middle_column_label, self.sales_price, classes="centered"
+            ),
+            VerticalScroll(self.right_column_label),
+            classes="details-panel",
+        )
+
+        yield table
+        yield self.details_panel
+        yield Footer()
 
 
 class CollectionViewCommandline(

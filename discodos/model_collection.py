@@ -162,16 +162,16 @@ class DiscogsMixin:
 
     def get_sales_listing_details(self, listing_id):
         listing = self.d.listing(listing_id)
-        l = [
-            listing.condition,
-            listing.external_id,
-            str(listing.format_quantity),
-            str(listing.allow_offers),
-            listing.location,
-            str(listing.price.value),
-            datetime.strftime(listing.posted, "%Y-%m-%d"),
-        ]
-        return ", ".join(l)
+        l = {
+            "condition": listing.condition,
+            "external_id": listing.external_id,
+            "format_quantity": str(listing.format_quantity),
+            "allow_offers": "yes" if listing.allow_offers else "no",
+            "location": listing.location,
+            "price": str(listing.price.value),
+            "posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
+        }
+        return l
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''

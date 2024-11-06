@@ -5,6 +5,18 @@
 }
 
 .details-panel > VerticalScroll {
+    height: 1fr;
+    width: 1fr;
     border: solid grey;
     padding: 0;
+}
+
+#pi {
+    border: double orange;
+    width: auto;
+}
+
+.centered {
+    width: auto;
+    align: center top;
 }
