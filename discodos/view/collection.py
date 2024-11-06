@@ -46,7 +46,7 @@ class DiscodosListApp(App, DiscogsMixin):
         ("q", "request_quit", "Quit"),
         ("l", "list_sale", "List for sale"),
         ("d", "draft_sale", "Set to draft"),
-        ("e", "edit_release", "Set to draft"),
+        ("e", "edit_release", "Edit release"),
         ("E", "edit_sale", "Edit sales listing"),
     ]
     def __init__(self, rows, headers, discogs=None):
@@ -61,24 +61,14 @@ class DiscodosListApp(App, DiscogsMixin):
         self.details_panel = None
 
     def compose(self):
-        # yield Header()
-        ls_results_list = DataTable(classes="ls_results-list")
-        ls_results_list.focus()
-        ls_results_list.add_columns(*self.headers)
-        ls_results_list.cursor_type = "cell"
-        ls_results_list.zebra_stripes = True
-        # add_button = Button("Add", variant="success", id="add")
-        # add_button.focus()
-        # buttons_panel = Vertical(
-        #     add_button,
-        #     Button("Delete", variant="warning", id="delete"),
-        #     Static(classes="separator"),
-        #     Button("Clear All", variant="error", id="clear"),
-        #     classes="buttons-panel",
-        # )
+        table = DataTable(classes="ls_results-list")
+        table.focus()
+        table.add_columns(*self.headers)
+        table.cursor_type = "cell"
+        table.zebra_stripes = True
         self.details_panel = Label("Hit enter on a cell to view details here!")
-        yield Horizontal(ls_results_list, self.details_panel)
-        yield ls_results_list
+        yield Horizontal(table, self.details_panel)
+        yield table
         yield Footer()
 
     def action_toggle_dark(self):
@@ -112,10 +102,10 @@ class DiscodosListApp(App, DiscogsMixin):
         self.details_panel.update(result)
 
     def _load_ls_results(self):
-        ls_results_list = self.query_one(DataTable)
-        for list_entry_data in self.rows:
-            row_id, *list_entry = list_entry_data
-            ls_results_list.add_row(*list_entry, key=row_id)
+        table_widget = self.query_one(DataTable)
+        for row in self.rows:
+            row_id, *row_data = row
+            table_widget.add_row(*row_data, key=row_id)
 
 
 class CollectionViewCommandline(
