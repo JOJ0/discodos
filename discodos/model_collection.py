@@ -161,17 +161,34 @@ class DiscogsMixin:
         return count
 
     def get_sales_listing_details(self, listing_id):
+        """Fetches details like price for a Discogs marketplace listing."""
         listing = self.d.listing(listing_id)
         l = {
+            "url": listing.url,
+            #"release_id": listing.release.id,
+            #"release_url": listing.release.url,
             "condition": listing.condition,
-            "external_id": listing.external_id,
-            "format_quantity": str(listing.format_quantity),
-            "allow_offers": "yes" if listing.allow_offers else "no",
-            "location": listing.location,
+            "sleeve_condition": listing.sleeve_condition,
             "price": str(listing.price.value),
+            "comments": listing.comments,
+            "allow_offers": "Yes" if listing.allow_offers else "No",
+            "status": listing.status,
+            "comments_private": listing.external_id,
+            "counts_as": str(listing.format_quantity),
+            "location": listing.location,
+            "weight": str(listing.weight),
             "posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
         }
-        return l
+        return l if l else None
+
+    def get_marketplace_stats(self, release_id):
+        release = self.d.release(release_id)
+        r = {
+            "lowest_price": str(release.marketplace_stats.lowest_price),
+            "num_for_sale": str(release.marketplace_stats.num_for_sale),
+            "blocked_from_sale": str(release.marketplace_stats.blocked_from_sale),
+        }
+        return r if r else None
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''

@@ -5,6 +5,7 @@ from textual.app import App
 from textual.widgets import DataTable, Label, Footer, Digits
 from textual.containers import Container, Grid, Horizontal, Vertical, HorizontalScroll, VerticalScroll, ScrollableContainer
 # from textual.css import StyleSheet
+from rich.table import Table as rich_table
 
 from discodos.view import ViewCommon, ViewCommonCommandline
 from discodos.model_collection import DiscogsMixin
@@ -89,15 +90,35 @@ class DiscodosListApp(App, DiscogsMixin):
         self.sub_title = "Use keystrokes to edit/sell/view details, ..."
         self._load_ls_results()
 
+    def _two_column_rich_table(self, listing_details):
+        # Create a rich Table
+        table = rich_table(box=None)
+        # Add columns for the table
+        table.add_column("Field", style="cyan", justify="right")
+        table.add_column("Value", style="white")
+        if not listing_details:
+            return table
+        # Add rows with capitalized keys and their corresponding values
+        for key, value in listing_details.items():
+            if key == "status":
+                if value == "Sold":
+                    table.add_row(
+                        f"[bold]{key.capitalize()}[/bold]",
+                        f"[magenta]{value}[/magenta]"
+                    )
+                    continue
+            table.add_row(f"[bold]{key.capitalize()}[/bold]", str(value))
+        return table
+
     def on_data_table_cell_selected(self, event):
         log.debug(event.coordinate)
-        if event.coordinate.column != 5 or event.value is None:
-            return
-        result = self.get_sales_listing_details(event.value)
-        # Load data into the left column
-        # self.left_column_label.update(result)
-        self.sales_price.update(result['price'])
-        # self.right_column_label.update("Right column updated!")  # Example update
+        if event.coordinate.column == 5 and event.value is not None:
+            listing = self.get_sales_listing_details(event.value)
+            self.left_column_label.update(self._two_column_rich_table(listing))
+            self.sales_price.update(listing['price'])
+        if event.coordinate.column == 0 and event.value is not None:
+            stats = self.get_marketplace_stats(event.value)
+            self.right_column_label.update(self._two_column_rich_table(stats))
 
     def compose(self):
         table = DataTable(classes="ls_results-list")
