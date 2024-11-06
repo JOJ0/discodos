@@ -2,17 +2,9 @@ import logging
 import asyncio
 from tabulate import tabulate as tab
 from textual.app import App
-from textual.containers import Grid, Horizontal, Vertical
-from textual.screen import Screen
-from textual.widgets import (
-    Button,
-    DataTable,
-    Footer,
-    Header,
-    Label,
-    Static,
-)
-
+from textual.widgets import DataTable, Label, Footer
+from textual.containers import Container, Grid, Horizontal, Vertical
+#from textual.css import StyleSheet
 
 from discodos.view import ViewCommon, ViewCommonCommandline
 from discodos.model_collection import DiscogsMixin
@@ -38,6 +30,7 @@ class CollectionViewCommon():
         ]
 
 
+
 class DiscodosListApp(App, DiscogsMixin):
     """Inline Textual app to view and edit dsc ls results."""
     CSS_PATH = "tui_ls.tcss"
@@ -49,6 +42,7 @@ class DiscodosListApp(App, DiscogsMixin):
         ("e", "edit_release", "Edit release"),
         ("E", "edit_sale", "Edit sales listing"),
     ]
+
     def __init__(self, rows, headers, discogs=None):
         super().__init__()
         super().discogs_connect(
@@ -66,7 +60,17 @@ class DiscodosListApp(App, DiscogsMixin):
         table.add_columns(*self.headers)
         table.cursor_type = "cell"
         table.zebra_stripes = True
-        self.details_panel = Label("Hit enter on a cell to view details here!")
+        # Create a 3-column container for the details panel with equal widths
+        self.left_column = Label("Left column data", expand=True)
+        self.middle_column = Label("Middle column", expand=True)
+        self.right_column = Label("Right column", expand=True)
+        # Use Horizontal to arrange the columns with equal flex (equal width)
+        self.details_panel = Horizontal(
+            self.left_column,
+            self.middle_column,
+            self.right_column,
+            classes="details-panel"
+        )
         yield Horizontal(table, self.details_panel)
         yield table
         yield Footer()
@@ -99,13 +103,18 @@ class DiscodosListApp(App, DiscogsMixin):
         if event.coordinate.column != 4 or event.value is None:
             return
         result = self.get_sales_listing_details(event.value)
-        self.details_panel.update(result)
+        # Load data into the left column
+        self.left_column.update(result)
+        self.middle_column.update("Middle column updated!")  # Example update
+        self.right_column.update("Right column updated!")  # Example update
 
     def _load_ls_results(self):
         table_widget = self.query_one(DataTable)
         for row in self.rows:
             row_id, *row_data = row
             table_widget.add_row(*row_data, key=row_id)
+
+
 
 
 class CollectionViewCommandline(
