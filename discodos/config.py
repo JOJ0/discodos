@@ -128,9 +128,22 @@ class Db_setup(Database):
                 'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;',
                 'New table sales':
                 """ CREATE TABLE sales (
-                      d_listing_id INTEGER NOT NULL,
-                      d_release_id INTEGER NOT NULL,
-                      PRIMARY KEY (d_listing_id, d_release_id)
+                      d_sales_release_id INTEGER NOT NULL,
+                      d_sales_listing_id INTEGER NOT NULL,
+                      d_sales_release_url TEXT,
+                      d_sales_url TEXT,
+                      d_sales_condition TEXT,
+                      d_sales_sleeve_condition TEXT,
+                      d_sales_price REAL,
+                      d_sales_comments TEXT,
+                      d_sales_allow_offers INTEGER,
+                      d_sales_status TEXT,
+                      d_sales_comments_private TEXT,
+                      d_sales_counts_as INTEGER,
+                      d_sales_location TEXT,
+                      d_sales_weight INTEGER,
+                      d_sales_posted TEXT,
+                      PRIMARY KEY (d_sales_release_id, d_sales_listing_id)
                       ); """,
                 }
         }]

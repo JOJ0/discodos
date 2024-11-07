@@ -2,6 +2,7 @@ import logging
 from abc import ABC
 # import pprint as p
 from time import time
+from datetime import datetime
 import discogs_client.exceptions as errors
 from rich.progress import (BarColumn, MofNCompleteColumn, Progress, TextColumn,
                            TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
@@ -894,8 +895,24 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "[cyan] Status: ",
                 total=total_items,
             )
-            for item in self.collection.me.inventory:
-                self.collection.create_sales_entry(item.release.id, item.id)
+            for listing in self.collection.me.inventory:
+                self.collection.create_sales_entry({
+                    "d_sales_release_id": listing.release.id,
+                    "d_sales_listing_id": listing.id,
+                    "d_sales_release_url": listing.release.url,
+                    "d_sales_url": listing.url,
+                    "d_sales_condition": listing.condition,
+                    "d_sales_sleeve_condition": listing.sleeve_condition,
+                    "d_sales_price": str(listing.price.value),
+                    "d_sales_comments": listing.comments,
+                    "d_sales_allow_offers": 1 if listing.allow_offers else 0,
+                    "d_sales_status": listing.status,
+                    "d_sales_comments_private": listing.external_id,
+                    "d_sales_counts_as": str(listing.format_quantity),
+                    "d_sales_location": listing.location,
+                    "d_sales_weight": str(listing.weight),
+                    "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
+                })
                 custom_progress.update(task, advance=1)
 
         self.cli.duration_stats(start_time, 'Inventory import')

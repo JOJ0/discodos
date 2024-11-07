@@ -884,19 +884,27 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     # Newer fetchers and inserts
 
-    def create_sales_entry(self, release_id, listing_id):
+    def create_sales_entry(self, listing_object):
         """Creates a single entry to sales table and ensures up to date data.
         """
+        keys_str = ', '.join(listing_object.keys())
+        values = tuple(listing_object.values())
+        values_placeholders = ', '.join(['?'] * len(listing_object))
+        # Prepare update fields (we want to update all columns except the
+        # primary keys on conflict)
+        update_fields = ', '.join([
+            f"{key} = excluded.{key}"
+            for key in listing_object.keys()
+            if key not in {"d_sales_listing_id", "d_sales_release_id"}
+        ])
+
         try:
-            insert_sql = """
-            INSERT INTO sales (d_release_id, d_listing_id)
-            VALUES (?, ?)
-            ON CONFLICT(d_listing_id, d_release_id) DO UPDATE SET
-                d_listing_id = excluded.d_listing_id,
-                d_release_id = excluded.d_release_id;
+            insert_sql = f"""
+            INSERT INTO sales ({keys_str}) VALUES ({values_placeholders})
+            ON CONFLICT(d_sales_listing_id, d_sales_release_id) DO UPDATE SET
+                {update_fields}
             """
-            in_tuple = (release_id, listing_id)
-            return self.execute_sql(insert_sql, in_tuple, raise_err=True)
+            return self.execute_sql(insert_sql, values, raise_err=True)
         except sqlerr as e:
             log.error("MODEL: create_sales_entry: %s", e.args[0])
             return False
@@ -909,7 +917,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "title": "discogs_title",
             "id": "discogs_id",
             "cat": "d_catno",
-            "forsale": "d_listing_id",
+            "forsale": "d_sales_listing_id",
         }
         where = " AND ".join(
             [
@@ -917,7 +925,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 for k, v in search_key_value.items()
             ]
         )
-        join = [("LEFT", "sales", "discogs_id = d_release_id")]
+        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
 
         return self._select_simple(
             [
@@ -926,7 +934,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "d_artist",
                 "discogs_title",
                 "in_d_collection",
-                "d_listing_id"
+                "d_sales_listing_id"
             ],
             "release",
             fetchone=False, orderby=orderby, condition=where, join=join
