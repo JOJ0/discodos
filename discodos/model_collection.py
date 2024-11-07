@@ -922,6 +922,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "id": "discogs_id",
             "cat": "d_catno",
             "forsale": "d_sales_listing_id",
+            "status": "d_sales_status",
         }
         where = " AND ".join(
             [
@@ -938,7 +939,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "d_artist",
                 "discogs_title",
                 "in_d_collection",
-                "d_sales_listing_id"
+                "d_sales_listing_id",
+                "d_sales_status",
             ],
             "release",
             fetchone=False, orderby=orderby, condition=where, join=join

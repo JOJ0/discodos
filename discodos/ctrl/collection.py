@@ -942,6 +942,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "Title",
                 "Is in C.",
                 "For Sale",
+                "Status"
             ],
             discogs=self.d
         )
