@@ -882,7 +882,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         tuple_upd = (mbid, match_method, release_id)
         return self.execute_sql(sql_upd, tuple_upd)
 
-    # Newer fetchers and inserts
+    # Newer fetchers, inserts and helpers
 
     def create_sales_entry(self, listing_object):
         """Creates a single entry to sales table and ensures up to date data.
@@ -909,6 +909,10 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             log.error("MODEL: create_sales_entry: %s", e.args[0])
             return False
 
+    def bool_to_yes_no(self, value):
+        """Convert 0/1 to 'No'/'Yes'."""
+        return "Yes" if value == 1 else "No"
+
     def key_value_search_releases(
         self, search_key_value=None, orderby="d_artist, discogs_title"
     ):
@@ -927,7 +931,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         )
         join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
 
-        return self._select_simple(
+        rows =  self._select_simple(
             [
                 "discogs_id",
                 "d_catno",
@@ -939,3 +943,13 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release",
             fetchone=False, orderby=orderby, condition=where, join=join
         )
+        human_readable_rows = [
+            {
+                **row,
+                "in_d_collection": self.bool_to_yes_no(
+                    row["in_d_collection"]
+                )
+            }
+            for row in rows
+        ]
+        return human_readable_rows

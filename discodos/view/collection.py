@@ -82,8 +82,8 @@ class DiscodosListApp(App, DiscogsMixin):
     def _load_ls_results(self):
         table_widget = self.query_one(DataTable)
         for row in self.rows:
-            row_id, *_ = row
-            table_widget.add_row(*row, key=row_id)
+            row_id = row['discogs_id']
+            table_widget.add_row(*row.values(), key=row_id)
 
     def on_mount(self):
         self.title = "DiscoDOS ls results"

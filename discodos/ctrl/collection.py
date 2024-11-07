@@ -940,7 +940,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "Cat. #",
                 "Artist",
                 "Title",
-                "D. Coll.",
+                "Is in C.",
                 "For Sale",
             ],
             discogs=self.d
