@@ -21,13 +21,13 @@ class DiscogsMixin:
                         discogs=None):
         """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
         """
-        if discogs:
-            self.d = discogs
-            self.me = discogs.identity()
-            self.ONLINE = True
-            return self.ONLINE
-
         try:
+            if discogs:
+                self.d = discogs
+                self.me = discogs.identity()
+                self.ONLINE = True
+                return self.ONLINE
+
             self.d = discogs_client.Client(
                 app_identifier, user_token=user_token
             )
