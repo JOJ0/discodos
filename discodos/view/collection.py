@@ -2,10 +2,11 @@ import logging
 import asyncio
 from tabulate import tabulate as tab
 from textual.app import App
-from textual.widgets import DataTable, Label, Footer, Digits
+from textual.widgets import DataTable, Label, Footer, Digits, Static
 from textual.containers import Container, Grid, Horizontal, Vertical, HorizontalScroll, VerticalScroll, ScrollableContainer
 # from textual.css import StyleSheet
 from rich.table import Table as rich_table
+from rich import print
 
 from discodos.view import ViewCommon, ViewCommonCommandline
 from discodos.model_collection import DiscogsMixin
@@ -50,17 +51,16 @@ class DiscodosListApp(App, DiscogsMixin):
             app_identifier=None,
             discogs=discogs,
         )
+        self.table = None
         self.rows = rows
         self.headers = headers
-        self.details_panel = None
-        self.left_column = None
-        self.middle_column = None
-        self.right_column = None
-        self.left_column_label = None
-        self.middle_column_label = None
-        self.right_column_label = None
+        self.left_column_headline = None
+        self.middle_column_headline = None
+        self.right_column_headline = None
+        self.left_column_content = None
+        self.middle_column_content = None
+        self.right_column_content = None
         self.sales_price = None
-        self.table = None
 
     def action_toggle_dark(self):
         self.dark = not self.dark
@@ -115,38 +115,45 @@ class DiscodosListApp(App, DiscogsMixin):
         log.debug(event.coordinate)
         if event.coordinate.column == 5 and event.value is not None:
             listing = self.get_sales_listing_details(event.value)
-            self.left_column_label.update(self._two_column_rich_table(listing))
+            self.left_column_content.update(self._two_column_rich_table(listing))
             self.sales_price.update(listing['price'])
         if event.coordinate.column == 0 and event.value is not None:
             stats = self.get_marketplace_stats(event.value)
-            self.right_column_label.update(self._two_column_rich_table(stats))
+            self.middle_column_content.update(self._two_column_rich_table(stats))
 
     def compose(self):
-        self.table = DataTable(classes="ls_results-list")
+        # The main data widget
+        self.table = DataTable()
         self.table.focus()
         self.table.add_columns(*self.headers)
         self.table.cursor_type = "cell"
         self.table.zebra_stripes = True
+        # Headline widgets
+        self.left_column_headline = Label("[b]Listing Details[/b]")
+        self.middle_column_headline = Label("[b]My Price & Marketplace Stats[/b]")
+        self.right_column_headline = Label("[b]Log[/b]")
+        # Content widgets
+        self.left_column_content = Static("")
+        self.middle_column_content = Static("")
+        self.right_column_content = Static("")
+        self.sales_price = Digits("0", id="sales-price")
         # Layout
-        self.left_column_label = Label("")
-        self.middle_column_label = Label("[b]Price[/b]")
-        self.right_column_label = Label("")
-        self.sales_price = Digits("0", id="pi")
-        self.details_panel = HorizontalScroll(
-            VerticalScroll(self.left_column_label),
-            VerticalScroll(
-                self.middle_column_label, self.sales_price, classes="centered"
-            ),
-            VerticalScroll(self.right_column_label),
-            classes="details-panel",
-        )
-
-        final_layout = Vertical(
-            VerticalScroll(self.table),
-            VerticalScroll(self.details_panel),
-            Footer(),
-        )
-        yield final_layout
+        with Vertical():
+            with Horizontal(id="upper-area"):
+                with VerticalScroll():
+                    yield self.table
+            with Horizontal(id="lower-area"):
+                with VerticalScroll(id="lower-left-column"):
+                    yield self.left_column_headline
+                    yield self.left_column_content
+                with VerticalScroll(id="lower-middle-column"):
+                    yield self.middle_column_headline
+                    yield self.sales_price
+                    yield self.middle_column_content
+                with VerticalScroll(id="lower-right-column"):
+                    yield self.right_column_headline
+                    yield self.right_column_content
+            yield Footer()
 
 
 class CollectionViewCommandline(
