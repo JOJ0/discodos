@@ -60,6 +60,7 @@ class DiscodosListApp(App, DiscogsMixin):
         self.middle_column_label = None
         self.right_column_label = None
         self.sales_price = None
+        self.table = None
 
     def action_toggle_dark(self):
         self.dark = not self.dark
@@ -121,11 +122,11 @@ class DiscodosListApp(App, DiscogsMixin):
             self.right_column_label.update(self._two_column_rich_table(stats))
 
     def compose(self):
-        table = DataTable(classes="ls_results-list")
-        table.focus()
-        table.add_columns(*self.headers)
-        table.cursor_type = "cell"
-        table.zebra_stripes = True
+        self.table = DataTable(classes="ls_results-list")
+        self.table.focus()
+        self.table.add_columns(*self.headers)
+        self.table.cursor_type = "cell"
+        self.table.zebra_stripes = True
         # Layout
         self.left_column_label = Label("")
         self.middle_column_label = Label("[b]Price[/b]")
@@ -140,9 +141,12 @@ class DiscodosListApp(App, DiscogsMixin):
             classes="details-panel",
         )
 
-        yield table
-        yield self.details_panel
-        yield Footer()
+        final_layout = Vertical(
+            VerticalScroll(self.table),
+            VerticalScroll(self.details_panel),
+            Footer(),
+        )
+        yield final_layout
 
 
 class CollectionViewCommandline(
