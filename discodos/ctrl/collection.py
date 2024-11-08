@@ -4,16 +4,16 @@ from abc import ABC
 from time import time
 from datetime import datetime
 import discogs_client.exceptions as errors
-from rich.progress import (BarColumn, MofNCompleteColumn, Progress, TextColumn,
-                           TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
-from rich.text import Text
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress, 
+                           TaskProgressColumn, SpinnerColumn)
 
 from discodos.ctrl.common import ControlCommon
-from discodos.model_brainz import Brainz
-from discodos.model_brainz_match import Brainz_match
-from discodos.model_collection import Collection
+from discodos.model import Brainz
+from discodos.model import Brainz_match
+from discodos.model import Collection
 from discodos.utils import is_number
-from discodos.view import CollectionViewCommandline, DiscodosListApp
+from discodos.view import CollectionViewCommandline
+from discodos.ctrl.tui import DiscodosListApp
 
 log = logging.getLogger('discodos')
 

@@ -1,14 +1,16 @@
 # config.py is kind of a controller - it sets up db and creates config
-from discodos.model_database import Database, sqlerr
-from discodos.utils import read_yaml, print_help, ask_user
-import yaml
 import logging
-from pathlib import Path
 import os
-import sys
 import platform
-from subprocess import run
+import sys
+from pathlib import Path
 from shutil import copy2
+from subprocess import run
+
+import yaml
+
+from discodos.model.database import Database, sqlerr
+from discodos.utils import ask_user, print_help, read_yaml
 
 log = logging.getLogger('discodos')
 

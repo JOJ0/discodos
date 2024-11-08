@@ -2,8 +2,7 @@ from discodos.view.common import ViewCommon, ViewCommonCommandline
 from discodos.view.mix import MixViewCommon, MixViewCommandline
 from discodos.view.collection import (
     CollectionViewCommon,
-    CollectionViewCommandline,
-    DiscodosListApp
+    CollectionViewCommandline
 )
 
 
@@ -14,5 +13,4 @@ __ALL__ = (
     MixViewCommandline,
     CollectionViewCommon,
     CollectionViewCommandline,
-    DiscodosListApp,
 )

@@ -3,7 +3,7 @@ from abc import ABC
 # import pprint as p
 
 from discodos.ctrl.common import ControlCommon
-from discodos.model_mix import Mix
+from discodos.model import Mix
 from discodos.utils import is_number
 from discodos.view import MixViewCommandline
 
