@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import inspect
 import os
 import unittest
@@ -8,7 +7,7 @@ from sqlite3 import Row
 from unittest.mock import Mock
 
 from discodos.config import Config
-from discodos.model_collection import Collection
+from discodos.model import Collection
 
 
 class TestCollection(unittest.TestCase):
