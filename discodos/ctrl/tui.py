@@ -1,15 +1,16 @@
 import logging
+from sqlite3 import Row
 from rich.table import Table as rich_table
 from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
-from textual.widgets import DataTable, Digits, Footer, Label, Static
+from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
 
 from discodos.model import DiscogsMixin
 
 log = logging.getLogger('discodos')
 
 
-class DiscodosListApp(App, DiscogsMixin):
+class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-attributes
     """Inline Textual app to view and edit dsc ls results."""
     CSS_PATH = "tui_ls.tcss"
     BINDINGS = [
@@ -59,9 +60,12 @@ class DiscodosListApp(App, DiscogsMixin):
 
     def _load_ls_results(self):
         table_widget = self.query_one(DataTable)
-        for row_id, row in enumerate(self.rows):
-            #row_id = row['discogs_id']
-            table_widget.add_row(*row.values(), key=row_id)
+        if isinstance(self.rows[0], Row):
+            for row in self.rows:
+                table_widget.add_row(*row)
+        else:
+            for row_id, row in enumerate(self.rows):
+                table_widget.add_row(*row.values(), key=row_id)
 
     def on_mount(self):
         self.title = "DiscoDOS ls results"
@@ -88,22 +92,30 @@ class DiscodosListApp(App, DiscogsMixin):
             table.add_row(f"[bold]{key.capitalize()}[/bold]", str(value))
         return table
 
-    def on_data_table_cell_selected(self, event):
-        log.debug(event.coordinate)
-        if event.coordinate.column == 5 and event.value is not None:
-            listing = self.get_sales_listing_details(event.value)
-            self.left_column_content.update(self._two_column_rich_table(listing))
-            self.sales_price.update(listing['price'])
-        if event.coordinate.column == 0 and event.value is not None:
-            stats = self.get_marketplace_stats(event.value)
-            self.middle_column_content.update(self._two_column_rich_table(stats))
+    def on_data_table_row_selected(self, event):
+        rlog = self.query_one(RichLog)
+        row_key = event.row_key
+        # Listing
+        listing_id = self.table.get_cell(row_key, "forsale")
+        rlog.write("Fetching Discogs Marketplace listing.")
+        listing = self.get_sales_listing_details(listing_id)
+        rlog.write("Done.")
+        self.left_column_content.update(self._two_column_rich_table(listing))
+        self.sales_price.update(listing['price'])
+        # Stats
+        release_id = self.table.get_cell(row_key, "release_id")
+        rlog.write("Fetching Discogs Marketplace stats.")
+        stats = self.get_marketplace_stats(release_id)
+        rlog.write("Done.")
+        self.middle_column_content.update(self._two_column_rich_table(stats))
 
     def compose(self):
         # The main data widget
         self.table = DataTable()
         self.table.focus()
-        self.table.add_columns(*self.headers)
-        self.table.cursor_type = "cell"
+        for key, label in self.headers.items():
+            self.table.add_column(label=label, key=key)
+        self.table.cursor_type = "row"
         self.table.zebra_stripes = True
         # Headline widgets
         self.left_column_headline = Label("[b]Listing Details[/b]")
@@ -130,4 +142,7 @@ class DiscodosListApp(App, DiscogsMixin):
                 with VerticalScroll(id="lower-right-column"):
                     yield self.right_column_headline
                     yield self.right_column_content
+            with Horizontal(id="log-area"):
+                with VerticalScroll():
+                    yield RichLog()
             yield Footer()

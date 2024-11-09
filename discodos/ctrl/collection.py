@@ -935,15 +935,15 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         app = DiscodosListApp(
             rows=search_results,
-            headers=[
-                "ID",
-                "Cat. #",
-                "Artist",
-                "Title",
-                "Is in C.",
-                "For Sale",
-                "Status"
-            ],
+            headers={
+                "release_id": "ID",
+                "catno": "Cat. #",
+                "artist": "Artist",
+                "title:": "Title",
+                "isinc": "Is in C.",
+                "forsale": "For Sale",
+                "status": "Status"
+            },
             discogs=self.d
         )
         app.run(inline=False)
