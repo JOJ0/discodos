@@ -944,7 +944,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "forsale": "For Sale",
                 "status": "Status"
             },
-            discogs=self.d
+            discogs=self.d,
+            collection=self.collection,
         )
         app.run(inline=False)
         return

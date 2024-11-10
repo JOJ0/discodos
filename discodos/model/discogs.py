@@ -157,31 +157,31 @@ class DiscogsMixin:
             log.error("%s (Exception)", Exc)
         return count
 
-    def get_sales_listing_details(self, listing_id):
+    def fetch_sales_listing_details(self, listing_id):
         """Fetches details like price for a Discogs marketplace listing."""
         listing = self.d.listing(listing_id)
         l = {
-            "url": listing.url,
-            #"release_id": listing.release.id,
-            #"release_url": listing.release.url,
-            "condition": listing.condition,
-            "sleeve_condition": listing.sleeve_condition,
-            "price": str(listing.price.value),
-            "comments": listing.comments,
-            "allow_offers": "Yes" if listing.allow_offers else "No",
-            "status": listing.status,
-            "comments_private": listing.external_id,
-            "counts_as": str(listing.format_quantity),
-            "location": listing.location,
-            "weight": str(listing.weight),
-            "posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
+            "d_sales_release_id": listing.release.id,
+            "d_sales_release_url": listing.release.url,
+            "d_sales_url": listing.url,
+            "d_sales_condition": listing.condition,
+            "d_sales_sleeve_condition": listing.sleeve_condition,
+            "d_sales_price": str(listing.price.value),
+            "d_sales_comments": listing.comments,
+            "d_sales_allow_offers": listing.allow_offers,
+            "d_sales_status": listing.status,
+            "d_sales_comments_private": listing.external_id,
+            "d_sales_counts_as": str(listing.format_quantity),
+            "d_sales_location": listing.location,
+            "d_sales_weight": str(listing.weight),
+            "d_sales_posted": listing.posted,
         }
         return l if l else None
 
-    def get_marketplace_stats(self, release_id):
+    def fetch_marketplace_stats(self, release_id):
         release = self.d.release(release_id)
         r = {
-            "lowest_price": str(release.marketplace_stats.lowest_price),
+            "lowest_price": str(release.marketplace_stats.lowest_price.value),
             "num_for_sale": str(release.marketplace_stats.num_for_sale),
             "blocked_from_sale": str(release.marketplace_stats.blocked_from_sale),
         }

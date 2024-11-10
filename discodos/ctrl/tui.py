@@ -1,5 +1,6 @@
 import logging
 from sqlite3 import Row
+from datetime import datetime
 from rich.table import Table as rich_table
 from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
@@ -22,13 +23,14 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("E", "edit_sale", "Edit sales listing"),
     ]
 
-    def __init__(self, rows, headers, discogs=None):
+    def __init__(self, rows, headers, discogs=None, collection=None):
         super().__init__()
         super().discogs_connect(
             user_token=None,
             app_identifier=None,
             discogs=discogs,
         )
+        self.collection = collection
         self.table = None
         self.rows = rows
         self.headers = headers
@@ -38,7 +40,29 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.left_column_content = None
         self.middle_column_content = None
         self.right_column_content = None
+        # Content that can be fetched from DB as well as from Discogs
         self.sales_price = None
+        self.sales_listing_details = None
+        # Content only available from Discogs
+        self.marketplace_stats = None
+        # Hardcoded column translations
+        self.key_translation = {
+            "d_sales_listing_id": "Listing ID",
+            "d_sales_release_id": "Release ID",
+            "d_sales_release_url": "Release URL",
+            "d_sales_url": "Listing URL",
+            "d_sales_condition": "Condition",
+            "d_sales_sleeve_condition": "Sleeve Condition",
+            "d_sales_price": "Price",
+            "d_sales_comments": "Comments",
+            "d_sales_allow_offers": "Allow Offers",
+            "d_sales_status": "Status",
+            "d_sales_comments_private": "Comments",
+            "d_sales_counts_as": "Counts as",
+            "d_sales_location": "Location Comments",
+            "d_sales_weight": "Weight",
+            "d_sales_posted": "Listed on",
+        }
 
     def action_toggle_dark(self):
         self.dark = not self.dark
@@ -72,42 +96,81 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.sub_title = "Use keystrokes to edit/sell/view details, ..."
         self._load_ls_results()
 
-    def _two_column_rich_table(self, listing_details):
-        # Create a rich Table
+    def _two_column_view(self, details_dict, translate_keys=None):
+        """A Rich-formatted view of keys and values.
+
+        - by default simply capitalizes key names
+        - optionally alters key names via a passed translaton table
+
+        We use it for Marketplace stats and Marketplace listing details.
+        """
+        # Create a rich Table with two columns.
         table = rich_table(box=None)
-        # Add columns for the table
         table.add_column("Field", style="cyan", justify="right")
         table.add_column("Value", style="white")
-        if not listing_details:
+        # Display an empty table instead of nothing.
+        if not details_dict:
             return table
-        # Add rows with capitalized keys and their corresponding values
-        for key, value in listing_details.items():
-            if key == "status":
-                if value == "Sold":
-                    table.add_row(
-                        f"[bold]{key.capitalize()}[/bold]",
-                        f"[magenta]{value}[/magenta]"
-                    )
-                    continue
-            table.add_row(f"[bold]{key.capitalize()}[/bold]", str(value))
+
+        # Highlight/fix/replace some values first
+        values_replaced = {}
+        for key, value in details_dict.items():
+            if key == "d_sales_allow_offers":
+                value =  "Yes" if value in [1, True] else "No"
+            elif key == "status" and value == "Sold":
+                value = f"[magenta]{value}[/magenta]"
+            elif key == "d_sales_posted" and isinstance(value, datetime):
+                value = datetime.strftime(value, "%Y-%m-%d")
+            values_replaced[key] = value
+
+        # Prettify column captions
+        if translate_keys:
+            final_details = {
+               translate_keys.get(k, k): v for k, v in values_replaced.items()
+            }
+        else:  # Without a tranlation table, fall back to simply capitalizing
+            final_details = {
+               k.capitalize(): v for k, v in values_replaced.items()
+            }
+
+        # The final creation of the Rich table
+        for key, value in final_details.items():
+            # Format key bold and value normal font (or as we manipulated it above)
+            table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
 
+    def on_data_table_row_highlighted(self, event):
+        """Get DB listing details and Marketplace stats for highlighted row."""
+        row_key = event.row_key
+        # Listing
+        listing_id = self.table.get_cell(row_key, "forsale")
+        listing = self.collection.get_sales_listing_details(listing_id)
+        self.left_column_content.update(
+            self._two_column_view(listing, translate_keys=self.key_translation)
+        )
+        self.sales_price.update(str(listing["d_sales_price"]))
+        # Stats
+        self.middle_column_content.update("Press enter to fetch!")
+
     def on_data_table_row_selected(self, event):
+        """Fetch Discogs listing details and Marketplace stats for selected row."""
         rlog = self.query_one(RichLog)
         row_key = event.row_key
         # Listing
         listing_id = self.table.get_cell(row_key, "forsale")
-        rlog.write("Fetching Discogs Marketplace listing.")
-        listing = self.get_sales_listing_details(listing_id)
-        rlog.write("Done.")
-        self.left_column_content.update(self._two_column_rich_table(listing))
-        self.sales_price.update(listing['price'])
+        listing = self.fetch_sales_listing_details(listing_id)
+        self.left_column_content.update(
+            self._two_column_view(listing, translate_keys=self.key_translation)
+        )
+        self.sales_price.update(str(listing["d_sales_price"]))
         # Stats
         release_id = self.table.get_cell(row_key, "release_id")
-        rlog.write("Fetching Discogs Marketplace stats.")
-        stats = self.get_marketplace_stats(release_id)
-        rlog.write("Done.")
-        self.middle_column_content.update(self._two_column_rich_table(stats))
+        stats = self.fetch_marketplace_stats(release_id)
+        self.middle_column_content.update(self._two_column_view(stats))
+        rlog.write(
+            f"Updated price, marketplace stats and details of listing {listing_id} "
+            "with Discogs data."
+        )
 
     def compose(self):
         # The main data widget
