@@ -103,6 +103,7 @@ class Database():
         orderby=False,
         distinct=False,
         join=None,
+        as_dict=False,
     ):
         """This is a wrapper around the _select method.
         It puts together SQL select statements as strings with support for JOIN.
@@ -122,9 +123,9 @@ class Database():
             f"{select} {fields_str} FROM {table} {join_clause} {where_or_not} "
             f"{orderby_or_not} {limit};"
         )
-        return self._select(select_str, fetchone)
+        return self._select(select_str, fetchone, as_dict=as_dict)
 
-    def _select(self, sql_select, fetchone=False):
+    def _select(self, sql_select, fetchone=False, as_dict=False):
         """Executes sql selects in two possible ways: fetchone or fetchall
            It's completely string based and not aware of tuple based
            values substitution in sqlite3 cursor objects.
@@ -138,40 +139,34 @@ class Database():
             fetchone = False (fetchall, this is the default)
                 something found: a list of sqlite3.Row (dict-like) objects
                 nothing found: an empty list
+            as_dict = True:
+                return as a key value dict. This is only available when fetchone is also
+                enabled! Silently ignored if fetchone is False.
         """
-        log.info("DB: _select: {}".format(sql_select))
+        log.info(f"DB: _select: {sql_select}")
         self.cur.execute(sql_select)
-        if fetchone:
-            rows = self.cur.fetchone()
-        else:
-            rows = self.cur.fetchall()
+        rows = self.cur.fetchone() if fetchone else self.cur.fetchall()
 
-        if rows:
-            # log.debug("DB: rowcount: {}, lastrowid: {} (irrelevant in selects)".format(
-            #     self.cur.rowcount, self.cur.lastrowid))
-            if fetchone:  # len will return column count
-                log.info(
-                    "DB: Found 1 row containing {} columns.".format(
-                        len(rows.keys())
-                    )
-                )
-            else:  # len will return rows count
-                log.info(
-                    "DB: Found {} rows containing {} columns.".format(
-                        len(rows), len(rows[0])
-                    )
-                )
-            log.debug(
-                "DB: Returning row(s) as type: {}.".format(type(rows).__name__)
-            )
+        # Returns either empty list or NoneType depending on fetchone flag
+        # (was always empty list in old code)
+        if not rows:
+            log.info( f"DB: Nothing found - Returning type: {type(rows).__name__}.")
             return rows
-        else:
-            log.info(
-                "DB: Nothing found - Returning type: {}.".format(
-                    type(rows).__name__
-                )
-            )
-            return rows  # was empty list before, now it's either empty list or NoneType
+
+        # The default, we return a list of Rows
+        if not fetchone:
+            log.info(f"DB: Found {len(rows)} rows containing {len(rows[0])} columns.")
+        # The fetchone flag is set, we return one Row
+        if fetchone:
+            log.info(f"DB: Found 1 row containing {rows.keys()} columns.")
+
+        # A final log statement clarifying what is returned
+        log.debug(f"DB: Returning row(s) as type: {type(rows).__name__}.")
+
+        # The as_dict flag enables returning a dictionary instead of a Row object.
+        if as_dict and fetchone:
+            return dict(rows) if rows else None
+        return rows
 
     def debug_db(self, db_return):
         # print(dbr.keys())
