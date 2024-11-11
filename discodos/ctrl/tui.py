@@ -82,7 +82,85 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     def action_edit_sale(self):
         pass
 
-    def _load_ls_results(self):
+    def compose(self):
+        # The main data widget
+        self.table = DataTable()
+        self.table.focus()
+        for key, label in self.headers.items():
+            self.table.add_column(label=label, key=key)
+        self.table.cursor_type = "row"
+        self.table.zebra_stripes = True
+        # Headline widgets
+        self.left_column_headline = Label("[b]Listing Details[/b]")
+        self.middle_column_headline = Label("[b]My Price & Marketplace Stats[/b]")
+        self.right_column_headline = Label("[b]Log[/b]")
+        # Content widgets
+        self.left_column_content = Static("")
+        self.middle_column_content = Static("")
+        self.right_column_content = Static("")
+        self.sales_price = Digits("0", id="sales-price")
+        # Layout
+        with Vertical():
+            with Horizontal(id="upper-area"):
+                with VerticalScroll():
+                    yield self.table
+            with Horizontal(id="lower-area"):
+                with VerticalScroll(id="lower-left-column"):
+                    yield self.left_column_headline
+                    yield self.left_column_content
+                with VerticalScroll(id="lower-middle-column"):
+                    yield self.middle_column_headline
+                    yield self.sales_price
+                    yield self.middle_column_content
+                with VerticalScroll(id="lower-right-column"):
+                    yield self.right_column_headline
+                    yield self.right_column_content
+            with Horizontal(id="log-area"):
+                with VerticalScroll():
+                    yield RichLog()
+            yield Footer()
+
+    def on_mount(self):
+        self.title = "DiscoDOS ls results"
+        self.sub_title = "Use keystrokes to edit/sell/view details, ..."
+        self._load_rows_into_table()
+
+    def on_data_table_row_highlighted(self, event):
+        """Get DB listing details and Marketplace stats for highlighted row."""
+        row_key = event.row_key
+        # Listing
+        listing_id = self.table.get_cell(row_key, "forsale")
+        listing = self.collection.get_sales_listing_details(listing_id)
+        self.left_column_content.update(
+            self._two_column_view(listing, translate_keys=self.key_translation)
+        )
+        self.sales_price.update(str(listing["d_sales_price"]))
+        # Stats
+        self.middle_column_content.update("Press enter to fetch!")
+
+    def on_data_table_row_selected(self, event):
+        """Fetch Discogs listing details and Marketplace stats for selected row."""
+        rlog = self.query_one(RichLog)
+        row_key = event.row_key
+        # Listing
+        listing_id = self.table.get_cell(row_key, "forsale")
+        listing = self.fetch_sales_listing_details(listing_id)
+        self.left_column_content.update(
+            self._two_column_view(listing, translate_keys=self.key_translation)
+        )
+        self.sales_price.update(str(listing["d_sales_price"]))
+        # Stats
+        release_id = self.table.get_cell(row_key, "release_id")
+        stats = self.fetch_marketplace_stats(release_id)
+        self.middle_column_content.update(self._two_column_view(stats))
+        rlog.write(
+            f"Updated price, marketplace stats and details of listing {listing_id} "
+            "with Discogs data."
+        )
+
+    # Helpers
+
+    def _load_rows_into_table(self):
         table_widget = self.query_one(DataTable)
         if isinstance(self.rows[0], Row):
             for row in self.rows:
@@ -90,11 +168,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         else:
             for row_id, row in enumerate(self.rows):
                 table_widget.add_row(*row.values(), key=row_id)
-
-    def on_mount(self):
-        self.title = "DiscoDOS ls results"
-        self.sub_title = "Use keystrokes to edit/sell/view details, ..."
-        self._load_ls_results()
 
     def _two_column_view(self, details_dict, translate_keys=None):
         """A Rich-formatted view of keys and values.
@@ -138,74 +211,3 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             # Format key bold and value normal font (or as we manipulated it above)
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
-
-    def on_data_table_row_highlighted(self, event):
-        """Get DB listing details and Marketplace stats for highlighted row."""
-        row_key = event.row_key
-        # Listing
-        listing_id = self.table.get_cell(row_key, "forsale")
-        listing = self.collection.get_sales_listing_details(listing_id)
-        self.left_column_content.update(
-            self._two_column_view(listing, translate_keys=self.key_translation)
-        )
-        self.sales_price.update(str(listing["d_sales_price"]))
-        # Stats
-        self.middle_column_content.update("Press enter to fetch!")
-
-    def on_data_table_row_selected(self, event):
-        """Fetch Discogs listing details and Marketplace stats for selected row."""
-        rlog = self.query_one(RichLog)
-        row_key = event.row_key
-        # Listing
-        listing_id = self.table.get_cell(row_key, "forsale")
-        listing = self.fetch_sales_listing_details(listing_id)
-        self.left_column_content.update(
-            self._two_column_view(listing, translate_keys=self.key_translation)
-        )
-        self.sales_price.update(str(listing["d_sales_price"]))
-        # Stats
-        release_id = self.table.get_cell(row_key, "release_id")
-        stats = self.fetch_marketplace_stats(release_id)
-        self.middle_column_content.update(self._two_column_view(stats))
-        rlog.write(
-            f"Updated price, marketplace stats and details of listing {listing_id} "
-            "with Discogs data."
-        )
-
-    def compose(self):
-        # The main data widget
-        self.table = DataTable()
-        self.table.focus()
-        for key, label in self.headers.items():
-            self.table.add_column(label=label, key=key)
-        self.table.cursor_type = "row"
-        self.table.zebra_stripes = True
-        # Headline widgets
-        self.left_column_headline = Label("[b]Listing Details[/b]")
-        self.middle_column_headline = Label("[b]My Price & Marketplace Stats[/b]")
-        self.right_column_headline = Label("[b]Log[/b]")
-        # Content widgets
-        self.left_column_content = Static("")
-        self.middle_column_content = Static("")
-        self.right_column_content = Static("")
-        self.sales_price = Digits("0", id="sales-price")
-        # Layout
-        with Vertical():
-            with Horizontal(id="upper-area"):
-                with VerticalScroll():
-                    yield self.table
-            with Horizontal(id="lower-area"):
-                with VerticalScroll(id="lower-left-column"):
-                    yield self.left_column_headline
-                    yield self.left_column_content
-                with VerticalScroll(id="lower-middle-column"):
-                    yield self.middle_column_headline
-                    yield self.sales_price
-                    yield self.middle_column_content
-                with VerticalScroll(id="lower-right-column"):
-                    yield self.right_column_headline
-                    yield self.right_column_content
-            with Horizontal(id="log-area"):
-                with VerticalScroll():
-                    yield RichLog()
-            yield Footer()
