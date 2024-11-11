@@ -4,6 +4,7 @@ from datetime import datetime
 from socket import gaierror
 import discogs_client
 import discogs_client.exceptions
+from discogs_client import Condition, Status
 import requests.exceptions
 import urllib3.exceptions
 
@@ -11,6 +12,19 @@ from discodos.utils import is_number
 
 log = logging.getLogger('discodos')
 
+CONDITIONS = {
+    "M": Condition.MINT,
+    "NM": Condition.NEAR_MINT,
+    "VG+": Condition.VERY_GOOD_PLUS,
+    "VG": Condition.VERY_GOOD,
+    "G+": Condition.GOOD_PLUS,
+    "G": Condition.GOOD,
+    "F": Condition.FAIR,
+}
+STATUS = {
+    "For Sale": Status.FOR_SALE,
+    "Draft": Status.DRAFT,
+}
 
 class DiscogsMixin:
     """Discogs connection, fetchers and helpers."""
@@ -186,6 +200,49 @@ class DiscogsMixin:
             "blocked_from_sale": str(release.marketplace_stats.blocked_from_sale),
         }
         return r if r else None
+
+    def fetch_price_suggestion(self, release_id, condition):
+        release = self.d.release(release_id)
+        r = {
+            "M": release.price_suggestions.mint,
+            "VG+": release.price_suggestions.very_good_plus,
+            "VG": release.price_suggestions.very_good,
+            "G+": release.price_suggestions.good_plus,
+            "G": release.price_suggestions.good,
+            "F": release.price_suggestions.fair,
+        }
+        return r[condition.upper()] if r else None
+
+    def list_for_sale(  # pylint: disable=too-many-positional-arguments,too-many-arguments
+        self,
+        release_id=None,
+        condition=None,
+        sleeve_condition=None,
+        price=None,
+        status=None,
+        location=None,
+        allow_offers=None,
+        comments=None,
+        private_comments=None,
+    ):
+        """Lists a record for sale."""
+        try:
+            self.me.inventory.add_listing(
+                release_id,
+                CONDITIONS[condition],
+                price,
+                STATUS[status],
+                sleeve_condition=CONDITIONS[sleeve_condition],
+                comments=comments,
+                allow_offers="true" if allow_offers else "false",
+                external_id=private_comments,
+                location=location,
+                # weight=None,
+                # format_quantity=None,
+            )
+        except Exception as Exc:
+            log.error("Exception while trying to list for sale: %s", Exc)
+            return False
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
