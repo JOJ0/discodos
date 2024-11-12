@@ -142,17 +142,15 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """Fetch Discogs listing details and Marketplace stats for selected row."""
         rlog = self.query_one(RichLog)
         row_key = event.row_key
-        # Listing
+        # Listing - we fetch only when listing_id in DB
         listing_id = self.table.get_cell(row_key, "forsale")
-        # Early exit, nothing to fetch!
-        if not listing_id:
-            return
-        listing = self.fetch_sales_listing_details(listing_id)
-        self.left_column_content.update(
-            self._two_column_view(listing, translate_keys=self.key_translation)
-        )
-        self._sales_digits_update(listing)
-        # Stats
+        if listing_id:
+            listing = self.fetch_sales_listing_details(listing_id)
+            self.left_column_content.update(
+                self._two_column_view(listing, translate_keys=self.key_translation)
+            )
+            self._sales_digits_update(listing)
+        # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "release_id")
         stats = self.fetch_marketplace_stats(release_id)
         self.middle_column_content.update(self._two_column_view(stats))
