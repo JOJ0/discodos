@@ -134,7 +134,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.left_column_content.update(
             self._two_column_view(listing, translate_keys=self.key_translation)
         )
-        self.sales_price.update(str(listing["d_sales_price"]))
+        self._sales_digits_update(listing)
         # Stats
         self.middle_column_content.update("Press enter to fetch!")
 
@@ -144,11 +144,14 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         row_key = event.row_key
         # Listing
         listing_id = self.table.get_cell(row_key, "forsale")
+        # Early exit, nothing to fetch!
+        if not listing_id:
+            return
         listing = self.fetch_sales_listing_details(listing_id)
         self.left_column_content.update(
             self._two_column_view(listing, translate_keys=self.key_translation)
         )
-        self.sales_price.update(str(listing["d_sales_price"]))
+        self._sales_digits_update(listing)
         # Stats
         release_id = self.table.get_cell(row_key, "release_id")
         stats = self.fetch_marketplace_stats(release_id)
@@ -211,3 +214,12 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             # Format key bold and value normal font (or as we manipulated it above)
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
+
+    def _sales_digits_update(self, listing):
+        """A Rich-formatted big digits view of the sales price.
+        """
+        # Display a 0 when not listed for sale.
+        sales_price = 0
+        if listing is not None:
+            sales_price = listing.get("d_sales_price", 0)
+        self.sales_price.update(str(sales_price))
