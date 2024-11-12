@@ -2,6 +2,7 @@ import logging
 from sqlite3 import Row
 from datetime import datetime
 from rich.table import Table as rich_table
+from rich.markdown import Markdown
 from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
@@ -189,6 +190,8 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # Highlight/fix/replace some values first
         values_replaced = {}
         for key, value in details_dict.items():
+            if key in ["d_sales_release_url", "d_sales_url"]:
+                value = Markdown(f"[View in browser]({value})")
             if key == "d_sales_allow_offers":
                 value =  "Yes" if value in [1, True] else "No"
             elif key == "status" and value == "Sold":
@@ -209,6 +212,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
         # The final creation of the Rich table
         for key, value in final_details.items():
+            if isinstance(value, Markdown):
+                table.add_row(f"[bold]{key}[/bold]", value)
+                continue
             # Format key bold and value normal font (or as we manipulated it above)
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
