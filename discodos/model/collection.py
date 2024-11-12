@@ -659,6 +659,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
         Always returns a dict, not Row.
         """
+        if not listing_id:
+            listing_id = "NULL"
         where = f"d_sales_listing_id == {listing_id}"
 
         rows =  self._select_simple(
