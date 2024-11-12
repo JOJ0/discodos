@@ -145,7 +145,12 @@ class Database():
         """
         log.info(f"DB: _select: {sql_select}")
         self.cur.execute(sql_select)
-        rows = self.cur.fetchone() if fetchone else self.cur.fetchall()
+        try:
+            rows = self.cur.fetchone() if fetchone else self.cur.fetchall()
+            log.debug("DB: _select: fetchone() or fetchall() successful.",)
+        except Exception as e:
+            log.error("DB: _select: %s", e.args[0])
+            rows = None
 
         # Returns either empty list or NoneType depending on fetchone flag
         # (was always empty list in old code)
@@ -156,6 +161,7 @@ class Database():
         # The default, we return a list of Rows
         if not fetchone:
             log.info(f"DB: Found {len(rows)} rows containing {len(rows[0])} columns.")
+
         # The fetchone flag is set, we return one Row
         if fetchone:
             log.info(f"DB: Found 1 row containing {rows.keys()} columns.")
