@@ -1,6 +1,5 @@
 import time
 import logging
-from datetime import datetime
 from socket import gaierror
 import discogs_client
 import discogs_client.exceptions
@@ -240,24 +239,25 @@ class DiscogsMixin:
                 # weight=None,
                 # format_quantity=None,
             )
+            return True
         except Exception as Exc:
             log.error("Exception while trying to list for sale: %s", Exc)
             return False
 
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
-        if int(self.d._fetcher.rate_limit_remaining) < remaining:
+        if int(self.d._fetcher.rate_limit_remaining) < remaining:  # pylint: disable=protected-access
             log.info(
                 "Discogs request rate limit is about to exceed, "
                 "let's wait a little: %s",
-                self.d._fetcher.rate_limit_remaining
+                self.d._fetcher.rate_limit_remaining  # pylint: disable=protected-access
             )
             # while int(self.d._fetcher.rate_limit_remaining) < remaining:
             time.sleep(sleep)
         else:
             log.info(
                 "Discogs rate limit: %s remaining.",
-                self.d._fetcher.rate_limit_remaining
+                self.d._fetcher.rate_limit_remaining  # pylint: disable=protected-access
             )
 
     # Discogs data helpers
@@ -281,30 +281,32 @@ class DiscogsMixin:
             # log.debug("d_artists_parse: this is the tr object: {}".format(tr))
             if tr.position.upper() == track_number.upper():
                 # log.info("d_tracklist_parse: found by track number.")
+
                 if len(tr.artists) == 1:
                     name = tr.artists[0].name
-                    log.info("MODEL: d_artists_parse: just one artist, returning name: {}".format(name))
+                    log.info(
+                        f"MODEL: d_artists_parse: just one artist, returning it: {name}"
+                    )
                     return name
-                elif len(tr.artists) == 0:
-                    # log.info(
-                    #   "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
-                    #             dir(tr.artists)))
+
+                if len(tr.artists) == 0:
                     log.info(
                         "MODEL: d_artists_parse: no artists in tracklist, "
                         "checking d_artists object..")
                     combined_name = self.d_artists_to_str(d_artists)
                     return combined_name
-                else:
-                    log.info("tr.artists len: {}".format(len(tr.artists)))
-                    for a in tr.artists:
-                        log.info("release.artists debug loop: {}".format(a.name))
-                    combined_name = self.d_artists_to_str(tr.artists)
-                    log.info(
-                        "MODEL: d_artists_parse: several artists, "
-                        "returning combined named {}".format(combined_name))
-                    return combined_name
-        log.debug('d_artists_parse: Track {} not existing on release.'.format(
-            track_number))
+
+                log.info("tr.artists len: {len(tr.artists)}")
+                for a in tr.artists:
+                    log.debug(f"release.artists debug loop: {a.name}")
+                combined_name = self.d_artists_to_str(tr.artists)
+                log.info(
+                    "MODEL: d_artists_parse: several artists, "
+                    f"returning combined named {combined_name}")
+                return combined_name
+
+        log.debug('d_artists_parse: Track {track_number} not existing on release.')
+        return None
 
     def d_tracklist_parse(self, d_tracklist, track_number):
         '''gets Track name from discogs tracklist object via track_number, eg. A1'''

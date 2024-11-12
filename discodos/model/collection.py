@@ -146,8 +146,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                                 WHERE d_release_id = ? AND d_track_no = ?;'''
                     tuple_u = (track_artist, track_name, release_id, track_no)
                     return self.execute_sql(sql_u, tuple_u, raise_err=True)
-                except sqlerr as e:
-                    log.error("MODEL: upsert_track: %s", e.args[0])
+                except sqlerr as ee:
+                    log.error("MODEL: upsert_track: %s", ee.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
