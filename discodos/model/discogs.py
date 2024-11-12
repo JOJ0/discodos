@@ -204,6 +204,7 @@ class DiscogsMixin:
         release = self.d.release(release_id)
         r = {
             "M": release.price_suggestions.mint,
+            "NM": release.price_suggestions.near_mint,
             "VG+": release.price_suggestions.very_good_plus,
             "VG": release.price_suggestions.very_good,
             "G+": release.price_suggestions.good_plus,
