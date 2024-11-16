@@ -2,6 +2,7 @@ import logging
 from datetime import date, datetime, timedelta
 from time import time
 from tabulate import tabulate as tab
+from rich import print  # pylint: disable=redefined-builtin
 
 from discodos.utils import is_number, join_sep
 
