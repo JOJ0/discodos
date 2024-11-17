@@ -11,6 +11,7 @@ class Database():
 
     def __init__(self, db_conn=False, db_file=False, setup=False):
         self.db_not_found = False
+        self.lastrowid = None
         if db_conn:
             log.debug("DB: db_conn argument was handed over.")
             self.db_conn = db_conn
@@ -66,27 +67,22 @@ class Database():
                     self.cur
                 )  # connection close has to be done manually though!
                 if values_tuple:
-                    log.info("DB: ...with this tuple: {%s}", values_tuple)
+                    log.info("DB: ...with tuple: %s", values_tuple)
                     c.execute(sql, values_tuple)
                 else:
                     c.execute(sql)
-                log.info(
-                    "DB: rowcount: {}, lastrowid: {}".format(
-                        c.rowcount, c.lastrowid
-                    )
-                )
-                log.info("DB: Committing NOW")
+                log.debug("DB: Committing NOW")
                 self.db_conn.commit()
+                log.debug("DB: rowcount: %s, lastrowid: %s", c.rowcount, c.lastrowid)
             log.debug("DB: Committing via context close NOW")
+            log.debug("DB: rowcount: %s, lastrowid: %s", c.rowcount, c.lastrowid)
             self.lastrowid = c.lastrowid
             return c.rowcount
         except sqlerr as e:
-            # log.error("DB: %s", dir(e))
             if raise_err:
                 log.debug("DB: Raising error to upper level.")
                 raise e
-            else:
-                log.error("DB: %s", e.args[0])
+            log.error("DB: %s", e.args[0])
             return False
 
     def configure_db(self):
@@ -108,7 +104,7 @@ class Database():
         """This is a wrapper around the _select method.
         It puts together SQL select statements as strings with support for JOIN.
         """
-        log.info(f"DB: _select_simple: fetchone = {fetchone}")
+        log.debug("DB: _select_simple: fetchone = %s", fetchone)
         fields_str = ", ".join(fields_list)
         join_clause = ""
         if join:
@@ -143,7 +139,7 @@ class Database():
                 return as a key value dict. This is only available when fetchone is also
                 enabled! Silently ignored if fetchone is False.
         """
-        log.info(f"DB: _select: {sql_select}")
+        log.info("DB: _select: %s", sql_select)
         self.cur.execute(sql_select)
         try:
             rows = self.cur.fetchone() if fetchone else self.cur.fetchall()
@@ -155,19 +151,21 @@ class Database():
         # Returns either empty list or NoneType depending on fetchone flag
         # (was always empty list in old code)
         if not rows:
-            log.info( f"DB: Nothing found - Returning type: {type(rows).__name__}.")
+            log.info("DB: Nothing found - Returning type: %s.", type(rows).__name__)
             return rows
 
         # The default, we return a list of Rows
         if not fetchone:
-            log.info(f"DB: Found {len(rows)} rows containing {len(rows[0])} columns.")
+            log.info(
+                "DB: Found %s rows with %s columns.", len(rows), len(rows[0])
+            )
 
         # The fetchone flag is set, we return one Row
         if fetchone:
-            log.info(f"DB: Found 1 row containing {rows.keys()} columns.")
+            log.info("DB: Found 1 row with %s columns.", len(rows.keys()))
 
         # A final log statement clarifying what is returned
-        log.debug(f"DB: Returning row(s) as type: {type(rows).__name__}.")
+        log.debug("DB: Returning row(s) as type: %s.", type(rows).__name__)
 
         # The as_dict flag enables returning a dictionary instead of a Row object.
         if as_dict and fetchone:
