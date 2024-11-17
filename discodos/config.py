@@ -128,6 +128,7 @@ class Db_setup(Database):
             'schema_version': 3,
             'tasks': {
                 'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;',
+                'Add field release.sold_time': 'ALTER TABLE release ADD sold_time TEXT;',
                 'New table sales':
                 """ CREATE TABLE sales (
                       d_sales_release_id INTEGER NOT NULL,

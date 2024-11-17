@@ -3,6 +3,7 @@ from abc import ABC
 # import pprint as p
 from time import time
 from datetime import datetime
+from json import JSONDecodeError
 import discogs_client.exceptions as errors
 from rich.progress import (BarColumn, MofNCompleteColumn, Progress, 
                            TaskProgressColumn, SpinnerColumn)
@@ -881,6 +882,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def import_sales_inventory(self):
         """Import sales inventory"""
         start_time = time()
+        decode_errs = 0
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.p("Importing Discogs sales inventory into DiscoBASE...")
         custom_progress = Progress(
@@ -896,25 +898,32 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 total=total_items,
             )
             for listing in self.collection.me.inventory:
-                self.collection.create_sales_entry({
-                    "d_sales_release_id": listing.release.id,
-                    "d_sales_listing_id": listing.id,
-                    "d_sales_release_url": listing.release.url,
-                    "d_sales_url": listing.url,
-                    "d_sales_condition": listing.condition,
-                    "d_sales_sleeve_condition": listing.sleeve_condition,
-                    "d_sales_price": str(listing.price.value),
-                    "d_sales_comments": listing.comments,
-                    "d_sales_allow_offers": 1 if listing.allow_offers else 0,
-                    "d_sales_status": listing.status,
-                    "d_sales_comments_private": listing.external_id,
-                    "d_sales_counts_as": str(listing.format_quantity),
-                    "d_sales_location": listing.location,
-                    "d_sales_weight": str(listing.weight),
-                    "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
-                })
-                custom_progress.update(task, advance=1)
+                try:
+                    self.collection.create_sales_entry({
+                        "d_sales_release_id": listing.release.id,
+                        "d_sales_listing_id": listing.id,
+                        "d_sales_release_url": listing.release.url,
+                        "d_sales_url": listing.url,
+                        "d_sales_condition": listing.condition,
+                        "d_sales_sleeve_condition": listing.sleeve_condition,
+                        "d_sales_price": str(listing.price.value),
+                        "d_sales_comments": listing.comments,
+                        "d_sales_allow_offers": 1 if listing.allow_offers else 0,
+                        "d_sales_status": listing.status,
+                        "d_sales_comments_private": listing.external_id,
+                        "d_sales_counts_as": str(listing.format_quantity),
+                        "d_sales_location": listing.location,
+                        "d_sales_weight": str(listing.weight),
+                        "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
+                    })
+                    if listing.status == "Sold":
+                        self.collection.toggle_sold_state(listing.release.id, True)
+                    custom_progress.update(task, advance=1)
+                except JSONDecodeError as e:
+                    log.error("Catched a JSONDecodeError. Not retrying! %s", e)
+                    decode_err += 1
 
+        print(f"Discogs JSONDecode errors : {decode_errs}.")
         self.cli.duration_stats(start_time, 'Inventory import')
 
     def tui_ls_releases(self, search_terms):
@@ -942,7 +951,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "title:": "Title",
                 "isinc": "Is in C.",
                 "forsale": "For Sale",
-                "status": "Status"
+                "status": "Status",
+                "sold": "Sold",
             },
             discogs=self.d,
             collection=self.collection,

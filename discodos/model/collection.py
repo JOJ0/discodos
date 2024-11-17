@@ -639,6 +639,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "in_d_collection",
                 "d_sales_listing_id",
                 "d_sales_status",
+                "sold",
             ],
             "release",
             fetchone=False, orderby=orderby, condition=where, join=join
@@ -684,3 +685,11 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             fetchone=True, condition=where, as_dict=True
         )
         return rows
+
+    def toggle_sold_state(self, release_id, sold):
+        """Pass boolean to mark as sold (or not) in DiscoBASE."""
+        sql_upd = '''UPDATE release SET
+                      (sold, sold_time) = (?, datetime('now', 'localtime'))
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (sold, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)

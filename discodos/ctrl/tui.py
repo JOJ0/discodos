@@ -20,6 +20,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("q", "request_quit", "Quit"),
         ("l", "list_sale", "List for sale"),
         ("d", "draft_sale", "Set to draft"),
+        ("s", "mark_sold", "Mark sold (in DB)"),
+        ("c", "fix_coll", "Sync Coll. Flag (in DB)"),
+        ("r", "remove_coll", "Remove from Coll."),
         ("e", "edit_release", "Edit release"),
         ("E", "edit_sale", "Edit sales listing"),
     ]
@@ -137,7 +140,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         )
         self._sales_digits_update(listing)
         # Stats
-        self.middle_column_content.update("Press enter to fetch!")
+        self.middle_column_content.update("Press enter to fetch Discogs stats!")
 
     def on_data_table_row_selected(self, event):
         """Fetch Discogs listing details and Marketplace stats for selected row."""
