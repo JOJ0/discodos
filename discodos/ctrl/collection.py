@@ -875,9 +875,11 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         if not search_results:
             self.cli.p('Nothing found.')
-        else:
-            self.cli.p('Found releases:')
-            self.cli.tab_ls_releases(search_results)
+            return
+
+        prettified_results = self.cli.replace_key_value_search_releases(search_results)
+        self.cli.p('Found releases:')
+        self.cli.tab_ls_releases(prettified_results)
 
     def import_sales_inventory(self):
         """Import sales inventory"""
@@ -942,8 +944,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.cli.p('Nothing found.')
             return
 
+        prettified_results = self.cli.replace_key_value_search_releases(search_results)
         app = DiscodosListApp(
-            rows=search_results,
+            rows=prettified_results,
             headers={
                 "release_id": "ID",
                 "catno": "Cat. #",

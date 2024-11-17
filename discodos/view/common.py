@@ -505,6 +505,29 @@ class ViewCommon():
                     new_text += part
         return new_text
 
+    def bool_to_yes_no(self, value):
+        """Convert 0/1 to 'No'/'Yes'."""
+        return "Yes" if value in [1, True, "1"] else "No"
+
+    def replace_key_value_search_releases(self, rows):
+        """Replace bools and so on. rows expects list of dicts.
+
+        Used eg. for ls (tui) command.
+        """
+
+        human_readable_rows = [
+            {
+                **row,
+                "in_d_collection": self.bool_to_yes_no(
+                    row["in_d_collection"]
+                ),
+                "sold": self.bool_to_yes_no(
+                    row["sold"]
+                )
+            }
+            for row in rows
+        ]
+        return human_readable_rows
 
 class ViewCommonCommandline(ViewCommon):
     """ Common view utils, usable in CLI only.

@@ -607,10 +607,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             log.error("MODEL: create_sales_entry: %s", e.args[0])
             return False
 
-    def bool_to_yes_no(self, value):
-        """Convert 0/1 to 'No'/'Yes'."""
-        return "Yes" if value == 1 else "No"
-
     def key_value_search_releases(
         self, search_key_value=None, orderby="d_artist, discogs_title"
     ):
@@ -644,16 +640,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release",
             fetchone=False, orderby=orderby, condition=where, join=join
         )
-        human_readable_rows = [
-            {
-                **row,
-                "in_d_collection": self.bool_to_yes_no(
-                    row["in_d_collection"]
-                )
-            }
-            for row in rows
-        ]
-        return human_readable_rows
+        return rows
 
     def get_sales_listing_details(self, listing_id):
         """Get Marketplace listing details from DB if already imported.
