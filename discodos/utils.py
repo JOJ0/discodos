@@ -1,4 +1,5 @@
 import logging
+import os
 import yaml
 
 log = logging.getLogger('discodos')
@@ -56,3 +57,7 @@ def join_sep(iterator, seperator):
     for s in it:
         string += seperator + s
     return string
+
+def restore_terminal():
+    """Executes `reset` on CLI. Use to prevent terminal issues after Textual exit."""
+    os.system('reset')
