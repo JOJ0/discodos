@@ -1,9 +1,7 @@
 import logging
-import atexit
 import click
 
 from discodos.ctrl import CollectionControlCommandline
-from discodos.utils import restore_terminal
 
 log = logging.getLogger('discodos')
 
@@ -49,6 +47,5 @@ def ls_cmd(helper, search_terms):
         return
     if user.conf.enable_tui:
         coll_ctrl.tui_ls_releases(search_key_value)
-        atexit.register(restore_terminal)
     else:
         coll_ctrl.ls_releases(search_key_value)
