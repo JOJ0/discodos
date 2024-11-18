@@ -313,7 +313,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     log.error("importing track. Continuing anyway.")
         except Exception as Exc:
             tracks_discogs_errors += 1
-            log.error(f"Exception: {Exc}")
+            log.error("Exception: %s", Exc)
 
         return tracks_added, tracks_db_errors, tracks_discogs_errors
 
@@ -362,7 +362,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 if not rel_created:
                     releases_db_errors += 1
                     log.error(
-                        f'importing release "{item.release.title}" Continuing anyway.'
+                        'importing release "%s" Continuing anyway.', item.release.title
                     )
                     progress.update(task, advance=1)
                     continue
@@ -482,6 +482,15 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     )
                 )
 
+    # Brainz fetchers and helpers
+
+    def _err_cant_fetch(self, tr_no, rel_title):
+        log.error(
+            'Can\'t fetch "%s" on "%s". Either track number not valid on '
+            "release or track not imported yet.",
+            tr_no, rel_title,
+        )
+
     def update_tracks_from_discogs(self, track_list, offset=0):
         '''takes a list of tracks and updates tracknames/artists from Discogs.
            List has to contain fields: d_release_id, discogs_title, d_track_no.
@@ -515,8 +524,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     d_tracklist, d_track_no,
                     self.d.release(d_release_id).artists)
             except errors.HTTPError as HtErr:
-                log.error('Track {} on "{}" ({}) not existing on Discogs ({})'.format(
-                    d_track_no, discogs_title, d_release_id, HtErr))
+                log.error('Track %s on "%s" (%s) not existing on Discogs (%s).',
+                          d_track_no, discogs_title, d_release_id, HtErr)
                 self.cli.brainz_processed_so_far(self.processed, self.processed_total)
                 self.processed += 1
                 print("")  # space for readability
@@ -585,7 +594,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             return False
         start_time = time()
         log.debug('CTRL: update_track_from_brainz: '
-                  'match detail option is: {}'.format(detail))
+                  'match detail option is: %s', detail)
         if offset:
             processed = offset
             processed_total = len(track_list) + offset -1
@@ -604,8 +613,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             d_track_no = track['d_track_no']
             user_rec_mbid = track['m_rec_id_override']
 
-            log.info('CTRL: Trying to match Discogs release {} "{}"...'.format(
-                discogs_id, track['discogs_title']))
+            log.info('CTRL: Trying to match Discogs release %s "%s"...',
+                     discogs_id, track['discogs_title'])
             d_rel = self.collection.get_d_release(discogs_id) # 404 is handled here
 
             def _warn_skipped(m):  # prints skipped-message and processed-count
@@ -756,8 +765,11 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
             else:
                 errors_no_release += 1
-                log.warning('No Release MBID found for track {} on Discogs release "{}"'.format(
-                        track['d_track_no'], track['discogs_title']))
+                log.warning(
+                    'No Release MBID found for track %s on Discogs release "%s"',
+                    track["d_track_no"],
+                    track["discogs_title"],
+                )
             self.cli.brainz_processed_so_far(processed, processed_total)
             processed += 1
             print('')  # space for readability
@@ -786,13 +798,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def update_single_track_or_release_from_brainz(self, rel_id, rel_title,
                                                    track_no, detail):
-        def _err_cant_fetch(tr_no):
-            m = 'Can\'t fetch "{}" on "{}". '.format(tr_no, rel_title)
-            m+= 'Either track number not existing on release or '
-            m+= 'track not imported into DiscoBASE yet. Try '
-            m+= '"disco search ... -u", then re-run match-command.'
-            log.error(m)
-
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
 
@@ -807,8 +812,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     tr_list.append(db_track)
         else:
             track = self.collection.get_track_for_brainz_update(rel_id, track_no.upper())
-            if track == None:
-                _err_cant_fetch(track_no.upper())
+            if not track:
+                self._err_cant_fetch(track_no.upper(), rel_id)
                 return False
             tr_list = [track]
 
@@ -818,12 +823,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
         track_details = self.collection.get_track(rel_id, track_no.upper())
-        if track_details == None:
-            m = 'Can\'t fetch "{}" on "{}". '.format(track_no, rel_title)
-            m+= 'Either the track number is not existing on the release or the '
-            m+= 'track was not imported to DiscoBASE yet. Try '
-            m+= '"disco search ... -u" first, then re-run edit-command.'
-            log.error(m)
+        if not track_details:
+            self._err_cant_fetch(track_no, rel_title)
             return False
         msg_editing ='Editing track {} on "{}".\n'.format(track_no, rel_title)
         msg_editing+='* to keep a value as is, press enter\n'
