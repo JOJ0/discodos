@@ -6,6 +6,7 @@ from rich.markdown import Markdown
 from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
+from textual.coordinate import Coordinate
 
 from discodos.model import DiscogsMixin
 
@@ -20,7 +21,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("q", "request_quit", "Quit"),
         ("l", "list_sale", "List for sale"),
         ("d", "draft_sale", "Set to draft"),
-        ("s", "mark_sold", "Mark sold (in DB)"),
+        ("s", "toggle_sold", "Toggle sold (in DB)"),
         ("c", "fix_coll", "Sync Coll. Flag (in DB)"),
         ("r", "remove_coll", "Remove from Coll."),
         ("e", "edit_release", "Edit release"),
@@ -79,6 +80,16 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
     def action_draft_sale(self):
         pass
+
+    def action_toggle_sold(self):
+        """When shortcut is pressed, toggle field "sold" in DB."""
+        rlog = self.query_one(RichLog)
+        row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+        current_state = self.table.get_cell(row_key, "sold")
+        release_id = self.table.get_cell(row_key, "release_id")
+        wanted_state = True if current_state is False else True
+        self.collection.toggle_sold_state(release_id, wanted_state)
+        rlog.write("Set {release_id} sold state {wanted_state} ")
 
     def action_edit_release(self):
         pass
