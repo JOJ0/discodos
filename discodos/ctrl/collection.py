@@ -212,7 +212,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             return False
         else:
             # setup.py argparser catches non-int, this is for calls from elsewhere
-            if self.collection.search_release_id(release_id):
+            if self.collection.get_release_by_id(release_id):
                 msg = "Release ID is already existing in DiscoBASE, "
                 msg+= "won't add it to your Discogs collection. We don't want dups!"
                 self.cli.p(msg)

@@ -68,12 +68,12 @@ class TestCollection(unittest.TestCase):
         # self.assertEqual(db_return[3]['in_d_collection'], 1)
         print("{} - {} - END".format(self.clname, name))
 
-    def test_search_release_id(self):
+    def test_get_release_by_id(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         # instantiate the Collection model class
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_id('123456')
+        db_return = self.collection.get_release_by_id('123456')
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 10)  # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)

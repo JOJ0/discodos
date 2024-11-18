@@ -46,7 +46,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
-                return self.search_release_id(id_or_title)
+                return self.get_release_by_id(id_or_title)
             except Exception as Exc:
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
@@ -122,10 +122,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         # log.debug(self.debug_db(tracks))
         return tracks
 
-    def search_release_id(self, release_id):
+    def get_release_by_id(self, release_id):
         return self._select_simple(
-            ['*'], 'release',
-            'discogs_id == {}'.format(release_id), fetchone=True
+            ["*"], "release", f"discogs_id == {release_id}", fetchone=True
         )
 
     def upsert_track(self, release_id, track_no, track_name, track_artist):
