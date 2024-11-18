@@ -959,6 +959,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             },
             discogs=self.d,
             collection=self.collection,
+            cli=self.cli,
         )
         app.run(inline=False)
         return

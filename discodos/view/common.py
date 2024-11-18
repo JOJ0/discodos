@@ -509,6 +509,10 @@ class ViewCommon():
         """Convert 0/1 to 'No'/'Yes'."""
         return "Yes" if value in [1, True, "1"] else "No"
 
+    def yes_no_to_bool(self, value):
+        """Convert 'No'/'Yes' to 0/1."""
+        return 1 if value in ["Yes"] else 0
+
     def replace_key_value_search_releases(self, rows):
         """Replace bools and so on. rows expects list of dicts.
 

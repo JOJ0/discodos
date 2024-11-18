@@ -679,3 +679,28 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                        WHERE discogs_id == ?;'''
         tuple_upd = (sold, release_id)
         return self.execute_sql(sql_upd, tuple_upd)
+
+    def get_one_release_for_list_app(
+        self, release_id, orderby="d_artist, discogs_title"
+    ):
+        """Get one release with fields required for DiscodosListApp.
+
+        Returns the same fields as key_value_search_release!
+        """
+        where = f"d_sales_release_id == {release_id}"
+        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
+
+        rows = self._select_simple(
+            [
+                "discogs_id",
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "in_d_collection",
+                "d_sales_listing_id",
+                "d_sales_status",
+                "sold",
+            ],
+            "release", fetchone=False, orderby=orderby, condition=where, join=join,
+        )
+        return rows

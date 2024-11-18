@@ -28,7 +28,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("E", "edit_sale", "Edit sales listing"),
     ]
 
-    def __init__(self, rows, headers, discogs=None, collection=None):
+    def __init__(self, rows, headers, discogs=None, collection=None, cli=None):
         super().__init__()
         super().discogs_connect(
             user_token=None,
@@ -36,6 +36,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             discogs=discogs,
         )
         self.collection = collection
+        self.cli = cli
         self.table = None
         self.rows = rows
         self.headers = headers
@@ -85,11 +86,20 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """When shortcut is pressed, toggle field "sold" in DB."""
         rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
-        current_state = self.table.get_cell(row_key, "sold")
         release_id = self.table.get_cell(row_key, "release_id")
-        wanted_state = True if current_state is False else True
-        self.collection.toggle_sold_state(release_id, wanted_state)
-        rlog.write("Set {release_id} sold state {wanted_state} ")
+        # Current and wanted states toggle
+        current_state = self.table.get_cell(row_key, "sold")
+        wanted_state = "No" if current_state == "Yes" else "Yes"
+        # DB write
+        toggled = self.collection.toggle_sold_state(
+            release_id, self.cli.yes_no_to_bool(wanted_state)
+        )
+        # Update the cell on success and log
+        if toggled:
+            rlog.write(f"Set {release_id} sold state {wanted_state} ")
+            self.table.update_cell(row_key, "sold", wanted_state)
+            return
+        rlog.write(f"Error setting {release_id} sold state {wanted_state} ")
 
     def action_edit_release(self):
         pass
