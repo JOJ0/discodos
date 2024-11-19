@@ -5,8 +5,8 @@ from time import time
 from datetime import datetime
 from json import JSONDecodeError
 import discogs_client.exceptions as errors
-from rich.progress import (BarColumn, MofNCompleteColumn, Progress, 
-                           TaskProgressColumn, SpinnerColumn)
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
+                           TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model import Brainz
@@ -17,7 +17,12 @@ from discodos.view import CollectionViewCommandline
 from discodos.ctrl.tui import DiscodosListApp
 
 log = logging.getLogger('discodos')
-
+custom_progress = Progress(
+    MofNCompleteColumn(),
+    BarColumn(),
+    TaskProgressColumn(),
+    TimeElapsedColumn(),
+)
 
 class CollectionControlCommon (ABC):
     """Common controller functionality for the Discogs user profile"""
@@ -305,9 +310,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     release_id, track.position, tr_title, tr_artists
                 ):
                     tracks_added += 1
-                    msg_tr_add = f'Track "{tr_artists}" - "{tr_title}"'
-                    log.info(msg_tr_add)
-                    print(msg_tr_add)
+                    # msg_tr_add = f'Track "{tr_artists}" - "{tr_title}"'
+                    # log.info(msg_tr_add)
+                    # print(msg_tr_add)
                 else:
                     tracks_db_errors += 1
                     log.error("importing track. Continuing anyway.")
@@ -353,7 +358,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         releases = self.collection.me.collection_folders[0].releases
         total_releases = len(releases)
 
-        with Progress() as progress:
+        with custom_progress as progress:
             task = progress.add_task("Processing releases...", total=total_releases)
 
             for item in releases:
@@ -888,11 +893,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         decode_errs = 0
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.p("Importing Discogs sales inventory into DiscoBASE...")
-        custom_progress = Progress(
-            MofNCompleteColumn(),
-            BarColumn(),
-            TaskProgressColumn(),
-        )
         total_items = len(self.collection.me.inventory)
 
         with custom_progress:
