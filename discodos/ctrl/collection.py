@@ -326,7 +326,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         d_artists = item.release.artists
         artists = self.collection.d_artists_to_str(d_artists)
         first_catno = self.collection.d_get_first_catno(item.release.labels)
-        self.log_release_info(item.release.id, artists, item.release.title)
+        self.print_release_info(item.release.id, artists, item.release.title)
 
         rel_created = self.collection.create_release(
             item.release.id, item.release.title, artists, first_catno,
@@ -334,7 +334,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         return rel_created, d_artists, artists
 
-    def log_release_info(self, release_id, artists, title):
+    def print_release_info(self, release_id, artists, title):
         print(f'Release {release_id} - "{artists}" - "{title}"')
 
     def import_collection(self, tracks=False):
