@@ -7,7 +7,12 @@ log = logging.getLogger('discodos')
 
 @click.command(name='sell')
 @click.pass_obj
-@click.argument("release_id", type=int)
+@click.argument("query", nargs=-1)
+@click.option(
+    "--id", "-i", "release_id",
+    type=int,
+    help="Omit search by passing a release ID with this option."
+)
 @click.option(
     "-c", "--condition",
     type=click.Choice(["M", "NM", "VG+", "VG", "G+", "G", "F", "P"],
@@ -63,7 +68,7 @@ log = logging.getLogger('discodos')
     prompt="Private comments",
     help="Private comments about the listing."
 )
-def sell_cmd(helper, release_id, condition, sleeve_condition, price, status,
+def sell_cmd(helper, query, release_id, condition, sleeve_condition, price, status,
              location, allow_offers, comments, private_comments):
     """
     List a record for sale on Discogs.
@@ -87,6 +92,11 @@ def sell_cmd(helper, release_id, condition, sleeve_condition, price, status,
         log.warning("Online mode is required to list a record for sale.")
         return
 
+    if not release_id:
+        found_release = coll_ctrl.search_release(" ".join(query))
+        # search_release exits program, not required to handle here.
+        release_id = found_release["id"]
+
     if not price:
         suggested_price = coll_ctrl.collection.fetch_price_suggestion(
             release_id, condition
@@ -106,7 +116,7 @@ def sell_cmd(helper, release_id, condition, sleeve_condition, price, status,
             price = click.prompt("Price", type=float)
 
     log.info(f"Attempting to list record {release_id} for sale.")
-    coll_ctrl.collection.list_for_sale(
+    listing_successful = coll_ctrl.collection.list_for_sale(
         release_id=release_id,
         condition=condition,
         sleeve_condition=sleeve_condition,
@@ -117,4 +127,5 @@ def sell_cmd(helper, release_id, condition, sleeve_condition, price, status,
         comments=comments,
         private_comments=private_comments
     )
-    coll_ctrl.cli.p("Listed for sale.")
+    if listing_successful:
+        coll_ctrl.cli.p("Listed for sale.")
