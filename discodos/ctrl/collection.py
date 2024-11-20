@@ -898,7 +898,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def import_sales_inventory(self):
         """Import sales inventory"""
         start_time = time()
-        decode_errs = 0
+        decode_err = other_err =  0
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.p("Importing Discogs sales inventory into DiscoBASE...")
         total_items = len(self.collection.me.inventory)
@@ -933,8 +933,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 except JSONDecodeError as e:
                     log.error("Catched a JSONDecodeError. Not retrying! %s", e)
                     decode_err += 1
+                except Exception as e:
+                    log.error("Catched an Exception. Not retrying! %s", e)
+                    other_err += 1
 
-        print(f"Discogs JSONDecode errors : {decode_errs}.")
+        print(f"Discogs JSONDecode errors : {decode_err}.")
+        print(f"Other errors : {other_err}.")
         self.cli.duration_stats(start_time, 'Inventory import')
 
     def tui_ls_releases(self, search_terms):
