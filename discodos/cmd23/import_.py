@@ -80,7 +80,7 @@ def import_basic_cmd(helper ):
     required prior to using -z, -zz. Also note that "dsc search all -z" is
     synonym to this option.''')
 @click.option(
-    "--resume", "--offset", "import_offset", metavar='OFFSET',
+    "--resume", "--offset", "-r", "import_offset", metavar='OFFSET',
     type=int, default=0,
     help='''resumes long-running processes at the given offset position
     (expects a number). You can combine this option currently with the *Brainz
@@ -115,13 +115,6 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
             user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
             if import_offset > 0:
                 user.RESUME_OFFSET = import_offset
-                m_r ='Resuming is not possible in combination with '
-                m_r+='"import details -u". Try it with '
-                m_r+='"mix -u". It also works '
-                m_r+='together with "import details -zz" '
-                m_r+='and "mix -zz"'
-                log.error(m_r)
-                raise SystemExit(1)
         elif import_brainz:
             user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
             user.BRAINZ_SEARCH_DETAIL = import_brainz
@@ -143,7 +136,10 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
         user.conf.musicbrainz_password)
 
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS:
-        coll_ctrl.import_collection(tracks=True)
+        coll_ctrl.import_collection(
+            tracks=True,
+            offset=user.RESUME_OFFSET,
+        )
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
         coll_ctrl.update_all_tracks_from_brainz(
             detail=user.BRAINZ_SEARCH_DETAIL,

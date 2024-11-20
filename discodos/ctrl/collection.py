@@ -337,12 +337,13 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def print_release_info(self, release_id, artists, title):
         print(f'Release {release_id} - "{artists}" - "{title}"')
 
-    def import_collection(self, tracks=False):
+    def import_collection(self, tracks=False, offset=0):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
 
         releases_processed = releases_added = releases_db_errors = 0
         tracks_processed = tracks_added = tracks_db_errors = tracks_discogs_errors = 0
+        real_releases_processed = 0  # In case we start at offset, we need two counts
 
         if tracks:
             self.cli.p(
@@ -362,6 +363,11 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             task = progress.add_task("Processing releases...", total=total_releases)
 
             for item in releases:
+                if offset and releases_processed < offset:
+                    progress.update(task, advance=1)
+                    releases_processed += 1
+                    continue
+
                 rel_created, d_artists, artists = self.create_release_entry(item)
 
                 if not rel_created:
@@ -393,10 +399,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
                 print()  # leave some space after a release and all its tracks
                 releases_processed += 1
+                real_releases_processed += 1
                 progress.update(task, advance=1)
 
         print(
             f"Processed releases: {releases_processed}. "
+            f"Really processed releases: {real_releases_processed}. "
             f"Imported releases to DiscoBASE: {releases_added}."
         )
         print(f"Database errors (release import): {releases_db_errors}.")
