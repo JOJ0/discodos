@@ -1,9 +1,11 @@
 import time
 import logging
 from socket import gaierror
+from rich.progress import Progress
 import discogs_client
 import discogs_client.exceptions
-from discogs_client import Condition, Status
+from discogs_client import Condition, Status, Release
+from discogs_client.models import PriceSuggestions
 import requests.exceptions
 import urllib3.exceptions
 
@@ -201,17 +203,29 @@ class DiscogsMixin:
         return r if r else None
 
     def fetch_price_suggestion(self, release_id, condition):
-        release = self.d.release(release_id)
-        r = {
-            "M": release.price_suggestions.mint,
-            "NM": release.price_suggestions.near_mint,
-            "VG+": release.price_suggestions.very_good_plus,
-            "VG": release.price_suggestions.very_good,
-            "G+": release.price_suggestions.good_plus,
-            "G": release.price_suggestions.good,
-            "F": release.price_suggestions.fair,
+        if isinstance(release_id, Release):
+            r = release_id
+        else:
+            r = self.d.release(release_id)
+
+        c = {
+            "M": r.price_suggestions.mint,
+            "NM": r.price_suggestions.near_mint,
+            "VG+": r.price_suggestions.very_good_plus,
+            "VG": r.price_suggestions.very_good,
+            "G+": r.price_suggestions.good_plus,
+            "G": r.price_suggestions.good,
+            "F": r.price_suggestions.fair,
         }
-        return r[condition.upper()] if r else None
+        return c[condition.upper()] if r else None
+
+    def fetch_relevant_price_suggestions(self, release_id):
+        release = self.d.release(release_id)
+        suggestions = {}
+        for cond in ["M", "NM", "VG+", "VG"]:
+            price = self.fetch_price_suggestion(release, cond)
+            suggestions[cond] = round(price.value, 2)
+        return suggestions
 
     def list_for_sale(  # pylint: disable=too-many-positional-arguments,too-many-arguments
         self,

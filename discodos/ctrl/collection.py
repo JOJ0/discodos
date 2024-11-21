@@ -7,6 +7,8 @@ from json import JSONDecodeError
 import discogs_client.exceptions as errors
 from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
                            TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
+from rich import print
+from rich.prompt import Prompt, FloatPrompt
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model import Brainz
@@ -976,3 +978,57 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         app.run(inline=False)
         return
+
+    def sell_record_wizard(
+        self, query, release_id, condition, sleeve_condition, price, status, location,
+        allow_offers, comments, private_comments,
+    ):
+        if not self.ONLINE:
+            log.warning("Online mode is required to list a record for sale.")
+            return
+
+        if not release_id:
+            found_release = self.search_release(" ".join(query))
+            # search_release exits program, not required to handle here.
+            release_id = found_release["id"]
+
+        suggested_p = self.collection.fetch_relevant_price_suggestions(release_id)
+        print("Suggested prices:")
+        print(self.cli.two_column_view(suggested_p, as_is=True))
+
+        stats = self.collection.fetch_marketplace_stats(release_id)
+        print("Marketplace stats:")
+        print(self.cli.two_column_view(stats))
+
+        print("Currently for sale:")
+        print(f"https://www.discogs.com/sell/release/{release_id}")
+
+        if not price:
+            recommended_price = suggested_p.get(condition)
+            if recommended_price:
+                print(
+                    f"Suggested price for condition '{condition}': "
+                    f"EUR {recommended_price}"
+                )
+                price = FloatPrompt.ask(
+                    "Accept?",
+                    default=recommended_price,
+                )
+            else:
+                print("No suggested price available; please enter a price manually.")
+                price = FloatPrompt.ask("Price")
+
+        log.info(f"Attempting to list record {release_id} for sale.")
+        listing_successful = self.collection.list_for_sale(
+            release_id=release_id,
+            condition=condition,
+            sleeve_condition=sleeve_condition,
+            price=price,
+            status=status,
+            location=location,
+            allow_offers=allow_offers,
+            comments=comments,
+            private_comments=private_comments
+        )
+        if listing_successful:
+            self.cli.p("Listed for sale.")

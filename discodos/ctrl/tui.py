@@ -1,8 +1,6 @@
 import logging
 from sqlite3 import Row
 from datetime import datetime
-from rich.table import Table as rich_table
-from rich.markdown import Markdown
 from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
@@ -157,7 +155,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         listing_id = self.table.get_cell(row_key, "forsale")
         listing = self.collection.get_sales_listing_details(listing_id)
         self.left_column_content.update(
-            self._two_column_view(listing, translate_keys=self.key_translation)
+            self.cli.two_column_view(listing, translate_keys=self.key_translation)
         )
         self._sales_digits_update(listing)
         # Stats
@@ -172,13 +170,13 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         if listing_id:
             listing = self.fetch_sales_listing_details(listing_id)
             self.left_column_content.update(
-                self._two_column_view(listing, translate_keys=self.key_translation)
+                self.cli.two_column_view(listing, translate_keys=self.key_translation)
             )
             self._sales_digits_update(listing)
         # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "release_id")
         stats = self.fetch_marketplace_stats(release_id)
-        self.middle_column_content.update(self._two_column_view(stats))
+        self.middle_column_content.update(self.cli.two_column_view(stats))
         rlog.write(
             f"Updated price, marketplace stats and details of listing {listing_id} "
             "with Discogs data."
@@ -194,54 +192,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         else:
             for row_id, row in enumerate(self.rows):
                 table_widget.add_row(*row.values(), key=row_id)
-
-    def _two_column_view(self, details_dict, translate_keys=None):
-        """A Rich-formatted view of keys and values.
-
-        - by default simply capitalizes key names
-        - optionally alters key names via a passed translaton table
-
-        We use it for Marketplace stats and Marketplace listing details.
-        """
-        # Create a rich Table with two columns.
-        table = rich_table(box=None)
-        table.add_column("Field", style="cyan", justify="right")
-        table.add_column("Value", style="white")
-        # Display an empty table instead of nothing.
-        if not details_dict:
-            return table
-
-        # Highlight/fix/replace some values first
-        values_replaced = {}
-        for key, value in details_dict.items():
-            if key in ["d_sales_release_url", "d_sales_url"]:
-                value = Markdown(f"[View in browser]({value})")
-            if key == "d_sales_allow_offers":
-                value =  "Yes" if value in [1, True] else "No"
-            elif key == "status" and value == "Sold":
-                value = f"[magenta]{value}[/magenta]"
-            elif key == "d_sales_posted" and isinstance(value, datetime):
-                value = datetime.strftime(value, "%Y-%m-%d")
-            values_replaced[key] = value
-
-        # Prettify column captions
-        if translate_keys:
-            final_details = {
-               translate_keys.get(k, k): v for k, v in values_replaced.items()
-            }
-        else:  # Without a tranlation table, fall back to simply capitalizing
-            final_details = {
-               k.capitalize(): v for k, v in values_replaced.items()
-            }
-
-        # The final creation of the Rich table
-        for key, value in final_details.items():
-            if isinstance(value, Markdown):
-                table.add_row(f"[bold]{key}[/bold]", value)
-                continue
-            # Format key bold and value normal font (or as we manipulated it above)
-            table.add_row(f"[bold]{key}[/bold]", str(value))
-        return table
 
     def _sales_digits_update(self, listing):
         """A Rich-formatted big digits view of the sales price.

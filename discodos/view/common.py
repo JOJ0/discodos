@@ -3,6 +3,8 @@ from datetime import date, datetime, timedelta
 from time import time
 from tabulate import tabulate as tab
 from rich import print  # pylint: disable=redefined-builtin
+from rich.table import Table as rich_table
+from rich.markdown import Markdown
 
 from discodos.utils import is_number, join_sep
 
@@ -679,6 +681,57 @@ class ViewCommonCommandline(ViewCommon):
 
         log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
         return answers
+
+    def two_column_view(self, details_dict, translate_keys=None, as_is=False):
+        """A Rich-formatted view of keys and values.
+
+        - by default simply capitalizes key names...
+        - ... or not (set as_is!)
+        - optionally alters key names via a passed translaton table
+
+        We use it for Marketplace stats and Marketplace listing details.
+        """
+        # Create a rich Table with two columns.
+        table = rich_table(box=None)
+        table.add_column("Field", style="cyan", justify="right")
+        table.add_column("Value", style="white")
+        # Display an empty table instead of nothing.
+        if not details_dict:
+            return table
+
+        # Highlight/fix/replace some values first
+        values_replaced = {}
+        for key, value in details_dict.items():
+            if key in ["d_sales_release_url", "d_sales_url"]:
+                value = Markdown(f"[View in browser]({value})")
+            if key == "d_sales_allow_offers":
+                value =  "Yes" if value in [1, True] else "No"
+            elif key == "status" and value == "Sold":
+                value = f"[magenta]{value}[/magenta]"
+            elif key == "d_sales_posted" and isinstance(value, datetime):
+                value = datetime.strftime(value, "%Y-%m-%d")
+            values_replaced[key] = value
+
+        # Prettify column captions
+        if as_is:
+            final_details = values_replaced
+        elif translate_keys:
+            final_details = {
+               translate_keys.get(k, k): v for k, v in values_replaced.items()
+            }
+        else:  # Without a tranlation table, fall back to simply capitalizing
+            final_details = {
+               k.capitalize(): v for k, v in values_replaced.items()
+            }
+
+        # The final creation of the Rich table
+        for key, value in final_details.items():
+            if isinstance(value, Markdown):
+                table.add_row(f"[bold]{key}[/bold]", value)
+                continue
+            # Format key bold and value normal font (or as we manipulated it above)
+            table.add_row(f"[bold]{key}[/bold]", str(value))
+        return table
 
     def view_tutorial(self):
         tutorial_items = [

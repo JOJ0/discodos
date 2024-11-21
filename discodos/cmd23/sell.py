@@ -32,7 +32,6 @@ log = logging.getLogger('discodos')
 @click.option(
     "-p", "--price",
     type=float,
-    prompt="Price (enter 0 to fetch Discogs suggested price)",
     default=None,
     help="Listing price for the record. Leave blank for suggested price."
 )
@@ -88,44 +87,15 @@ def sell_cmd(helper, query, release_id, condition, sleeve_condition, price, stat
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
-    if not coll_ctrl.ONLINE:
-        log.warning("Online mode is required to list a record for sale.")
-        return
-
-    if not release_id:
-        found_release = coll_ctrl.search_release(" ".join(query))
-        # search_release exits program, not required to handle here.
-        release_id = found_release["id"]
-
-    if not price:
-        suggested_price = coll_ctrl.collection.fetch_price_suggestion(
-            release_id, condition
-        )
-        if suggested_price:
-            click.echo(
-                f"Suggested price for condition '{condition}': "
-                f"{suggested_price.currency} {suggested_price.value}"
-            )
-            price = click.prompt(
-                "Accept?",
-                type=float,
-                default=round(suggested_price.value, 2),
-            )
-        else:
-            click.echo("No suggested price available; please enter a price manually.")
-            price = click.prompt("Price", type=float)
-
-    log.info(f"Attempting to list record {release_id} for sale.")
-    listing_successful = coll_ctrl.collection.list_for_sale(
-        release_id=release_id,
-        condition=condition,
-        sleeve_condition=sleeve_condition,
-        price=price,
-        status=status,
-        location=location,
-        allow_offers=allow_offers,
-        comments=comments,
-        private_comments=private_comments
+    coll_ctrl.sell_record_wizard(
+        query,
+        release_id,
+        condition,
+        sleeve_condition,
+        price,
+        status,
+        location,
+        allow_offers,
+        comments,
+        private_comments,
     )
-    if listing_successful:
-        coll_ctrl.cli.p("Listed for sale.")
