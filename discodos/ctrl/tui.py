@@ -169,6 +169,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         listing_id = self.table.get_cell(row_key, "forsale")
         if listing_id:
             listing = self.fetch_sales_listing_details(listing_id)
+            if not listing:
+                rlog.write("Not online.")
+                return
             self.left_column_content.update(
                 self.cli.two_column_view(listing, translate_keys=self.key_translation)
             )
@@ -176,11 +179,15 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "release_id")
         stats = self.fetch_marketplace_stats(release_id)
+        if not stats:  # On Exciption return
+            rlog.write("Not online.")
+            return
         self.middle_column_content.update(self.cli.two_column_view(stats))
         rlog.write(
             f"Updated price, marketplace stats and details of listing {listing_id} "
             "with Discogs data."
         )
+
 
     # Helpers
 

@@ -174,33 +174,41 @@ class DiscogsMixin:
 
     def fetch_sales_listing_details(self, listing_id):
         """Fetches details like price for a Discogs marketplace listing."""
-        listing = self.d.listing(listing_id)
-        l = {
-            "d_sales_release_id": listing.release.id,
-            "d_sales_release_url": listing.release.url,
-            "d_sales_url": listing.url,
-            "d_sales_condition": listing.condition,
-            "d_sales_sleeve_condition": listing.sleeve_condition,
-            "d_sales_price": str(listing.price.value),
-            "d_sales_comments": listing.comments,
-            "d_sales_allow_offers": listing.allow_offers,
-            "d_sales_status": listing.status,
-            "d_sales_comments_private": listing.external_id,
-            "d_sales_counts_as": str(listing.format_quantity),
-            "d_sales_location": listing.location,
-            "d_sales_weight": str(listing.weight),
-            "d_sales_posted": listing.posted,
-        }
-        return l if l else None
+        try:
+            listing = self.d.listing(listing_id)
+            l = {
+                "d_sales_release_id": listing.release.id,
+                "d_sales_release_url": listing.release.url,
+                "d_sales_url": listing.url,
+                "d_sales_condition": listing.condition,
+                "d_sales_sleeve_condition": listing.sleeve_condition,
+                "d_sales_price": str(listing.price.value),
+                "d_sales_comments": listing.comments,
+                "d_sales_allow_offers": listing.allow_offers,
+                "d_sales_status": listing.status,
+                "d_sales_comments_private": listing.external_id,
+                "d_sales_counts_as": str(listing.format_quantity),
+                "d_sales_location": listing.location,
+                "d_sales_weight": str(listing.weight),
+                "d_sales_posted": listing.posted,
+            }
+            return l if l else None
+        except Exception as e:
+            log.debug("Not online. %s", e)
+            return None
 
     def fetch_marketplace_stats(self, release_id):
-        release = self.d.release(release_id)
-        r = {
-            "lowest_price": str(release.marketplace_stats.lowest_price.value),
-            "num_for_sale": str(release.marketplace_stats.num_for_sale),
-            "blocked_from_sale": str(release.marketplace_stats.blocked_from_sale),
-        }
-        return r if r else None
+        try:
+            release = self.d.release(release_id)
+            r = {
+                "lowest_price": str(release.marketplace_stats.lowest_price.value),
+                "num_for_sale": str(release.marketplace_stats.num_for_sale),
+                "blocked_from_sale": str(release.marketplace_stats.blocked_from_sale),
+            }
+            return r if r else None
+        except Exception as e:
+            log.debug("Not online. %s", e)
+            return None
 
     def fetch_price_suggestion(self, release_id, condition):
         if isinstance(release_id, Release):
