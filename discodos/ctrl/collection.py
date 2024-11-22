@@ -254,11 +254,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
 
-        custom_progress = Progress(
-            SpinnerColumn(),
-            BarColumn(),
-            SpinnerColumn(),
-        )
         with custom_progress as progress:
             task1 = progress.add_task("...",start=1, total=5)
 
