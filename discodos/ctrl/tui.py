@@ -167,20 +167,19 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         row_key = event.row_key
         # Listing - we fetch only when listing_id in DB
         listing_id = self.table.get_cell(row_key, "forsale")
-        if listing_id:
-            listing = self.fetch_sales_listing_details(listing_id)
-            if not listing:
-                rlog.write("Not online.")
-                return
-            self.left_column_content.update(
-                self.cli.two_column_view(listing, translate_keys=self.key_translation)
-            )
-            self._sales_digits_update(listing)
+        listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+        if l_err:
+            rlog.write(f"Fetching listing details: {l_err}")
+            return
+        self.left_column_content.update(
+            self.cli.two_column_view(listing, translate_keys=self.key_translation)
+        )
+        self._sales_digits_update(listing)
         # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "release_id")
-        stats = self.fetch_marketplace_stats(release_id)
-        if not stats:  # On Exciption return
-            rlog.write("Not online.")
+        stats, s_err, _ = self.fetch_marketplace_stats(release_id)
+        if s_err:
+            rlog.write(f"Fetching Markedplace stats: {s_err}")
             return
         self.middle_column_content.update(self.cli.two_column_view(stats))
         rlog.write(

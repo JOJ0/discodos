@@ -27,6 +27,12 @@ STATUS = {
     "Draft": Status.DRAFT,
 }
 
+class NoListingIDError(Exception):
+    """To raise when no listing ID is passed"""
+    def __init__(self, message="No listing ID provided"):
+        super().__init__(message)
+
+
 class DiscogsMixin:
     """Discogs connection, fetchers and helpers."""
     def discogs_connect(self, user_token=None, app_identifier=None,
@@ -173,8 +179,14 @@ class DiscogsMixin:
         return count
 
     def fetch_sales_listing_details(self, listing_id):
-        """Fetches details like price for a Discogs marketplace listing."""
+        """Fetches details like price for a Discogs marketplace listing.
+
+        Returns a tuple of respones, None, None
+        or None, errortype, errormessage
+        """
         try:
+            if not listing_id:
+                raise NoListingIDError
             listing = self.d.listing(listing_id)
             l = {
                 "d_sales_release_id": listing.release.id,
@@ -192,12 +204,18 @@ class DiscogsMixin:
                 "d_sales_weight": str(listing.weight),
                 "d_sales_posted": listing.posted,
             }
-            return l if l else None
+            return l, None, None
         except Exception as e:
-            log.debug("Not online. %s", e)
-            return None
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching listing: %s: %s", errtype, errmsg)
+            return None, errtype, errmsg
 
     def fetch_marketplace_stats(self, release_id):
+        """Fetches Marketplace stats for a Discogs release.
+
+        Returns a tuple of respones, None, None
+        or None, errortype, errormessage
+        """
         try:
             release = self.d.release(release_id)
             r = {
@@ -205,10 +223,11 @@ class DiscogsMixin:
                 "num_for_sale": str(release.marketplace_stats.num_for_sale),
                 "blocked_from_sale": str(release.marketplace_stats.blocked_from_sale),
             }
-            return r if r else None
+            return r, None, None
         except Exception as e:
-            log.debug("Not online. %s", e)
-            return None
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching Markedplace stats: %s: %s", errtype, errmsg)
+            return None, errtype, errmsg
 
     def fetch_price_suggestion(self, release_id, condition):
         if isinstance(release_id, Release):
