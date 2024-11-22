@@ -170,6 +170,31 @@ class DiscogsMixin:
             release = instance.release
         return release
 
+    def fetch_collection_item_instances(self, release_id):
+        """Fetch all instances of a release from the Discogs collection."""
+        instances = self.me.collection_items(release_id)
+        if not instances:
+            log.warning("No instance of release in Discogs collection.")
+
+        keys = ["instance_id", "changes", "date_added", "folder_id", "id", "notes",
+                "rating"]
+
+        all_instances = []
+        for instance in instances:
+            instance_dict = {}
+            # The full instance object first
+            instance_dict["full_instance"] = instance
+            for key in keys:
+                if key == "date_added" and instance.date_added:
+                    instance_dict[key] = instance.date_added.strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                else:
+                    instance_dict[key] = getattr(instance, key)
+            all_instances.append(instance_dict)
+
+        return all_instances
+
     def stats_releases_d_collection_online(self):
         count = 0
         try:

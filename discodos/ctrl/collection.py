@@ -5,10 +5,11 @@ from time import time
 from datetime import datetime
 from json import JSONDecodeError
 import discogs_client.exceptions as errors
+from discogs_client import CollectionItemInstance
 from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
                            TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
 from rich import print
-from rich.prompt import Prompt, FloatPrompt
+from rich.prompt import Prompt, FloatPrompt, Confirm
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model import Brainz
@@ -210,7 +211,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         else:
             raise SystemExit(3)
 
-    # ADD RELEASE TO COLLECTION
+    # Import & remove single release to collection
+
     def add_release(self, release_id):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
@@ -289,6 +291,27 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.update(task1, advance=1)
             self.cli.duration_stats(start_time, "Discogs import")
             progress.update(task1, completed=5)
+
+    def remove_and_delete_release(self, release_id):
+        """Remove all from collection and delete from DB."""
+        coll_items = self.collection.fetch_collection_item_instances(release_id)
+        #if not coll_items:
+        #    log.warning("Release not in Discogs collection")
+
+        for instance in coll_items:
+            print(self.cli.two_column_view(instance))
+            delete = Confirm.ask("Remove from Discogs collection?", default=False)
+            if not delete:
+                continue
+            folder = self.collection.me.collection_folders[0]
+            folder.remove_release(instance['full_instance'])
+
+        delete_db = Confirm.ask("Remove from DiscoBASE?", default=False)
+        if delete_db:
+            self.collection.delete_release(release_id)
+            return
+        log.warning("Kept orphaned item in DiscoBASE!")
+        return
 
     # Import collection and helpers
 

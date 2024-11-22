@@ -232,6 +232,18 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 log.error("MODEL: %s", e.args[0])
                 return False
 
+    def delete_release(self, release_id):
+        """Deletes a release from DiscoBASE"""
+        in_db = self._select_simple(
+            ["discogs_id"], "release", condition=f"discogs_id == {release_id}"
+        )
+        if not in_db:
+            log.warning("Release not in DiscoBASE.")
+            return None
+        return self.execute_sql(
+            "DELETE FROM release WHERE discogs_id == ?", (release_id, )
+        )
+
     # Suggest fetchers
 
     def track_report_snippet(self, track_pos, mix_id):

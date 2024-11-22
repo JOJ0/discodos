@@ -46,6 +46,7 @@ class User(object):
         self.WANTS_TO_IMPORT_COLLECTION = False
         self.WANTS_TO_IMPORT_RELEASE = False
         self.WANTS_TO_ADD_AND_IMPORT_RELEASE = False
+        self.WANTS_TO_REMOVE_AND_DELETE_RELEASE = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
         self.WANTS_TO_SEARCH_AND_EDIT_TRACK = False

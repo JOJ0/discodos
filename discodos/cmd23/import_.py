@@ -150,7 +150,8 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
 
 @import_group.command(name='release')
 @click.argument('import_id', metavar='RELEASE_ID', type=int)
-@click.option(
+@optgroup.group("", cls=MutuallyExclusiveOptionGroup)
+@optgroup.option(
     '--add-to-collection', '-a', 'import_add_coll', is_flag=True,
     help='''The fastest way of adding newly gained releases to your collection.
     The given release ID is added to your Discogs collection (equal to clicking
@@ -162,8 +163,12 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
     do a quick check for the presence of the ID in the (local) DiscoBASE. This
     safes us a lot of time and is a good enough solution to prevent
     duplicates.''')
+@optgroup.option(
+    '--delete', '-d', is_flag=True,
+    help='''Removes all instances of a release from the Discogs collection and deletes
+    them from the DiscoBASE.''')
 @click.pass_obj
-def import_release_cmd(helper, import_id, import_add_coll):
+def import_release_cmd(helper, import_id, import_add_coll, delete):
     """Imports a single release.
 
     Note that currently this is a rather time consuming process: Technical
@@ -181,6 +186,8 @@ def import_release_cmd(helper, import_id, import_add_coll):
         log.debug("Entered single release import mode.")
         if import_id != 0 and import_add_coll:
             user.WANTS_TO_ADD_AND_IMPORT_RELEASE = True
+        elif delete:
+            user.WANTS_TO_REMOVE_AND_DELETE_RELEASE = True
         else:
             user.WANTS_TO_IMPORT_RELEASE = True
         return user
@@ -196,6 +203,8 @@ def import_release_cmd(helper, import_id, import_add_coll):
         coll_ctrl.import_release(import_id)
     if user.WANTS_TO_ADD_AND_IMPORT_RELEASE:
         coll_ctrl.add_release(import_id)
+    if user.WANTS_TO_REMOVE_AND_DELETE_RELEASE:
+        coll_ctrl.remove_and_delete_release(import_id)
 
 
 @import_group.command(name='sales')
