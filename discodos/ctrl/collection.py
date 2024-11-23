@@ -10,6 +10,7 @@ from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
                            TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
 from rich import print
 from rich.prompt import Prompt, FloatPrompt, Confirm
+from rich.panel import Panel
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model import Brainz
@@ -295,8 +296,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def remove_and_delete_release(self, release_id):
         """Remove all from collection and delete from DB."""
         coll_items = self.collection.fetch_collection_item_instances(release_id)
-        #if not coll_items:
-        #    log.warning("Release not in Discogs collection")
 
         for instance in coll_items:
             print(self.cli.two_column_view(instance))
@@ -308,9 +307,19 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         delete_db = Confirm.ask("Remove from DiscoBASE?", default=False)
         if delete_db:
-            self.collection.delete_release(release_id)
-            return
-        log.warning("Kept orphaned item in DiscoBASE!")
+            tracks = self.collection.get_release_tracks_by_id(release_id)
+            for track in tracks:
+                print(
+                    Panel.fit(
+                        self.cli.two_column_view(track, as_is=True, skip_empty=True),
+                        title=f"Track {track['d_track_no']}",
+                    )
+                )
+            sure = Confirm.ask("Sure?", default=False)
+            if sure:
+                self.collection.delete_release(release_id)
+                return
+        log.warning("Kept release in DiscoBASE!")
         return
 
     # Import collection and helpers

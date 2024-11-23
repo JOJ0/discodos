@@ -127,6 +127,18 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             ["*"], "release", f"discogs_id == {release_id}", fetchone=True
         )
 
+    def get_release_tracks_by_id(self, release_id):
+        return self._select_simple(
+            ["*"],
+            "release",
+            f"discogs_id == {release_id}",
+            fetchone=False,
+            join=[
+                ("LEFT OUTER", "track", "discogs_id = track.d_release_id")
+            ],
+            as_dict=True
+        )
+
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         track_no = track_no.upper()  # always save uppercase track numbers
         try:

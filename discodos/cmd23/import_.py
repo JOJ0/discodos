@@ -167,8 +167,12 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
     '--delete', '-d', is_flag=True,
     help='''Removes all instances of a release from the Discogs collection and deletes
     them from the DiscoBASE.''')
+@click.option(
+    '--tracks', '-u', 'import_tracks', is_flag=True,
+    help='''extends the Discogs import (also tracks will be imported). This is the
+    same as "dsc search RELEASE_ID -u".''')
 @click.pass_obj
-def import_release_cmd(helper, import_id, import_add_coll, delete):
+def import_release_cmd(helper, import_id, import_add_coll, import_tracks, delete):
     """Imports a single release.
 
     Note that currently this is a rather time consuming process: Technical
@@ -184,12 +188,18 @@ def import_release_cmd(helper, import_id, import_add_coll, delete):
 
     def update_user_interaction_helper(user):
         log.debug("Entered single release import mode.")
-        if import_id != 0 and import_add_coll:
-            user.WANTS_TO_ADD_AND_IMPORT_RELEASE = True
-        elif delete:
+        if delete:
             user.WANTS_TO_REMOVE_AND_DELETE_RELEASE = True
+        elif import_id != 0 and import_add_coll:
+            if import_tracks:
+                user.WANTS_TO_ADD_AND_IMPORT_RELEASE_WITH_TRACKS = True
+            else:
+                user.WANTS_TO_ADD_AND_IMPORT_RELEASE = True
         else:
-            user.WANTS_TO_IMPORT_RELEASE = True
+            if import_tracks:
+                user.WANTS_TO_IMPORT_RELEASE_WITH_TRACKS = True
+            else:
+                user.WANTS_TO_IMPORT_RELEASE = True
         return user
 
     user = update_user_interaction_helper(helper)
@@ -201,8 +211,17 @@ def import_release_cmd(helper, import_id, import_add_coll, delete):
 
     if user.WANTS_TO_IMPORT_RELEASE:
         coll_ctrl.import_release(import_id)
+    if user.WANTS_TO_IMPORT_RELEASE_WITH_TRACKS:
+        coll_ctrl.import_release(import_id)
+        coll_ctrl.update_single_track_or_release_from_discogs(
+            import_id, rel_title="", track_no="*"
+        )
     if user.WANTS_TO_ADD_AND_IMPORT_RELEASE:
         coll_ctrl.add_release(import_id)
+    if user.WANTS_TO_ADD_AND_IMPORT_RELEASE_WITH_TRACKS:
+        coll_ctrl.update_single_track_or_release_from_discogs(
+            import_id, rel_title="", track_no="*"
+        )
     if user.WANTS_TO_REMOVE_AND_DELETE_RELEASE:
         coll_ctrl.remove_and_delete_release(import_id)
 

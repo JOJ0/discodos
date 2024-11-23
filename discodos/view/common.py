@@ -682,7 +682,9 @@ class ViewCommonCommandline(ViewCommon):
         log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
         return answers
 
-    def two_column_view(self, details_dict, translate_keys=None, as_is=False):
+    def two_column_view(
+        self, details_dict, translate_keys=None, as_is=False, skip_empty=False
+    ):
         """A Rich-formatted view of keys and values.
 
         - by default simply capitalizes key names...
@@ -697,6 +699,7 @@ class ViewCommonCommandline(ViewCommon):
         table.add_column("Value", style="white")
         # Display an empty table instead of nothing.
         if not details_dict:
+            log.debug("two_column_view didn't receive data.")
             return table
 
         # Highlight/fix/replace some values first
@@ -710,6 +713,8 @@ class ViewCommonCommandline(ViewCommon):
                 value = f"[magenta]{value}[/magenta]"
             elif key == "d_sales_posted" and isinstance(value, datetime):
                 value = datetime.strftime(value, "%Y-%m-%d")
+            elif skip_empty and value is None:
+                continue
             values_replaced[key] = value
 
         # Prettify column captions

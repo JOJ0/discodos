@@ -10,9 +10,13 @@ class User(object):
         self.conf = conf
         self.verbose = verbose
         self.set_console_log_level()
+        # General
         self.WANTS_ONLINE = False if offline else True
+        self.DID_NOT_PROVIDE_COMMAND = False
+        # Search
         self.WANTS_TO_LIST_ALL_RELEASES = False
         self.WANTS_TO_SEARCH_FOR_RELEASE = False
+        # Mix
         self.WANTS_TO_ADD_TO_MIX = False
         self.WANTS_TO_SHOW_MIX_OVERVIEW = False
         self.WANTS_TO_SHOW_MIX_TRACKLIST = False
@@ -28,27 +32,33 @@ class User(object):
         self.WANTS_TO_ADD_AT_POS_IN_MIX_MODE = False
         self.WANTS_TO_COPY_MIX = False
         self.WANTS_TO_DELETE_MIX = False
+        self.WANTS_TO_EDIT_MIX = False
+        # Suggest & Bulk Edit
         self.WANTS_SUGGEST_TRACK_REPORT = False
         self.WANTS_TO_BULK_EDIT = False
         self.WANTS_SUGGEST_BPM_REPORT = False
         self.WANTS_SUGGEST_KEY_REPORT = False
         self.WANTS_SUGGEST_KEY_AND_BPM_REPORT = False
+        # Brainz
         self.WANTS_TO_PULL_BRAINZ_INFO = False
         self.WANTS_TO_PULL_BRAINZ_INFO_IN_MIX_MODE = False
         self.BRAINZ_SEARCH_DETAIL = 1
         self.BRAINZ_FORCE_UPDATE = False
         self.BRAINZ_SKIP_UNMATCHED = False
         self.WANTS_MUSICBRAINZ_MIX_TRACKLIST = False
-        self.WANTS_TO_EDIT_MIX = False
-        self.DID_NOT_PROVIDE_COMMAND = False
+        # Search & Update
         self.WANTS_TO_SEARCH_AND_UPDATE_DISCOGS = False
         self.WANTS_TO_SEARCH_AND_UPDATE_BRAINZ = False
+        # Import & Add
         self.WANTS_TO_IMPORT_COLLECTION = False
         self.WANTS_TO_IMPORT_RELEASE = False
         self.WANTS_TO_ADD_AND_IMPORT_RELEASE = False
+        self.WANTS_TO_IMPORT_RELEASE_WITH_TRACKS = False
+        self.WANTS_TO_ADD_AND_IMPORT_RELEASE_WITH_TRACKS = False
         self.WANTS_TO_REMOVE_AND_DELETE_RELEASE = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = False
         self.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = False
+        # Misc
         self.WANTS_TO_SEARCH_AND_EDIT_TRACK = False
         self.RESUME_OFFSET = 0
         self.WANTS_TO_LAUNCH_SETUP = False

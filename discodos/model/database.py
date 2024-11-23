@@ -169,7 +169,12 @@ class Database():
 
         # The as_dict flag enables returning a dictionary instead of a Row object.
         if as_dict and fetchone:
+            log.debug("DB: Returning Row as dict.")
             return dict(rows) if rows else None
+        if as_dict:
+            log.debug("DB: Returning rows as list of dicts.")
+            dict_rows = [ {**row} for row in rows ]
+            return dict_rows
         return rows
 
     def debug_db(self, db_return):
