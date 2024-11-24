@@ -1022,13 +1022,23 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         suggested_p = self.collection.fetch_relevant_price_suggestions(release_id)
         print("Suggested prices:")
         print(self.cli.two_column_view(suggested_p, as_is=True))
+        print()
 
-        stats = self.collection.fetch_marketplace_stats(release_id)
-        print("Marketplace stats:")
-        print(self.cli.two_column_view(stats))
+        stats, err_stats, _ = self.collection.fetch_marketplace_stats(release_id)
+        render_stats = (
+            err_stats if err_stats else self.cli.two_column_view(stats, as_is=True)
+        )
+        print(Panel.fit(render_stats, title="Marketplace stats"))
 
         print("Currently for sale:")
         print(f"https://www.discogs.com/sell/release/{release_id}")
+        print()
+
+        videos, err_videos, _ = self.collection.fetch_release_videos(release_id)
+        render_videos = (
+            err_videos if err_videos else self.cli.two_column_view(videos, as_is=True)
+        )
+        print(Panel.fit(render_videos, title="YouTube listen"))
 
         if not price:
             recommended_price = suggested_p.get(condition)

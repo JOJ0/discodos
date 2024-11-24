@@ -279,6 +279,22 @@ class DiscogsMixin:
             suggestions[cond] = round(price.value, 2)
         return suggestions
 
+    def fetch_release_videos(self, release_id):
+        """Fetches release videos.
+
+        Returns a tuple of respones, None, None
+        or None, errortype, errormessage
+        """
+        try:
+            release = self.d.release(release_id)
+            release_videos = release.videos
+            videos = {num: video.url for num, video in enumerate(release_videos)}
+            return videos, None, None
+        except Exception as e:
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching release videos: %s: %s", errtype, errmsg)
+            return None, errtype, errmsg
+
     def list_for_sale(  # pylint: disable=too-many-positional-arguments,too-many-arguments
         self,
         release_id=None,
