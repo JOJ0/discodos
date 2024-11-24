@@ -7,6 +7,7 @@ from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
 from textual.coordinate import Coordinate
 
 from discodos.model import DiscogsMixin
+from discodos.ctrl.tui_edit import EditScreen
 
 log = logging.getLogger('discodos')
 
@@ -22,8 +23,8 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("s", "toggle_sold", "Toggle sold (in DB)"),
         ("c", "fix_coll", "Sync Coll. Flag (in DB)"),
         ("r", "remove_coll", "Remove from Coll."),
-        ("e", "edit_release", "Edit release"),
-        ("E", "edit_sale", "Edit sales listing"),
+        ("e", "edit_sales_listing", "Edit sales listing"),
+        ("E", "edit_release", "Edit release"),
     ]
 
     def __init__(self, rows, headers, discogs=None, collection=None, cli=None):
@@ -102,8 +103,33 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     def action_edit_release(self):
         pass
 
-    def action_edit_sale(self):
-        pass
+    def action_edit_sales_listing(self):
+        """Open the edit screen for a sales listing."""
+        row_key = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+
+        # Get current values from the selected row in the DataTable
+        # location = self.table.get_cell(row_key, "d_sales_location")
+        # price = self.table.get_cell(row_key, "d_sales_price")
+        # condition = self.table.get_cell(row_key, "d_sales_condition")
+        # sleeve_condition = self.table.get_cell(row_key, "d_sales_sleeve_condition")
+        # status = self.table.get_cell(row_key, "d_sales_status")
+        location = "dummy location comment"
+        price = "123"
+        condition = "VG+"
+        sleeve_condition = "VG"
+        status = "For Sale"
+
+        # Initialize EditScreen with current values for the fields
+        edit_screen = EditScreen(
+            location=location,
+            price=price,
+            condition=condition,
+            sleeve_condition=sleeve_condition,
+            status=status,
+        )
+
+        # Show the EditScreen
+        self.push_screen(edit_screen)
 
     def compose(self):
         # The main data widget
@@ -186,7 +212,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             f"Updated price, marketplace stats and details of listing {listing_id} "
             "with Discogs data."
         )
-
 
     # Helpers
 
