@@ -34,22 +34,7 @@ class CollectionViewCommandline(
     def __init__(self):
         super(CollectionViewCommandline, self).__init__()
 
-    def tab_online_search_results(self, _result_list):
-        self.p(
-            tab(_result_list, tablefmt="simple", headers={
-                'id': 'ID', 'artist': 'Artist', 'title': 'Release',
-                'label': 'Label', 'country': 'C', 'year': 'Year',
-                'format': 'Format'
-            }))
-
-    def tab_ls_releases(self, _result_list):
-        self.p(
-            tab(
-                _result_list,
-                tablefmt="simple",
-                headers=["ID", "Cat. #", "Artist", "Title", "D. Coll.", "For Sale"],
-            )
-        )
+    # Format helpers
 
     def online_search_results_tracklist(self, _tracklist):
         for tr in _tracklist:
@@ -90,6 +75,25 @@ class CollectionViewCommandline(
                 print("{}\t{}".format(tr['track_no'], tr['track_title']))
         print('')
 
+    # Tabulate formatters
+
+    def tab_online_search_results(self, _result_list):
+        self.p(
+            tab(_result_list, tablefmt="simple", headers={
+                'id': 'ID', 'artist': 'Artist', 'title': 'Release',
+                'label': 'Label', 'country': 'C', 'year': 'Year',
+                'format': 'Format'
+            }))
+
+    def tab_ls_releases(self, _result_list):
+        self.p(
+            tab(
+                _result_list,
+                tablefmt="simple",
+                headers=["ID", "Cat. #", "Artist", "Title", "D. Coll.", "For Sale"],
+            )
+        )
+
     def tab_all_releases(self, releases_data):
         table = [dict(row) for row in releases_data]
         for i, row in enumerate(table):
@@ -110,6 +114,32 @@ class CollectionViewCommandline(
             'artist_title_links': 'Release: Artist - Title - Links'
         }))
 
+    def tab_stats(
+        self, releases_total, releases_matched,
+        tracks_total, tracks_matched,
+        releases_collection_flag, releases_collection_online,
+        mixtracks_total, mixtracks_unique,
+        tracks_key_brainz, tracks_key_manual,
+        tracks_bpm_brainz, tracks_bpm_manual
+    ):
+        stats = [
+            ['Releases in DiscoBASE', releases_total],
+            ['Releases in Collection (DB flag)', releases_collection_flag],
+            ['Releases in Collection (Discogs)', releases_collection_online],
+            ['Releases matched with *Brainz', releases_matched],
+            ['Tracks in DiscoBASE', tracks_total],
+            ['Tracks matched with *Brainz', tracks_matched],
+            ['Tracks with *Brainz key', tracks_key_brainz],
+            ['Tracks with *Brainz BPM', tracks_bpm_brainz],
+            ['Tracks with user-provided key', tracks_key_manual],
+            ['Tracks with user-provided BPM', tracks_bpm_manual],
+            ['Tracks in mixes', mixtracks_total],
+            ['Unique tracks in mixes', mixtracks_unique],
+        ]
+        self.p(tab(stats, tablefmt='plain'), lead_nl=True)
+
+    # Error displays
+
     def error_not_the_release(self):
         log.error("This is not the release you are looking for!")
         print(r'''
@@ -124,6 +154,8 @@ class CollectionViewCommandline(
         if not online:
             log.error("Need to be ONLINE to do that!")
             raise SystemExit(3)
+
+    # Reports & status updates
 
     def brainz_processed_report(
         self, processed, added_release, added_rec, added_key, added_chords_key,
@@ -169,27 +201,3 @@ class CollectionViewCommandline(
         msg_proc='{}/{}'.format(processed, processed_total)
         log.info(msg_proc)
         print(msg_proc)
-
-    def tab_stats(
-        self, releases_total, releases_matched,
-        tracks_total, tracks_matched,
-        releases_collection_flag, releases_collection_online,
-        mixtracks_total, mixtracks_unique,
-        tracks_key_brainz, tracks_key_manual,
-        tracks_bpm_brainz, tracks_bpm_manual
-    ):
-        stats = [
-            ['Releases in DiscoBASE', releases_total],
-            ['Releases in Collection (DB flag)', releases_collection_flag],
-            ['Releases in Collection (Discogs)', releases_collection_online],
-            ['Releases matched with *Brainz', releases_matched],
-            ['Tracks in DiscoBASE', tracks_total],
-            ['Tracks matched with *Brainz', tracks_matched],
-            ['Tracks with *Brainz key', tracks_key_brainz],
-            ['Tracks with *Brainz BPM', tracks_bpm_brainz],
-            ['Tracks with user-provided key', tracks_key_manual],
-            ['Tracks with user-provided BPM', tracks_bpm_manual],
-            ['Tracks in mixes', mixtracks_total],
-            ['Unique tracks in mixes', mixtracks_unique],
-        ]
-        self.p(tab(stats, tablefmt='plain'), lead_nl=True)

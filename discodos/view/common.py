@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import date, datetime, timedelta
 from time import time
 from tabulate import tabulate as tab
@@ -48,6 +49,8 @@ class ViewCommon():
         self.initialize_cols_mixtracks_brainz()
         self.initialize_cols_mixtracks_basic()
         self.initialize_cols_search_results()
+
+    # Column initializations
 
     def initialize_cols_mixes(self):
         self.cols_mixes = TableDefaults()
@@ -365,6 +368,8 @@ class ViewCommon():
             caption="MusicBrainz\nRelease\nMatch-Time",
         )
 
+    # Time and date helpers
+
     def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
         try:
@@ -390,6 +395,14 @@ class ViewCommon():
         if text is True:
             return str(date_year_month)
         return date_year_month
+
+    def strfdelta(self, tdelta, fmt):
+        d = {"days": tdelta.days}
+        d["hours"], rem = divmod(tdelta.seconds, 3600)
+        d["minutes"], d["seconds"] = divmod(rem, 60)
+        return fmt.format(**d)
+
+    # Width helpers
 
     def get_max_width(self, rows_list, keys_list, extra_space):
         '''gets max width of sqlite list of rows for given fields (keys_list)
@@ -428,6 +441,59 @@ class ViewCommon():
         combined_with_space = combined_key_bpm.ljust(set_width)
         # log.warning("Combined string: {}".format(combined_with_space))
         return combined_with_space
+
+    # Hyperlinks helpers
+
+    def link_to(self, service, id):
+        '''return link to either Discgos release, MusicBrainz Release/Recording
+           or AcousticBrainz recording entries.
+           Method currently does no sanity checking at all!
+        '''
+        if service == 'discogs release':
+            return 'https://discogs.com/release/{}'.format(id)
+        elif service == 'discogs master release':
+            return 'https://discogs.com/master/{}'.format(id)
+        elif service == 'musicbrainz release':
+            return 'https://musicbrainz.org/release/{}'.format(id)
+        elif service == 'musicbrainz recording':
+            return 'https://musicbrainz.org/recording/{}'.format(id)
+        elif service == 'acousticbrainz recording':
+            return 'https://acousticbrainz.org/{}'.format(id)
+        else:
+            return 'Unknown online service'
+
+    def join_links_to_str(self, row):
+        links = []
+        # print(row.keys())
+        if 'm_rel_id' in row.keys():
+            if row['m_rel_id_override'] is not None:
+                links.append(self.link_to('musicbrainz release',
+                             row['m_rel_id_override']))
+            elif row['m_rel_id'] is not None:
+                links.append(self.link_to('musicbrainz release',
+                             row['m_rel_id']))
+        if 'm_rec_id' in row.keys():
+            if row['m_rec_id_override'] is not None:
+                links.append(self.link_to('musicbrainz recording',
+                             row['m_rec_id_override']))
+                links.append(self.link_to('acousticbrainz recording',
+                             row['m_rec_id_override']))
+            elif row['m_rec_id'] is not None:
+                links.append(self.link_to('musicbrainz recording',
+                             row['m_rec_id']))
+                links.append(self.link_to('acousticbrainz recording',
+                             row['m_rec_id']))
+        if 'discogs_id' in row.keys() and row['discogs_id'] is not None:
+            links.append(self.link_to('discogs release', row['discogs_id']))
+        links_str = join_sep(links, '\n')
+        return links_str
+
+    def html_link(self, url, caption=''):
+        '''Wraps a url into html. Optionally a caption can be passed.'''
+        caption = caption if caption else url
+        return f"<a href={url}>{caption}</font></a>"
+
+    # Replacers & Combiners
 
     def none_replace(self, value_to_check):
         '''replaces string "None" by empty string
@@ -541,24 +607,6 @@ class ViewCommon():
             del(table[i]['a_bpm'])
         return table
 
-    def link_to(self, service, id):
-        '''return link to either Discgos release, MusicBrainz Release/Recording
-           or AcousticBrainz recording entries.
-           Method currently does no sanity checking at all!
-        '''
-        if service == 'discogs release':
-            return 'https://discogs.com/release/{}'.format(id)
-        elif service == 'discogs master release':
-            return 'https://discogs.com/master/{}'.format(id)
-        elif service == 'musicbrainz release':
-            return 'https://musicbrainz.org/release/{}'.format(id)
-        elif service == 'musicbrainz recording':
-            return 'https://musicbrainz.org/recording/{}'.format(id)
-        elif service == 'acousticbrainz recording':
-            return 'https://acousticbrainz.org/{}'.format(id)
-        else:
-            return 'Unknown online service'
-
     def replace_brainz(self, list_of_rows):
         '''compile a links field combining accousticbrainz, musicbrainz, discogs links
            into one field, then remove (mb)id fields'''
@@ -597,43 +645,6 @@ class ViewCommon():
             del(table[i]['release_match_time'])
             del(table[i]['track_match_time'])
         return table
-
-    def join_links_to_str(self, row):
-        links = []
-        # print(row.keys())
-        if 'm_rel_id' in row.keys():
-            if row['m_rel_id_override'] is not None:
-                links.append(self.link_to('musicbrainz release',
-                             row['m_rel_id_override']))
-            elif row['m_rel_id'] is not None:
-                links.append(self.link_to('musicbrainz release',
-                             row['m_rel_id']))
-        if 'm_rec_id' in row.keys():
-            if row['m_rec_id_override'] is not None:
-                links.append(self.link_to('musicbrainz recording',
-                             row['m_rec_id_override']))
-                links.append(self.link_to('acousticbrainz recording',
-                             row['m_rec_id_override']))
-            elif row['m_rec_id'] is not None:
-                links.append(self.link_to('musicbrainz recording',
-                             row['m_rec_id']))
-                links.append(self.link_to('acousticbrainz recording',
-                             row['m_rec_id']))
-        if 'discogs_id' in row.keys() and row['discogs_id'] is not None:
-            links.append(self.link_to('discogs release', row['discogs_id']))
-        links_str = join_sep(links, '\n')
-        return links_str
-
-    def strfdelta(self, tdelta, fmt):
-        d = {"days": tdelta.days}
-        d["hours"], rem = divmod(tdelta.seconds, 3600)
-        d["minutes"], d["seconds"] = divmod(rem, 60)
-        return fmt.format(**d)
-
-    def html_link(self, url, caption=''):
-        '''Wraps a url into html. Optionally a caption can be passed.'''
-        caption = caption if caption else url
-        return f"<a href={url}>{caption}</font></a>"
 
     def replace_linebreaks(self, text):
         '''Generally replaces all linebreaks with spaces but keeps
@@ -688,6 +699,8 @@ class ViewCommonCommandline(ViewCommon):
     """ Common view utils, usable in CLI only.
     """
 
+    # CLI basics & ask for things
+
     def p(self, message, _log="", lead_nl=False, trail_nl=True):
         """Prints with leading/trailing newlines, optionally logs."""
         if _log == "debug":
@@ -713,53 +726,6 @@ class ViewCommonCommandline(ViewCommon):
         if track_no == '':
             return suggest
         return track_no
-
-    def tab_mix_table(self, mix_data, _verbose=False, brainz=False, format=""):
-        mix_data_key_bpm = self.replace_key_bpm(mix_data)
-        mix_data_nl = self.trim_table_fields(mix_data_key_bpm)
-
-        # for row in mix_data_nl:  # DEBUG
-        #    log.debug(str(row))
-        # log.debug("")
-
-        if _verbose:
-            self.p(tab(
-                mix_data_nl,
-                tablefmt='pipe' if not format else format,
-                headers=self.cols_mixtracks.headers_dict(short=True)
-            ))
-        elif brainz:
-            mix_data_brainz = self.replace_brainz(mix_data_key_bpm)
-            mix_data_brainz_nl = self.trim_table_fields(
-                mix_data_brainz,
-                exclude=['methods']
-            )
-            self.p(tab(
-                mix_data_brainz_nl,
-                tablefmt='grid' if not format else format,
-                headers=self.cols_mixtracks_brainz.headers_dict()
-            ))
-        else:
-            self.p(tab(
-                mix_data_nl,
-                tablefmt='pipe' if not format else format,
-                headers=self.cols_mixtracks_basic.headers_dict()
-            ))
-
-    def duration_stats(self, start_time, msg):
-        took_seconds = time() - start_time
-        if took_seconds >= 86400:
-            days_part = "{days} days "
-        else:
-            days_part = ""
-        took_str = self.strfdelta(
-            timedelta(seconds=took_seconds),
-            days_part + "{hours} hours {minutes} minutes {seconds} seconds"
-        )
-        msg_took = "{} took {}".format(msg, took_str)
-        log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
-        log.info('CTRLS: {}'.format(msg_took))
-        print(msg_took)
 
     def edit_ask_details(self, orig_data, edit_questions):  # pylint: disable=R0912,R0915
         # collect answers from user input
@@ -831,6 +797,57 @@ class ViewCommonCommandline(ViewCommon):
         log.debug("CTRL: _edit_ask_details: answers dict: {}".format(answers))
         return answers
 
+    def duration_stats(self, start_time, msg):
+        took_seconds = time() - start_time
+        if took_seconds >= 86400:
+            days_part = "{days} days "
+        else:
+            days_part = ""
+        took_str = self.strfdelta(
+            timedelta(seconds=took_seconds),
+            days_part + "{hours} hours {minutes} minutes {seconds} seconds"
+        )
+        msg_took = "{} took {}".format(msg, took_str)
+        log.info('CTRLS: {} took {} seconds'.format(msg, took_seconds))
+        log.info('CTRLS: {}'.format(msg_took))
+        print(msg_took)
+
+    # Tabulate formatters (more in view.*)
+
+    def tab_mix_table(self, mix_data, _verbose=False, brainz=False, format=""):
+        mix_data_key_bpm = self.replace_key_bpm(mix_data)
+        mix_data_nl = self.trim_table_fields(mix_data_key_bpm)
+
+        # for row in mix_data_nl:  # DEBUG
+        #    log.debug(str(row))
+        # log.debug("")
+
+        if _verbose:
+            self.p(tab(
+                mix_data_nl,
+                tablefmt='pipe' if not format else format,
+                headers=self.cols_mixtracks.headers_dict(short=True)
+            ))
+        elif brainz:
+            mix_data_brainz = self.replace_brainz(mix_data_key_bpm)
+            mix_data_brainz_nl = self.trim_table_fields(
+                mix_data_brainz,
+                exclude=['methods']
+            )
+            self.p(tab(
+                mix_data_brainz_nl,
+                tablefmt='grid' if not format else format,
+                headers=self.cols_mixtracks_brainz.headers_dict()
+            ))
+        else:
+            self.p(tab(
+                mix_data_nl,
+                tablefmt='pipe' if not format else format,
+                headers=self.cols_mixtracks_basic.headers_dict()
+            ))
+
+    # Rich based formatters
+
     def two_column_view(
         self, details_dict, translate_keys=None, as_is=False, skip_empty=False
     ):
@@ -886,6 +903,8 @@ class ViewCommonCommandline(ViewCommon):
             # Format key bold and value normal font (or as we manipulated it above)
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
+
+    # Tutorial and welcome
 
     def view_tutorial(self):
         tutorial_items = [
