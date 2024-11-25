@@ -1012,10 +1012,13 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             # search_release exits program, not required to handle here.
             release_id = found_release["id"]
 
-        suggested_p = self.collection.fetch_relevant_price_suggestions(release_id)
-        print("Suggested prices:")
-        print(self.cli.two_column_view(suggested_p, as_is=True))
-        print()
+        prices, err_prices, _ = self.collection.fetch_relevant_price_suggestions(
+            release_id
+        )
+        render_prices = (
+            err_prices if err_prices else self.cli.two_column_view(prices, as_is=True)
+        )
+        print(Panel.fit(render_prices, title="Suggested prices"))
 
         stats, err_stats, _ = self.collection.fetch_marketplace_stats(release_id)
         render_stats = (
@@ -1034,7 +1037,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         print(Panel.fit(render_videos, title="YouTube listen"))
 
         if not price:
-            recommended_price = suggested_p.get(condition)
+            recommended_price = prices.get(condition)
             if recommended_price:
                 print(
                     f"Suggested price for condition '{condition}': "

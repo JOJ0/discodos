@@ -272,12 +272,22 @@ class DiscogsMixin:
         return c[condition.upper()] if r else None
 
     def fetch_relevant_price_suggestions(self, release_id):
-        release = self.d.release(release_id)
-        suggestions = {}
-        for cond in ["M", "NM", "VG+", "VG"]:
-            price = self.fetch_price_suggestion(release, cond)
-            suggestions[cond] = round(price.value, 2)
-        return suggestions
+        """Fetches most relevant prices suggestions for a Discogs release.
+
+        Returns a tuple of respones, None, None
+        or None, errortype, errormessage
+        """
+        try:
+            release = self.d.release(release_id)
+            suggestions = {}
+            for cond in ["M", "NM", "VG+"]:
+                price = self.fetch_price_suggestion(release, cond)
+                suggestions[cond] = round(price.value, 2)
+            return suggestions, None, None
+        except Exception as e:
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching relevant price suggestions: %s: %s", errtype, errmsg)
+            return None, errtype, errmsg
 
     def fetch_release_videos(self, release_id):
         """Fetches release videos.
