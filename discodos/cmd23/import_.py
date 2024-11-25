@@ -228,7 +228,7 @@ def import_release_cmd(helper, import_id, import_add_coll, import_tracks, delete
 
 @import_group.command(name='sales')
 @click.pass_obj
-def import_sales_cmd(helper):
+def import_sales_cmd(helper, listing_id):
     """Imports the marketplace inventory.
     """
 
@@ -244,3 +244,24 @@ def import_sales_cmd(helper):
         user.conf.musicbrainz_password)
 
     coll_ctrl.import_sales_inventory()
+
+
+@import_group.command(name='listing')
+@click.argument('listing_id', type=int)
+@click.pass_obj
+def import_listing_cmd(helper, listing_id):
+    """Imports a single marketplace listing.
+    """
+
+    def update_user_interaction_helper(user):
+        log.debug("Entered import listing mode.")
+        return user
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = CollectionControlCommandline(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
+    coll_ctrl.import_sales_listing(listing_id)

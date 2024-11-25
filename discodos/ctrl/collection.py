@@ -970,6 +970,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         print(f"Other errors : {other_err}.")
         self.cli.duration_stats(start_time, 'Inventory import')
 
+    def import_sales_listing(self, listing_id):
+        """Import a single marketplace listing."""
+        listing, _, _ = self.collection.fetch_sales_listing_details(listing_id)
+        listing["d_sales_listing_id"] = listing_id
+        self.collection.create_sales_entry(listing)
+
     def tui_ls_releases(self, search_terms):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
