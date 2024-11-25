@@ -1,6 +1,7 @@
 import logging
 import os
 import yaml
+import re
 
 log = logging.getLogger('discodos')
 
@@ -61,3 +62,26 @@ def join_sep(iterator, seperator):
 def restore_terminal():
     """Executes `reset` on CLI. Use to prevent terminal issues after Textual exit."""
     os.system('reset')
+
+
+def extract_discogs_id_regex(release_id):
+    """Returns the Discogs_id or None."""
+    # Discogs-IDs are simple integers. In order to avoid confusion with
+    # other metadata plugins, we only look for very specific formats of the
+    # input string:
+    # - plain integer, optionally wrapped in brackets and prefixed by an
+    #   'r', as this is how discogs displays the release ID on its webpage.
+    # - legacy url format: discogs.com/<name of release>/release/<id>
+    # - legacy url short format: discogs.com/release/<id>
+    # - current url format: discogs.com/release/<id>-<name of release>
+
+    for pattern in [
+        r"^\[?r?(?P<id>\d+)\]?$",
+        r"discogs\.com/release/(?P<id>\d+)-?",
+        r"discogs\.com/[^/]+/release/(?P<id>\d+)",
+    ]:
+        match = re.search(pattern, release_id)
+        if match:
+            return int(match.group("id"))
+
+    return None

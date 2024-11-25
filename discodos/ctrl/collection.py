@@ -19,6 +19,7 @@ from discodos.model import Collection
 from discodos.utils import is_number
 from discodos.view import CollectionViewCommandline
 from discodos.ctrl.tui import DiscodosListApp
+from discodos.utils import extract_discogs_id_regex
 
 log = logging.getLogger('discodos')
 custom_progress = Progress(
@@ -100,23 +101,32 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def search_release(self, _searchterm):  # online or offline search is
         if self.collection.ONLINE:          # decided in this method
-            if is_number(_searchterm):
-                self.cli.p('Searchterm is a number, trying to add Release ID '
-                           'to collection...')
-                if not self.add_release(int(_searchterm)):
-                    log.warning("Release wasn't added to Collection, "
-                                "continuing anyway.")
+
+            # Determine search term or ID
+            search_for = _searchterm
+            extracted_id = extract_discogs_id_regex(_searchterm)
+            if extracted_id:
+                print(
+                    "Searchterm is a number or Discogs URL, trying to add it "
+                    "to the collection..."
+                )
+                if not self.add_release(extracted_id):
+                    log.warning(
+                        "Release wasn't added to Collection, continuing anyway."
+                    )
+                search_for = extracted_id
+
             db_releases = self.collection.get_all_db_releases()
-            self.cli.p('Searching Discogs for Release ID or Title: {}'.format(
-                _searchterm))
-            search_results = self.collection.search_release_online(_searchterm)
-            # SEARCH RESULTS OUTPUT HAPPENS HERE
+            print(f"\n[bold]Searching Discogs for:[/bold] {search_for}")
+            search_results = self.collection.search_release_online(search_for)
+
+            # Search results output
             compiled_results_list = self.print_and_return_first_d_release(
                 search_results,
-                _searchterm,
+                search_for,
                 db_releases
             )
-            if compiled_results_list is None:
+            if not compiled_results_list:
                 self.cli.error_not_the_release()
                 m = 'Try altering your search terms!'
                 log.info(m)
