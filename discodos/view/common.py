@@ -42,179 +42,328 @@ class ViewCommon():
     """
     def __init__(self):
         super().__init__()
-        # Mixes column defaults and headers for GUI and CLI
+        self.initialize_cols_mixes()
+        self.initialize_cols_mixinfo()
+        self.initialize_cols_mixtracks()
+        self.initialize_cols_mixtracks_brainz()
+        self.initialize_cols_mixtracks_basic()
+        self.initialize_cols_search_results()
+
+    def initialize_cols_mixes(self):
         self.cols_mixes = TableDefaults()
-        self.cols_mixes.addcol(name='mix_id', order_id=0,
-                               width=30, hidden=True, edit=False,
-                               caption='#')
-        self.cols_mixes.addcol(name='name', order_id=1,
-                               width=None, hidden=False, edit=True,
-                               caption='Name')
-        self.cols_mixes.addcol(name='played', order_id=2,
-                               width=90, hidden=False, edit=True,
-                               caption='Played')
-        self.cols_mixes.addcol(name='venue', order_id=3,
-                               width=None, hidden=False, edit=True,
-                               caption='Venue')
-        self.cols_mixes.addcol(name='created', order_id=4,
-                               width=None, hidden=True, edit=False,
-                               caption='Created')
-        self.cols_mixes.addcol(name='updated', order_id=5,
-                               width=None, hidden=True, edit=False,
-                               caption='Updated')
-        # Tracklist mix info
+        self.cols_mixes.addcol(
+            name="mix_id", order_id=0, width=30, hidden=True, edit=False, caption="#"
+        )
+        self.cols_mixes.addcol(
+            name="name", order_id=1, width=None, hidden=False, edit=True, caption="Name"
+        )
+        self.cols_mixes.addcol(
+            name="played",
+            order_id=2,
+            width=90,
+            hidden=False,
+            edit=True,
+            caption="Played",
+        )
+        self.cols_mixes.addcol(
+            name="venue",
+            order_id=3,
+            width=None,
+            hidden=False,
+            edit=True,
+            caption="Venue",
+        )
+        self.cols_mixes.addcol(
+            name="created",
+            order_id=4,
+            width=None,
+            hidden=True,
+            edit=False,
+            caption="Created",
+        )
+        self.cols_mixes.addcol(
+            name="updated",
+            order_id=5,
+            width=None,
+            hidden=True,
+            edit=False,
+            caption="Updated",
+        )
+
+    def initialize_cols_mixinfo(self):
         self.cols_mixinfo = TableDefaults()
-        self.cols_mixinfo.addcol(name='mix_id', caption='Mix')
-        self.cols_mixinfo.addcol(name='name', caption='Name')
-        self.cols_mixinfo.addcol(name='created', caption='Created')
-        self.cols_mixinfo.addcol(name='updated', caption='Updated')
-        self.cols_mixinfo.addcol(name='played', caption='Played')
-        self.cols_mixinfo.addcol(name='venue', caption='Venue')
-        # Tracklist column defaults and headers for GUI and CLI
+        for name, caption in [
+            ("mix_id", "Mix"),
+            ("name", "Name"),
+            ("created", "Created"),
+            ("updated", "Updated"),
+            ("played", "Played"),
+            ("venue", "Venue"),
+        ]:
+            self.cols_mixinfo.addcol(name=name, caption=caption)
+
+    def initialize_cols_mixtracks(self):
         self.cols_mixtracks = TableDefaults()
         self.cols_mixtracks.addcol(
-            name='track_pos',
-            order_id=0, width=30, hidden=False, edit=False,
-            caption='#')
+            name="track_pos",
+            order_id=0,
+            width=30,
+            hidden=False,
+            edit=False,
+            caption="#",
+        )
         self.cols_mixtracks.addcol(
-            name='discogs_title',
-            order_id=1, width=None, hidden=True, edit=False,
-            caption='Release')
+            name="discogs_title",
+            order_id=1,
+            width=None,
+            hidden=True,
+            edit=False,
+            caption="Release",
+        )
         self.cols_mixtracks.addcol(
-            name='d_artist',
-            order_id=2, width=120, hidden=False, edit=False,
-            caption='Artist', short_cap='Artist\nName')
+            name="d_artist",
+            order_id=2,
+            width=120,
+            hidden=False,
+            edit=False,
+            caption="Artist",
+            short_cap="Artist\nName",
+        )
         self.cols_mixtracks.addcol(
-            name='d_track_name',
-            order_id=3, width=180, hidden=False, edit=False,
-            caption='Title', short_cap='Track\nName')
+            name="d_track_name",
+            order_id=3,
+            width=180,
+            hidden=False,
+            edit=False,
+            caption="Title",
+            short_cap="Track\nName",
+        )
         self.cols_mixtracks.addcol(
-            name='d_track_no',
-            order_id=4, width=30, hidden=False, edit=True,
-            caption='Trk\nNo')
+            name="d_track_no",
+            order_id=4,
+            width=30,
+            hidden=False,
+            edit=True,
+            caption="Trk\nNo",
+        )
         self.cols_mixtracks.addcol(
-            name='key',
-            order_id=5, width=50, hidden=False, edit=True,
-            caption='Key')
+            name="key", order_id=5, width=50, hidden=False, edit=True, caption="Key"
+        )
         self.cols_mixtracks.addcol(
-            name='bpm',
-            order_id=6, width=45, hidden=False, edit=True,
-            caption='BPM')
+            name="bpm", order_id=6, width=45, hidden=False, edit=True, caption="BPM"
+        )
         self.cols_mixtracks.addcol(
-            name='key_notes',
-            order_id=7, width=58, hidden=False, edit=True,
-            caption='Key\nNotes')
+            name="key_notes",
+            order_id=7,
+            width=58,
+            hidden=False,
+            edit=True,
+            caption="Key\nNotes",
+        )
         self.cols_mixtracks.addcol(
-            name='trans_rating',
-            order_id=8, width=58, hidden=False, edit=True,
-            caption='Transition\nRating', short_cap='Trans.\nRating')
+            name="trans_rating",
+            order_id=8,
+            width=58,
+            hidden=False,
+            edit=True,
+            caption="Transition\nRating",
+            short_cap="Trans.\nRating",
+        )
         self.cols_mixtracks.addcol(
-            name='trans_notes',
-            order_id=9, width=58, hidden=False, edit=True,
-            caption='Transition\nNotes', short_cap='Trans.\nNotes')
+            name="trans_notes",
+            order_id=9,
+            width=58,
+            hidden=False,
+            edit=True,
+            caption="Transition\nNotes",
+            short_cap="Trans.\nNotes",
+        )
         self.cols_mixtracks.addcol(
-            name='notes',
-            order_id=10, width=55, hidden=False, edit=True,
-            caption='Track\nNotes')
-        # Tracklist *brainz view header
+            name="notes",
+            order_id=10,
+            width=55,
+            hidden=False,
+            edit=True,
+            caption="Track\nNotes",
+        )
+
+    def initialize_cols_mixtracks_brainz(self):
         self.cols_mixtracks_brainz = TableDefaults()
-        self.cols_mixtracks_brainz.addcol(name='track_pos',
-                                          caption='#')
-        self.cols_mixtracks_brainz.addcol(name='discogs_title',
-                                          caption='Release')
-        self.cols_mixtracks_brainz.addcol(name='d_artist',
-                                          caption='Track\nArtist')
-        self.cols_mixtracks_brainz.addcol(name='d_track_name',
-                                          caption='Track\nName')
-        self.cols_mixtracks_brainz.addcol(name='d_track_no',
-                                          caption='Trk\nNo')
-        self.cols_mixtracks_brainz.addcol(name='key',
-                                          caption='Key')
-        self.cols_mixtracks_brainz.addcol(name='bpm',
-                                          caption='BPM')
-        self.cols_mixtracks_brainz.addcol(name='d_catno',
-                                          caption='Discogs\nCatNo')
-        self.cols_mixtracks_brainz.addcol(name='methods',
-                                          caption='Rel match via\nRec match via')
-        self.cols_mixtracks_brainz.addcol(name='times',
-                                          caption='Matched\non')
-        self.cols_mixtracks_brainz.addcol(name='links',
-                                          caption='Links (MB Release, MB Recording, AB Recording, Discogs Release)')
-        # Tracklist basic view header
+        for name, caption in [
+            ("track_pos", "#"),
+            ("discogs_title", "Release"),
+            ("d_artist", "Track\nArtist"),
+            ("d_track_name", "Track\nName"),
+            ("d_track_no", "Trk\nNo"),
+            ("key", "Key"),
+            ("bpm", "BPM"),
+            ("d_catno", "Discogs\nCatNo"),
+            ("methods", "Rel match via\nRec match via"),
+            ("times", "Matched\non"),
+            (
+                "links",
+                "Links (MB Release, MB Recording, AB Recording, Discogs Release)",
+            ),
+        ]:
+            self.cols_mixtracks_brainz.addcol(name=name, caption=caption)
+
+    def initialize_cols_mixtracks_basic(self):
         self.cols_mixtracks_basic = TableDefaults()
-        self.cols_mixtracks_basic.addcol(name='track_pos',
-                                         caption='#')
-        self.cols_mixtracks_basic.addcol(name='d_catno',
-                                         caption='CatNo')
-        self.cols_mixtracks_basic.addcol(name='discogs_title',
-                                         caption='Release')
-        self.cols_mixtracks_basic.addcol(name='d_track_no',
-                                         caption='Trk\nNo')
-        self.cols_mixtracks_basic.addcol(name='trans_rating',
-                                         caption='Trans.\nRating')
-        self.cols_mixtracks_basic.addcol(name='key',
-                                         caption='Key')
-        self.cols_mixtracks_basic.addcol(name='bpm',
-                                         caption='BPM')
-        # Search Results column defaults
+        for name, caption in [
+            ("track_pos", "#"),
+            ("d_catno", "CatNo"),
+            ("discogs_title", "Release"),
+            ("d_track_no", "Trk\nNo"),
+            ("trans_rating", "Trans.\nRating"),
+            ("key", "Key"),
+            ("bpm", "BPM"),
+        ]:
+            self.cols_mixtracks_basic.addcol(name=name, caption=caption)
+
+    def initialize_cols_search_results(self):
         self.cols_search_results = TableDefaults()
-        self.cols_search_results.addcol(name='d_artist', order_id=0,
-                                        width=120, hidden=False, edit=False,
-                                        caption='Artist')
-        self.cols_search_results.addcol(name='d_track_name', order_id=1,
-                                        width=180, hidden=False, edit=False,
-                                        caption='Title')
-        self.cols_search_results.addcol(name='d_catno', order_id=2,
-                                        width=90, hidden=False, edit=False,
-                                        caption='Catalog')
-        self.cols_search_results.addcol(name='d_track_no', order_id=3,
-                                        width=30, hidden=False, edit=False,
-                                        caption='Trk\nNo')
-        self.cols_search_results.addcol(name='key', order_id=4,
-                                        width=50, hidden=False, edit=True,
-                                        caption='Key')
-        self.cols_search_results.addcol(name='BPM', order_id=5,
-                                        width=45, hidden=False, edit=True,
-                                        caption='BPM')
-        self.cols_search_results.addcol(name='key_notes', order_id=6,
-                                        width=58, hidden=False, edit=True,
-                                        caption='Key\nNotes')
-        self.cols_search_results.addcol(name='notes', order_id=7,
-                                        width=58, hidden=False, edit=True,
-                                        caption='Track\nNotes')
-        self.cols_search_results.addcol(name='discogs_id', order_id=8,
-                                        width=70, hidden=False, edit=False,
-                                        caption='Discogs\nRelease')
-        self.cols_search_results.addcol(name='discogs_title', order_id=9,
-                                        width=None, hidden=True, edit=False,
-                                        caption='Release\nTitle')
-        self.cols_search_results.addcol(name='import_timestamp', order_id=10,
-                                        width=None, hidden=True, edit=False,
-                                        caption='Imported')
-        self.cols_search_results.addcol(name='in_d_coll', order_id=11,
-                                        width=30, hidden=True, edit=True,
-                                        caption='In D.\nColl.')
-        self.cols_search_results.addcol(name='m_rec_id', order_id=12,
-                                        width=80, hidden=True, edit=False,
-                                        caption='MusicBrainz\nRecording')
-        self.cols_search_results.addcol(name='m_rec_id_override', order_id=13,
-                                        width=80, hidden=False, edit=True,
-                                        caption='MusicBrainz\nRecording\nID-Override')
-        self.cols_search_results.addcol(name='recording_match_method', order_id=14,
-                                        width=100, hidden=True, edit=False,
-                                        caption='MusicBrainz\nRecording\nMatch-Method')
-        self.cols_search_results.addcol(name='recording_match_time', order_id=15,
-                                        width=100, hidden=True, edit=False,
-                                        caption='MusicBrainz\nRecording\nMatch-Time')
-        self.cols_search_results.addcol(name='m_rel_id', order_id=16,
-                                        width=80, hidden=True, edit=False,
-                                        caption='MusicBrainz\nRelease')
-        self.cols_search_results.addcol(name='release_match_method', order_id=17,
-                                        width=100, hidden=True, edit=False,
-                                        caption='MusicBrainz\nRelease\nMatch-Method')
-        self.cols_search_results.addcol(name='release_match_time', order_id=18,
-                                        width=100, hidden=True, edit=False,
-                                        caption='MusicBrainz\nRelease\nMatch-Time')
+        self.cols_search_results.addcol(
+            name="d_artist",
+            order_id=0,
+            width=120,
+            hidden=False,
+            edit=False,
+            caption="Artist",
+        )
+        self.cols_search_results.addcol(
+            name="d_track_name",
+            order_id=1,
+            width=180,
+            hidden=False,
+            edit=False,
+            caption="Title",
+        )
+        self.cols_search_results.addcol(
+            name="d_catno",
+            order_id=2,
+            width=90,
+            hidden=False,
+            edit=False,
+            caption="Catalog",
+        )
+        self.cols_search_results.addcol(
+            name="d_track_no",
+            order_id=3,
+            width=30,
+            hidden=False,
+            edit=False,
+            caption="Trk\nNo",
+        )
+        self.cols_search_results.addcol(
+            name="key", order_id=4, width=50, hidden=False, edit=True, caption="Key"
+        )
+        self.cols_search_results.addcol(
+            name="BPM", order_id=5, width=45, hidden=False, edit=True, caption="BPM"
+        )
+        self.cols_search_results.addcol(
+            name="key_notes",
+            order_id=6,
+            width=58,
+            hidden=False,
+            edit=True,
+            caption="Key\nNotes",
+        )
+        self.cols_search_results.addcol(
+            name="notes",
+            order_id=7,
+            width=58,
+            hidden=False,
+            edit=True,
+            caption="Track\nNotes",
+        )
+        self.cols_search_results.addcol(
+            name="discogs_id",
+            order_id=8,
+            width=70,
+            hidden=False,
+            edit=False,
+            caption="Discogs\nRelease",
+        )
+        self.cols_search_results.addcol(
+            name="discogs_title",
+            order_id=9,
+            width=None,
+            hidden=True,
+            edit=False,
+            caption="Release\nTitle",
+        )
+        self.cols_search_results.addcol(
+            name="import_timestamp",
+            order_id=10,
+            width=None,
+            hidden=True,
+            edit=False,
+            caption="Imported",
+        )
+        self.cols_search_results.addcol(
+            name="in_d_coll",
+            order_id=11,
+            width=30,
+            hidden=True,
+            edit=True,
+            caption="In D.\nColl.",
+        )
+        self.cols_search_results.addcol(
+            name="m_rec_id",
+            order_id=12,
+            width=80,
+            hidden=True,
+            edit=False,
+            caption="MusicBrainz\nRecording",
+        )
+        self.cols_search_results.addcol(
+            name="m_rec_id_override",
+            order_id=13,
+            width=80,
+            hidden=False,
+            edit=True,
+            caption="MusicBrainz\nRecording\nID-Override",
+        )
+        self.cols_search_results.addcol(
+            name="recording_match_method",
+            order_id=14,
+            width=100,
+            hidden=True,
+            edit=False,
+            caption="MusicBrainz\nRecording\nMatch-Method",
+        )
+        self.cols_search_results.addcol(
+            name="recording_match_time",
+            order_id=15,
+            width=100,
+            hidden=True,
+            edit=False,
+            caption="MusicBrainz\nRecording\nMatch-Time",
+        )
+        self.cols_search_results.addcol(
+            name="m_rel_id",
+            order_id=16,
+            width=80,
+            hidden=True,
+            edit=False,
+            caption="MusicBrainz\nRelease",
+        )
+        self.cols_search_results.addcol(
+            name="release_match_method",
+            order_id=17,
+            width=100,
+            hidden=True,
+            edit=False,
+            caption="MusicBrainz\nRelease\nMatch-Method",
+        )
+        self.cols_search_results.addcol(
+            name="release_match_time",
+            order_id=18,
+            width=100,
+            hidden=True,
+            edit=False,
+            caption="MusicBrainz\nRelease\nMatch-Time",
+        )
 
     def shorten_timestamp(self, sqlite_date, text=False):
         ''' remove time from timestamps we get out of the db, just leave date'''
