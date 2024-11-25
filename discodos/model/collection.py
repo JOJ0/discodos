@@ -631,16 +631,11 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return False
 
     def key_value_search_releases(
-        self, search_key_value=None, orderby="d_artist, discogs_title"
+        self, search_key_value=None, orderby="d_artist, discogs_title", filter_cols=None
     ):
-        replace_cols = {
-            "artist": "d_artist",
-            "title": "discogs_title",
-            "id": "discogs_id",
-            "cat": "d_catno",
-            "forsale": "d_sales_listing_id",
-            "status": "d_sales_status",
-        }
+        # filter_cols are defined in ViewCommon and passed via the controller call.
+        replace_cols = filter_cols
+
         where = " AND ".join(
             [
                 f'{replace_cols.get(k, k)} LIKE "%{v}%"'

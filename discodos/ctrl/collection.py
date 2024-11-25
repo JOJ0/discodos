@@ -975,9 +975,11 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         search_results = []
         self.cli.p('Searching database for: {}'.format(search_terms))
+
         try:
             search_results = self.collection.key_value_search_releases(
-                search_key_value=search_terms
+                search_key_value=search_terms,
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
             )
         except Exception as error:
             self.cli.p(error)
@@ -989,16 +991,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         prettified_results = self.cli.replace_key_value_search_releases(search_results)
         app = DiscodosListApp(
             rows=prettified_results,
-            headers={
-                "release_id": "ID",
-                "catno": "Cat. #",
-                "artist": "Artist",
-                "title:": "Title",
-                "isinc": "Is in C.",
-                "forsale": "For Sale",
-                "status": "Status",
-                "sold": "Sold",
-            },
+            headers=self.cli.cols_key_value_search.headers_dict(),
             discogs=self.d,
             collection=self.collection,
             cli=self.cli,

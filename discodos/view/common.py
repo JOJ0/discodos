@@ -49,6 +49,7 @@ class ViewCommon():
         self.initialize_cols_mixtracks_brainz()
         self.initialize_cols_mixtracks_basic()
         self.initialize_cols_search_results()
+        self.initialize_cols_key_value_search()
 
     # Column initializations
 
@@ -367,6 +368,23 @@ class ViewCommon():
             edit=False,
             caption="MusicBrainz\nRelease\nMatch-Time",
         )
+
+    def initialize_cols_key_value_search(self):
+        self.cols_key_value_search = TableDefaults()
+        for shortcut, caption, name in [
+            ("id", "Release ID", "discogs_id"),
+            ("cat", "Catalog", "d_catno"),
+            ("artist", "Artist", "d_artist"),
+            ("title", "Title", "discogs_title"),
+            ("collection", "Is in C.", "in_d_collection"),
+            ("forsale", "For Sale", "d_sales_listing_id"),
+            ("status", "Sales Status", "d_sales_status"),
+            ("sold", "Sold", "sold"),
+            ("location", "Location Comments", "d_sales_location"),
+        ]:
+            self.cols_key_value_search.addcol(
+                shortcut=shortcut, caption=caption, name=name
+            )
 
     # Time and date helpers
 
@@ -1035,6 +1053,11 @@ class TableDefaults():
             return headers
         return {
             name: settings['caption'] for (name, settings) in self.cols.items()
+        }
+
+    def shortcuts_dict(self):
+        return {
+            settings['shortcut']: name for (name, settings) in self.cols.items()
         }
 
     def get_locked_columns(self):
