@@ -5,7 +5,7 @@ from time import time
 from datetime import datetime
 from json import JSONDecodeError
 import discogs_client.exceptions as errors
-from discogs_client import CollectionItemInstance
+from discogs_client import CollectionItemInstance, Sort
 from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
                            TaskProgressColumn, SpinnerColumn, TimeElapsedColumn)
 from rich import print
@@ -1071,3 +1071,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         if listing_successful:
             self.cli.p("Listed for sale.")
+            last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
+            self.import_sales_listing(last_added[0].id)
+            self.cli.p("Imported listing to DiscoBASE.")
