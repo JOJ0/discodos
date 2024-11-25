@@ -23,8 +23,8 @@ log = logging.getLogger('discodos')
 )
 @click.option(
     "-s", "--sleeve-condition",
-    type=click.Choice(["M", "NM", "VG+", "VG", "G+", "G", "F", "P"],
-                       case_sensitive=True),
+    type=click.Choice(["M", "NM", "VG+", "VG", "G+", "G", "F", "P", "generic",
+                       "notgraded", "nocover"], case_sensitive=True),
     default="VG+",
     prompt="Sleeve condition",
     help="Condition of the sleeve."
@@ -37,34 +37,30 @@ log = logging.getLogger('discodos')
 )
 @click.option(
     "-a", "--status",
-    type=click.Choice(["For Sale", "Draft"], case_sensitive=True),
+    type=click.Choice(["forsale", "draft", "expired"], case_sensitive=True),
     prompt="Status",
-    default="For Sale",
+    default="forsale",
     help="Initial status of the listing."
 )
 @click.option(
     "-l", "--location",
     type=str,
-    prompt="Storage location",
     help="Location of the record in storage (e.g., shelf or bin label)."
 )
 @click.option(
     "-o", "--allow-offers",
     is_flag=True,
-    default=True,
-    prompt="Accept offers? (yes/no)",
+    default=False,
     help="Allow buyers to make offers on this listing."
 )
 @click.option(
     "-m", "--comments",
     type=str,
-    prompt="Public comments",
     help="Public comments about the listing."
 )
 @click.option(
     "-n", "--private-comments",
     type=str,
-    prompt="Private comments",
     help="Private comments about the listing."
 )
 def sell_cmd(helper, query, release_id, condition, sleeve_condition, price, status,

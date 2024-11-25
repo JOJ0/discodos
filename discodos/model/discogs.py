@@ -21,10 +21,14 @@ CONDITIONS = {
     "G+": Condition.GOOD_PLUS,
     "G": Condition.GOOD,
     "F": Condition.FAIR,
+    "generic": Condition.GENERIC,
+    "notgraded": Condition.NOT_GRADED,
+    "nocover": Condition.NO_COVER,
 }
 STATUS = {
-    "For Sale": Status.FOR_SALE,
-    "Draft": Status.DRAFT,
+    "forsale": Status.FOR_SALE,
+    "draft": Status.DRAFT,
+    "expired": Status.EXPIRED,
 }
 
 class NoListingIDError(Exception):
@@ -326,7 +330,7 @@ class DiscogsMixin:
                 STATUS[status],
                 sleeve_condition=CONDITIONS[sleeve_condition],
                 comments=comments,
-                allow_offers="true" if allow_offers else "false",
+                allow_offers=allow_offers,
                 external_id=private_comments,
                 location=location,
                 # weight=None,
