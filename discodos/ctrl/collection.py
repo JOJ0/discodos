@@ -1029,7 +1029,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             release_id = found_release["id"]
 
         prices, err_prices, _ = self.collection.fetch_relevant_price_suggestions(
-            release_id
+            release_id, wanted_condition=condition
         )
         render_prices = (
             err_prices if err_prices else self.cli.two_column_view(prices, as_is=True)

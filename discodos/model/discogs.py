@@ -275,16 +275,17 @@ class DiscogsMixin:
         }
         return c[condition.upper()] if r else None
 
-    def fetch_relevant_price_suggestions(self, release_id):
+    def fetch_relevant_price_suggestions(self, release_id, wanted_condition=""):
         """Fetches most relevant prices suggestions for a Discogs release.
 
         Returns a tuple of respones, None, None
         or None, errortype, errormessage
         """
         try:
+            conditions = set(["M", "NM", "VG+", wanted_condition])
             release = self.d.release(release_id)
             suggestions = {}
-            for cond in ["M", "NM", "VG+"]:
+            for cond in conditions:
                 price = self.fetch_price_suggestion(release, cond)
                 suggestions[cond] = round(price.value, 2)
             return suggestions, None, None

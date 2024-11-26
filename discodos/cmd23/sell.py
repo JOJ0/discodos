@@ -18,7 +18,7 @@ log = logging.getLogger('discodos')
     type=click.Choice(["M", "NM", "VG+", "VG", "G+", "G", "F", "P"],
                        case_sensitive=True),
     default="VG+",
-    prompt="Record condition (M, NM, VG+, VG, G+, G, F, P)",
+    prompt="Record condition",
     help="Condition of the record."
 )
 @click.option(
