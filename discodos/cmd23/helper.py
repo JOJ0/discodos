@@ -66,6 +66,9 @@ class User(object):
         self.MIX_SORT = False
         self.WANTS_TO_SHOW_STATS = False
         self.TABLE_FORMAT_OVERRIDE = False
+        # Sales
+        self.WANTS_TO_ADD_SALES_LISTING = False
+        self.WANTS_TO_EDIT_SALES_LISTING = False
 
     def set_console_log_level(self):
         """ Handles console log level setting.

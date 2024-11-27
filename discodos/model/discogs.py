@@ -342,6 +342,37 @@ class DiscogsMixin:
             log.error("Exception while trying to list for sale: %s", Exc)
             return False
 
+    def update_sales_listing(  # pylint: disable=too-many-positional-arguments,too-many-arguments
+        self,
+        listing_id=None,
+        condition=None,
+        sleeve_condition=None,
+        price=None,
+        status=None,
+        location=None,
+        allow_offers=None,
+        comments=None,
+        private_comments=None,
+    ):
+        """Update a record already listed for sale."""
+        try:
+            # listing_details = self.fetch_sales_listing_details(listing_id)
+            listing = self.d.listing(listing_id)
+            listing.condition = CONDITIONS[condition]
+            listing.sleeve_condition = CONDITIONS[sleeve_condition]
+            listing.price = price
+            listing.status = STATUS[status]
+            listing.location = location
+            listing.allow_offers = allow_offers
+            listing.comments = comments
+            listing.private_coments = private_comments
+            # save it
+            listing.save()
+            return True
+        except Exception as Exc:
+            log.error("Exception while trying to update Marketplace listing: %s", Exc)
+            return False
+
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
         if int(self.d._fetcher.rate_limit_remaining) < remaining:  # pylint: disable=protected-access

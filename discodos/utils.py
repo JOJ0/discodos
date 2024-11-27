@@ -1,12 +1,15 @@
 import logging
 import os
-import yaml
 import re
+import yaml
 
 log = logging.getLogger('discodos')
 
 
-# util: checks for numbers
+RECORD_CHOICES = ["M", "NM", "VG+", "VG", "G+", "G", "F", "P"]
+SLEEVE_CHOICES = RECORD_CHOICES + ["generic", "notgraded", "nocover"]
+
+
 def is_number(s):
     try:
         float(s)
@@ -17,12 +20,10 @@ def is_number(s):
         return False
 
 
-# util: print a UI message
 def print_help(message):
     print('' + str(message) + '\n')
 
 
-# util: ask user for some string
 def ask_user(text=""):
     return input(text)
 
@@ -58,6 +59,7 @@ def join_sep(iterator, seperator):
     for s in it:
         string += seperator + s
     return string
+
 
 def restore_terminal():
     """Executes `reset` on CLI. Use to prevent terminal issues after Textual exit."""

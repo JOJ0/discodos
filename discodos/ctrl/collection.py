@@ -19,7 +19,7 @@ from discodos.model import Collection
 from discodos.utils import is_number
 from discodos.view import CollectionViewCommandline
 from discodos.ctrl.tui import DiscodosListApp
-from discodos.utils import extract_discogs_id_regex
+from discodos.utils import extract_discogs_id_regex, RECORD_CHOICES, SLEEVE_CHOICES
 
 log = logging.getLogger('discodos')
 custom_progress = Progress(
@@ -1027,6 +1027,14 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             found_release = self.search_release(" ".join(query))
             # search_release exits program, not required to handle here.
             release_id = found_release["id"]
+        if not condition:
+            condition = Prompt.ask(
+                "Condition", choices=RECORD_CHOICES, default="VG+"
+            )
+        if not sleeve_condition:
+            sleeve_condition = Prompt.ask(
+                "Condition", choices=SLEEVE_CHOICES, default="generic"
+            )
 
         prices, err_prices, _ = self.collection.fetch_relevant_price_suggestions(
             release_id, wanted_condition=condition
@@ -1081,6 +1089,40 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         if listing_successful:
             self.cli.p("Listed for sale.")
+            last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
+            self.import_sales_listing(last_added[0].id)
+            self.cli.p("Imported listing to DiscoBASE.")
+
+    def edit_sales_listing(self, listing_id, condition, sleeve_condition, price,
+                           status, location, allow_offers, comments, private_comments):
+        if not self.ONLINE:
+            log.warning("Online mode is required to edit a Marketplace listing.")
+            return
+
+        details, err, _ = self.collection.fetch_sales_listing_details(listing_id)
+        render_details = err if err else details
+        print(
+            Panel.fit(
+                title="Current listing details",
+                renderable=self.cli.two_column_view(
+                   render_details
+                ),
+            )
+        )
+
+        edit_successful = self.collection.update_sales_listing(
+            listing_id=listing_id,
+            condition=condition,
+            sleeve_condition=sleeve_condition,
+            price=price,
+            status=status,
+            location=location,
+            allow_offers=allow_offers,
+            comments=comments,
+            private_comments=private_comments,
+        )
+        if edit_successful:
+            self.cli.p("Edited sales listing.")
             last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
             self.import_sales_listing(last_added[0].id)
             self.cli.p("Imported listing to DiscoBASE.")
