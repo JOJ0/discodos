@@ -3,11 +3,41 @@ import os
 import re
 import yaml
 
+from discogs_client.utils import Condition, Status
+
 log = logging.getLogger('discodos')
 
 
 RECORD_CHOICES = ["M", "NM", "VG+", "VG", "G+", "G", "F", "P"]
 SLEEVE_CHOICES = RECORD_CHOICES + ["generic", "notgraded", "nocover"]
+STATUS_CHOICES = ["draft", "forsale", "expired"]
+
+RECORD_CHOICES_RADIO = {
+    "M": Condition.MINT, "NM": Condition.NEAR_MINT,
+    "VG+": Condition.VERY_GOOD_PLUS, "VG": Condition.VERY_GOOD,
+    "+G": Condition.GOOD_PLUS, "G": Condition.GOOD,
+    "F": Condition.FAIR, "P": Condition.POOR,
+}
+SLEEVE_CHOICES_RADIO = RECORD_CHOICES_RADIO | {
+        "generic": Condition.GENERIC,
+        "notgraded": Condition.NOT_GRADED,
+        "nocover": Condition.NO_COVER,
+}
+STATUS_CHOICES_RADIO = {
+    "draft": Status.DRAFT,
+    "forsale": Status.FOR_SALE,
+    "expired": Status.EXPIRED,
+    "pending": "Pending",
+    "sold": "Sold",
+}
+YES_NO_CHOICES_RADIO = {
+    True: "Yes",
+    False: "No",
+}
+# Sometimes we need to translate the other way round
+RECORD_CHOICES_DISCOGS = {value: key for key, value in RECORD_CHOICES_RADIO.items()}
+SLEEVE_CHOICES_DISCOGS = {value: key for key, value in SLEEVE_CHOICES_RADIO.items()}
+STATUS_CHOICES_DISCOGS = {value: key for key, value in STATUS_CHOICES_RADIO.items()}
 
 
 def is_number(s):

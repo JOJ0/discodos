@@ -2,7 +2,7 @@ import logging
 import click
 
 from discodos.ctrl import CollectionControlCommandline
-from discodos.utils import RECORD_CHOICES, SLEEVE_CHOICES
+from discodos.utils import RECORD_CHOICES, SLEEVE_CHOICES, STATUS_CHOICES
 
 
 log = logging.getLogger('discodos')
@@ -45,7 +45,7 @@ log = logging.getLogger('discodos')
 @click.option(
     "-a",
     "--status",
-    type=click.Choice(["forsale", "draft", "expired"], case_sensitive=True),
+    type=click.Choice(STATUS_CHOICES, case_sensitive=True),
     default="draft",
     help="Initial status of the listing.",
 )

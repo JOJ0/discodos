@@ -228,7 +228,7 @@ def import_release_cmd(helper, import_id, import_add_coll, import_tracks, delete
 
 @import_group.command(name='sales')
 @click.pass_obj
-def import_sales_cmd(helper, listing_id):
+def import_sales_cmd(helper):
     """Imports the marketplace inventory.
     """
 

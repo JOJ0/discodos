@@ -5,7 +5,9 @@ from sqlite3 import Error as sqlerr
 
 from discodos.model.discogs import DiscogsMixin
 from discodos.model.database import Database
-from discodos.utils import is_number  # most of this should only be in view
+from discodos.utils import (
+    is_number, RECORD_CHOICES_RADIO, SLEEVE_CHOICES_RADIO, STATUS_CHOICES_RADIO
+)
 
 log = logging.getLogger('discodos')
 
@@ -607,8 +609,12 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     def create_sales_entry(self, listing_object):
         """Creates a single entry to sales table and ensures up to date data.
+
+        Saves conditions and status as-is - in plain short key form (eg. VG+, forsale)
         """
+        # join together a comma delim string for the SQL statement
         keys_str = ', '.join(listing_object.keys())
+        # generate a tuple version of the values
         values = tuple(listing_object.values())
         values_placeholders = ', '.join(['?'] * len(listing_object))
         # Prepare update fields (we want to update all columns except the

@@ -1,35 +1,24 @@
 import time
 import logging
 from socket import gaierror
-from rich.progress import Progress
 import discogs_client
 import discogs_client.exceptions
-from discogs_client import Condition, Status, Release
-from discogs_client.models import PriceSuggestions
+from discogs_client import Release
 import requests.exceptions
 import urllib3.exceptions
 
-from discodos.utils import is_number
+from discodos.utils import (
+    is_number,
+    RECORD_CHOICES_RADIO,
+    SLEEVE_CHOICES_RADIO,
+    STATUS_CHOICES_RADIO,
+    RECORD_CHOICES_DISCOGS,
+    SLEEVE_CHOICES_DISCOGS,
+    STATUS_CHOICES_DISCOGS,
+)
 
 log = logging.getLogger('discodos')
 
-CONDITIONS = {
-    "M": Condition.MINT,
-    "NM": Condition.NEAR_MINT,
-    "VG+": Condition.VERY_GOOD_PLUS,
-    "VG": Condition.VERY_GOOD,
-    "G+": Condition.GOOD_PLUS,
-    "G": Condition.GOOD,
-    "F": Condition.FAIR,
-    "generic": Condition.GENERIC,
-    "notgraded": Condition.NOT_GRADED,
-    "nocover": Condition.NO_COVER,
-}
-STATUS = {
-    "forsale": Status.FOR_SALE,
-    "draft": Status.DRAFT,
-    "expired": Status.EXPIRED,
-}
 
 class NoListingIDError(Exception):
     """To raise when no listing ID is passed"""
@@ -210,6 +199,8 @@ class DiscogsMixin:
     def fetch_sales_listing_details(self, listing_id):
         """Fetches details like price for a Discogs marketplace listing.
 
+        Translates condition, status to short form, eg. VG+, forsale
+
         Returns a tuple of respones, None, None
         or None, errortype, errormessage
         """
@@ -221,12 +212,14 @@ class DiscogsMixin:
                 "d_sales_release_id": listing.release.id,
                 "d_sales_release_url": listing.release.url,
                 "d_sales_url": listing.url,
-                "d_sales_condition": listing.condition,
-                "d_sales_sleeve_condition": listing.sleeve_condition,
+                "d_sales_condition": RECORD_CHOICES_DISCOGS[listing.condition],
+                "d_sales_sleeve_condition": SLEEVE_CHOICES_DISCOGS[
+                    listing.sleeve_condition
+                ],
                 "d_sales_price": str(listing.price.value),
                 "d_sales_comments": listing.comments,
                 "d_sales_allow_offers": listing.allow_offers,
-                "d_sales_status": listing.status,
+                "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
                 "d_sales_comments_private": listing.external_id,
                 "d_sales_counts_as": str(listing.format_quantity),
                 "d_sales_location": listing.location,
@@ -322,14 +315,17 @@ class DiscogsMixin:
         comments=None,
         private_comments=None,
     ):
-        """Lists a record for sale."""
+        """Lists a record for sale.
+
+        Expects conditions, status as eg. VG+, forsale.
+        """
         try:
             self.me.inventory.add_listing(
                 release_id,
-                CONDITIONS[condition],
+                RECORD_CHOICES_RADIO[condition],
                 price,
-                STATUS[status],
-                sleeve_condition=CONDITIONS[sleeve_condition],
+                STATUS_CHOICES_RADIO[status],
+                sleeve_condition=SLEEVE_CHOICES_RADIO[sleeve_condition],
                 comments=comments,
                 allow_offers=allow_offers,
                 external_id=private_comments,
@@ -358,10 +354,10 @@ class DiscogsMixin:
         try:
             # listing_details = self.fetch_sales_listing_details(listing_id)
             listing = self.d.listing(listing_id)
-            listing.condition = CONDITIONS[condition]
-            listing.sleeve_condition = CONDITIONS[sleeve_condition]
+            listing.condition = RECORD_CHOICES_RADIO[condition]
+            listing.sleeve_condition = SLEEVE_CHOICES_RADIO[sleeve_condition]
             listing.price = price
-            listing.status = STATUS[status]
+            listing.status = STATUS_CHOICES_RADIO[status]
             listing.location = location
             listing.allow_offers = allow_offers
             listing.comments = comments

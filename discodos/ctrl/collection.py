@@ -19,7 +19,14 @@ from discodos.model import Collection
 from discodos.utils import is_number
 from discodos.view import CollectionViewCommandline
 from discodos.ctrl.tui import DiscodosListApp
-from discodos.utils import extract_discogs_id_regex, RECORD_CHOICES, SLEEVE_CHOICES
+from discodos.utils import (
+    extract_discogs_id_regex,
+    RECORD_CHOICES,
+    SLEEVE_CHOICES,
+    RECORD_CHOICES_DISCOGS,
+    SLEEVE_CHOICES_DISCOGS,
+    STATUS_CHOICES_DISCOGS,
+)
 
 log = logging.getLogger('discodos')
 custom_progress = Progress(
@@ -955,12 +962,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                         "d_sales_listing_id": listing.id,
                         "d_sales_release_url": listing.release.url,
                         "d_sales_url": listing.url,
-                        "d_sales_condition": listing.condition,
-                        "d_sales_sleeve_condition": listing.sleeve_condition,
+                        "d_sales_condition": RECORD_CHOICES_DISCOGS[listing.condition],
+                        "d_sales_sleeve_condition": SLEEVE_CHOICES_DISCOGS[listing.sleeve_condition],
                         "d_sales_price": str(listing.price.value),
                         "d_sales_comments": listing.comments,
                         "d_sales_allow_offers": 1 if listing.allow_offers else 0,
-                        "d_sales_status": listing.status,
+                        "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
                         "d_sales_comments_private": listing.external_id,
                         "d_sales_counts_as": str(listing.format_quantity),
                         "d_sales_location": listing.location,
