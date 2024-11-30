@@ -921,7 +921,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         self.cli.p('Searching database for: {}'.format(search_terms))
         try:
             search_results = self.collection.key_value_search_releases(
-                search_key_value=search_terms
+                search_key_value=search_terms,
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
             )
         except Exception as error:
             self.cli.p(error)

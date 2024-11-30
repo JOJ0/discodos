@@ -90,7 +90,7 @@ class CollectionViewCommandline(
             tab(
                 _result_list,
                 tablefmt="simple",
-                headers=["ID", "Cat. #", "Artist", "Title", "D. Coll.", "For Sale"],
+                headers = self.cols_key_value_search.headers_dict()
             )
         )
 
