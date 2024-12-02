@@ -974,7 +974,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                         "d_sales_weight": str(listing.weight),
                         "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
                     })
-                    if listing.status == "Sold":
+                    if (
+                        listing.status == "Sold"
+                        or "verkauft" in listing.location.lower()
+                        or "verschenkt" in listing.location.lower()
+                        or "geschenkt" in listing.location.lower()
+                    ):
                         self.collection.toggle_sold_state(listing.release.id, True)
                     custom_progress.update(task, advance=1)
                 except JSONDecodeError as e:
