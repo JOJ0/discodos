@@ -105,31 +105,52 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
     def action_edit_sales_listing(self):
         """Open the edit screen for a sales listing."""
-        row_key = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
-
-        # Get current values from the selected row in the DataTable
-        # location = self.table.get_cell(row_key, "d_sales_location")
-        # price = self.table.get_cell(row_key, "d_sales_price")
-        # condition = self.table.get_cell(row_key, "d_sales_condition")
-        # sleeve_condition = self.table.get_cell(row_key, "d_sales_sleeve_condition")
-        # status = self.table.get_cell(row_key, "d_sales_status")
-        location = "dummy location comment"
-        price = "123"
-        condition = "VG+"
-        sleeve_condition = "VG"
-        status = "For Sale"
-
-        # Initialize EditScreen with current values for the fields
-        edit_screen = EditScreen(
-            location=location,
-            price=price,
-            condition=condition,
-            sleeve_condition=sleeve_condition,
-            status=status,
+        rlog = self.query_one(RichLog)
+        row_key, _ = self.table.coordinate_to_cell_key(
+            self.table.cursor_coordinate
         )
+        listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
+        listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+        if l_err:
+            rlog.write("Error fetching sales listing details:", l_err)
+
+        def save_changes(**kwargs):
+            if not self.collection.update_sales_listing(
+                listing_id=listing_id, **kwargs
+            ):
+                rlog.write("Updating Discogs Marketplace listing failed.")
+                return
+            rlog.write("Updated Discogs Marketplace listing.")
+
+            listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+            if l_err:
+                rlog.write("Error fetching sales listing details:", l_err)
+                return
+
+            listing["d_sales_listing_id"] = listing_id
+            created = self.collection.create_sales_entry(listing)
+            if not created:
+                rlog.write("Updating sales entry in DiscoBASE failed")
+                return
+
+            rlog.write("Updated sales entry in DiscoBASE")
+            self.pop_screen()  # Return to the main screen
 
         # Show the EditScreen
-        self.push_screen(edit_screen)
+        self.push_screen(
+            EditScreen(
+                save_changes,
+                listing_id=listing_id,
+                price=listing["d_sales_price"],
+                condition=listing["d_sales_condition"],
+                sleeve_condition=listing["d_sales_sleeve_condition"],
+                location=listing["d_sales_location"],
+                status=listing["d_sales_status"],
+                allow_offers=listing["d_sales_allow_offers"],
+                comments=listing["d_sales_comments"],
+                private_comments=listing["d_sales_comments_private"],
+            )
+        )
 
     def compose(self):
         # The main data widget

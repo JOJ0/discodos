@@ -1,22 +1,13 @@
 from textual.screen import Screen
 from textual.containers import Vertical, Horizontal, VerticalScroll, HorizontalScroll
-from textual.widgets import Input, RadioSet, Button, Label, Static, RadioButton
+from textual.widgets import Input, RadioSet, Button, Label, Static, RadioButton, RichLog
 
-CONDITIONS = {
-    "M": "Mint",
-    "NM": "Near Mint",
-    "VG+": "Very Good Plus",
-    "VG": "Very Good",
-    "G+": "Good Plus",
-    "G": "Good",
-    "F": "Fair",
-}
-
-STATUS_OPTIONS = {
-    "draft": "Draft",
-    "forsale": "For Sale",
-    "expired": "Expired",
-}
+from discodos.utils import (
+    RECORD_CHOICES_RADIO,
+    SLEEVE_CHOICES_RADIO,
+    STATUS_CHOICES_RADIO,
+    YES_NO_CHOICES_RADIO,
+)
 
 
 class EditScreen(Screen):
@@ -24,86 +15,94 @@ class EditScreen(Screen):
 
     def __init__(
         self,
-        location=None,
-        price=None,
-        condition=None,
-        sleeve_condition=None,
-        status=None,
+        on_save,
+        listing_id,
+        price,
+        condition,
+        sleeve_condition,
+        location,
+        status,
+        allow_offers,
+        comments,
+        private_comments,
     ):
         super().__init__()
-
-        # Initialize the input fields with provided or default values
-        self.location = Input(value=location or "", placeholder="Location")
+        self.caption = listing_id
+        # Initialize text based fields with existing or default values
         self.price = Input(value=price or "", placeholder="Price")
-
-        # Store the initial values for condition, sleeve_condition, and status
+        self.location = Input(value=location or "", placeholder="Location")
+        self.comments = Input(value=comments or "", placeholder="Public comments")
+        self.private_comments = Input(value=private_comments or "",
+                                      placeholder="Private comments")
+        # Store the initial values for choices based fields
         self.initial_condition = condition
         self.initial_sleeve_condition = sleeve_condition
         self.initial_status = status
-
-        # Info panel
-        self.info_panel = Static("")
+        self.initial_allow_offers = allow_offers
+        # Info / Log Panel
+        self.log_panel = RichLog()
+        self.on_save = on_save  # Callback to save changes
 
     def compose(self):
-        with VerticalScroll():  # Make the entire form scrollable vertically
+        with Horizontal():  # Contains one big column
+            with VerticalScroll():
+                yield Label("Price")
+                yield self.price
+                yield Label("Location")
+                yield self.location
+        with Horizontal():  # Contains 4 columns
+            with VerticalScroll():
+                yield Label("Condition")
+                with RadioSet(id="condition"):
+                    for key, label in RECORD_CHOICES_RADIO.items():
+                        active = key == self.initial_condition
+                        yield RadioButton(label, value=active, name=key)
+            with VerticalScroll():
+                yield Label("Sleeve Condition")
+                with RadioSet(id="sleeve_condition"):
+                    for key, label in SLEEVE_CHOICES_RADIO.items():
+                        active = key == self.initial_sleeve_condition
+                        yield RadioButton(label, value=active, name=key)
+            with VerticalScroll():
+                yield Label("Status")
+                with RadioSet(id="status"):
+                    for key, label in STATUS_CHOICES_RADIO.items():
+                        active = key == self.initial_status
+                        yield RadioButton(label, value=active, name=key)
+                yield Label("Allow offers")
+                with RadioSet(id="allow_offers"):
+                    for key, label in YES_NO_CHOICES_RADIO.items():
+                        active = key == self.initial_allow_offers
+                        yield RadioButton(label, value=active, name=key)
+            with VerticalScroll():
+                yield Label("Public comments")
+                yield self.comments
+                yield Label("Private comments")
+                yield self.private_comments
+        with Horizontal():  # Another row containing a log panel
+            with VerticalScroll():
+                yield self.log_panel
+
+        with Horizontal():  # Another row containing a log panel
+            yield Button("Save", id="save")  # is in top vertical widget
             yield Button("Back", id="back")  # Add Back button at the top
-            yield Label("Location")
-            yield self.location
-            yield Label("Price")
-            yield self.price
-
-            # HorizontalScroll for RadioSets, placed next to each other
-            with HorizontalScroll():
-                # Condition RadioSet
-                with Vertical():
-                    yield Label("Condition")
-                    with RadioSet():
-                        for key, label in CONDITIONS.items():
-                            yield RadioButton(label, value=key)
-
-                # Sleeve Condition RadioSet
-                with Vertical():
-                    yield Label("Sleeve Condition")
-                    with RadioSet():
-                        for key, label in CONDITIONS.items():
-                            yield RadioButton(label, value=key)
-
-                # Status RadioSet
-                with Vertical():
-                    yield Label("Status")
-                    with RadioSet():
-                        for key, label in STATUS_OPTIONS.items():
-                            yield RadioButton(label, value=key)
-
-            yield Button("Save", id="save")
-            yield self.info_panel
-
-    def on_mount(self) -> None:
-        # Set the initial selected values for each radio button set
-        condition_radio_set = self.query_one(RadioSet)
-        condition_radio_set.selected_value = self.initial_condition
-
-        sleeve_condition_radio_set = self.query_one(RadioSet)
-        sleeve_condition_radio_set.selected_value = self.initial_sleeve_condition
-
-        status_radio_set = self.query_one(RadioSet)
-        status_radio_set.selected_value = self.initial_status
 
     def on_button_pressed(self, event):
         if event.button.id == "save":
-            # Collect the values from the form inputs
-            location = self.location.value
-            price = self.price.value
-            condition = self.query_one(RadioSet).selected_value
-            sleeve_condition = self.query_one(RadioSet).selected_value
-            status = self.query_one(RadioSet).selected_value
+            condition = self.query_one("#condition")
+            sleeve_condition = self.query_one("#sleeve_condition")
+            status = self.query_one("#status")
+            allow_offers = self.query_one("#allow_offers")
+            self.on_save(
+                price=self.price.value,
+                condition=condition.pressed_button.name,
+                sleeve_condition=sleeve_condition.pressed_button.name,
+                location=self.location.value,
+                status=status.pressed_button.name,
+                allow_offers=allow_offers.pressed_button.name,
+                comments=self.comments.value,
+                private_comments=self.private_comments.value,
+            )
+            # pop_screen is happening within the callback method
         elif event.button.id == "back":
             self.app.pop_screen()  # Return to the main screen
-
-            # Process saving the changes here (DB/API logic can be added)
-            # print(f"Saved: Location={location}, Price={price}, Condition={condition}, "
-            #       f"Sleeve Condition={sleeve_condition}, Status={status}")
-
-            # Update the info panel after saving
-            self.info_panel.update(f"Saved successfully!")
-
