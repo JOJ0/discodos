@@ -982,13 +982,13 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                         or "geschenkt" in listing.location.lower()
                     ):
                         self.collection.toggle_sold_state(listing.release.id, True)
-                    custom_progress.update(task, advance=1)
                 except JSONDecodeError as e:
                     log.error("Catched a JSONDecodeError. Not retrying! %s", e)
                     decode_err += 1
                 except Exception as e:
                     log.error("Catched an Exception. Not retrying! %s", e)
                     other_err += 1
+                custom_progress.update(task, advance=1)
 
         print(f"Discogs JSONDecode errors : {decode_err}.")
         print(f"Other errors : {other_err}.")
