@@ -11,6 +11,7 @@ from rich.progress import (BarColumn, MofNCompleteColumn, Progress,
 from rich import print
 from rich.prompt import Prompt, FloatPrompt, Confirm
 from rich.panel import Panel
+from rich.console import Console
 
 from discodos.ctrl.common import ControlCommon
 from discodos.model import Brainz
@@ -1139,3 +1140,46 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
             self.import_sales_listing(last_added[0].id)
             self.cli.p("Imported listing to DiscoBASE.")
+
+    def cleanup_sales_inventory(self, force=False, offset=0):
+        """cleanup sales inventory"""
+        start_time = time()
+        orphaned_entries =  0
+        self.cli.exit_if_offline(self.collection.ONLINE)
+        self.cli.p("Cleaning up sales inventory in DiscoBASE...")
+        total_items = self.collection.stats_sales_items_total()
+        sales = self.collection.get_sales_inventory(offset)
+
+        console = Console()
+        adapted_progress = Progress(
+            MofNCompleteColumn(),
+            BarColumn(),
+            TaskProgressColumn(),
+        )
+        with adapted_progress:
+            task = adapted_progress.add_task(
+                "[cyan] Status: ",
+                completed=offset,
+                total=total_items,
+            )
+            for row in sales:
+                _, err, errdetails = self.collection.fetch_sales_listing_ok(
+                    row["d_sales_listing_id"]
+                )
+                if err:
+                    orphaned_entries += 1
+                    console.print(row)
+                    console.print(
+                        "[yellow]"
+                        "Non-existent on Discogs anymore. Delete from DiscoBASE? [y/n]"
+                        "[/]"
+                    )
+                    delete = Confirm.ask()
+                    if delete:
+                        self.collection.delete_sales_inventory_item(
+                            row["d_sales_listing_id"]
+                        )
+                adapted_progress.update(task, advance=1)
+
+        print(f"Orphaned entries: {orphaned_entries}.")
+        self.cli.duration_stats(start_time, 'Sales inventory cleanup')

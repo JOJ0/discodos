@@ -729,3 +729,45 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release", fetchone=False, orderby=orderby, condition=where, join=join,
         )
         return rows
+
+    def get_sales_inventory(self, offset=0):
+        """Get all Marketplace listing details from DB if already imported.
+
+        Always returns a dict, not Row.
+        """
+        if offset > 0:
+            offset = offset - 1
+        rows =  self._select_simple(
+            [
+                "d_sales_listing_id",
+                "d_sales_release_id",
+                "d_sales_release_url",
+                "d_sales_url",
+                "d_sales_condition",
+                "d_sales_sleeve_condition",
+                "d_sales_price",
+                "d_sales_comments",
+                "d_sales_allow_offers",
+                "d_sales_status",
+                "d_sales_comments_private",
+                "d_sales_counts_as",
+                "d_sales_location",
+                "d_sales_weight",
+                "d_sales_posted",
+            ],
+            "sales",
+            fetchone=False, condition=None, as_dict=True, offset=offset
+        )
+        return rows
+
+    def delete_sales_inventory_item(self, listing_id):
+        return self.execute_sql(
+            "DELETE FROM sales WHERE d_sales_listing_id == ?", (listing_id,)
+        )
+
+    def stats_sales_items_total(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM sales;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0

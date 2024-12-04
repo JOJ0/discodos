@@ -232,6 +232,24 @@ class DiscogsMixin:
             log.debug("Fetching listing: %s: %s", errtype, errmsg)
             return None, errtype, errmsg
 
+    def fetch_sales_listing_ok(self, listing_id):
+        """Checks for existence of a Discogs marketplace listing.
+
+        Returns a tuple of True, None, None or False, errortype, errormessage
+        """
+        try:
+            if not listing_id:
+                raise NoListingIDError
+            listing = self.d.listing(listing_id)
+            check = listing.release.id  # We need to really access it.
+            if check:
+                return True, None, None
+            return False, None, None
+        except Exception as e:
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching listing: %s: %s", errtype, errmsg)
+            return False, errtype, errmsg
+
     def fetch_marketplace_stats(self, release_id):
         """Fetches Marketplace stats for a Discogs release.
 
