@@ -292,19 +292,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.update(task1, advance=1)
 
             if release:
-                artists = self.collection.d_artists_to_str(release.artists)
-                d_catno = self.collection.d_get_first_catno(release.labels)
-                progress.console.print(
-                    "Found and importing: "
-                    f"{release.id} - {artists} - {release.title}"
-                )
-                self.collection.create_release(
-                    release.id,
-                    release.title,
-                    artists,
-                    d_catno,
-                    d_coll=True,
-                )
+                self.create_release_entry(coll_items[0]['full_instance'])
                 for instance in coll_items:
                     self.collection.create_collection_item(
                         {
