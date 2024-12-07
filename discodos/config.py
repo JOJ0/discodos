@@ -148,6 +148,15 @@ class Db_setup(Database):
                       d_sales_posted TEXT,
                       PRIMARY KEY (d_sales_release_id, d_sales_listing_id)
                       ); """,
+                'New table collection':
+                """ CREATE TABLE collection (
+                      d_coll_instance_id INTEGER PRIMARY KEY,
+                      d_coll_release_id INTEGER NOT NULL,
+                      d_coll_folder_id INTEGER NOT NULL,
+                      d_coll_added TEXT NOT NULL,
+                      d_coll_rating TEXT,
+                      d_coll_notes TEXT
+                      ); """,
                 }
         }]
 
