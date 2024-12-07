@@ -287,23 +287,35 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.console.print(f"Release ID is valid: {result.title}")
             progress.update(task1, advance=1)
             progress.console.print("Let's find it in your Discogs collection")
-            coll_item = self.collection.release_from_collection(release_id)
+            coll_items = self.collection.fetch_collection_item_instances(release_id)
+            release = coll_items[0]['full_instance'].release
             progress.update(task1, advance=1)
 
-            if coll_item:
-                artists = self.collection.d_artists_to_str(coll_item.artists)
-                d_catno = self.collection.d_get_first_catno(coll_item.labels)
+            if release:
+                artists = self.collection.d_artists_to_str(release.artists)
+                d_catno = self.collection.d_get_first_catno(release.labels)
                 progress.console.print(
                     "Found and importing: "
-                    f"{coll_item.id} - {artists} - {coll_item.title}"
+                    f"{release.id} - {artists} - {release.title}"
                 )
                 self.collection.create_release(
-                    coll_item.id,
-                    coll_item.title,
+                    release.id,
+                    release.title,
                     artists,
                     d_catno,
                     d_coll=True,
                 )
+                for instance in coll_items:
+                    self.collection.create_collection_item(
+                        {
+                            "d_coll_instance_id": instance["instance_id"],
+                            "d_coll_release_id": instance["id"],
+                            "d_coll_folder_id": instance["folder_id"],
+                            "d_coll_added": instance["date_added"],
+                            "d_coll_rating": instance["rating"],
+                            "d_coll_notes": instance["notes"],
+                        }
+                    )
             else:
                 self.cli.error_not_the_release()
 

@@ -258,6 +258,38 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "DELETE FROM release WHERE discogs_id == ?", (release_id, )
         )
 
+    def create_collection_item(self, instance):
+        """Creates a single entry to collection table and ensures up to date data.
+
+        Expects a collection item instance as a dictionary with keys named like
+        DiscoBASE fields.
+
+        Returns a bool on errors, a lastrowid integer on success.
+
+        """
+        # join together a comma delim string for the SQL statement
+        keys_str = ', '.join(instance.keys())
+        # generate a tuple version of the values
+        values = tuple(instance.values())
+        values_placeholders = ', '.join(['?'] * len(instance))
+        # Prepare update fields (we want to update all columns except the
+        # primary keys on conflict)
+        update_fields = ', '.join([
+            f"{key} = excluded.{key}"
+            for key in instance.keys()
+            if key not in {"d_coll_instance_id"}
+        ])
+
+        try:
+            insert_sql = f"""
+            INSERT INTO collection ({keys_str}) VALUES ({values_placeholders})
+            ON CONFLICT(d_coll_instance_id) DO UPDATE SET
+                {update_fields}
+            """
+            return self.execute_sql(insert_sql, values, raise_err=True)
+        except sqlerr as e:
+            log.error("MODEL: create_collection_item: %s", e.args[0])
+            return False
     # Suggest fetchers
 
     def track_report_snippet(self, track_pos, mix_id):

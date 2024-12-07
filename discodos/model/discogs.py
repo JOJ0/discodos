@@ -164,7 +164,11 @@ class DiscogsMixin:
         return release
 
     def fetch_collection_item_instances(self, release_id):
-        """Fetch all instances of a release from the Discogs collection."""
+        """Fetch all instances of a release from the Discogs collection.
+
+        Returns a list of dictionaries with the original collection_item keys (redefined
+        in list "keys")
+        """
         instances = self.me.collection_items(release_id)
         if not instances:
             log.warning("No instance of release in Discogs collection.")
