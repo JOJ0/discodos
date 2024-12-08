@@ -1054,7 +1054,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             )
         if not sleeve_condition:
             sleeve_condition = Prompt.ask(
-                "Condition", choices=SLEEVE_CHOICES, default="generic"
+                "Sleeve Condition", choices=SLEEVE_CHOICES, default="generic"
             )
 
         prices, err_prices, _ = self.collection.fetch_relevant_price_suggestions(

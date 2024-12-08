@@ -32,7 +32,7 @@ log = logging.getLogger('discodos')
     "-s",
     "--sleeve-condition",
     type=click.Choice(SLEEVE_CHOICES, case_sensitive=True),
-    default="generic",
+    default=None,
     help="Condition of the sleeve.",
 )
 @click.option(
