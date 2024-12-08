@@ -277,9 +277,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         with custom_progress as progress:
             task1 = progress.add_task("...",start=1, total=5)
+            extracted_id = extract_discogs_id_regex(release_id)
 
-            progress.console.print(f"Looking up {release_id:d} on Discogs")
-            result = self.collection.get_d_release(release_id)
+            progress.console.print(f"Looking up {extracted_id:d} on Discogs")
+            result = self.collection.get_d_release(extracted_id)
             progress.update(task1, advance=1)
             if not result:
                 raise SystemExit(3)
@@ -287,7 +288,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.console.print(f"Release ID is valid: {result.title}")
             progress.update(task1, advance=1)
             progress.console.print("Let's find it in your Discogs collection")
-            coll_items = self.collection.fetch_collection_item_instances(release_id)
+            coll_items = self.collection.fetch_collection_item_instances(extracted_id)
             release = coll_items[0]['full_instance'].release
             progress.update(task1, advance=1)
 

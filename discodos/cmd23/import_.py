@@ -149,7 +149,7 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
 
 
 @import_group.command(name='release')
-@click.argument('import_id', metavar='RELEASE_ID', type=int)
+@click.argument('import_id', metavar='RELEASE_ID', type=str)
 @optgroup.group("", cls=MutuallyExclusiveOptionGroup)
 @optgroup.option(
     '--add-to-collection', '-a', 'import_add_coll', is_flag=True,
