@@ -14,8 +14,9 @@ log = logging.getLogger('discodos')
     name="ls",
 )
 @click.argument("search_terms", metavar="SEARCH_TERMS", nargs=-1)
+@click.option("--order-by", "-o", type=str, help="order by DiscoBASE field")
 @click.pass_obj
-def ls_cmd(helper, search_terms):
+def ls_cmd(helper, search_terms, order_by):
     """Searches and lists collection items - offline only!.
     """
     def update_user_interaction_helper(user):
@@ -46,6 +47,6 @@ def ls_cmd(helper, search_terms):
         # maybe put a rich pager here?
         return
     if user.conf.enable_tui:
-        coll_ctrl.tui_ls_releases(search_key_value)
+        coll_ctrl.tui_ls_releases(search_key_value, orderby=order_by)
     else:
         coll_ctrl.ls_releases(search_key_value)
