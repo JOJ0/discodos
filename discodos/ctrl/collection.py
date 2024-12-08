@@ -294,16 +294,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             if release:
                 self.create_release_entry(coll_items[0]['full_instance'])
                 for instance in coll_items:
-                    self.collection.create_collection_item(
-                        {
-                            "d_coll_instance_id": instance["instance_id"],
-                            "d_coll_release_id": instance["id"],
-                            "d_coll_folder_id": instance["folder_id"],
-                            "d_coll_added": instance["date_added"],
-                            "d_coll_rating": instance["rating"],
-                            "d_coll_notes": instance["notes"],
-                        }
-                    )
+                    self.create_collection_item(instance)
             else:
                 self.cli.error_not_the_release()
 
@@ -340,7 +331,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         log.warning("Kept release in DiscoBASE!")
         return
 
-    # Import collection and helpers
+    # Import collection and helpers for both single and collection import
 
     def process_tracks(self, release_id, tracklist, d_artists):
         tracks_added = 0
@@ -381,6 +372,19 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         return rel_created, d_artists, artists
 
+    def create_collection_item(self, instance):
+        """Creates a collection item by passing a dictionary to the DiscoBASE method."""
+        self.collection.create_collection_item(
+            {
+                "d_coll_instance_id": instance["instance_id"],
+                "d_coll_release_id": instance["id"],
+                "d_coll_folder_id": instance["folder_id"],
+                "d_coll_added": instance["date_added"],
+                "d_coll_rating": instance["rating"],
+                "d_coll_notes": instance["notes"],
+            }
+        )
+
     def print_release_info(self, release_id, artists, title):
         print(f'Release {release_id} - "{artists}" - "{title}"')
 
@@ -416,6 +420,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     continue
 
                 rel_created, d_artists, artists = self.create_release_entry(item)
+                self.create_collection_item(item)
 
                 if not rel_created:
                     releases_db_errors += 1
