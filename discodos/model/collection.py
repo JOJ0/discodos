@@ -267,6 +267,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         Returns a bool on errors, a lastrowid integer on success.
 
         """
+        # Just save a hint that collection item notes are present
+        if instance["d_coll_notes"] is not None:
+            instance["d_coll_notes"] = 1
         # join together a comma delim string for the SQL statement
         keys_str = ', '.join(instance.keys())
         # generate a tuple version of the values
@@ -290,6 +293,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         except sqlerr as e:
             log.error("MODEL: create_collection_item: %s", e.args[0])
             return False
+
     # Suggest fetchers
 
     def track_report_snippet(self, track_pos, mix_id):
@@ -669,7 +673,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return False
 
     def key_value_search_releases(
-        self, search_key_value=None, orderby="d_artist, discogs_title", filter_cols=None
+        self, search_key_value=None, orderby=None, filter_cols=None
     ):
         # filter_cols are defined in ViewCommon and passed via the controller call.
         replace_cols = filter_cols

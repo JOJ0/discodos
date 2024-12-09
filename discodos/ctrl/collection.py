@@ -382,7 +382,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_folder_id": instance["folder_id"],
                 "d_coll_added": instance["date_added"],
                 "d_coll_rating": instance["rating"],
-                "d_coll_notes": instance["notes"],
+                "d_coll_notes": instance.get("notes"),
             }
         )
 
@@ -421,7 +421,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     continue
 
                 rel_created, d_artists, artists = self.create_release_entry(item)
-                self.create_collection_item(item)
+                self.create_collection_item(item.data)
 
                 if not rel_created:
                     releases_db_errors += 1
