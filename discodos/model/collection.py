@@ -697,6 +697,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "d_sales_status",
                 "sold",
                 "d_sales_location",
+                "d_sales_price",
             ],
             "release",
             fetchone=False, orderby=orderby, condition=where, join=join

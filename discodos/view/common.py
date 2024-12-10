@@ -381,6 +381,7 @@ class ViewCommon():
             ("status", "Status", "d_sales_status"),
             ("sold", "Sold", "sold"),
             ("location", "Location", "d_sales_location"),
+            ("price", "Price", "d_sales_price"),
         ]:
             self.cols_key_value_search.addcol(
                 shortcut=shortcut, caption=caption, name=name
