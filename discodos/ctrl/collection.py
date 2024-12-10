@@ -1006,11 +1006,14 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         listing["d_sales_listing_id"] = listing_id
         self.collection.create_sales_entry(listing)
 
-    def tui_ls_releases(self, search_terms, orderby="d_artist, discogs_title"):
+    def tui_ls_releases(self, search_terms, orderby=None):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = []
         self.cli.p('Searching database for: {}'.format(search_terms))
+        # Replace orderby with proper database key
+        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
+            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
 
         try:
             search_results = self.collection.key_value_search_releases(
