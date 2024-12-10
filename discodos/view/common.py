@@ -372,15 +372,15 @@ class ViewCommon():
     def initialize_cols_key_value_search(self):
         self.cols_key_value_search = TableDefaults()
         for shortcut, caption, name in [
-            ("id", "Release ID", "discogs_id"),
+            ("id", "Release", "discogs_id"),
             ("cat", "Catalog", "d_catno"),
             ("artist", "Artist", "d_artist"),
             ("title", "Title", "discogs_title"),
             ("collection", "Is in C.", "in_d_collection"),
-            ("forsale", "For Sale", "d_sales_listing_id"),
-            ("status", "Sales Status", "d_sales_status"),
+            ("listing", "Listing", "d_sales_listing_id"),
+            ("status", "Status", "d_sales_status"),
             ("sold", "Sold", "sold"),
-            ("location", "Location Comments", "d_sales_location"),
+            ("location", "Location", "d_sales_location"),
         ]:
             self.cols_key_value_search.addcol(
                 shortcut=shortcut, caption=caption, name=name
