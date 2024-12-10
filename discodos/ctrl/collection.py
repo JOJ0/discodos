@@ -949,7 +949,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         self.cli.p('Found releases:')
         self.cli.tab_ls_releases(prettified_results)
 
-    def import_sales_inventory(self):
+    def import_sales_inventory(self, light_import=False):
         """Import sales inventory"""
         start_time = time()
         decode_err = other_err =  0
@@ -964,6 +964,15 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             )
             for listing in self.collection.me.inventory:
                 try:
+                    if light_import:
+                        self.collection.create_sales_entry({
+                            "d_sales_release_id": listing.release.id,
+                            "d_sales_listing_id": listing.id,
+                            "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
+                            "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
+                        })
+                        custom_progress.update(task, advance=1)
+                        continue
                     self.collection.create_sales_entry({
                         "d_sales_release_id": listing.release.id,
                         "d_sales_listing_id": listing.id,

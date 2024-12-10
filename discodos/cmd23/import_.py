@@ -227,8 +227,13 @@ def import_release_cmd(helper, import_id, import_add_coll, import_tracks, delete
 
 
 @import_group.command(name='sales')
+@click.option(
+    "--light", "-l", is_flag=True,
+    help='''Light import is for subsequent quick updates: Only fetches sales status (For
+    Sale, Expired, Sold, Pending)'''
+)
 @click.pass_obj
-def import_sales_cmd(helper):
+def import_sales_cmd(helper, light):
     """Imports the marketplace inventory.
     """
 
@@ -243,7 +248,7 @@ def import_sales_cmd(helper):
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
-    coll_ctrl.import_sales_inventory()
+    coll_ctrl.import_sales_inventory(light_import=light)
 
 
 @import_group.command(name='listing')
