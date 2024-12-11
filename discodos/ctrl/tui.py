@@ -45,6 +45,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.left_column_content = None
         self.middle_column_upper_content = None
         self.middle_column_content = None
+        self.middle_column_lower_content = None
         self.right_column_content = None
         # Content that can be fetched from DB as well as from Discogs
         self.sales_price = None
@@ -181,6 +182,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.left_column_content = Static("")
         self.middle_column_upper_content = Static("Currently for sale:")
         self.middle_column_content = Static("")
+        self.middle_column_lower_content = Static("")
         self.right_column_content = Static("")
         self.sales_price = Digits("0", id="sales-price")
         # Layout
@@ -197,6 +199,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                     yield self.sales_price
                     yield self.middle_column_upper_content
                     yield self.middle_column_content
+                    yield self.middle_column_lower_content
                 with VerticalScroll(id="lower-right-column"):
                     yield self.right_column_headline
                     yield self.right_column_content
@@ -226,9 +229,11 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_upper_content.update(
             f"Currently for sale: {currently_for_sale}\n"
         )
+        # Reset when row changes
         self.middle_column_content.update(
-            "Press enter to fetch Discogs sales stats and FIXME suggested prices!"
+            "Press enter to fetch Discogs sales stats and suggested prices!"
         )
+        self.middle_column_lower_content.update("")
 
     def on_data_table_row_selected(self, event):
         """Fetch Discogs listing details and Marketplace stats for selected row."""
@@ -249,8 +254,17 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         stats, s_err, _ = self.fetch_marketplace_stats(release_id)
         if s_err:
             rlog.write(f"Fetching Marketplace stats: {s_err}")
-            return
         self.middle_column_content.update(self.cli.two_column_view(stats))
+        # Price suggestion - we fetch always
+        p = self.fetch_price_suggestion(release_id, "VG+")
+        if not p:
+            rlog.write("Fetching price suggestion failed.")
+        self.middle_column_lower_content.update(
+            f"Suggested VG+ price: {round(p.value, 1)}"
+        )
+
+        if s_err or not p:
+            return
         rlog.write(
             f"Updated price, marketplace stats and details of listing {listing_id} "
             "with Discogs data."
