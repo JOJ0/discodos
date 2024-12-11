@@ -969,6 +969,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                             "d_sales_release_id": listing.release.id,
                             "d_sales_listing_id": listing.id,
                             "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
+                            "d_sales_allow_offers": 1 if listing.allow_offers else 0,
                             "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
                         })
                         custom_progress.update(task, advance=1)
