@@ -7,17 +7,21 @@ log = logging.getLogger('discodos')
 
 
 @click.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
+    context_settings={
+        "ignore_unknown_options": True,
         # allow_extra_args=True,
-    ),
+    },
     name="ls",
 )
 @click.argument("search_terms", metavar="SEARCH_TERMS", nargs=-1)
 @click.option("--order-by", "-o", type=str, help="order by DiscoBASE field")
 @click.pass_obj
 def ls_cmd(helper, search_terms, order_by):
-    """Searches and lists collection items - offline only!.
+    """Searches and lists collection items.
+
+    Supports key=value search. Available keys can be either full DiscoBASE field names
+    or abbreviations of those: id, listing, artist, title, collection, cat, price,
+    status, sold.
     """
     def update_user_interaction_helper(user):
         user.WANTS_ONLINE = True
