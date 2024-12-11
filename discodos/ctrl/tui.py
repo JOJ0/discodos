@@ -27,7 +27,15 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("E", "edit_release", "Edit release"),
     ]
 
-    def __init__(self, rows, headers, discogs=None, collection=None, cli=None):
+    def __init__(
+        self,
+        rows,
+        headers,
+        sales_listing_headers,
+        discogs,
+        collection,
+        cli,
+    ):
         super().__init__()
         super().discogs_connect(
             user_token=None,
@@ -53,23 +61,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # Content only available from Discogs
         self.marketplace_stats = None
         # Hardcoded column translations
-        self.key_translation = {
-            "d_sales_listing_id": "Listing ID",
-            "d_sales_release_id": "Release ID",
-            "d_sales_release_url": "Release URL",
-            "d_sales_url": "Listing URL",
-            "d_sales_condition": "Condition",
-            "d_sales_sleeve_condition": "Sleeve Condition",
-            "d_sales_price": "Price",
-            "d_sales_comments": "Comments",
-            "d_sales_allow_offers": "Allow Offers",
-            "d_sales_status": "Status",
-            "d_sales_comments_private": "Private Comments",
-            "d_sales_counts_as": "Counts as",
-            "d_sales_location": "Location",
-            "d_sales_weight": "Weight",
-            "d_sales_posted": "Listed on",
-        }
+        self.key_translation = sales_listing_headers
 
     def action_toggle_dark(self):
         self.dark = not self.dark

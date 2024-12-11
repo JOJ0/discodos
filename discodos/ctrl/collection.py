@@ -1042,6 +1042,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         app = DiscodosListApp(
             rows=prettified_results,
             headers=self.cli.cols_key_value_search.headers_dict(),
+            sales_listing_headers=self.cli.cols_sales_listing_details.headers_dict(),
             discogs=self.d,
             collection=self.collection,
             cli=self.cli,

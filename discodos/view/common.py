@@ -50,6 +50,7 @@ class ViewCommon():
         self.initialize_cols_mixtracks_basic()
         self.initialize_cols_search_results()
         self.initialize_cols_key_value_search()
+        self.initialize_cols_sales_listing_details()
 
     # Column initializations
 
@@ -385,6 +386,29 @@ class ViewCommon():
         ]:
             self.cols_key_value_search.addcol(
                 shortcut=shortcut, caption=caption, name=name
+            )
+
+    def initialize_cols_sales_listing_details(self):
+        self.cols_sales_listing_details = TableDefaults()
+        for name, caption in [
+            ("d_sales_listing_id", "Listing ID"),
+            ("d_sales_release_id", "Release ID"),
+            ("d_sales_release_url", "Release URL"),
+            ("d_sales_url", "Listing URL"),
+            ("d_sales_condition", "Condition"),
+            ("d_sales_sleeve_condition", "Sleeve Condition"),
+            ("d_sales_price", "Price"),
+            ("d_sales_comments", "Comments"),
+            ("d_sales_allow_offers", "Allow Offers"),
+            ("d_sales_status", "Status"),
+            ("d_sales_comments_private", "Private Comments"),
+            ("d_sales_counts_as", "Counts as"),
+            ("d_sales_location", "Location"),
+            ("d_sales_weight", "Weight"),
+            ("d_sales_posted", "Listed on"),
+        ]:
+            self.cols_sales_listing_details.addcol(
+                name=name, caption=caption
             )
 
     # Time and date helpers
