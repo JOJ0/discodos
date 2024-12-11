@@ -43,6 +43,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_headline = None
         self.right_column_headline = None
         self.left_column_content = None
+        self.middle_column_upper_content = None
         self.middle_column_content = None
         self.right_column_content = None
         # Content that can be fetched from DB as well as from Discogs
@@ -178,6 +179,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.right_column_headline = Label("[b]Log[/b]")
         # Content widgets
         self.left_column_content = Static("")
+        self.middle_column_upper_content = Static("Currently for sale:")
         self.middle_column_content = Static("")
         self.right_column_content = Static("")
         self.sales_price = Digits("0", id="sales-price")
@@ -193,6 +195,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 with VerticalScroll(id="lower-middle-column"):
                     yield self.middle_column_headline
                     yield self.sales_price
+                    yield self.middle_column_upper_content
                     yield self.middle_column_content
                 with VerticalScroll(id="lower-right-column"):
                     yield self.right_column_headline
@@ -212,13 +215,20 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         row_key = event.row_key
         # Listing
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
+        release_id = self.table.get_cell(row_key, "discogs_id")
         listing = self.collection.get_sales_listing_details(listing_id)
         self.left_column_content.update(
             self.cli.two_column_view(listing, translate_keys=self.key_translation)
         )
         self._sales_digits_update(listing)
         # Stats
-        self.middle_column_content.update("Press enter to fetch Discogs stats!")
+        currently_for_sale = f"https://www.discogs.com/sell/release/{release_id}"
+        self.middle_column_upper_content.update(
+            f"Currently for sale: {currently_for_sale}\n"
+        )
+        self.middle_column_content.update(
+            "Press enter to fetch Discogs sales stats and FIXME suggested prices!"
+        )
 
     def on_data_table_row_selected(self, event):
         """Fetch Discogs listing details and Marketplace stats for selected row."""
