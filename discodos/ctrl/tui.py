@@ -112,7 +112,8 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
         listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
         if l_err:
-            rlog.write("Error fetching sales listing details:", l_err)
+            rlog.write(f"Error fetching sales listing details: {l_err}")
+            return
 
         def save_changes(**kwargs):
             if not self.collection.update_sales_listing(
@@ -228,11 +229,11 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
         if l_err:
             rlog.write(f"Fetching listing details: {l_err}")
-            return
-        self.left_column_content.update(
-            self.cli.two_column_view(listing, translate_keys=self.key_translation)
-        )
-        self._sales_digits_update(listing)
+        if listing:
+            self.left_column_content.update(
+                self.cli.two_column_view(listing, translate_keys=self.key_translation)
+            )
+            self._sales_digits_update(listing)
         # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "discogs_id")
         stats, s_err, _ = self.fetch_marketplace_stats(release_id)
