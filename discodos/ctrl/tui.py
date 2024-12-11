@@ -64,9 +64,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             "d_sales_comments": "Comments",
             "d_sales_allow_offers": "Allow Offers",
             "d_sales_status": "Status",
-            "d_sales_comments_private": "Comments",
+            "d_sales_comments_private": "Private Comments",
             "d_sales_counts_as": "Counts as",
-            "d_sales_location": "Location Comments",
+            "d_sales_location": "Location",
             "d_sales_weight": "Weight",
             "d_sales_posted": "Listed on",
         }

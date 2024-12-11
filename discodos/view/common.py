@@ -923,6 +923,7 @@ class ViewCommonCommandline(ViewCommon):
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
 
+
     # Tutorial and welcome
 
     def view_tutorial(self):
