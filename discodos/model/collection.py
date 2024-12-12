@@ -22,6 +22,20 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     # Base fetchers and inserts
 
+    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
+        return self._select_simple(
+            [
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "discogs_id",
+                "m_rel_id",
+                "m_rel_id_override",
+            ],
+            "release",
+            orderby=orderby,
+        )
+
     def get_track(self, release_id, track_no):
         log.info("MODEL: Returning collection track {} from release {}.".format(
             track_no, release_id))
