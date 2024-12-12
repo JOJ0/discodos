@@ -33,9 +33,16 @@ log = logging.getLogger('discodos')
     online services (Discogs, MusicBrainz) and forces offline mode. A lot of
     DiscoDOS' functionality works well in on- and offline mode but might behave
     differently, depending on connection state.""")
+@click.option(
+    "-t/-x", "--tui/--no-tui", default=None, show_default=True,
+    help="""Use a TUI (Textual framework) version if available. Currently only affects
+    "dsc ls" command. Overrides "enable_tui" config option.
+    """)
 @click.pass_context
-def main_cmd(context, verbose_count, offline_mode):
+def main_cmd(context, verbose_count, offline_mode, tui):
     conf = Config()
+    if tui is not None:
+        conf.enable_tui = tui
     log.handlers[0].setLevel(conf.log_level)  # set configured console log lvl
     context.obj = helper.User(conf, verbose_count, offline_mode)
 
