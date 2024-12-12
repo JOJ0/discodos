@@ -377,7 +377,7 @@ class ViewCommon():
             ("cat", "Catalog", "d_catno"),
             ("artist", "Artist", "d_artist"),
             ("title", "Title", "discogs_title"),
-            ("collection", "Is in C.", "in_d_collection"),
+            ("collection", "in C.", "in_d_collection"),
             ("listing", "Listing", "d_sales_listing_id"),
             ("status", "Status", "d_sales_status"),
             ("sold", "Sold", "sold"),
