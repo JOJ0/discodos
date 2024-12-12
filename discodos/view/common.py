@@ -529,7 +529,7 @@ class ViewCommon():
                              row['m_rec_id']))
         if 'discogs_id' in row.keys() and row['discogs_id'] is not None:
             links.append(self.link_to('discogs release', row['discogs_id']))
-        if row.get('d_sales_listing_id', None):
+        if 'd_sales_listing_id' in row.keys() and row['d_sales_listing_id'] is not None:
             links.append(self.link_to('discogs listing', row['d_sales_listing_id']))
 
         links_str = join_sep(links, '\n')
