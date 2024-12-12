@@ -103,11 +103,12 @@ class CollectionViewCommandline(
                 row['discogs_title'],
                 links_str
             )
-            del(table[i]['m_rel_id_override'])
-            del(table[i]['m_rel_id'])
-            del(table[i]['discogs_id'])
-            del(table[i]['d_artist'])
-            del(table[i]['discogs_title'])
+            del table[i]['m_rel_id_override']
+            del table[i]['m_rel_id']
+            del table[i]['discogs_id']
+            del table[i]['d_artist']
+            del table[i]['discogs_title']
+            del table[i]['d_sales_listing_id']
         table = self.trim_table_fields(table, 40)
         print(tab(table, tablefmt="grid", headers={
             'd_catno': 'CatNo',

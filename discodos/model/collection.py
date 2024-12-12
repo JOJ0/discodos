@@ -22,14 +22,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     # Base fetchers and inserts
 
-    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
-        # return db.all_releases(self.db_conn)
-        return self._select_simple(
-            ['d_catno', 'd_artist',
-             'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'],
-            'release', orderby=orderby
-        )
-
     def get_track(self, release_id, track_no):
         log.info("MODEL: Returning collection track {} from release {}.".format(
             track_no, release_id))
@@ -673,7 +665,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return False
 
     def key_value_search_releases(
-        self, search_key_value=None, orderby=None, filter_cols=None
+        self, search_key_value=None, orderby=None, filter_cols=None,
+        custom_fields=None
     ):
         # filter_cols are defined in ViewCommon and passed via the controller call.
         replace_cols = filter_cols
@@ -685,9 +678,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             ]
         )
         join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
-
-        rows =  self._select_simple(
-            [
+        fields = [
                 "discogs_id",
                 "d_catno",
                 "d_artist",
@@ -698,9 +689,11 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "sold",
                 "d_sales_location",
                 "d_sales_price",
-            ],
-            "release",
-            fetchone=False, orderby=orderby, condition=where, join=join
+            ] if not custom_fields else custom_fields
+
+        rows = self._select_simple(
+            fields, "release", fetchone=False, orderby=orderby, condition=where,
+            join=join,
         )
         return rows
 

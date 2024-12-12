@@ -494,16 +494,17 @@ class ViewCommon():
         '''
         if service == 'discogs release':
             return 'https://discogs.com/release/{}'.format(id)
-        elif service == 'discogs master release':
+        if service == 'discogs master release':
             return 'https://discogs.com/master/{}'.format(id)
-        elif service == 'musicbrainz release':
+        if service == 'discogs listing':
+            return 'https://discogs.com/sell/item/{}'.format(id)
+        if service == 'musicbrainz release':
             return 'https://musicbrainz.org/release/{}'.format(id)
-        elif service == 'musicbrainz recording':
+        if service == 'musicbrainz recording':
             return 'https://musicbrainz.org/recording/{}'.format(id)
-        elif service == 'acousticbrainz recording':
+        if service == 'acousticbrainz recording':
             return 'https://acousticbrainz.org/{}'.format(id)
-        else:
-            return 'Unknown online service'
+        return 'Unknown online service'
 
     def join_links_to_str(self, row):
         links = []
@@ -528,6 +529,9 @@ class ViewCommon():
                              row['m_rec_id']))
         if 'discogs_id' in row.keys() and row['discogs_id'] is not None:
             links.append(self.link_to('discogs release', row['discogs_id']))
+        if row.get('d_sales_listing_id', None):
+            links.append(self.link_to('discogs listing', row['d_sales_listing_id']))
+
         links_str = join_sep(links, '\n')
         return links_str
 

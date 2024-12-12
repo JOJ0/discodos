@@ -199,10 +199,36 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 raise SystemExit(1)
         return None
 
-    def view_all_releases(self):
-        self.cli.p("Showing all releases in DiscoBASE.")
-        all_releases_result = self.collection.get_all_db_releases()
-        self.cli.tab_all_releases(all_releases_result)
+    def view_links_list(self, query, orderby):
+        releases = None
+        # Replace orderby with proper database key
+        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
+            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
+        # Fetch from DiscoBASE
+        try:
+            releases = self.collection.key_value_search_releases(
+                search_key_value=query if query else {},
+                orderby=orderby,
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
+                custom_fields=[
+                    "d_catno",
+                    "d_artist",
+                    "discogs_title",
+                    "discogs_id",
+                    "m_rel_id",
+                    "m_rel_id_override",
+                    "d_sales_listing_id"
+                ],
+            )
+        except Exception as error:
+            self.cli.p(error)
+
+        # Nothing and exit
+        if not releases:
+            self.cli.p('Nothing found.')
+            return
+        # Display
+        self.cli.tab_all_releases(releases)
 
     def track_report(self, track_searchterm):
         release = self.search_release(track_searchterm)
@@ -1019,7 +1045,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def tui_ls_releases(self, search_terms, orderby=None):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
-        search_results = []
+        search_results = None
         self.cli.p('Searching database for: {}'.format(search_terms))
         # Replace orderby with proper database key
         if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
@@ -1027,7 +1053,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         try:
             search_results = self.collection.key_value_search_releases(
-                search_key_value=search_terms,
+                search_key_value=search_terms if search_terms else {},
                 orderby=orderby,
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
             )
@@ -1204,3 +1230,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         print(f"Orphaned entries: {orphaned_entries}.")
         self.cli.duration_stats(start_time, 'Sales inventory cleanup')
+
+    # Helpers
+
+    def prepare_key_value_search(self, query):
+        """Returns a dictionary from space-delimited key=value pairs."""
+        return dict([
+                item.split("=") if "=" in item else ["title", item]
+                for item in query
+        ])

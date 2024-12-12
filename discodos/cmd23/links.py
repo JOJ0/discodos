@@ -9,25 +9,23 @@ log = logging.getLogger('discodos')
 @click.command(
     context_settings={
         "ignore_unknown_options": True,
-        # allow_extra_args=True,
     },
-    name="ls",
+    name="links",
 )
 @click.argument("search_terms", metavar="SEARCH_TERMS", nargs=-1)
-@click.option("--order-by", "-o", type=str, help="order by DiscoBASE field")
+@click.option("--order-by", "-o", type=str, default="d_artist, discogs_title",
+              help="order by DiscoBASE field")
 @click.pass_obj
-def ls_cmd(helper, search_terms, order_by):
-    """Searches and lists collection items.
+def links_cmd(helper, search_terms, order_by):
+    """Prints a list of releases and their corresponding links to online services.
 
-    Supports key=value search. Available keys can be either full DiscoBASE field names
-    or abbreviations of those: id, listing, artist, title, collection, cat, price,
-    status, sold.
+    Hyperlinks include Discogs release URL, MusicBrainz release URL and Discogs
+    Marketplace listing ID (when listed for sale).
+
+    Supports key=value search terms.
     """
     def update_user_interaction_helper(user):
         user.WANTS_ONLINE = True
-        user.WANTS_TO_SEARCH_FOR_RELEASE = True
-        if not search_terms:
-            user.WANTS_TO_SEARCH_FOR_RELEASE = False
         return user
 
     user = update_user_interaction_helper(helper)
@@ -42,7 +40,4 @@ def ls_cmd(helper, search_terms, order_by):
     except ValueError as error:
         coll_ctrl.cli.p(error)
 
-    if user.conf.enable_tui:
-        coll_ctrl.tui_ls_releases(search_key_value, orderby=order_by)
-    else:
-        coll_ctrl.ls_releases(search_key_value)
+    coll_ctrl.view_links_list(query=search_key_value, orderby=order_by)

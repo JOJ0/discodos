@@ -13,6 +13,7 @@ from discodos.cmd23 import (
     ls,
     sell,
     clean,
+    links,
 )
 
 
@@ -55,5 +56,6 @@ main_cmd.add_command(suggest.suggest_cmd)
 main_cmd.add_command(stats.stats_cmd)
 main_cmd.add_command(setup.setup_cmd)
 main_cmd.add_command(ls.ls_cmd)
+main_cmd.add_command(links.links_cmd)
 main_cmd.add_command(sell.sell_cmd)
 main_cmd.add_command(clean.clean_group)
