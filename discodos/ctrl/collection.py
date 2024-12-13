@@ -1188,12 +1188,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.import_sales_listing(last_added[0].id)
             self.cli.p("Imported listing to DiscoBASE.")
 
-    def cleanup_sales_inventory(self, force=False, offset=0):
-        """cleanup sales inventory"""
+    def cleanup_sales_inventory(self, offset=0):
+        """Cleanup sales inventory"""
         start_time = time()
         orphaned_entries =  0
         self.cli.exit_if_offline(self.collection.ONLINE)
-        self.cli.p("Cleaning up sales inventory in DiscoBASE...")
+        self.cli.p("Cleaning up DiscoBASE sales inventory...")
         total_items = self.collection.stats_sales_items_total()
         sales = self.collection.get_sales_inventory(offset)
 
@@ -1210,25 +1210,21 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 total=total_items,
             )
             for row in sales:
-                _, err, errdetails = self.collection.fetch_sales_listing_ok(
+                existing = self.collection.fetch_sales_listing_ok(
                     row["d_sales_listing_id"]
                 )
-                if err:
+                if not existing:
                     orphaned_entries += 1
                     console.print(row)
-                    console.print(
-                        "[yellow]"
-                        "Non-existent on Discogs anymore. Delete from DiscoBASE? [y/n]"
-                        "[/]"
+                    self.collection.delete_sales_inventory_item(
+                        row["d_sales_listing_id"]
                     )
-                    delete = Confirm.ask()
-                    if delete:
-                        self.collection.delete_sales_inventory_item(
-                            row["d_sales_listing_id"]
-                        )
+                    console.print(
+                        "[yellow]Listing not on Discogs anymore. Deleted.[/]"
+                    )
                 adapted_progress.update(task, advance=1)
 
-        print(f"Orphaned entries: {orphaned_entries}.")
+        print(f"Orphaned entries deleted: {orphaned_entries}.")
         self.cli.duration_stats(start_time, 'Sales inventory cleanup')
 
     # Helpers

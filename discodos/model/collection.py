@@ -801,7 +801,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "d_sales_posted",
             ],
             "sales",
-            fetchone=False, condition=None, as_dict=True, offset=offset
+            fetchone=False, condition=None, as_dict=True, offset=offset,
+            orderby="d_sales_listing_id DESC"
         )
         return rows
 

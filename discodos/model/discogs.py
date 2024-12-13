@@ -245,14 +245,14 @@ class DiscogsMixin:
             if not listing_id:
                 raise NoListingIDError
             listing = self.d.listing(listing_id)
-            check = listing.release.id  # We need to really access it.
-            if check:
-                return True, None, None
-            return False, None, None
+            if listing.posted:  # Accessing listing.id not sufficient!
+                log.debug("Fetching listing ok: %s", listing.id)
+                return True
+            return False
         except Exception as e:
-            errtype, errmsg = type(e).__name__, e
-            log.debug("Fetching listing: %s: %s", errtype, errmsg)
-            return False, errtype, errmsg
+            errtype = type(e).__name__
+            log.debug("Fetching listing not ok: %s", errtype)
+            return False
 
     def fetch_marketplace_stats(self, release_id):
         """Fetches Marketplace stats for a Discogs release.

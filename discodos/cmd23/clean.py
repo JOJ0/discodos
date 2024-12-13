@@ -1,6 +1,5 @@
 import logging
 import click
-# from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 
 from discodos.ctrl import CollectionControlCommandline
 
@@ -16,11 +15,8 @@ def clean_group():
     "--resume", "-r", "offset", metavar='OFFSET',
     type=int, default=0,
     help='''Resumes at the given offset position (expects a number).''')
-@click.option(
-    "--force", "-f", is_flag=True,
-    help='''Don't ask, just do!''')
 @click.pass_obj
-def clean_sales_cmd(helper, force, offset):
+def clean_sales_cmd(helper, offset):
     """
     Clean up sales inventory. Remove entries deleted from Discogs Marketplace inventory.
     """
@@ -35,4 +31,4 @@ def clean_sales_cmd(helper, force, offset):
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
-    coll_ctrl.cleanup_sales_inventory(force=force, offset=offset)
+    coll_ctrl.cleanup_sales_inventory(offset=offset)
