@@ -1152,7 +1152,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.cli.p("Listed for sale.")
             last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
             self.import_sales_listing(last_added[0].id)
-            self.cli.p("Imported listing to DiscoBASE.")
+            self.cli.p(f"Imported listing {last_added[0].id} to DiscoBASE.")
 
     def edit_sales_listing(self, listing_id, condition, sleeve_condition, price,
                            status, location, allow_offers, comments, private_comments):
