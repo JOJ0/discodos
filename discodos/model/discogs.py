@@ -155,13 +155,29 @@ class DiscogsMixin:
         if not release_instances:
             return None
         for count, instance in enumerate(release_instances, start=1):
-            if count > 0:
+            if count > 1:
                 log.debug(
                     "MODEL: Multiple instances of %s %s in collection: %s",
                     release_id, instance.release.title, count
                 )
             release = instance.release
         return release
+
+    def fetch_collection_item_ok(self, release_id):
+        """Checks for existence of a Discogs collection item.
+
+        Returns True if any collection item on Discogs.
+        """
+        try:
+            coll_items = self.me.collection_items(release_id)
+            if coll_items and coll_items[0].instance_id:
+                log.debug("Fetching collection item ok: %s", coll_items[0].instance_id)
+                return True
+            return False
+        except Exception as e:
+            errtype = type(e).__name__
+            log.debug("Fetching collection item not ok: %s", errtype)
+            return False
 
     def fetch_collection_item_instances(self, release_id):
         """Fetch all instances of a release from the Discogs collection.

@@ -1244,6 +1244,48 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         print(f"Orphaned entries deleted: {orphaned_entries}.")
         self.cli.duration_stats(start_time, 'Sales inventory cleanup')
 
+    def cleanup_collection(self, offset=0):
+        """Cleanup the release table. Mark orphaned if non-existent online."""
+        start_time = time()
+        orphaned_entries =  0
+        self.cli.exit_if_offline(self.collection.ONLINE)
+        self.cli.p("Cleaning up DiscoBASE release and collection tables...")
+        total_items = self.collection.stats_releases_total()
+        collection = self.collection.get_all_db_releases(offset)
+
+        console = Console()
+        adapted_progress = Progress(
+            MofNCompleteColumn(),
+            BarColumn(),
+            TaskProgressColumn(),
+        )
+        with adapted_progress:
+            task = adapted_progress.add_task(
+                "[cyan] Status: ",
+                completed=offset,
+                total=total_items,
+            )
+            for row in collection:
+                existing = self.collection.fetch_collection_item_ok(
+                    row["discogs_id"]
+                )
+                if not existing:
+                    orphaned_entries += 1
+                    console.print(row)
+                    self.collection.toggle_collection_flag(
+                        row["discogs_id"], in_collection=False
+                    )
+                    # We keep data as-is in the collection table.
+                    # FIXME should we mark anything there as well?
+                    console.print(
+                        "[yellow]Release not in Discogs collection anymore. "
+                        "Marked as such but kept data.[/]"
+                    )
+                adapted_progress.update(task, advance=1)
+
+        print(f"Orphaned entries deleted: {orphaned_entries}.")
+        self.cli.duration_stats(start_time, 'Collection cleanup')
+
     # Helpers
 
     def prepare_key_value_search(self, query):
