@@ -1160,33 +1160,50 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             log.warning("Online mode is required to edit a Marketplace listing.")
             return
 
-        details, err, _ = self.collection.fetch_sales_listing_details(listing_id)
-        render_details = err if err else details
+        details, err, _ = self.collection.fetch_sales_listing_details(
+            listing_id, db_keys=False)
+        current_details = err if err else details
         print(
             Panel.fit(
                 title="Current listing details",
-                renderable=self.cli.two_column_view(
-                   render_details
-                ),
+                renderable=self.cli.two_column_view(current_details),
             )
         )
-
-        edit_successful = self.collection.update_sales_listing(
-            listing_id=listing_id,
-            condition=condition,
-            sleeve_condition=sleeve_condition,
-            price=price,
-            status=status,
-            location=location,
-            allow_offers=allow_offers,
-            comments=comments,
-            private_comments=private_comments,
+        new_details = {
+            "listing_id": listing_id,
+            "condition": condition,
+            "sleeve_condition": sleeve_condition,
+            "price": price,
+            "status": status,
+            "location": location,
+            "allow_offers": allow_offers,
+            "comments": comments,
+            "comments_private": private_comments,  # we fetched with this key from db
+        }
+        updated_details = new_details
+        updated_details = {
+            **new_details,
+            **{
+                key: current_details[key]
+                for key, value in new_details.items()
+                if value is None
+            },
+        }
+        print(
+            Panel.fit(
+                title="Proposed listing details",
+                renderable=self.cli.two_column_view(updated_details),
+            )
         )
+        if not Confirm.ask(prompt="Update?", show_choices=True, default=False):
+            return
+
+        edit_successful = self.collection.update_sales_listing(**updated_details)
         if edit_successful:
             self.cli.p("Edited sales listing.")
             last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
             self.import_sales_listing(last_added[0].id)
-            self.cli.p("Imported listing to DiscoBASE.")
+            self.cli.p(f"Imported listing {last_added[0].id} into DiscoBASE.")
 
     def cleanup_sales_inventory(self, offset=0):
         """Cleanup sales inventory"""

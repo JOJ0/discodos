@@ -200,7 +200,7 @@ class DiscogsMixin:
             log.error("%s (Exception)", Exc)
         return count
 
-    def fetch_sales_listing_details(self, listing_id):
+    def fetch_sales_listing_details(self, listing_id, db_keys=True):
         """Fetches details like price for a Discogs marketplace listing.
 
         Translates condition, status to short form, eg. VG+, forsale
@@ -230,6 +230,10 @@ class DiscogsMixin:
                 "d_sales_weight": str(listing.weight),
                 "d_sales_posted": listing.posted,
             }
+            if not db_keys:
+                l = {
+                    key.removeprefix("d_sales_"): value for key, value in l.items()
+                }
             return l, None, None
         except Exception as e:
             errtype, errmsg = type(e).__name__, e
@@ -370,11 +374,10 @@ class DiscogsMixin:
         location=None,
         allow_offers=None,
         comments=None,
-        private_comments=None,
+        comments_private=None,
     ):
         """Update a record already listed for sale."""
         try:
-            # listing_details = self.fetch_sales_listing_details(listing_id)
             listing = self.d.listing(listing_id)
             listing.condition = RECORD_CHOICES_RADIO[condition]
             listing.sleeve_condition = SLEEVE_CHOICES_RADIO[sleeve_condition]
@@ -383,7 +386,7 @@ class DiscogsMixin:
             listing.location = location
             listing.allow_offers = allow_offers
             listing.comments = comments
-            listing.private_coments = private_comments
+            listing.private_coments = comments_private
             # save it
             listing.save()
             return True
