@@ -18,13 +18,8 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     BINDINGS = [
         ("m", "toggle_dark", "Toggle dark mode"),
         ("q", "request_quit", "Quit"),
-        ("l", "list_sale", "List for sale"),
-        ("d", "draft_sale", "Set to draft"),
         ("s", "toggle_sold", "Toggle sold (in DB)"),
-        ("c", "fix_coll", "Sync Coll. Flag (in DB)"),
-        ("r", "remove_coll", "Remove from Coll."),
         ("e", "edit_sales_listing", "Edit sales listing"),
-        ("E", "edit_release", "Edit release"),
     ]
 
     def __init__(
@@ -69,12 +64,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     def action_request_quit(self):
         self.exit()
 
-    def action_list_sale(self):
-        pass
-
-    def action_draft_sale(self):
-        pass
-
     def action_toggle_sold(self):
         """When shortcut is pressed, toggle field "sold" in DB."""
         rlog = self.query_one(RichLog)
@@ -93,9 +82,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             self.table.update_cell(row_key, "sold", wanted_state)
             return
         rlog.write(f"Error setting {release_id} sold state {wanted_state} ")
-
-    def action_edit_release(self):
-        pass
 
     def action_edit_sales_listing(self):
         """Open the edit screen for a sales listing."""
