@@ -338,7 +338,7 @@ class DiscogsMixin:
         try:
             release = self.d.release(release_id)
             release_videos = release.videos
-            videos = {num: video.url for num, video in enumerate(release_videos)}
+            videos = {num: video.url for num, video in enumerate(release_videos, 1)}
             return videos, None, None
         except Exception as e:
             errtype, errmsg = type(e).__name__, e

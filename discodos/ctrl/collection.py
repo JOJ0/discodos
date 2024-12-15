@@ -1076,7 +1076,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         app.run(inline=False)
         return
 
-    def sell_record_wizard(
+    def sell_record_wizard(  # pylint: disable=too-many-locals
         self, query, release_id, condition, sleeve_condition, price, status, location,
         allow_offers, comments, private_comments,
     ):
