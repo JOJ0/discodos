@@ -70,7 +70,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """When shortcut is pressed, toggle field "sold" in DB."""
         rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
-        release_id = self.table.get_cell(row_key, "release_id")
+        release_id = self.table.get_cell(row_key, "discogs_id")
         # Current and wanted states toggle
         current_state = self.table.get_cell(row_key, "sold")
         wanted_state = "No" if current_state == "Yes" else "Yes"
