@@ -24,7 +24,7 @@ class EditScreen(Screen):
         status,
         allow_offers,
         comments,
-        private_comments,
+        comments_private,
     ):
         super().__init__()
         self.caption = listing_id
@@ -32,7 +32,7 @@ class EditScreen(Screen):
         self.price = Input(value=price or "", placeholder="Price")
         self.location = Input(value=location or "", placeholder="Location")
         self.comments = Input(value=comments or "", placeholder="Public comments")
-        self.private_comments = Input(value=private_comments or "",
+        self.comments_private = Input(value=comments_private or "",
                                       placeholder="Private comments")
         # Store the initial values for choices based fields
         self.initial_condition = condition
@@ -78,7 +78,7 @@ class EditScreen(Screen):
                 yield Label("Public comments")
                 yield self.comments
                 yield Label("Private comments")
-                yield self.private_comments
+                yield self.comments_private
         with Horizontal():  # Another row containing a log panel
             with VerticalScroll():
                 yield self.log_panel
@@ -101,7 +101,7 @@ class EditScreen(Screen):
                 status=status.pressed_button.name,
                 allow_offers=allow_offers.pressed_button.name,
                 comments=self.comments.value,
-                comments_private=self.private_comments.value,
+                comments_private=self.comments_private.value,
             )
             # pop_screen is happening within the callback method
         elif event.button.id == "back":

@@ -101,7 +101,7 @@ def sell_cmd(helper, query, listing_id, release_id, condition, sleeve_condition,
             location,
             allow_offers,
             comments,
-            private_comments,
+            comments_private=private_comments,
         )
     if user.WANTS_TO_EDIT_SALES_LISTING:
         coll_ctrl.edit_sales_listing(
@@ -113,5 +113,5 @@ def sell_cmd(helper, query, listing_id, release_id, condition, sleeve_condition,
             location,
             allow_offers,
             comments,
-            private_comments,
+            comments_private=private_comments,
         )

@@ -21,6 +21,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("s", "toggle_sold", "Toggle sold (in DB)"),
         ("e", "edit_sales_listing", "Edit sales listing"),
         ("v", "fetch_videos", "Fetch videos"),
+        ("l", "fetch_listing_details", "Fetch listing details"),
     ]
 
     def __init__(
@@ -141,7 +142,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 status=listing["d_sales_status"],
                 allow_offers=listing["d_sales_allow_offers"],
                 comments=listing["d_sales_comments"],
-                private_comments=listing["d_sales_comments_private"],
+                comments_private=listing["d_sales_comments_private"],
             )
         )
 
@@ -158,6 +159,29 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         )
         # ... and display
         self.right_column_content.update(render_videos)
+
+
+    def action_fetch_listing_details(self):
+        """Updates the listing details shown in left column.
+        
+        FIXME implement updating in DiscoBASE in here.
+        """
+        rlog = self.query_one(RichLog)
+        row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+        listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
+        listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+        if l_err:
+            rlog.write(f"Can't fetch listing details: {l_err}")
+            return
+        if listing:
+            self.left_column_content.update(
+                self.cli.two_column_view(listing, translate_keys=self.key_translation)
+            )
+            self._sales_digits_update(listing)
+        rlog.write(
+            f"Updated price and details of listing {listing_id} "
+            "with Discogs data."
+        )
 
     def compose(self):
         # The main data widget
@@ -232,16 +256,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """Fetch Discogs listing details and Marketplace stats for selected row."""
         rlog = self.query_one(RichLog)
         row_key = event.row_key
-        # Listing - we fetch only when listing_id in DB
-        listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
-        listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
-        if l_err:
-            rlog.write(f"Fetching listing details: {l_err}")
-        if listing:
-            self.left_column_content.update(
-                self.cli.two_column_view(listing, translate_keys=self.key_translation)
-            )
-            self._sales_digits_update(listing)
         # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "discogs_id")
         stats, s_err, _ = self.fetch_marketplace_stats(release_id)
@@ -255,11 +269,10 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_lower_content.update(
             f"Suggested VG+ price: {round(p.value, 1)}"
         )
-
         if s_err or not p:
             return
         rlog.write(
-            f"Updated price, marketplace stats and details of listing {listing_id} "
+            f"Updated price, Marketplace stats and details of release {release_id} "
             "with Discogs data."
         )
 

@@ -355,7 +355,7 @@ class DiscogsMixin:
         location=None,
         allow_offers=None,
         comments=None,
-        private_comments=None,
+        comments_private=None,
     ):
         """Lists a record for sale.
 
@@ -370,7 +370,7 @@ class DiscogsMixin:
                 sleeve_condition=SLEEVE_CHOICES_RADIO[sleeve_condition],
                 comments=comments,
                 allow_offers=allow_offers,
-                external_id=private_comments,
+                external_id=comments_private,
                 location=location,
                 # weight=None,
                 # format_quantity=None,

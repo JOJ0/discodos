@@ -1078,7 +1078,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def sell_record_wizard(  # pylint: disable=too-many-locals
         self, query, release_id, condition, sleeve_condition, price, status, location,
-        allow_offers, comments, private_comments,
+        allow_offers, comments, comments_private,
     ):
         if not self.ONLINE:
             log.warning("Online mode is required to list a record for sale.")
@@ -1146,7 +1146,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             location=location,
             allow_offers=allow_offers,
             comments=comments,
-            private_comments=private_comments
+            comments_private=comments_private
         )
         if listing_successful:
             self.cli.p("Listed for sale.")
@@ -1155,7 +1155,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.cli.p(f"Imported listing {last_added[0].id} to DiscoBASE.")
 
     def edit_sales_listing(self, listing_id, condition, sleeve_condition, price,
-                           status, location, allow_offers, comments, private_comments):
+                           status, location, allow_offers, comments, comments_private):
         if not self.ONLINE:
             log.warning("Online mode is required to edit a Marketplace listing.")
             return
@@ -1178,7 +1178,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             "location": location,
             "allow_offers": allow_offers,
             "comments": comments,
-            "comments_private": private_comments,  # we fetched with this key from db
+            "comments_private": comments_private,  # we fetched with this key from db
         }
         updated_details = new_details
         updated_details = {
