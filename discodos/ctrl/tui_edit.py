@@ -101,7 +101,7 @@ class EditScreen(Screen):
                 status=status.pressed_button.name,
                 allow_offers=allow_offers.pressed_button.name,
                 comments=self.comments.value,
-                private_comments=self.private_comments.value,
+                comments_private=self.private_comments.value,
             )
             # pop_screen is happening within the callback method
         elif event.button.id == "back":
