@@ -261,40 +261,44 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def add_release(self, release_id):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
-        if not is_number(release_id):
-            log.error('Not a number')
+
+        extracted_id = extract_discogs_id_regex(release_id)
+        if not extracted_id:
+            log.error('Not a valid Discogs release ID or URL')
             return False
-        else:
-            # setup.py argparser catches non-int, this is for calls from elsewhere
-            if self.collection.get_release_by_id(release_id):
-                msg = "Release ID is already existing in DiscoBASE, "
-                msg+= "won't add it to your Discogs collection. We don't want dups!"
-                self.cli.p(msg)
-            else:
-                self.cli.p("Asking Discogs if release ID {:d} is valid.".format(
-                           release_id))
-                result = self.collection.get_d_release(release_id)
-                if result:
-                    artists = self.collection.d_artists_to_str(result.artists)
-                    d_catno = self.collection.d_get_first_catno(result.labels)
-                    log.debug(dir(result))
-                    self.cli.p("Adding \"{}\" to collection".format(result.title))
-                    for folder in self.collection.me.collection_folders:
-                        if folder.id == 1:
-                            folder.add_release(release_id)
-                            last_row_id = self.collection.create_release(
-                                result.id, result.title, artists, d_catno,
-                                d_coll=True
-                            )
-                    if not last_row_id:
-                        self.cli.error_not_the_release()
-                    log.debug("Discogs release was maybe added to Collection")
-                    self.cli.duration_stats(start_time, 'Adding Release to Collection')
-                    return True
-                else:
-                    log.debug("No Discogs release. Returning False")
-                    self.cli.duration_stats(start_time, 'Adding Release to Collection')
-                    return False
+
+        if self.collection.get_release_by_id(extracted_id):
+            self.cli.p(
+                "Release ID already in DiscoBASE, not adding to collection. "
+                "We don't want dups!"
+            )
+            return False
+
+        self.cli.p(f"Asking Discogs if release ID {extracted_id:d} is valid.")
+        result = self.collection.get_d_release(extracted_id)
+        if not result:
+            log.debug("No Discogs release. Returning False.")
+            self.cli.duration_stats(start_time, 'Adding Release to Collection')
+            return False
+
+        artists = self.collection.d_artists_to_str(result.artists)
+        d_catno = self.collection.d_get_first_catno(result.labels)
+        last_row_id = None
+
+        self.cli.p(f'Adding "{result.title}" to collection')
+        for folder in self.collection.me.collection_folders:
+            if folder.id == 1:
+                folder.add_release(extracted_id)
+                last_row_id = self.collection.create_release(
+                    result.id, result.title, artists, d_catno,
+                    d_coll=True
+                )
+        if not last_row_id:
+            self.cli.error_not_the_release()
+        log.debug("Discogs release was maybe added to Collection")
+        self.cli.duration_stats(start_time, 'Adding Release to Collection')
+        return True
+
 
     def import_release(self, release_id):
         """Import a specific collection release into the DiscoBASE."""
@@ -315,6 +319,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.update(task1, advance=1)
             progress.console.print("Let's find it in your Discogs collection")
             coll_items = self.collection.fetch_collection_item_instances(extracted_id)
+            if len(coll_items) < 1:
+                progress.update(task1)
+                log.warning("Not in collection. Use -a flag!")
+                return
             release = coll_items[0]['full_instance'].release
             progress.update(task1, advance=1)
 
