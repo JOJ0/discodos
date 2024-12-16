@@ -122,7 +122,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             row_key, _ = self.table.coordinate_to_cell_key(
                 self.table.cursor_coordinate
             )
-            _, col_key_status = self.table.coordinate_to_cell_key(Coordinate(1, 6))
+            _, col_key_status = self.table.coordinate_to_cell_key(Coordinate(0, 6))
             self.table.update_cell(
                 row_key=row_key, column_key=col_key_status, value=kwargs["status"]
             )
