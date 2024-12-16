@@ -1326,6 +1326,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def prepare_key_value_search(self, query):
         """Returns a dictionary from space-delimited key=value pairs."""
         return dict([
-                item.split("=") if "=" in item else ["title", item]
+                item.split("=") if "=" in item else ["title", " ".join(query)]
                 for item in query
         ])

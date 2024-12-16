@@ -742,6 +742,7 @@ class ViewCommon():
         ]
         return human_readable_rows
 
+
 class ViewCommonCommandline(ViewCommon):
     """ Common view utils, usable in CLI only.
     """
@@ -950,7 +951,6 @@ class ViewCommonCommandline(ViewCommon):
             # Format key bold and value normal font (or as we manipulated it above)
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
-
 
     # Tutorial and welcome
 
