@@ -299,7 +299,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         self.cli.duration_stats(start_time, 'Adding Release to Collection')
         return True
 
-
     def import_release(self, release_id):
         """Import a specific collection release into the DiscoBASE."""
         start_time = time()
@@ -1050,6 +1049,33 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         listing, _, _ = self.collection.fetch_sales_listing_details(listing_id)
         listing["d_sales_listing_id"] = listing_id
         self.collection.create_sales_entry(listing)
+
+    def remove_and_delete_sales_listing(self, listing_id):
+        """Remove all from collection and delete from DB."""
+
+        listing, err, edetails = self.collection.fetch_sales_listing_details(listing_id)
+        if err:
+            print(err, edetails)
+        if listing:
+            print(self.cli.two_column_view(listing))
+            if Confirm.ask("Remove from Discogs Marketplace inventory?", default=False):
+                self.collection.remove_sales_listing(listing_id)
+
+        delete_db = Confirm.ask("Remove from DiscoBASE?", default=False)
+        if delete_db:
+            listing_db = self.collection.get_sales_listing_details(listing_id)
+            print(
+                Panel.fit(
+                    self.cli.two_column_view(listing_db, as_is=True, skip_empty=True),
+                    title=f"Listing {listing_id}",
+                )
+            )
+            sure = Confirm.ask("Sure?", default=False)
+            if sure:
+                self.collection.delete_sales_inventory_item(listing_id)
+                return
+        log.warning("Kept sales listing in DiscoBASE!")
+        return
 
     def tui_ls_releases(self, search_terms, orderby=None):
         """search_terms is a key value dict: eg: d_artist: artistname"""

@@ -410,6 +410,15 @@ class DiscogsMixin:
             log.error("Exception while trying to update Marketplace listing: %s", Exc)
             return False
 
+    def remove_sales_listing(self, listing_id):
+        try:
+            listing = self.d.listing(listing_id)
+            listing.delete()
+            return True
+        except Exception as Exc:
+            log.error("Exception while trying to remove Marketplace listing: %s", Exc)
+            return False
+
     def rate_limit_slow_downer(self, remaining=10, sleep=2):
         '''Discogs util: stay in 60/min rate limit'''
         if int(self.d._fetcher.rate_limit_remaining) < remaining:  # pylint: disable=protected-access

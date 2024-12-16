@@ -253,9 +253,12 @@ def import_sales_cmd(helper, light):
 
 @import_group.command(name='listing')
 @click.argument('listing_id', type=int)
+@click.option(
+    '--delete', '-d', is_flag=True,
+    help='''Removes listing from Discogs Marketplace and deletes from DiscoBASE.''')
 @click.pass_obj
-def import_listing_cmd(helper, listing_id):
-    """Imports a single marketplace listing.
+def import_listing_cmd(helper, listing_id, delete):
+    """Imports a single marketplace listing or removes and deletes it.
     """
 
     def update_user_interaction_helper(user):
@@ -269,4 +272,7 @@ def import_listing_cmd(helper, listing_id):
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
+    if delete:
+        coll_ctrl.remove_and_delete_sales_listing(listing_id)
+        return
     coll_ctrl.import_sales_listing(listing_id)
