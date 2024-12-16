@@ -818,13 +818,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def stats_releases_total(self):
-        sql_stats = '''
-                    SELECT COUNT(*) FROM release;
-                    '''
-        stats = self._select(sql_stats, fetchone=True)
-        return stats[0] if stats else 0
-
     def toggle_collection_flag(self, release_id, in_collection):
         """Pass boolean to mark as sold (or not) in DiscoBASE."""
         sql_upd = '''UPDATE release SET
