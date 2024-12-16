@@ -339,7 +339,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def remove_and_delete_release(self, release_id):
         """Remove all from collection and delete from DB."""
-        coll_items = self.collection.fetch_collection_item_instances(release_id)
+        extracted_id = extract_discogs_id_regex(release_id)
+        coll_items = self.collection.fetch_collection_item_instances(extracted_id)
 
         for instance in coll_items:
             print(self.cli.two_column_view(instance))
@@ -351,7 +352,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         delete_db = Confirm.ask("Remove from DiscoBASE?", default=False)
         if delete_db:
-            tracks = self.collection.get_release_tracks_by_id(release_id)
+            tracks = self.collection.get_release_tracks_by_id(extracted_id)
             for track in tracks:
                 print(
                     Panel.fit(
@@ -361,7 +362,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 )
             sure = Confirm.ask("Sure?", default=False)
             if sure:
-                self.collection.delete_release(release_id)
+                self.collection.delete_release(extracted_id)
                 return
         log.warning("Kept release in DiscoBASE!")
         return
