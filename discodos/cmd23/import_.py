@@ -16,13 +16,23 @@ def import_group():
 
     \b
     * basic
-    * details --tracks
+    * sales
+    * tracks
+    * brainz
 
-    Optionally:
+    For single item imports use:
 
     \b
-    * details --brainz
-    * release`
+    * release
+    * listing
+
+    For single item removals use:
+
+    \b
+    * release -d
+    * listing -d
+
+    To remove data in bulk refer to the "clean" command group.
     """
 
 
@@ -33,7 +43,7 @@ def import_basic_cmd(helper ):
 
     A very basic subset of the Discogs collection data is imported to the
     DiscoBASE. Currently this includes artist, release title, catalog number, a
-    timestamp of the import time, and a flag named is_in_d_collection.
+    timestamp of the import time, and the flags is_in_d_collection and sold.
 
     The basic import can be re-run any time. It
     overwrites any existing data in the release table of the DiscoBASE, though
@@ -61,71 +71,25 @@ def import_basic_cmd(helper ):
         coll_ctrl.import_collection()
 
 
-@import_group.command(name='details')
-@optgroup.group("Actions", cls=MutuallyExclusiveOptionGroup)
-@optgroup.option(
-    '--tracks', '-u', 'import_tracks', is_flag=True,
-    help='''extends the Discogs import (releases and also tracks will be
-    downloaded) - takes siginficantly longer than the regular import. Note:
-    This is the same as "dsc search all -u".''')
-@optgroup.option(
-    '--brainz', '-z', 'import_brainz', count=True, default=0,
-    help='''imports additional information from MusicBrainz
-    (Release MBID, Recording MBID). Usually this
-    action takes a long time; -z tries to find a match quickly, -zz tries
-    harder but requires even more time. Only tracks already present in the
-    DiscoBASE (using any of the import possibilites, eg. dsc mix -u, dsc
-    import details -u, dsc search -u) will be updated. To really update _all_
-    tracks in the collection an extended Discogs import (dsc import details -u) is
-    required prior to using -z, -zz. Also note that "dsc search all -z" is
-    synonym to this option.''')
+@import_group.command(name='tracks')
 @click.option(
     "--resume", "--offset", "-r", "import_offset", metavar='OFFSET',
     type=int, default=0,
-    help='''resumes long-running processes at the given offset position
-    (expects a number). You can combine this option currently with the *Brainz
-    matching import operation only (-z, -zz). Note [deprecated]: By default, tracks
-    containing key and BPM already will be skipped. On a re-run using this
-    option, the total number might be different already since the count of
-    tracks without key and BPM might have changed.''')
-@click.option(
-    "--force-brainz", "-f", "import_brainz_force", is_flag=True,
-    help='''[deprecated] on MusicBrainz updates (-z, -zz), also tracks
-    containing key and BPM information in the DiscoBASE already, will tried to
-    be matched and updated.''')
-@click.option(
-    "--skip-unmatched", "-s", "import_brainz_skip_unmatched", is_flag=True,
-    help='''this option is useful on re-runs of MusicBrainz
-    updates (-z, -zz) to speed up things a little. Only tracks that previosuly
-    where matched with MusicBrainz successfully (have a MusicBrainz Recording
-    ID already saved in the DiscoBASE), are tried to be matched and updated.
-    ''')
+    help='''resumes the import at the given offset position (expects a number).''')
 @click.pass_obj
-def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
-               import_brainz_force, import_brainz_skip_unmatched):
-    """Enriches the collection with more details.
+def import_tracks_cmd(helper, import_offset):
+    """Imports tracks and if not yet available releases from Discogs collection
 
-    Details currently are information about tracks on a Discogs release and
-    running a "matching process" with MusicBrainz. The latter adds MB album and
-    recording ID's.
+    Is synonym to "dsc search all -u"
+
+    Takes a significant amount of time but is the basis for DiscoDOS' features around
+    "mixes management" and "brainz matching".
     """
     def update_user_interaction_helper(user):
-        log.debug("Entered collection and details import mode.")
-        if import_tracks:
-            user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
-            if import_offset > 0:
-                user.RESUME_OFFSET = import_offset
-        elif import_brainz:
-            user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
-            user.BRAINZ_SEARCH_DETAIL = import_brainz
-            if import_brainz > 1:
-                user.BRAINZ_SEARCH_DETAIL = 2
-            if import_brainz_force:
-                user.BRAINZ_FORCE_UPDATE = True
-            if import_brainz_skip_unmatched:
-                user.BRAINZ_SKIP_UNMATCHED = True
-            if import_offset > 0:
-                user.RESUME_OFFSET = import_offset
+        log.debug("Entered brainz import mode.")
+        user.WANTS_TO_IMPORT_COLLECTION_WITH_TRACKS = True
+        if import_offset > 0:
+            user.RESUME_OFFSET = import_offset
         return user
 
     user = update_user_interaction_helper(helper)
@@ -140,6 +104,73 @@ def import_details_cmd(helper, import_tracks, import_brainz, import_offset,
             tracks=True,
             offset=user.RESUME_OFFSET,
         )
+
+
+@import_group.command(name='brainz')
+@click.option(
+    '--quick', '-q', is_flag=True,
+    help='''''')
+@click.option(
+    "--resume", "--offset", "-r", "import_offset", metavar='OFFSET',
+    type=int, default=0,
+    help='''resumes the brainz matching process at the given offset position (expects a
+    number). By default, tracks containing key and BPM already will be skipped. On a
+    re-run using this option, the total number might be different already since the
+    count of tracks without key and BPM might have changed.''')
+@click.option(
+    "--force-brainz", "-f", "import_brainz_force", is_flag=True,
+    help=''' on MusicBrainz updates (-z, -zz), also tracks
+    containing key and BPM information in the DiscoBASE already, will tried to
+    be matched and updated.''')
+@click.option(
+    "--skip-unmatched", "-s", "import_brainz_skip_unmatched", is_flag=True,
+    help='''this option is useful on re-runs of MusicBrainz
+    updates (-z, -zz) to speed up things a little. Only tracks that previosuly
+    where matched with MusicBrainz successfully (have a MusicBrainz Recording
+    ID already saved in the DiscoBASE), are tried to be matched and updated.
+    ''')
+@click.pass_obj
+def import_brainz_cmd(helper, quick, import_offset, import_brainz_force,
+                      import_brainz_skip_unmatched):
+    """Tries to match collection with MusicBrainz and add additional details.
+
+    Details are MusicBrainz album and recording ID's and if available key and BPM from
+    AcousticBrainz. Note that AcousticBrainz fetching might still work but is considered
+    deprecated since the project has shutdown in 2022, and might be unavailable any time
+    soon.
+
+    Usually this action takes a long time unless -q is passed, which tries to find a
+    match quickly but with a smaller chance of success.
+
+    Only tracks already present in the DiscoBASE (using any of the import possibilites,
+    eg. dsc mix -u, dsc import tracks, dsc search -u) will be updated.
+
+    To really update _all_ tracks in the collection a full run of "dsc import tracks" is
+    required prior to using this command.
+
+    "dsc search all -z" is synonym to this option.
+    """
+    def update_user_interaction_helper(user):
+        log.debug("Entered brainz import mode.")
+        user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ = True
+        user.BRAINZ_SEARCH_DETAIL = 1
+        if not quick:
+            user.BRAINZ_SEARCH_DETAIL = 2
+        if import_brainz_force:
+            user.BRAINZ_FORCE_UPDATE = True
+        if import_brainz_skip_unmatched:
+            user.BRAINZ_SKIP_UNMATCHED = True
+        if import_offset > 0:
+            user.RESUME_OFFSET = import_offset
+        return user
+
+    user = update_user_interaction_helper(helper)
+    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = CollectionControlCommandline(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
     if user.WANTS_TO_IMPORT_COLLECTION_WITH_BRAINZ:
         coll_ctrl.update_all_tracks_from_brainz(
             detail=user.BRAINZ_SEARCH_DETAIL,
