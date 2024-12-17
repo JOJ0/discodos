@@ -1,12 +1,33 @@
 import logging
+from click import Group
 
 log = logging.getLogger('discodos')
 
 
-class User(object):
+class AbbreviationGroup(Group):
+    """A version of click.Group allowing abbreviated commands."""
+    def get_command(self, ctx, cmd_name):
+        # Match full command name first
+        if command := super().get_command(ctx, cmd_name):
+            return command
+
+        # Allow abbreviated commands
+        matches = [
+            command
+            for command in self.list_commands(ctx)
+            if command.startswith(cmd_name)
+        ]
+        if not matches:
+            return None  # No match
+        if len(matches) == 1:
+            return super().get_command(ctx, matches[0])  # Unique match
+        ctx.fail(f"Ambiguous command '{cmd_name}'. Matches: {', '.join(matches)}")
+
+
+class User():
     """ CLI user interaction class - holds info about what user wants to do,
     """
-    def __init__(self, conf, verbose, offline):
+    def __init__(self, conf, verbose, offline):  # pylint: disable=too-many-statements
         self.conf = conf
         self.verbose = verbose
         self.set_console_log_level()

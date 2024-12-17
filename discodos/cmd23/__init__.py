@@ -22,6 +22,7 @@ log = logging.getLogger('discodos')
 
 
 @click.group(
+    cls=helper.AbbreviationGroup,
     invoke_without_command=True,
     context_settings=dict(help_option_names=["-h", "--help"]))
 @click.option(

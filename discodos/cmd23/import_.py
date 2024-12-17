@@ -2,12 +2,13 @@ import logging
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 
+from discodos.cmd23.helper import AbbreviationGroup
 from discodos.ctrl import CollectionControlCommandline
 
 log = logging.getLogger('discodos')
 
 
-@click.group(name='import')
+@click.group(cls=AbbreviationGroup, name='import')
 def import_group():
     """Imports a Discogs collection or adds further data to it.
 
@@ -23,7 +24,6 @@ def import_group():
     * details --brainz
     * release`
     """
-    pass
 
 
 @import_group.command(name='basic')

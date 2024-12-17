@@ -1,12 +1,13 @@
 import logging
 import click
 
+from discodos.cmd23.helper import AbbreviationGroup
 from discodos.ctrl import CollectionControlCommandline
 
 log = logging.getLogger('discodos')
 
 
-@click.group(name='clean')
+@click.group(cls=AbbreviationGroup, name='clean')
 def clean_group():
     """Clean up orphaned DiscoBASE entries."""
 
