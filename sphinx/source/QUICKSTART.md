@@ -3,7 +3,7 @@
 
 - [Installation](#installation)
 - [Importing your Discogs collection](#importing-your-discogs-collection)
-- [Basic Usage Tutorial](#basic-usage-tutorial)
+- [Basic Usage Tutorial](#basic-usage-tutorial---mixes)
 - [Common Tasks](#common-tasks)
   - [What's the quickest way to document a mix?](#whats-the-quickest-way-to-document-a-mix)
   - [I'm stuck in a mix](#im-stuck-in-a-mix)
@@ -74,7 +74,7 @@ Get additional data about your mix's tracks from MusicBrainz and AcousticBrainz 
 
 `dsc mix my_mix -zz`
 
-Read more about the *Brainz update process here: [The import command](MANUAL.md#the-import-command)
+Read more about the *Brainz update process here: [The import command](MANUAL.md#the-import-command-group)
 
 
 
@@ -188,7 +188,7 @@ _**Note: This command requires the import-tracks command above, being completed 
 
 _**This process will take hours and hours, depending on the size of your collection**_
 
-Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](MANUAL.md#the-import-command). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
+Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](MANUAL.md#the-import-command-group). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
 
 Here's a trick to execute both commands one after the other. We use the "command concatination" features of our shell:
 

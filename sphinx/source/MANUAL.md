@@ -1,23 +1,7 @@
 <!-- omit in toc -->
 # User's Manual
 
-- [General things about command line tools](#general-things-about-command-line-tools)
-- [*dsc* - the main command](#dsc---the-main-command)
-  - [*dsc* - global switches](#dsc---global-switches)
-- [The *dsc* subcommands](#the-dsc-subcommands)
-  - [The *mix* command](#the-mix-command)
-  - [The *suggest* command](#the-suggest-command)
-  - [The *import* command](#the-import-command)
-  - [The *search* command](#the-search-command)
-    - [*search* command actions](#search-command-actions)
-    - [*search* action "edit track"](#search-action-edit-track)
-    - [*search* action "add track to mix"](#search-action-add-track-to-mix)
-    - [*search* action "update from discogs"](#search-action-update-from-discogs)
-    - [*search* action "update from *Brainz"](#search-action-update-from-brainz)
-- [_discosync_ - The DiscoDOS backup & sync tool](#discosync---the-discodos-backup--sync-tool)
-  - [Backup](#backup)
-  - [Viewing existing backups](#viewing-existing-backups)
-  - [Restore](#restore)
+FIXME TOC
 
 
 This document contains in-detail explanations about everything you can do with DiscoDOS. If you'd like to see how to do typical day to day tasks, jump to the [Common Tasks](QUICKSTART.md#common-tasks) section on the README page, and come back here later.
@@ -54,7 +38,7 @@ DiscoDOS' main command is `dsc`, to view it's help:
 
 `dsc -h`
 
-It contains four subcommands, namely: mix , suggest, import, search
+It contains several subcommands or further command groups.
 
 To execute a subcommand you would eg type:
 
@@ -66,8 +50,22 @@ Each subcommand has its own built-in help output:
 dsc mix -h
 dsc suggest -h
 dsc import -h
+dsc import basic -h
+dsc import tracks -h
+dsc import release -h
+dsc import sales -h
+dsc import listing -h
+dsc clean -h
+dsc clean collection -h
+dsc clean sales -h
 dsc search -h
+dsc sell -h
+dsc stats -h
+dsc ls -h
+dsc links -h
 ```
+
+The following chapters describe some features of the respective commands, an exhaustive list is found in the [Commands Reference](index_commands_reference.rst)
 
 ### *dsc* - global switches
 
@@ -166,7 +164,7 @@ Get MusicBrainz/AcousticBrainz info for _all_ tracks in _all_ mixes from Discogs
 
 `dsc mix -zz`
 
-*Brainz matching is a tedious process for DiscoDOS (more details on this [here](#the-import-command)), if you have to switch off your computer for any reason while it's running, cancel the process using ctrl-c and it later at the given position (in this example track number 150 in the list of *all* tracks in *all* mixes):
+*Brainz matching is a tedious process for DiscoDOS (more details on this [here](#the-import-command-group)), if you have to switch off your computer for any reason while it's running, cancel the process using ctrl-c and it later at the given position (in this example track number 150 in the list of *all* tracks in *all* mixes):
 
 `dsc mix -zz --resume 150`
 
@@ -207,41 +205,53 @@ key and BPM search can be combined:
 
 **Note: The key and BPM suggest commands require sufficient information in the DiscoBASE. Either in the user-editable key and BPM fields or in the AcousticBrainz fields**
 
-Read how to automatically fill these fields with data from AcousticBrainz in the following section about the [import command](#the-import-command).
+Read how to automatically fill these fields with data from AcousticBrainz in the following section about the [import command](#the-import-command-group).
 
 
-### The *import* command
+
+
+### The *import* command group
+
+#### Importing releases / collection items
 
 You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
 Due to the Discogs API being not the fastest, it takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously.
 
 _**Note: This imports all your releases, but not the tracks on them**_
 
-`dsc import`
+`dsc import basic`
 
-A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. To get the Discogs release ID, just head over to discogs.com, search for the release. You will find the release ID in the URL of the release (eg https://www.discogs.com/release/123456).
+A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. Pass the release ID or the URL of the release (eg https://www.discogs.com/release/123456) .
 
 _**Note: You don't have to click "Add to Collection" on discogs.com, DiscoDOS does this for you**_
 
-`dsc import -a 123456`
+`dsc import release -a 123456`
 
-To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface), just use the import command with a release ID attached. (Note: Unfortunately this way it takes significantly longer because of drawbacks in how the collection data is accessible via the API):
+To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface), just use the import command with a release ID or URL attached: 
 
-`dsc import 123456`
+`dsc import release 123456`
 
-To import all releases including all tracks in your collection use the --tracks option (can be replaced by its short form -u). 1000 records take about 20-30 minutes to import:
+To remove a release:
 
-`dsc import --tracks`
+`dsc import release -d 123456`
 
-To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the -z option. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
+
+
+#### Importing track details
+
+To import all releases including all tracks in your collection use the tracks subcommand. 1000 records take about 20-30 minutes to import:
+
+`dsc import tracks`
+
+To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the brain subcommand. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
 
 _**Note: This process will take hours. Best you let it run "overnight"**_
 
-`dsc import -z`
+`dsc import brainz`
 
-An even more detailed "matching" is done by "doubling the -z option". It takes significantly longer and you will get more results but still: Don't expect to find a match for all of your releases. Please take a minute and report back how the matching went by opening a [github issue](https://github.com/JOJ0/discodos/issues):
+A slightly quicker but less effective method is using the --quick option:
 
-`dsc import -zz`
+`dsc import brainz -q`
 
 Also remember that it's unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth compared to others. Most definitely when it comes to Vinyl records.
 
@@ -249,14 +259,14 @@ Also note that often it happens that a MusicBrainz track _can_ be "matched" but 
 
 If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
 
-`dsc import -zz --resume 2500`
+`dsc import brainz --resume 2500`
 
 The "*Brainz match process" currently adds the following data to releases:
 
 - Release MusicBrainz ID (Release MBID)
 - weblink to the MusicBrainz release
 
-and the following data to tracks:
+and the following data to tracks (if available):
 
 - BPM
 - key
@@ -265,6 +275,16 @@ and the following data to tracks:
 - weblink to the MusicBrainz recording (A track is called a recording in "MusicBrainz speak")
 - weblink to the AcousticBrainz recording (AcousticBrainz uses the same recording MBID as MusicBrainz - this is the link between the two services!)
 
+
+#### Importing Marketplace inventory items
+
+The whole inventory:
+
+`dsc import sales`
+
+Single sales listings:
+
+`dsc import listing <listing_id>`
 
 
 
@@ -344,7 +364,7 @@ To make **all** *track names* on **all** releases in your collection available o
 
 _**Note: This is exactly the same as using `dsc import --tracks` or in short: `dsc import -u`.**_
 
-Read more on importing release and track information in the [import command section](#the-import-command)
+Read more on importing release and track information in the [import command section](#the-import-command-group)
 
 #### *search* action "update from *Brainz"
 
@@ -369,7 +389,7 @@ dsc search all -z
 dsc search all -zz
 ```
 
-Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#the-import-command)
+Read more on the performance of the *Brainz match process and what exactely it imports in the [import command section](#the-import-command-group)
 
 
 
