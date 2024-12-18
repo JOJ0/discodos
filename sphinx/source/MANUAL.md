@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# User's Manual
+# Manual
 
 FIXME TOC
 

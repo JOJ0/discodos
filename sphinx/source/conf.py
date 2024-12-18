@@ -79,6 +79,19 @@ html_theme = "pydata_sphinx_theme"
 html_static_path = ['_static']
 html_css_files = ["discodos.css"]
 html_logo = "_static/logo.png"
+#html_sidebars = {
+#    "**": ["sidebar-nav-bs", "sidebar-ethical-ads"]
+#}
+#html_sidebars = {
+#     "**": []
+#}
+html_sidebars = {
+  "QUICKSTART": [],
+  "INSTALLATION": [],
+  "MANUAL": [],
+  "CONTRIBUTION": [],
+  "VIDEO_TUTORIALS": [],
+}
 html_context = {
     "github_user": "JOJ0",
     "github_repo": "discodos",
@@ -100,7 +113,7 @@ html_theme_options = {
     # became bigger!
     "navbar_align": "left",
 
-    "header_links_before_dropdown": 5,
+    "header_links_before_dropdown": 6,
     "show_toc_level": 3,
     "back_to_top_button": True,
 }

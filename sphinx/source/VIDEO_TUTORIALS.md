@@ -1,4 +1,4 @@
-# Video Tutorials
+# Videos
 
 If you don't like reading through longish documentation pages just head over to Youtube and learn how to do some basic DiscoDOS tasks:
 

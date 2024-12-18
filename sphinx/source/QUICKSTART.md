@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# Quickstart Guide
+# Quickstart
 
 - [Installation](#installation)
 - [Importing your Discogs collection](#importing-your-discogs-collection)
