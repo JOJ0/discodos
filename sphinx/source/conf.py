@@ -100,9 +100,9 @@ html_theme_options = {
     # became bigger!
     "navbar_align": "left",
 
-    "header_links_before_dropdown": 3,
+    "header_links_before_dropdown": 5,
     "show_toc_level": 3,
-    "back_to_top_button": False,
+    "back_to_top_button": True,
 }
 html_title = "DiscoDOS"
 

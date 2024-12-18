@@ -9,6 +9,6 @@ DiscoDOS documentation
     INSTALLATION
     MANUAL
     CONTRIBUTION
-    VIDEO_TUTORIALS
     index_commands_reference
+    VIDEO_TUTORIALS
 
