@@ -28,8 +28,6 @@ During the Python setup on Windows choose "Customize installation" and select th
 
 ## Windows - Install to virtual environment
 
-_[Skip this chapter](#macos-or-linux---install-into-virtual-environment) if you are on macOS or Linux!_
-
 Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
 
 Jump to your homedirectory, clone the repo and change into the cloned repo directory.
@@ -116,6 +114,8 @@ _**Note: Make sure you always first activate your virtual environment when comin
 ## macOS or Linux - Install to user environment
 
 This chapter describes how to install the DiscoDOS package into your user's Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
+
+**_Installing like this is not recommended and might mess up your system's Python installation**_
 
 Install Python 3. On Debian based distros (Ubuntu, Linux Mint, ...), do something like this:
 
