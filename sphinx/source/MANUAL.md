@@ -4,7 +4,7 @@
 FIXME TOC
 
 
-This document contains in-detail explanations about everything you can do with DiscoDOS. If you'd like to see how to do typical day to day tasks, jump to the [Common Tasks](QUICKSTART.md#common-tasks) section on the README page, and come back here later.
+This document contains in-detail explanations about a lot but not all you can do with DiscoDOS.
 
 ## General things about command line tools
 
