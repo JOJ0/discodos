@@ -3,7 +3,6 @@
 
 - [Installation](#installation)
 - [Importing your Discogs collection](#importing-your-discogs-collection)
-- [Commands Chart](#commands-chart)
 - [Basic Usage Tutorial](#basic-usage-tutorial)
 - [Common Tasks](#common-tasks)
   - [What's the quickest way to document a mix?](#whats-the-quickest-way-to-document-a-mix)
@@ -28,15 +27,8 @@ To let DiscoDOS know about our Discogs record collection we have to import a sub
 
 `dsc import`
 
-## Commands Chart
 
-Before you move on with the [Basic Usage Tutorial](#basic-usage-tutorial) have a look at the following picture. It shows how `dsc` - The DiscoDOS' main command - is working. Usually a `dsc` command is built from multiple words and options (-x, --something). The top half of the chart describes how the put those components together to create a working command. The bottom half shows some common usage examples.
-
-![Commands Chart](../../assets/discodos_cmds_v0.3_transp.png)
-
-
-
-## Basic Usage Tutorial
+## Basic Usage Tutorial - Mixes
 
 When importing is through, create a new mix:
 

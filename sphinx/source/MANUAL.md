@@ -90,11 +90,6 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
-This chart gives some examples of what each subcommand can do:
-
-![Commands Chart](../../assets/discodos_cmds_v0.3_transp.png)
-
-
 
 
 ### The *mix* command
