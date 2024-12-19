@@ -88,6 +88,9 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
 
+### Abbreviations
+
+`dsc` commmands can be abbreviated. For example to issue `dsc import release` use `dsc imp rel` or even `dsc i r`.
 
 
 ### The *mix* command
