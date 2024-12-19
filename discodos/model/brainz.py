@@ -1,10 +1,10 @@
 import logging
 # import pprint
+import json
+import requests
 import requests.exceptions
 import musicbrainzngs as m
 from musicbrainzngs import WebServiceError
-import requests
-import json
 
 log = logging.getLogger('discodos')
 

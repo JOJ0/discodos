@@ -1,8 +1,8 @@
-from discodos.utils import is_number  # most of this should only be in view
 import logging
 # import pprint
 
-from discodos.model_database import Database
+from discodos.model.database import Database
+from discodos.utils import is_number  # most of this should only be in view
 
 log = logging.getLogger('discodos')
 

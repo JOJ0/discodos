@@ -1,14 +1,16 @@
 # config.py is kind of a controller - it sets up db and creates config
-from discodos.model_database import Database, sqlerr
-from discodos.utils import read_yaml, print_help, ask_user
-import yaml
 import logging
-from pathlib import Path
 import os
-import sys
 import platform
-from subprocess import run
+import sys
+from pathlib import Path
 from shutil import copy2
+from subprocess import run
+
+import yaml
+
+from discodos.model.database import Database, sqlerr
+from discodos.utils import ask_user, print_help, read_yaml
 
 log = logging.getLogger('discodos')
 
@@ -105,9 +107,9 @@ class Db_setup(Database):
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """}
 
-        self.sql_upgrades = [      # list element 0 contains a dict
-            {'schema_version': 2,  # this dict contains 2 entries: schema and tasks
-             'tasks': {            # tasks entry contains another dict with a lot of entries
+        self.sql_upgrades = [{    # list element 0 contains a dict
+            'schema_version': 2,  # this dict contains 2 entries: schema and tasks
+             'tasks': {           # tasks entry contains another dict with a lot of entries
                  'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
                  'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
                  'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
@@ -120,14 +122,43 @@ class Db_setup(Database):
                  'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
                  'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
                  'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
-              }
-            }                        # list element 0 ends here
-            # {'schema_version': 3,  # list element 1 starts here
-            #  'tasks': {
-            #      'Add field track.test_upgrade': 'ALTER TABLE track ADD test_upgrade TEXT;',
-            #  }
-            # }                      # list element 1 ends here
-        ]                            # list closes here
+            }
+        },  # list element 0 ends here
+        {
+            'schema_version': 3,
+            'tasks': {
+                'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;',
+                'Add field release.sold_time': 'ALTER TABLE release ADD sold_time TEXT;',
+                'New table sales':
+                """ CREATE TABLE sales (
+                      d_sales_release_id INTEGER NOT NULL,
+                      d_sales_listing_id INTEGER NOT NULL,
+                      d_sales_release_url TEXT,
+                      d_sales_url TEXT,
+                      d_sales_condition TEXT,
+                      d_sales_sleeve_condition TEXT,
+                      d_sales_price REAL,
+                      d_sales_comments TEXT,
+                      d_sales_allow_offers INTEGER,
+                      d_sales_status TEXT,
+                      d_sales_comments_private TEXT,
+                      d_sales_counts_as INTEGER,
+                      d_sales_location TEXT,
+                      d_sales_weight INTEGER,
+                      d_sales_posted TEXT,
+                      PRIMARY KEY (d_sales_release_id, d_sales_listing_id)
+                      ); """,
+                'New table collection':
+                """ CREATE TABLE collection (
+                      d_coll_instance_id INTEGER PRIMARY KEY,
+                      d_coll_release_id INTEGER NOT NULL,
+                      d_coll_folder_id INTEGER NOT NULL,
+                      d_coll_added TEXT NOT NULL,
+                      d_coll_rating TEXT,
+                      d_coll_notes TEXT
+                      ); """,
+                }
+        }]
 
     def create_tables(self):  # initial db setup
         for table, sql in self.sql_initial.items():
@@ -188,8 +219,9 @@ class Db_setup(Database):
                 return True
 
 
-class Config():
-    def __init__(self, no_create_conf=False):
+class Config():  # pylint: disable=too-many-instance-attributes
+    """Provides access to the DiscoDOS configuration file."""
+    def __init__(self, no_create_conf=False):  # pylint: disable=too-many-branches,too-many-statements
         # is set to true on initial run and config create
         self.config_created = False
         self.no_create_conf = no_create_conf
@@ -279,6 +311,7 @@ class Config():
             self.webdav_user = self._get_config_entry('webdav_user')
             self.webdav_password = self._get_config_entry('webdav_password')
             self.webdav_url = self._get_config_entry('webdav_url')
+            self.enable_tui = self._get_config_entry('enable_tui')
 
             # discogs_token is essential, bother user until we have one
             # but not when no_ask_token is set (macOS)
@@ -577,7 +610,8 @@ class Config():
             'webdav_user': '',
             'webdav_password': '',
             'webdav_url': '',
-            'discobase_file': 'discobase.db'
+            'discobase_file': 'discobase.db',
+            'enable_tui': 'true'
         }
         create_msg = '\nSeems like you are running DiscoDOS for the first time, '
         create_msg+= 'a config file will be created...\n'

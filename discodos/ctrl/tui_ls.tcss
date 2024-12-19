@@ -1,0 +1,42 @@
+#sales-price {
+    border: double orange;
+    width: auto;
+}
+
+DataTable Column {
+    overflow-x: auto; /* Prevents text from spilling out */
+}
+
+.centered {
+    align: center top;
+}
+
+
+#upper-area {
+    border: solid grey;
+    height: 2fr;
+}
+#lower-area {
+    border: solid grey;
+    height: 2fr;
+}
+#log-area {
+    border: solid grey;
+    height: 1fr;
+}
+
+
+#lower-left-column {
+    align: center top;
+    padding: 0;
+}
+
+#lower-middle-column {
+    align: center top;
+    padding: 0;
+}
+
+#lower-right-column {
+    align: center top;
+    padding: 0;
+}
