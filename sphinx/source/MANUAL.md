@@ -1,9 +1,6 @@
 <!-- omit in toc -->
 # Manual
 
-FIXME TOC
-
-
 This document contains in-detail explanations about a lot but not all you can do with DiscoDOS.
 
 ## General things about command line tools

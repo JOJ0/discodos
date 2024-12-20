@@ -1,21 +1,6 @@
 <!-- omit in toc -->
 # Quickstart
 
-- [Installation](#installation)
-- [Importing your Discogs collection](#importing-your-discogs-collection)
-- [Basic Usage Tutorial](#basic-usage-tutorial---mixes)
-- [Common Tasks](#common-tasks)
-  - [What's the quickest way to document a mix?](#whats-the-quickest-way-to-document-a-mix)
-  - [I'm stuck in a mix](#im-stuck-in-a-mix)
-  - [I'd like to quickly rate my transitions](#id-like-to-quickly-rate-my-transitions)
-  - [I got a new record and want to quickly use it in DiscoDOS without re-importing everything](#i-got-a-new-record-and-want-to-quickly-use-it-in-discodos-without-re-importing-everything)
-  - [I'd like to get as much information about my music as possible - in one go!](#id-like-to-get-as-much-information-about-my-music-as-possible---in-one-go)
-  - [I'd like to use my DiscoBASE on multiple computers](#id-like-to-use-my-discobase-on-multiple-computers)
-- [User's Manual](#users-manual)
-
-
-
-
 ## Installation
 
 Please head over to the [INSTALLATION](INSTALLATION.md) document for step by step instructions on how to get DiscoDOS running on your machine.
