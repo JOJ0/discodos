@@ -1,8 +1,6 @@
 <!-- omit in toc -->
 # Setup
 
-FIXME TOC
-
 ## Prerequisites
 
 You need to have these software packages installed
@@ -26,17 +24,9 @@ During the Python setup on Windows choose "Customize installation" and select th
 - Add Python to environment variables
 
 
-## Windows - Install to virtual environment
+## Windows
 
 Please use the regular command prompt window (cmd.exe) and not the "git bash", otherwise the statements using the %HOMEPATH% environment variable won't work! Also note that Windows paths can be written with slashes instead of the usual backslashes these days (putting them inside of quotes is mandatory though!) - in the very unlikely case your Windows version doesn't support this, please just change the paths to use backslashes.
-
-Jump to your homedirectory, clone the repo and change into the cloned repo directory.
-
-```
-cd %HOMEPATH%
-git clone https://github.com/JOJ0/discodos.git
-cd discodos
-```
 
 Create and activate a virtual Python environment!
 
@@ -49,13 +39,9 @@ Double check if your environment is active and you are using the pip binary inst
 
 `pip --version`
 
-You should see something like this:
+Install DiscoDOS and its dependencies into your environment:
 
-`pip 19.2.3 from c:\users\user\python-envs\discodos\lib\site-packages\pip (python 3.8)`
-
-Install the necessary dependencies into your environment:
-
-`python3 setup.py develop`
+`pip install discodos`
 
 Launch DiscoDOS' main command and follow the steps shown:
 
@@ -66,15 +52,9 @@ _**Note: Make sure you always first activate your virtual environment when comin
 `"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"`
 
 
-## macOS or Linux - Install to virtual environment
+## macOS or Linux
 
-Jump to your homedirectory, clone the repo and change into the cloned repo directory.
-
-```
-cd
-git clone https://github.com/JOJ0/discodos.git
-cd discodos
-```
+### Create a virtual environment
 
 Create and activate a virtual Python environment! The environment will be saved inside a hidden subfolder of your homedirectory called .venvs/
 
@@ -87,13 +67,27 @@ Double check if your environment is active and you are using the pip binary inst
 
 `pip --version`
 
-You should see something like this:
+### Install a released package from PyPI
 
-`pip 18.1 from /Users/jojo/.venvs/discodos/lib/python3.7/site-packages/pip (python 3.7)`
+Install DiscoDOS and its dependencies into your environment:
 
-Install the necessary dependencies into your virtual environment:
+`pip install discodos`
 
-`python3 setup.py develop`
+### Install latest development version from Git
+
+Jump to your homedirectory, clone the repo and change into the cloned repo directory.
+
+```
+cd
+git clone https://github.com/JOJ0/discodos.git
+cd discodos
+```
+
+Install DiscoDOS and its dependencies into your environment:
+
+`pip install -e .`
+
+### Verify installation
 
 Some command wrappers should have been installed too. Verify if they exist inside your `~/.venvs/discodos/bin` directory:
 
@@ -125,19 +119,11 @@ on RedHat based (Fedora, CentOS, ...):
 
 `yum install python3`
 
-
-
-Clone the latest development version from github:
-
-```
-cd
-git clone https://github.com/JOJ0/discodos.git
-cd discodos
-```
-
 Install DiscoDOS into your user's Python environment:
 
-`pip install . -e`
+`pip install discodos`
+
+### Verify installation
 
 Some command wrappers should have been installed. Verify if they exist:
 
@@ -154,17 +140,16 @@ Launch DiscoDOS' main command:
 
 `dsc`
 
+
+## Initial configuration and additional notes
+
 On first launch, `dsc` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](INSTALLATION.md#configure-discogs-api-access), then come back here!
 
 Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
 
 **Note: In case you are updating from a previous DiscoDOS version, your data will be kept and your database's schema might be upgraded automatically**
 
-If the connection to Discogs is working, setup asks you to view a little tutorial teaching you how it works - hit enter and follow the steps.
-
 Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection). Your next logical step is importing your Discogs collection.
-
-**Note: The `dsc` and `discosync` commands are now installed globally and will work in any terminal emulator.**
 
 **Note: DiscoDOS generates the following files which are kept in `~/.discodos/`:**
 
