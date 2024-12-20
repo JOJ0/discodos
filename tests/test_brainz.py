@@ -1,13 +1,12 @@
-#!/usr/bin/env python
-import unittest
-from shutil import copy2
-from discodos.model_brainz import Brainz
-from discodos.model_brainz_match import Brainz_match
-from discodos.config import Config
-import inspect
 from pprint import pprint
-from pathlib import Path
+import inspect
 import os
+import unittest
+from pathlib import Path
+from shutil import copy2
+
+from discodos.config import Config
+from discodos.model import Brainz, Brainz_match
 
 
 class TestBrainz(unittest.TestCase):

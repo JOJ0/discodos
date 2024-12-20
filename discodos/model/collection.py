@@ -1,142 +1,40 @@
-from discodos.utils import is_number  # most of this should only be in view
 import logging
 # import pprint
-import discogs_client
-import discogs_client.exceptions
-import requests.exceptions
-import urllib3.exceptions
-from sqlite3 import Error as sqlerr
-import time
 from datetime import datetime
-import requests
-from socket import gaierror
+from sqlite3 import Error as sqlerr
 
-from discodos.model_database import Database
+from discodos.model.discogs import DiscogsMixin
+from discodos.model.database import Database
+from discodos.utils import (
+    is_number, RECORD_CHOICES_RADIO, SLEEVE_CHOICES_RADIO, STATUS_CHOICES_RADIO
+)
 
 log = logging.getLogger('discodos')
 
 
-# record collection class
-class Collection (Database):
-
+class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-methods
+    """Offline record collection class."""
     def __init__(self, db_conn, db_file=False):
-        super(Collection, self).__init__(db_conn, db_file)
-        # discogs api objects are online set when discogs_connect method is called
+        super().__init__(db_conn, db_file)
         self.d = False
         self.me = False
-        self.ONLINE = False
+        self.ONLINE = False # set True by discogs_connect method
 
-    # discogs connect try,except wrapper, sets attributes d and me
-    # leave globals for compatibility for now
-    def discogs_connect(self, _userToken, _appIdentifier):
-        try:
-            self.d = discogs_client.Client(
-                _appIdentifier, user_token=_userToken
-            )
-            self.me = self.d.identity()
-            global d
-            d = self.d
-            global me
-            me = self.me
-            _ONLINE = True
-        # except Exception as Exc:
-        except Exception:
-            _ONLINE = False
-            # raise Exc
-        self.ONLINE = _ONLINE
-        return _ONLINE
+    # Base fetchers and inserts
 
-    def get_all_db_releases(self):
-        # return db.all_releases(self.db_conn)
+    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
         return self._select_simple(
-            ['d_catno', 'd_artist',
-             'discogs_title', 'discogs_id', 'm_rel_id', 'm_rel_id_override'],
-            'release', orderby='d_artist, discogs_title'
+            [
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "discogs_id",
+                "m_rel_id",
+                "m_rel_id_override",
+            ],
+            "release",
+            orderby=orderby,
         )
-
-    def search_release_online(self, id_or_title):
-        try:
-            if is_number(id_or_title):
-                releases = [self.d.release(id_or_title)]
-            else:
-                releases = self.d.search(id_or_title, type='release')
-            # exceptions are only triggerd if trying to access the release obj
-            if len(releases) > 0:  # fixes list index error
-                log.info("First found release: {}".format(releases[0]))
-            log.debug("All found releases: {}".format(releases))
-            return releases
-        except discogs_client.exceptions.HTTPError as HtErr:
-            log.error("%s (HTTPError)", HtErr)
-            return None
-        except urllib3.exceptions.NewConnectionError as ConnErr:
-            log.error("%s (NewConnectionError)", ConnErr)
-            return None
-        except urllib3.exceptions.MaxRetryError as RetryErr:
-            log.error("%s (MaxRetryError)", RetryErr)
-            return None
-        except requests.exceptions.ConnectionError as ConnErr:
-            log.error("%s (ConnectionError)", ConnErr)
-            return None
-        except gaierror as GaiErr:
-            log.error("%s (socket.gaierror)", GaiErr)
-            return None
-        except TypeError as TypeErr:
-            log.error("%s (TypeError)", TypeErr)
-            return None
-        except Exception as Exc:
-            log.error("%s (Exception)", Exc)
-            raise Exc
-            return None
-
-    def prepare_release_info(self, release):  # discogs_client Release object
-        '''takes a discogs_client Release object and returns prepares "relevant"
-           data into a dict with named keys. We use it eg for a nicely formatted
-           release view using tabulate'''
-        rel_details={}
-        rel_details['id'] = release.id
-        rel_details['artist'] = release.artists[0].name
-        rel_details['title'] = release.title
-        if len(release.labels) != 0:
-            rel_details['label'] = release.labels[0].name
-        rel_details['country'] = release.country
-        rel_details['year'] = release.year
-        rel_details['format'] = release.formats[0]['descriptions'][0]
-        if len(release.formats[0]['descriptions']) > 1:
-            rel_details['format'] += ' {}'.format(
-                release.formats[0]['descriptions'][1]
-            )
-
-        log.info("prepare_release_info: rel_details: {}".format(
-            rel_details))
-        return rel_details
-
-    def prepare_tracklist_info(self, release_id, tracklist):  # discogs_client tracklist object
-        '''takes a tracklist (just a list?) we received from a Discogs release
-            object and adds additional information from the database
-            into the list'''
-        tl=[]
-        for i, track in enumerate(tracklist):
-            dbtrack = self.get_track(release_id, track.position)
-            if dbtrack is None:
-                log.debug("MODEL: prepare_tracklist_info: Track not in DB. "
-                          "Adding title/track_no only.")
-                tl.append({
-                    'track_no': track.position,
-                    'track_title': track.title
-                })
-            else:
-                tl.append({
-                    'track_no': track.position,
-                    'track_title': track.title,
-                    'key': dbtrack['key'],
-                    'key_notes': dbtrack['key_notes'],
-                    'bpm': dbtrack['bpm'],
-                    'notes': dbtrack['notes'],
-                    'a_key': dbtrack['a_key'],
-                    'a_chords_key': dbtrack['a_chords_key'],
-                    'a_bpm': dbtrack['a_bpm']
-                })
-        return tl
 
     def get_track(self, release_id, track_no):
         log.info("MODEL: Returning collection track {} from release {}.".format(
@@ -156,7 +54,7 @@ class Collection (Database):
     def search_release_offline(self, id_or_title):
         if is_number(id_or_title):
             try:
-                return self.search_release_id(id_or_title)
+                return self.get_release_by_id(id_or_title)
             except Exception as Exc:
                 log.error("Not found or Database Exception: %s\n", Exc)
                 raise Exc
@@ -232,6 +130,23 @@ class Collection (Database):
         # log.debug(self.debug_db(tracks))
         return tracks
 
+    def get_release_by_id(self, release_id):
+        return self._select_simple(
+            ["*"], "release", f"discogs_id == {release_id}", fetchone=True
+        )
+
+    def get_release_tracks_by_id(self, release_id):
+        return self._select_simple(
+            ["*"],
+            "release",
+            f"discogs_id == {release_id}",
+            fetchone=False,
+            join=[
+                ("LEFT OUTER", "track", "discogs_id = track.d_release_id")
+            ],
+            as_dict=True
+        )
+
     def upsert_track(self, release_id, track_no, track_name, track_artist):
         track_no = track_no.upper()  # always save uppercase track numbers
         try:
@@ -250,24 +165,67 @@ class Collection (Database):
                                 WHERE d_release_id = ? AND d_track_no = ?;'''
                     tuple_u = (track_artist, track_name, release_id, track_no)
                     return self.execute_sql(sql_u, tuple_u, raise_err=True)
-                except sqlerr as e:
-                    log.error("MODEL: upsert_track: %s", e.args[0])
+                except sqlerr as ee:
+                    log.error("MODEL: upsert_track: %s", ee.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
                 return False
 
-    def search_release_id(self, release_id):
-        return self._select_simple(
-            ['*'], 'release',
-            'discogs_id == {}'.format(release_id), fetchone=True
-        )
+    def upsert_track_ext(self, orig, edit_answers):  # pylint: disable=too-many-locals
+        track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
+        release_id = orig['d_release_id']
 
-    def create_release(self, release_id, release_title, release_artists, d_catno, d_coll=False):
+        fields_ins = ''
+        fields_ins_vals = ''
+        fields_upd = ''
+        values_list = []
+        for key, answer in edit_answers.items():
+            log.debug('key: {}, value: {}'.format(key, answer))
+            # update fields key = ? snippets
+            if fields_upd == '':
+                fields_upd += "{} = ? ".format(key)
+            else:
+                fields_upd += ", {} = ? ".format(key)
+            # insert fields (keys) and values (list of ?)
+            fields_ins += ", {}".format(key)
+            fields_ins_vals += ", ?"
+            values_list.append(answer)
+
+        if len(edit_answers) == 0:  # only update if necessary
+            return True
+
         try:
-            insert_sql = '''INSERT OR FAIL INTO release(discogs_id, discogs_title,
-                                    import_timestamp, d_artist, in_d_collection, d_catno)
-                                    VALUES(?, ?, ?, ?, ?, ?)'''
+            sql_i='''INSERT INTO track_ext(d_release_id, d_track_no{})
+                        VALUES(?, ?{});'''.format(fields_ins, fields_ins_vals)
+            tuple_i = (release_id, track_no) + tuple(values_list)
+            return self.execute_sql(sql_i, tuple_i, raise_err=True)
+        except sqlerr as e:
+            if "UNIQUE constraint failed" in e.args[0]:
+                log.debug(
+                    "Track existing in track_ext table, updating ..."
+                )
+                try:
+                    sql_u='''
+                        UPDATE track_ext SET {}
+                          WHERE d_release_id = ? AND d_track_no = ?;'''.format(
+                        fields_upd)
+                    tuple_u = tuple(values_list) + (release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u, raise_err=True)
+                except sqlerr as ee:
+                    log.error("MODEL: upsert_track_ext: %s", ee.args[0])
+                    return False
+            else:
+                log.error("MODEL: %s", e.args[0])
+                return False
+
+    def create_release(
+        self, release_id, release_title, release_artists, d_catno, d_coll=False
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        try:
+            insert_sql = '''INSERT OR FAIL INTO
+                release(discogs_id, discogs_title, import_timestamp, d_artist,
+                in_d_collection, d_catno) VALUES(?, ?, ?, ?, ?, ?)'''
             in_tuple = (
                 release_id, release_title,
                 datetime.today().isoformat(' ', 'seconds'), release_artists,
@@ -287,55 +245,62 @@ class Collection (Database):
                         release_artists, d_coll, d_catno, release_id
                     )
                     return self.execute_sql(upd_sql, upd_tuple, raise_err=True)
-                except sqlerr as e:
-                    log.error("MODEL: create_release: %s", e.args[0])
+                except sqlerr as ee:
+                    log.error("MODEL: create_release: %s", ee.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
                 return False
 
-    def get_d_release(self, release_id, catch=True):
+    def delete_release(self, release_id):
+        """Deletes a release from DiscoBASE"""
+        in_db = self._select_simple(
+            ["discogs_id"], "release", condition=f"discogs_id == {release_id}"
+        )
+        if not in_db:
+            log.warning("Release not in DiscoBASE.")
+            return None
+        return self.execute_sql(
+            "DELETE FROM release WHERE discogs_id == ?", (release_id, )
+        )
+
+    def create_collection_item(self, instance):
+        """Creates a single entry to collection table and ensures up to date data.
+
+        Expects a collection item instance as a dictionary with keys named like
+        DiscoBASE fields.
+
+        Returns a bool on errors, a lastrowid integer on success.
+
+        """
+        # Just save a hint that collection item notes are present
+        if instance["d_coll_notes"] is not None:
+            instance["d_coll_notes"] = 1
+        # join together a comma delim string for the SQL statement
+        keys_str = ', '.join(instance.keys())
+        # generate a tuple version of the values
+        values = tuple(instance.values())
+        values_placeholders = ', '.join(['?'] * len(instance))
+        # Prepare update fields (we want to update all columns except the
+        # primary keys on conflict)
+        update_fields = ', '.join([
+            f"{key} = excluded.{key}"
+            for key in instance.keys()
+            if key not in {"d_coll_instance_id"}
+        ])
+
         try:
-            r = self.d.release(release_id)
-            if catch is True:
-                log.debug("try to access r here to catch err {}".format(r.title))
-            return r
-        except discogs_client.exceptions.HTTPError as HtErr:
-            log.error('Release not existing on Discogs ({})'.format(HtErr))
-            return False
-        except urllib3.exceptions.NewConnectionError as ConnErr:
-            log.error("%s", ConnErr)
-            return False
-        except urllib3.exceptions.MaxRetryError as RetryErr:
-            log.error("%s", RetryErr)
-            return False
-        except Exception as Exc:
-            log.error("Exception: %s", Exc)
+            insert_sql = f"""
+            INSERT INTO collection ({keys_str}) VALUES ({values_placeholders})
+            ON CONFLICT(d_coll_instance_id) DO UPDATE SET
+                {update_fields}
+            """
+            return self.execute_sql(insert_sql, values, raise_err=True)
+        except sqlerr as e:
+            log.error("MODEL: create_collection_item: %s", e.args[0])
             return False
 
-    def is_in_d_coll(self, release_id):
-        # successful = False
-        for r in self.me.collection_folders[0].releases:
-            # self.rate_limit_slow_downer(d, remaining=5, sleep=2)
-            if r.release.id == release_id:
-                return r
-        return False
-
-    def rate_limit_slow_downer(self, remaining=10, sleep=2):
-        '''Discogs util: stay in 60/min rate limit'''
-        if int(self.d._fetcher.rate_limit_remaining) < remaining:
-            log.info(
-                "Discogs request rate limit is about to exceed, "
-                "let's wait a little: %s",
-                self.d._fetcher.rate_limit_remaining
-            )
-            # while int(self.d._fetcher.rate_limit_remaining) < remaining:
-            time.sleep(sleep)
-        else:
-            log.info(
-                "Discogs rate limit: %s remaining.",
-                self.d._fetcher.rate_limit_remaining
-            )
+    # Suggest fetchers
 
     def track_report_snippet(self, track_pos, mix_id):
         track_pos_before = track_pos - 1
@@ -380,74 +345,6 @@ class Collection (Database):
         log.info("MODEL: Returning track_report_occurences data.")
         return occurences_data
 
-    def d_artists_to_str(self, d_artists):
-        '''gets a combined string from discogs artistlist object'''
-        artist_str=''
-        for cnt, artist in enumerate(d_artists):
-            if cnt == 0:
-                artist_str = artist.name
-            else:
-                artist_str += ' / {}'.format(artist.name)
-        log.info('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
-        return artist_str
-
-    def d_artists_parse(self, d_tracklist, track_number, d_artists):
-        '''gets Artist name from discogs release (child)objects via track_number, eg. A1
-           params d_artist: FIXME'''
-        for tr in d_tracklist:
-            # log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
-            # log.debug("d_artists_parse: this is the tr object: {}".format(tr))
-            if tr.position.upper() == track_number.upper():
-                # log.info("d_tracklist_parse: found by track number.")
-                if len(tr.artists) == 1:
-                    name = tr.artists[0].name
-                    log.info("MODEL: d_artists_parse: just one artist, returning name: {}".format(name))
-                    return name
-                elif len(tr.artists) == 0:
-                    # log.info(
-                    #   "MODEL: d_artists_parse: tr.artists len 0: this is it: {}".format(
-                    #             dir(tr.artists)))
-                    log.info(
-                        "MODEL: d_artists_parse: no artists in tracklist, "
-                        "checking d_artists object..")
-                    combined_name = self.d_artists_to_str(d_artists)
-                    return combined_name
-                else:
-                    log.info("tr.artists len: {}".format(len(tr.artists)))
-                    for a in tr.artists:
-                        log.info("release.artists debug loop: {}".format(a.name))
-                    combined_name = self.d_artists_to_str(tr.artists)
-                    log.info(
-                        "MODEL: d_artists_parse: several artists, "
-                        "returning combined named {}".format(combined_name))
-                    return combined_name
-        log.debug('d_artists_parse: Track {} not existing on release.'.format(
-            track_number))
-
-    def d_tracklist_parse(self, d_tracklist, track_number):
-        '''gets Track name from discogs tracklist object via track_number, eg. A1'''
-        for tr in d_tracklist:
-            # log.debug("d_tracklist_parse: this is the tr object: {}".format(dir(tr)))
-            # log.debug("d_tracklist_parse: this is the tr object: {}".format(tr))
-            if (track_number is not None
-                    and tr.position.upper() == track_number.upper()):
-                return tr.title
-        log.debug(
-            'd_tracklist_parse: Track {} not existing on release.'.format(
-                track_number)
-        )
-        return False  # we didn't find the tracknumber
-
-    def d_tracklist_parse_numerical(self, d_tracklist, track_number):
-        '''get numerical track pos from discogs tracklist object via
-           track_number, eg. A1'''
-        for num, tr in enumerate(d_tracklist):
-            if tr.position.lower() == track_number.lower():
-                return num + 1  # return human readable (matches brainz position)
-        log.debug("d_tracklist_parse_numerical: "
-                  "Track {} not existing on release.".format(track_number))
-        return False  # we didn't find the tracknumber
-
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
         max_bpm = bpm + (bpm / 100 * pitch_range)
@@ -480,8 +377,8 @@ class Collection (Database):
                 OR (chosen_bpm >= "{}" AND chosen_bpm <= "{}")
             ORDER BY chosen_key, chosen_bpm'''.format(
             min_bpm, max_bpm, min_bpm, max_bpm)
-                    # THEN trim(track_ext.bpm, '.0')
-                    # THEN trim(round(track.a_bpm, 0), '.0')
+        # THEN trim(track_ext.bpm, '.0')
+        # THEN trim(round(track.a_bpm, 0), '.0')
         return self._select(sql_bpm, fetchone=False)
 
     def get_tracks_by_key(self, key):
@@ -514,8 +411,8 @@ class Collection (Database):
             WHERE
                 chosen_key LIKE "%{}%"
             ORDER BY chosen_key, chosen_bpm'''.format(key)
-                   # THEN trim(round(track.a_bpm, 0), '.0')
-                   # THEN round(track_ext.bpm, 0)
+        # THEN trim(round(track.a_bpm, 0), '.0')
+        # THEN round(track_ext.bpm, 0)
         return self._select(sql_key, fetchone=False)
 
     def get_tracks_by_key_and_bpm(self, key, bpm, pitch_range):
@@ -552,42 +449,7 @@ class Collection (Database):
             min_bpm, max_bpm, min_bpm, max_bpm, key)
         return self._select(sql_bpm, fetchone=False)
 
-    def upsert_track_brainz(self, release_id, track_no, rec_id,
-                            match_method, key, chords_key, bpm):
-        track_no = track_no.upper()  # always save uppercase track numbers
-        try:
-            sql_i = '''INSERT INTO track(d_release_id, d_track_no,
-                  m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
-                  VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?);'''
-            tuple_i = (release_id, track_no, rec_id, match_method, key,
-                       chords_key, bpm)
-            return self.execute_sql(sql_i, tuple_i, raise_err=True)
-        except sqlerr as e:
-            if "UNIQUE constraint failed" in e.args[0]:
-                log.debug("Track already in DiscoBASE, updating ...")
-                try:
-                    sql_u = ''' UPDATE track SET
-                          m_rec_id=?, m_match_method=?,
-                          m_match_time=datetime('now', 'localtime'),
-                          a_key=?, a_chords_key=?, a_bpm=?
-                          WHERE d_release_id=? AND d_track_no=?;
-                          '''
-                    tuple_u = (rec_id, match_method, key, chords_key, bpm,
-                               release_id, track_no)
-                    return self.execute_sql(sql_u, tuple_u)
-                except sqlerr as e:
-                    log.error("MODEL: create_release: %s", e.args[0])
-                    return False
-            else:
-                log.error("MODEL: %s", e.args[0])
-                return False
-
-    def update_release_brainz(self, release_id, mbid, match_method):
-        sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
-                       m_match_time) = (?, ?, datetime('now', 'localtime'))
-                       WHERE discogs_id == ?;'''
-        tuple_upd = (mbid, match_method, release_id)
-        return self.execute_sql(sql_upd, tuple_upd)
+    # Stats fetchers
 
     def stats_match_method_release(self):
         sql_stats = '''
@@ -659,14 +521,6 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def stats_releases_d_collection_online(self):
-        count = 0
-        try:
-            count = len(self.me.collection_folders[0].releases)
-        except Exception as Exc:
-            log.error("%s (Exception)", Exc)
-        return count
-
     def stats_mixtracks_total(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM mix_track;
@@ -712,37 +566,7 @@ class Collection (Database):
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def d_get_first_catno(self, d_labels):
-        '''get first found catalog number from discogs label object'''
-        catno_str = ''
-        if len(d_labels) == 0:
-            log.warning("MODEL: Discogs release without Label/CatNo. "
-                        "This is weird!")
-        else:
-            for cnt, label in enumerate(d_labels):
-                if cnt == 0:
-                    catno_str = label.data['catno']
-                else:
-                    log.warning('MODEL: Found multiple CatNos, '
-                                'not adding "{}"'.format(label.data['catno']))
-            log.info('MODEL: Found Discogs CatNo "{}"'.format(catno_str))
-        return catno_str
-
-    def d_get_all_catnos(self, d_labels):
-        '''get all found catalog number from discogs label object concatinated
-           with newline'''
-        catno_str = ''
-        if len(d_labels) == 0:
-            log.warning("MODEL: Discogs release without Label/CatNo. "
-                        "This is weird!")
-        else:
-            for cnt, label in enumerate(d_labels):
-                if cnt == 0:
-                    catno_str = label.data['catno']
-                else:
-                    catno_str += '\n{}'.format(label.data['catno'])
-            log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
-        return catno_str
+    # Brainz fetchers and inserts
 
     def get_all_tracks_for_brainz_update(self, offset=0, really_all=False,
                                          skip_unmatched=False):
@@ -786,47 +610,218 @@ class Collection (Database):
             orderby='release.discogs_id'
         )
 
-    def upsert_track_ext(self, orig, edit_answers):
-        track_no = orig['d_track_no'].upper()  # always save uppercase track numbers
-        release_id = orig['d_release_id']
-
-        fields_ins = ''
-        fields_ins_vals = ''
-        fields_upd = ''
-        values_list = []
-        for key, answer in edit_answers.items():
-            log.debug('key: {}, value: {}'.format(key, answer))
-            # update fields key = ? snippets
-            if fields_upd == '':
-                fields_upd += "{} = ? ".format(key)
-            else:
-                fields_upd += ", {} = ? ".format(key)
-            # insert fields (keys) and values (list of ?)
-            fields_ins += ", {}".format(key)
-            fields_ins_vals += ", ?"
-            values_list.append(answer)
-
-        if len(edit_answers) == 0:  # only update if necessary
-            return True
-
+    def upsert_track_brainz(self, release_id, track_no, rec_id,
+                            match_method, key, chords_key, bpm):
+        track_no = track_no.upper()  # always save uppercase track numbers
         try:
-            sql_i='''INSERT INTO track_ext(d_release_id, d_track_no{})
-                        VALUES(?, ?{});'''.format(fields_ins, fields_ins_vals)
-            tuple_i = (release_id, track_no) + tuple(values_list)
+            sql_i = '''INSERT INTO track(d_release_id, d_track_no,
+                  m_rec_id, m_match_method, m_match_time, a_key, a_chords_key, a_bpm)
+                  VALUES(?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?);'''
+            tuple_i = (release_id, track_no, rec_id, match_method, key,
+                       chords_key, bpm)
             return self.execute_sql(sql_i, tuple_i, raise_err=True)
         except sqlerr as e:
             if "UNIQUE constraint failed" in e.args[0]:
-                log.debug("Track already in DiscoBASE (track_ext), updating ...")
+                log.debug("Track already in DiscoBASE, updating ...")
                 try:
-                    sql_u='''
-                        UPDATE track_ext SET {}
-                          WHERE d_release_id = ? AND d_track_no = ?;'''.format(
-                        fields_upd)
-                    tuple_u = tuple(values_list) + (release_id, track_no)
-                    return self.execute_sql(sql_u, tuple_u, raise_err=True)
+                    sql_u = ''' UPDATE track SET
+                          m_rec_id=?, m_match_method=?,
+                          m_match_time=datetime('now', 'localtime'),
+                          a_key=?, a_chords_key=?, a_bpm=?
+                          WHERE d_release_id=? AND d_track_no=?;
+                          '''
+                    tuple_u = (rec_id, match_method, key, chords_key, bpm,
+                               release_id, track_no)
+                    return self.execute_sql(sql_u, tuple_u)
                 except sqlerr as e:
-                    log.error("MODEL: upsert_track_ext: %s", e.args[0])
+                    log.error("MODEL: create_release: %s", e.args[0])
                     return False
             else:
                 log.error("MODEL: %s", e.args[0])
                 return False
+
+    def update_release_brainz(self, release_id, mbid, match_method):
+        sql_upd = '''UPDATE release SET (m_rel_id, m_match_method,
+                       m_match_time) = (?, ?, datetime('now', 'localtime'))
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (mbid, match_method, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)
+
+    # Newer fetchers, inserts and helpers
+
+    def create_sales_entry(self, listing_object):
+        """Creates a single entry to sales table and ensures up to date data.
+
+        Saves conditions and status as-is - in plain short key form (eg. VG+, forsale)
+        """
+        # join together a comma delim string for the SQL statement
+        keys_str = ', '.join(listing_object.keys())
+        # generate a tuple version of the values
+        values = tuple(listing_object.values())
+        values_placeholders = ', '.join(['?'] * len(listing_object))
+        # Prepare update fields (we want to update all columns except the
+        # primary keys on conflict)
+        update_fields = ', '.join([
+            f"{key} = excluded.{key}"
+            for key in listing_object.keys()
+            if key not in {"d_sales_listing_id", "d_sales_release_id"}
+        ])
+
+        try:
+            insert_sql = f"""
+            INSERT INTO sales ({keys_str}) VALUES ({values_placeholders})
+            ON CONFLICT(d_sales_listing_id, d_sales_release_id) DO UPDATE SET
+                {update_fields}
+            """
+            return self.execute_sql(insert_sql, values, raise_err=True)
+        except sqlerr as e:
+            log.error("MODEL: create_sales_entry: %s", e.args[0])
+            return False
+
+    def key_value_search_releases(
+        self, search_key_value=None, orderby=None, filter_cols=None,
+        custom_fields=None
+    ):
+        # filter_cols are defined in ViewCommon and passed via the controller call.
+        replace_cols = filter_cols
+
+        where = " AND ".join(
+            [
+                f'{replace_cols.get(k, k)} LIKE "%{v}%"'
+                for k, v in search_key_value.items()
+            ]
+        )
+        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
+        fields = [
+                "discogs_id",
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "in_d_collection",
+                "d_sales_listing_id",
+                "d_sales_status",
+                "sold",
+                "d_sales_location",
+                "d_sales_price",
+            ] if not custom_fields else custom_fields
+
+        rows = self._select_simple(
+            fields, "release", fetchone=False, orderby=orderby, condition=where,
+            join=join,
+        )
+        return rows
+
+    def get_sales_listing_details(self, listing_id):
+        """Get Marketplace listing details from DB if already imported.
+
+        Always returns a dict, not Row.
+        """
+        if not listing_id:
+            listing_id = "NULL"
+        where = f"d_sales_listing_id == {listing_id}"
+
+        rows =  self._select_simple(
+            [
+                "d_sales_release_id",
+                "d_sales_release_url",
+                "d_sales_url",
+                "d_sales_condition",
+                "d_sales_sleeve_condition",
+                "d_sales_price",
+                "d_sales_comments",
+                "d_sales_allow_offers",
+                "d_sales_status",
+                "d_sales_comments_private",
+                "d_sales_counts_as",
+                "d_sales_location",
+                "d_sales_weight",
+                "d_sales_posted",
+            ],
+            "sales",
+            fetchone=True, condition=where, as_dict=True
+        )
+        return rows
+
+    def toggle_sold_state(self, release_id, sold):
+        """Pass boolean to mark as sold (or not) in DiscoBASE."""
+        sql_upd = '''UPDATE release SET
+                      (sold, sold_time) = (?, datetime('now', 'localtime'))
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (sold, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)
+
+    def get_one_release_for_list_app(
+        self, release_id, orderby="d_artist, discogs_title"
+    ):
+        """Get one release with fields required for DiscodosListApp.
+
+        Returns the same fields as key_value_search_release!
+        """
+        where = f"d_sales_release_id == {release_id}"
+        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
+
+        rows = self._select_simple(
+            [
+                "discogs_id",
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "in_d_collection",
+                "d_sales_listing_id",
+                "d_sales_status",
+                "sold",
+            ],
+            "release", fetchone=False, orderby=orderby, condition=where, join=join,
+        )
+        return rows
+
+    def get_sales_inventory(self, offset=0):
+        """Get all Marketplace listing details from DB if already imported.
+
+        Always returns a dict, not Row.
+        """
+        if offset > 0:
+            offset = offset - 1
+        rows =  self._select_simple(
+            [
+                "d_sales_listing_id",
+                "d_sales_release_id",
+                "d_sales_release_url",
+                "d_sales_url",
+                "d_sales_condition",
+                "d_sales_sleeve_condition",
+                "d_sales_price",
+                "d_sales_comments",
+                "d_sales_allow_offers",
+                "d_sales_status",
+                "d_sales_comments_private",
+                "d_sales_counts_as",
+                "d_sales_location",
+                "d_sales_weight",
+                "d_sales_posted",
+            ],
+            "sales",
+            fetchone=False, condition=None, as_dict=True, offset=offset,
+            orderby="d_sales_listing_id DESC"
+        )
+        return rows
+
+    def delete_sales_inventory_item(self, listing_id):
+        return self.execute_sql(
+            "DELETE FROM sales WHERE d_sales_listing_id == ?", (listing_id,)
+        )
+
+    def stats_sales_items_total(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM sales;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def toggle_collection_flag(self, release_id, in_collection):
+        """Pass boolean to mark as sold (or not) in DiscoBASE."""
+        sql_upd = '''UPDATE release SET
+                      (in_d_collection) = (?)
+                       WHERE discogs_id == ?;'''
+        tuple_upd = (in_collection, release_id)
+        return self.execute_sql(sql_upd, tuple_upd)

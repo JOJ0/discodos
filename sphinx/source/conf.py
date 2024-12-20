@@ -21,7 +21,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'DiscoDOS - the geekiest DJ tool on the planet'
+project = "DiscoDOS - the DJ and record collector's toolbox"
 copyright = '2018-2024, J0J0 Todos'
 author = 'J0J0 Todos'
 
@@ -29,7 +29,7 @@ author = 'J0J0 Todos'
 # version = '1.0'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.0'
+release = '3.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,10 +38,11 @@ release = '1.1.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    #'sphinxarg.ext',
-    'sphinxcontrib.autoprogram',
-    #'recommonmark'
-    'myst_parser'
+    'sphinxcontrib.autoprogram',  # for discosync
+    'myst_parser',  # everything is Markdown
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx_click',
 ]
 
 #source_suffix = {
@@ -70,12 +71,53 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = ["discodos.css"]
+html_logo = "_static/logo.png"
+#html_sidebars = {
+#    "**": ["sidebar-nav-bs", "sidebar-ethical-ads"]
+#}
+#html_sidebars = {
+#     "**": []
+#}
+html_sidebars = {
+  "QUICKSTART": [],
+  "INSTALLATION": [],
+  "MANUAL": [],
+  "CONTRIBUTION": [],
+  "VIDEO_TUTORIALS": [],
+}
+html_context = {
+    "github_user": "JOJ0",
+    "github_repo": "discodos",
+    "github_version": "master",
+    "doc_path": "doc/source/",
+}
+html_theme_options = {
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/JOJ0/discodos",
+            "icon": "fa-brands fa-github",
+        },
+    ],
+    "use_edit_page_button": True,
+
+    # this is a weird hack that makes site headers not overflow (and be
+    # problematic), avoid changing without checking if the site header
+    # became bigger!
+    "navbar_align": "left",
+
+    "header_links_before_dropdown": 6,
+    "show_toc_level": 3,
+    "back_to_top_button": True,
+}
+html_title = "DiscoDOS"
 
 
 # -- Extension configuration -------------------------------------------------

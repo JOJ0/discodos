@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from cgi import print_environ
 import inspect
 import unittest
@@ -8,7 +7,6 @@ from pathlib import Path
 import os
 
 from discodos.config import Config, create_data_dir  # , Db_setup
-from discodos.utils import log
 
 
 class TestConfig(unittest.TestCase):

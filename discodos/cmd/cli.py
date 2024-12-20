@@ -2,7 +2,7 @@
 
 from discodos.utils import print_help  # , ask user
 from discodos.args_helper import User_int
-from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
+from discodos.ctrls import MixControlCommandline, CollectionControlCommandline
 from discodos.config import Db_setup, Config
 import logging
 import argparse
@@ -411,7 +411,7 @@ def _main():
     user = User_int(args)
     log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION) ######################
-    coll_ctrl = Coll_ctrl_cli(
+    coll_ctrl = CollectionControlCommandline(
         False, user,
         conf.discogs_token, conf.discogs_appid, conf.discobase,
         conf.musicbrainz_user, conf.musicbrainz_password
@@ -436,7 +436,7 @@ def _main():
         if coll_ctrl.ONLINE:
             discogs_rel_found = coll_ctrl.search_release(searchterm)
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
-                mix_ctrl = Mix_ctrl_cli(
+                mix_ctrl = MixControlCommandline(
                     False, args.add_to_mix, user, conf.discobase
                 )
                 mix_ctrl.add_discogs_track(
@@ -472,7 +472,7 @@ def _main():
             if not database_rel_found:
                 return
             if user.WANTS_TO_ADD_TO_MIX or user.WANTS_TO_ADD_AT_POSITION:
-                mix_ctrl = Mix_ctrl_cli(
+                mix_ctrl = MixControlCommandline(
                     False, args.add_to_mix, user, conf.discobase
                 )
                 mix_ctrl.add_offline_track(
@@ -494,7 +494,7 @@ def _main():
     ### NO MIX ID GIVEN ########################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
         # we instantiate a mix controller object
-        mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
+        mix_ctrl = MixControlCommandline(False, args.mix_name, user, conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(
                 coll_ctrl,
@@ -512,11 +512,11 @@ def _main():
     ### MIX ID GIVEN ###########################################################
     ### SHOW MIX DETAILS #######################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-        log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
-        mix_ctrl = Mix_ctrl_cli(
+        log.info("A mix_name or ID was given. Instantiating MixControlCommandline class.\n")
+        mix_ctrl = MixControlCommandline(
             False, args.mix_name, user, conf.discobase
         )
-        # coll_ctrl = Coll_ctrl_cli(conn, user)
+        # coll_ctrl = CollectionControlCommandline(conn, user)
         ### CREATE A NEW MIX ###################################################
         if user.WANTS_TO_CREATE_MIX:
             mix_ctrl.create()
@@ -628,7 +628,7 @@ def _main():
 
     ##### STATS MODE ###########################################################
     if user.WANTS_TO_SHOW_STATS:
-        # mix_ctrl = Mix_ctrl_cli(False, args.mix_name, user, conf.discobase)
+        # mix_ctrl = MixControlCommandline(False, args.mix_name, user, conf.discobase)
         coll_ctrl.view_stats()
 
     ##### SETUP MODE ###########################################################
