@@ -12,7 +12,12 @@ log = logging.getLogger('discodos')
 @click.pass_obj
 @click.argument("query", nargs=-1)
 @click.option(
-    "--edit", "-e", "listing_id", type=int, help="Edit an existing sales listing."
+    "--edit",
+    "-e",
+    "listing_id",
+    type=int,
+    show_default=True,
+    help="Edit an existing sales listing.",
 )
 @click.option(
     "--id",
@@ -22,10 +27,19 @@ log = logging.getLogger('discodos')
     help="Omit search by passing a release ID with this option.",
 )
 @click.option(
+    "-a",
+    "--status",
+    type=click.Choice(STATUS_CHOICES, case_sensitive=True),
+    default="draft",
+    show_default=True,
+    help="Initial status of the listing.",
+)
+@click.option(
     "-c",
     "--condition",
     type=click.Choice(RECORD_CHOICES, case_sensitive=True),
     default="VG+",
+    show_default=True,
     help="Condition of the record.",
 )
 @click.option(
@@ -33,6 +47,7 @@ log = logging.getLogger('discodos')
     "--sleeve-condition",
     type=click.Choice(SLEEVE_CHOICES, case_sensitive=True),
     default=None,
+    show_default=True,
     help="Condition of the sleeve.",
 )
 @click.option(
@@ -40,19 +55,14 @@ log = logging.getLogger('discodos')
     "--price",
     type=float,
     default=None,
+    show_default=True,
     help="Listing price for the record. Leave blank for suggested price.",
-)
-@click.option(
-    "-a",
-    "--status",
-    type=click.Choice(STATUS_CHOICES, case_sensitive=True),
-    default="draft",
-    help="Initial status of the listing.",
 )
 @click.option(
     "-l",
     "--location",
     type=str,
+    show_default=True,
     help="Location of the record in storage (e.g., shelf or bin label).",
 )
 @click.option(
@@ -60,19 +70,41 @@ log = logging.getLogger('discodos')
     "--allow-offers",
     is_flag=True,
     default=False,
+    show_default=True,
     help="Allow buyers to make offers on this listing.",
 )
-@click.option("-m", "--comments", type=str, help="Public comments about the listing.")
 @click.option(
-    "-n", "--private-comments", type=str, help="Private comments about the listing."
+    "-m",
+    "--comments",
+    type=str,
+    show_default=True,
+    help="Public comments about the listing.",
+)
+@click.option(
+    "-n",
+    "--private-comments",
+    type=str,
+    show_default=True,
+    help="Private comments about the listing.",
 )
 def sell_cmd(helper, query, listing_id, release_id, condition, sleeve_condition, price,
              status, location, allow_offers, comments, private_comments):
     """
     List a record for sale on Discogs.
 
-    Lists the specified record for sale with details such as condition, price, quantity,
+    Lists the specified record for sale with details such as condition, price, status,
     and so on. Leave price empty to fetch a suggestion for the given record condition.
+
+    To specify a record, there are two ways: 1. Pass search terms, eg ``dsc sell my search terms`` or 2. pass a release id, eg. ``dsc sell -i 123456``
+
+    Some options have built-in defaults that apply when not given! To override them 
+    pass them explicitely. For example, use this to override the defaults
+    `draft`, `VG+`, `no offers allowed`:
+
+    ``dsc sell -a forsale -c NM -o search terms``
+
+    For some options, if omitted, you will be asked for interactively. Eg. the
+    ``-s/--sleeve-condition`` option.
     """
     def update_user_interaction_helper(user):
         log.debug("Entered sell mode.")
