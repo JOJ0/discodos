@@ -6,11 +6,15 @@
 Please head over to the [INSTALLATION](INSTALLATION.md) document for step by step instructions on how to get DiscoDOS running on your machine.
 
 
-## Importing your Discogs collection
+
+## Importing your Discogs collection and Marketplace inventory
 
 To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the local database (the so-called DiscoBASE).
 
 `dsc import basic`
+
+`dsc import sales`
+
 
 
 ## Basic Usage Tutorial - Mixes
@@ -66,6 +70,26 @@ Read more about the *Brainz update process here: [The import command](MANUAL.md#
 ## Common Tasks
 
 This section guides you through typical DiscoDOS workflows. If you would rather like to read an in-detail explanation of what each command does, go to the [DiscoDOS User's Manual](MANUAL.md).
+
+### I'd like to sell records
+
+Make sure your local sales inventory is up to date:
+
+`dsc import sales`
+
+List a record for sale with the "sell wizard". Don't pass the `-p/--price` option! You'll receive price suggestions and will be prompted to accept or adjust the recommendations interactively.
+
+`dsc sell -a forsale -c NM`
+
+_**Note: The sell command has some built-in defaults, most importantly `VG+` for `-c/--condition` and `draft` for the `-a/--status` option. Defaults are documented in [the command's online help](dsc.rst).**_
+
+To edit existing sales listings, use the DiscoDOS TUI command `dsc ls`:
+
+`dsc ls artist=squarepusher`
+
+_**Note: `dsc ls` lists records in a fancy graphical but still text-based user interface. Use shortcut `e` to edit a sales listing. Further helpful shortcuts are `v` display video links and `return` to fetch marketplace stats and price suggestions.**_
+
+
 
 ### What's the quickest way to document a mix?
 
