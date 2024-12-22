@@ -533,9 +533,9 @@ DiscoDOS prior to version 3.0 only used a single database table to store informa
 
 ## AcousticBrainz support is deprecated
 
-Since its initial 1.0 release, for one of its main features - muscial key/BPM finding - DiscoDOS relies heavily on MusicBrainz and AcousticBrainz (which provided key/BPM data) As of February 2022 unfortunately [the AcousticBrainz project was shut down](https://blog.metabrainz.org/2022/02/16/acousticbrainz-making-a-hard-decision-to-end-the-project/), as a consequence DiscoDOS theoretically can't fetch key and BPM anymore. It appears though that the MetaBrainz foundation let the service run but only does not acceppt to submit new data to it. This might change anytime soon. Currently it is still possible to at least find "some" of your collection's key and BPM data, thus these features were not removed from DiscoDOS yet.
+Since its initial 1.0 release, for one of its main features - muscial key/BPM finding - DiscoDOS relies heavily on MusicBrainz and AcousticBrainz (which provided key/BPM data) As of February 2022 unfortunately [the AcousticBrainz project was shut down](https://blog.metabrainz.org/2022/02/16/acousticbrainz-making-a-hard-decision-to-end-the-project/), as a consequence DiscoDOS theoretically can't fetch key and BPM anymore. It appears though that the MetaBrainz foundation let the service run but only does not allow submitting new data to it. This might change anytime soon. Currently it is still possible to at least find "some" of your tracks' key and BPM data, thus these features were not removed from DiscoDOS yet.
 
-Find some ideas on how DiscoDOS could solve this problem [in the website's roadmap chapter](https://discodos.jojotodos.net/#roadmap).
+Ideas on how DiscoDOS could solve this problem [in the website's roadmap chapter](https://discodos.jojotodos.net/#roadmap).
 
 More information on AcousticBrainz, the technology behind it and alternatives:
 
