@@ -149,7 +149,7 @@ Now that you've put the token into the configuration file, DiscoDOS completes se
 
 **Note: In case you are updating from a previous DiscoDOS version, your data will be kept and your database's schema might be upgraded automatically**
 
-Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection-and-sales-inventory). Your next logical step is importing your Discogs collection.
+Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection-and-marketplace-inventory). Your next logical step is importing your Discogs collection.
 
 **Note: DiscoDOS generates the following files which are kept in `~/.discodos/`:**
 
