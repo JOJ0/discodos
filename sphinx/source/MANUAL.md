@@ -64,7 +64,7 @@ dsc links -h
 
 The following chapters describe some features of the respective commands, an exhaustive list is found in the [Commands Reference](index_commands_reference.rst)
 
-### *dsc* - global switches
+### Global switches
 
 The general behaviour of `dsc` can be altered by some "optional arguments":
 
@@ -257,7 +257,7 @@ Also remember that it's unlikely that MusicBrainz even *has* an entry for each o
 
 Also note that often it happens that a MusicBrainz track _can_ be "matched" but AcousticBrainz does not have an entry for it yet.
 
-If for some reason you can't complete the run (connection problems, having to switch of your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
+If for some reason you can't complete the run (connection problems, having to switch off your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
 
 `dsc import brainz --resume 2500`
 
@@ -291,19 +291,21 @@ Single sales listings:
 
 ### The *search* command
 
-As the name implies, this command searches in your collection. By default it uses the Discogs API to search for release names, track names, track artists, catalog numbers and labels.
+#### Online search
 
-To search an album of artist "Amon Tobin" you would type:
+As the name implies, this command searches in your collection. **By default it uses the Discogs API to search for release names, track names, track artists, catalog numbers and labels.**, and then compares those results with your local collection data in the DiscoBASE. This is an efficient way, that makes use of the versatile Discogs search without having to reinvent the wheel.
 
-`dsc search "Amon Tobin Foley Room"`
+Let's try a search:
 
-You will see the Album's details and its contents.
+`dsc search "Amon Tobin"`
 
 _**Note: The online search is designed "first match"**_
 
 So this gives you the first found "Amon Tobin" album in your collection only. You have to be more specific to find a particular album:
 
-`dsc search "Amon Tobin"`
+`dsc search "Amon Tobin Foley Room"`
+
+#### Offline search
 
 If you currently are not connected to the internet or you enable "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in the first DiscoDOS prototype versions.
 
