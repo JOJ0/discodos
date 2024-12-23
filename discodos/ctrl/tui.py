@@ -160,7 +160,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # ... and display
         self.right_column_content.update(render_videos)
 
-
     def action_fetch_listing_details(self):
         """Updates the listing details shown in left column.
         
@@ -194,7 +193,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # Headline widgets
         self.left_column_headline = Label("[b]Listing Details[/b]")
         self.middle_column_headline = Label("[b]My Price & Marketplace Stats[/b]")
-        self.right_column_headline = Label("[b]Log[/b]")
+        self.right_column_headline = Label("[b]YouTube Listen[/b]")
         # Content widgets
         self.left_column_content = Static("")
         self.middle_column_upper_content = Static("Currently for sale:")
