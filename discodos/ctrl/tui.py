@@ -119,14 +119,22 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             rlog.write("Updated sales entry in DiscoBASE")
 
             # Update the table's cells
-            row_key, _ = self.table.coordinate_to_cell_key(
-                self.table.cursor_coordinate
-            )
-            _, col_key_status = self.table.coordinate_to_cell_key(Coordinate(0, 6))
+            r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+            _, c_key_status = self.table.coordinate_to_cell_key(Coordinate(0, 6))
+            _, c_key_location = self.table.coordinate_to_cell_key(Coordinate(0, 8))
+            _, c_key_price = self.table.coordinate_to_cell_key(Coordinate(0, 9))
             self.table.update_cell(
-                row_key=row_key, column_key=col_key_status, value=kwargs["status"]
+                row_key=r_key, column_key=c_key_status, value=kwargs["status"]
             )
-            rlog.write(f"Updated column {col_key_status} in TUI table row {row_key}.")
+            self.table.update_cell(
+                row_key=r_key, column_key=c_key_location, value=kwargs["location"]
+            )
+            self.table.update_cell(
+                row_key=r_key, column_key=c_key_price, value=kwargs["price"]
+            )
+            rlog.write(f"Updated columns in table row {r_key}.")
+            self._sales_digits_update(listing)
+            rlog.write("Updated sales price panel.")
 
             self.pop_screen()  # Return to the main screen
 
