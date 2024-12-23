@@ -749,8 +749,11 @@ class ViewCommonCommandline(ViewCommon):
 
     # CLI basics & ask for things
 
-    def p(self, message, _log="", lead_nl=False, trail_nl=True):
-        """Prints with leading/trailing newlines, optionally logs."""
+    def p(self, message, _log="info", lead_nl=False, trail_nl=True):
+        """Prints with leading/trailing spacing, additionally logs.
+
+        Defaults to INFO level.
+        """
         if _log == "debug":
             log.debug(message)
         if _log == "info":
@@ -763,7 +766,6 @@ class ViewCommonCommandline(ViewCommon):
             print(str(message) + '\n')
         else:
             print(str(message))
-        return
 
     def ask(self, text=""):
         ''' ask user for something and return answer '''
