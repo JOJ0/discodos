@@ -1061,19 +1061,22 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             if Confirm.ask("Remove from Discogs Marketplace inventory?", default=False):
                 self.collection.remove_sales_listing(listing_id)
 
-        delete_db = Confirm.ask("Remove from DiscoBASE?", default=False)
-        if delete_db:
-            listing_db = self.collection.get_sales_listing_details(listing_id)
-            print(
-                Panel.fit(
-                    self.cli.two_column_view(listing_db, as_is=True, skip_empty=True),
-                    title=f"Listing {listing_id}",
-                )
+        listing_db = self.collection.get_sales_listing_details(listing_id)
+        if not listing_db:
+            self.cli.p("Listing not in DiscoBASE.")
+            return
+
+        print(
+            Panel.fit(
+                self.cli.two_column_view(listing_db, as_is=True, skip_empty=True),
+                title=f"Listing {listing_id}",
             )
-            sure = Confirm.ask("Sure?", default=False)
-            if sure:
-                self.collection.delete_sales_inventory_item(listing_id)
-                return
+        )
+        sure = Confirm.ask("Delete in DiscoBASE?", default=False)
+        if sure:
+            self.collection.delete_sales_inventory_item(listing_id)
+            return
+
         log.warning("Kept sales listing in DiscoBASE!")
         return
 
