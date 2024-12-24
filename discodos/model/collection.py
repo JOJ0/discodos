@@ -22,7 +22,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     # Base fetchers and inserts
 
-    def get_all_db_releases(self, orderby='d_artist, discogs_title'):
+    def get_all_db_releases(self, orderby='d_artist, discogs_title', as_dict=False):
         return self._select_simple(
             [
                 "d_catno",
@@ -33,6 +33,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "m_rel_id_override",
             ],
             "release",
+            as_dict=as_dict,
             orderby=orderby,
         )
 

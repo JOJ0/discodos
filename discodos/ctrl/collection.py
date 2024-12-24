@@ -1289,7 +1289,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.p("Cleaning up DiscoBASE release and collection tables...")
         total_items = self.collection.stats_releases_total()
-        collection = self.collection.get_all_db_releases(offset)
+        collection = self.collection.get_all_db_releases(offset, as_dict=True)
 
         console = Console()
         adapted_progress = Progress(
@@ -1309,19 +1309,19 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 )
                 if not existing:
                     orphaned_entries += 1
-                    console.print(row)
+                    entry = " - ".join([str(value) for value in row.values()])
+                    console.print(
+                        "[yellow]Not in Discogs collection, "
+                        f"mark orphaned: {entry}[/]"
+                    )
                     self.collection.toggle_collection_flag(
                         row["discogs_id"], in_collection=False
                     )
                     # We keep data as-is in the collection table.
                     # FIXME should we mark anything there as well?
-                    console.print(
-                        "[yellow]Release not in Discogs collection anymore. "
-                        "Marked as such but kept data.[/]"
-                    )
                 adapted_progress.update(task, advance=1)
 
-        print(f"Orphaned entries deleted: {orphaned_entries}.")
+        print(f"Orphaned entries found: {orphaned_entries}.")
         self.cli.duration_stats(start_time, 'Collection cleanup')
 
     # Helpers
