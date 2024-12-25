@@ -692,7 +692,10 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 for k, v in search_key_value.items()
             ]
         )
-        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
+        join = [
+            ("LEFT OUTER", "sales", "(release.discogs_id = sales.d_sales_release_id)"),
+            ("LEFT OUTER", "collection", "release.discogs_id = collection.d_coll_release_id"),
+        ]
         fields = [
                 "discogs_id",
                 "d_catno",
@@ -701,9 +704,12 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "in_d_collection",
                 "d_sales_listing_id",
                 "d_sales_status",
-                "sold",
+                "collection.sold",
                 "d_sales_location",
                 "d_sales_price",
+                "collection.d_coll_instance_id",
+                "collection.d_coll_folder_id",
+                "collection.d_coll_notes",
             ] if not custom_fields else custom_fields
 
         rows = self._select_simple(
@@ -743,13 +749,45 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         )
         return rows
 
-    def toggle_sold_state(self, release_id, sold):
-        """Pass boolean to mark as sold (or not) in DiscoBASE."""
-        sql_upd = '''UPDATE release SET
-                      (sold, sold_time) = (?, datetime('now', 'localtime'))
-                       WHERE discogs_id == ?;'''
-        tuple_upd = (sold, release_id)
-        return self.execute_sql(sql_upd, tuple_upd)
+    def toggle_sold_state(self, release_id, sold, instance_id=None):
+        """Pass boolean to mark as sold (or not) in DiscoBASE.
+
+        Returns (True, last_row_id) on success or (False, release_info) on "error"
+
+        Error state is: If multiple collection item instances we can't really decide
+        which one to set sold. User must solve manually!
+
+        If an instance_id was passed, decision is obvious, update sold flag and return
+        early.
+        """
+        if instance_id:
+            return (
+                True,
+                self.execute_sql(
+                    "UPDATE collection SET (sold) = (?) WHERE d_coll_instance_id == ?;",
+                    (sold, instance_id),
+                )
+            )
+
+        instances = self._select_simple(
+            ["d_coll_release_id", "d_coll_instance_id", "d_catno"],
+            "collection",
+            f"d_coll_release_id = {release_id}",
+            join=[("LEFT", "release", "d_coll_release_id = discogs_id")],
+            as_dict=True,
+        )
+        if len(instances) > 1:
+            details = f"{instances[0]['d_coll_release_id']} {instances[0]['d_catno']}"
+            log.debug(
+                "Multiple in collection. Mark sold manually: %s",
+                details,
+            )
+            return False, details
+
+        return True, self.execute_sql(
+            "UPDATE collection SET (sold) = (?) WHERE d_coll_release_id == ?;",
+            (sold, release_id),
+        )
 
     def get_one_release_for_list_app(
         self, release_id, orderby="d_artist, discogs_title"

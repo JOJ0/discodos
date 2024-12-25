@@ -127,8 +127,6 @@ class Db_setup(Database):
         {
             'schema_version': 3,
             'tasks': {
-                'Add field release.sold': 'ALTER TABLE release ADD sold TEXT;',
-                'Add field release.sold_time': 'ALTER TABLE release ADD sold_time TEXT;',
                 'New table sales':
                 """ CREATE TABLE sales (
                       d_sales_release_id INTEGER NOT NULL,
@@ -155,7 +153,8 @@ class Db_setup(Database):
                       d_coll_folder_id INTEGER NOT NULL,
                       d_coll_added TEXT NOT NULL,
                       d_coll_rating TEXT,
-                      d_coll_notes TEXT
+                      d_coll_notes TEXT,
+                      sold INTEGER NOT NULL DEFAULT 0
                       ); """,
                 }
         }]
@@ -312,6 +311,7 @@ class Config():  # pylint: disable=too-many-instance-attributes
             self.webdav_password = self._get_config_entry('webdav_password')
             self.webdav_url = self._get_config_entry('webdav_url')
             self.enable_tui = self._get_config_entry('enable_tui')
+            self.sold_folder_id = self._get_config_entry('discogs_sold_folder_id')
 
             # discogs_token is essential, bother user until we have one
             # but not when no_ask_token is set (macOS)
@@ -611,7 +611,8 @@ class Config():  # pylint: disable=too-many-instance-attributes
             'webdav_password': '',
             'webdav_url': '',
             'discobase_file': 'discobase.db',
-            'enable_tui': 'true'
+            'enable_tui': 'true',
+            'discogs_sold_folder_id': '',
         }
         create_msg = '\nSeems like you are running DiscoDOS for the first time, '
         create_msg+= 'a config file will be created...\n'

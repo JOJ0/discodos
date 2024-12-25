@@ -326,9 +326,11 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.update(task1, advance=1)
 
             if release:
-                self.create_release_entry(coll_items[0]['full_instance'])
+                self.create_release_entry(coll_items[0]["full_instance"])
                 for instance in coll_items:
-                    self.create_collection_item(instance)
+                    self.create_collection_item(
+                        instance, sold_folder_id=self.user.conf.sold_folder_id
+                    )
             else:
                 self.cli.error_not_the_release()
 
@@ -405,9 +407,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             item.release.id, item.release.title, artists, first_catno,
             d_coll=True
         )
+
         return rel_created, d_artists, artists
 
-    def create_collection_item(self, instance):
+    def create_collection_item(self, instance, sold_folder_id=None):
         """Creates a collection item by passing a dictionary to the DiscoBASE method."""
         self.collection.create_collection_item(
             {
@@ -417,6 +420,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_added": instance["date_added"],
                 "d_coll_rating": instance["rating"],
                 "d_coll_notes": instance.get("notes"),
+                "sold": instance["folder_id"] == sold_folder_id,
             }
         )
 
@@ -454,8 +458,11 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     releases_processed += 1
                     continue
 
-                rel_created, d_artists, artists = self.create_release_entry(item)
-                self.create_collection_item(item.data)
+                rel_created, d_artists, _ = self.create_release_entry(item)
+                self.create_collection_item(
+                    item.data,
+                    sold_folder_id=self.user.conf.sold_folder_id,
+                )
 
                 if not rel_created:
                     releases_db_errors += 1
@@ -919,6 +926,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         return self.update_tracks_from_brainz(tr_list, detail)
 
+    # Misc
+
     def edit_track(self, rel_id, rel_title, track_no):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
@@ -962,6 +971,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.collection.stats_tracks_bpm_manual(),
         )
 
+    # Sales, ls, ls TUI
+
     def ls_releases(self, search_terms):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
@@ -1004,39 +1015,48 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                             "d_sales_listing_id": listing.id,
                             "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
                             "d_sales_allow_offers": 1 if listing.allow_offers else 0,
+                            "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),  # pylint: disable=C0301
+                        })
+                    else:
+                        self.collection.create_sales_entry({
+                            "d_sales_release_id": listing.release.id,
+                            "d_sales_listing_id": listing.id,
+                            "d_sales_release_url": listing.release.url,
+                            "d_sales_url": listing.url,
+                            "d_sales_condition": RECORD_CHOICES_DISCOGS[listing.condition],
+                            "d_sales_sleeve_condition": SLEEVE_CHOICES_DISCOGS[listing.sleeve_condition],
+                            "d_sales_price": str(listing.price.value),
+                            "d_sales_comments": listing.comments,
+                            "d_sales_allow_offers": 1 if listing.allow_offers else 0,
+                            "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
+                            "d_sales_comments_private": listing.external_id,
+                            "d_sales_counts_as": str(listing.format_quantity),
+                            "d_sales_location": listing.location,
+                            "d_sales_weight": str(listing.weight),
                             "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
                         })
-                        custom_progress.update(task, advance=1)
-                        continue
-                    self.collection.create_sales_entry({
-                        "d_sales_release_id": listing.release.id,
-                        "d_sales_listing_id": listing.id,
-                        "d_sales_release_url": listing.release.url,
-                        "d_sales_url": listing.url,
-                        "d_sales_condition": RECORD_CHOICES_DISCOGS[listing.condition],
-                        "d_sales_sleeve_condition": SLEEVE_CHOICES_DISCOGS[listing.sleeve_condition],
-                        "d_sales_price": str(listing.price.value),
-                        "d_sales_comments": listing.comments,
-                        "d_sales_allow_offers": 1 if listing.allow_offers else 0,
-                        "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
-                        "d_sales_comments_private": listing.external_id,
-                        "d_sales_counts_as": str(listing.format_quantity),
-                        "d_sales_location": listing.location,
-                        "d_sales_weight": str(listing.weight),
-                        "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
-                    })
+                    #if not self.collection.get_release_by_id(listing.release.id):
+                    #    print("release entry missing. should fetch!")
+                    #    print(listing.data)
                     if (
                         listing.status == "Sold"
                         or "verkauft" in listing.location.lower()
                         or "verschenkt" in listing.location.lower()
                         or "geschenkt" in listing.location.lower()
                     ):
-                        self.collection.toggle_sold_state(listing.release.id, True)
+                        toggled, details = self.collection.toggle_sold_state(
+                            listing.release.id, True
+                        )
+                        if not toggled:
+                            custom_progress.console.print(
+                                "[yellow]Multiple instances in collection. "
+                                f"Mark sold manually: {details}[/]"
+                            )
                 except JSONDecodeError as e:
-                    log.error("Catched a JSONDecodeError. Not retrying! %s", e)
+                    log.error("Sales import JSONDecodeError. Not retrying! %s", e)
                     decode_err += 1
                 except Exception as e:
-                    log.error("Catched an Exception. Not retrying! %s", e)
+                    log.error("Sales import Exception. Not retrying! %s", e)
                     other_err += 1
                 custom_progress.update(task, advance=1)
 
@@ -1242,6 +1262,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             last_added = self.me.inventory.sort("listed", Sort.Order.DESCENDING)
             self.import_sales_listing(last_added[0].id)
             self.cli.p(f"Imported listing {last_added[0].id} into DiscoBASE.")
+
+    # Cleanup
 
     def cleanup_sales_inventory(self, offset=0):
         """Cleanup sales inventory"""

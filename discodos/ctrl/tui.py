@@ -71,16 +71,19 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         release_id = self.table.get_cell(row_key, "discogs_id")
+        instance_id = self.table.get_cell(row_key, "d_coll_instance_id")
         # Current and wanted states toggle
         current_state = self.table.get_cell(row_key, "sold")
         wanted_state = "No" if current_state == "Yes" else "Yes"
         # DB write
-        toggled = self.collection.toggle_sold_state(
-            release_id, self.cli.yes_no_to_bool(wanted_state)
+        toggled, _ = self.collection.toggle_sold_state(
+            release_id, self.cli.yes_no_to_bool(wanted_state), instance_id
         )
         # Update the cell on success and log
         if toggled:
-            rlog.write(f"Set {release_id} sold state {wanted_state} ")
+            rlog.write(
+                f"Set collection item instance {instance_id} sold state {wanted_state} "
+            )
             self.table.update_cell(row_key, "sold", wanted_state)
             return
         rlog.write(f"Error setting {release_id} sold state {wanted_state} ")

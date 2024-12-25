@@ -383,6 +383,9 @@ class ViewCommon():
             ("sold", "Sold", "sold"),
             ("location", "Location", "d_sales_location"),
             ("price", "Price", "d_sales_price"),
+            ("instance", "C.Instance", "d_coll_instance_id"),
+            ("folder", "C.Folder", "d_coll_folder_id"),
+            ("notes", "C.Notes", "d_coll_notes"),
         ]:
             self.cols_key_value_search.addcol(
                 shortcut=shortcut, caption=caption, name=name
