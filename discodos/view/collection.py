@@ -79,11 +79,21 @@ class CollectionViewCommandline(
 
     def tab_online_search_results(self, _result_list):
         self.p(
-            tab(_result_list, tablefmt="simple", headers={
-                'id': 'ID', 'artist': 'Artist', 'title': 'Release',
-                'label': 'Label', 'country': 'C', 'year': 'Year',
-                'format': 'Format'
-            }))
+            tab(
+                _result_list,
+                tablefmt="simple",
+                headers={
+                    "id": "ID",
+                    "artist": "Artist",
+                    "title": "Release",
+                    "label": "Label",
+                    "country": "C",
+                    "year": "Year",
+                    "format": "Format",
+                },
+            ),
+            _log=None,
+        )
 
     def tab_ls_releases(self, _result_list):
         self.p(
@@ -91,7 +101,8 @@ class CollectionViewCommandline(
                 _result_list,
                 tablefmt="simple",
                 headers = self.cols_key_value_search.headers_dict()
-            )
+            ),
+            _log=None
         )
 
     def tab_all_releases(self, releases_data):
@@ -137,7 +148,7 @@ class CollectionViewCommandline(
             ['Tracks in mixes', mixtracks_total],
             ['Unique tracks in mixes', mixtracks_unique],
         ]
-        self.p(tab(stats, tablefmt='plain'), lead_nl=True)
+        self.p(tab(stats, tablefmt='plain'), lead_nl=True, _log=None)
 
     # Error displays
 

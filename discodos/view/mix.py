@@ -67,16 +67,15 @@ class MixViewCommandline(MixViewCommon, ViewCommonCommandline, ViewCommon):
         tabulated = tab(
             self.trim_table_fields(mixes_short_timestamps),
             tablefmt="simple",
-            headers=self.cols_mixes.headers_dict()  # data is dict, headers too
+            headers=self.cols_mixes.headers_dict(),  # data is dict, headers too
         )
-        self.p(tabulated)
+        self.p(tabulated, _log=None)
 
     def tab_mix_info_header(self, mix_info):
-        self.p(tab(
-            [mix_info],
-            tablefmt="plain",
-            headers=self.cols_mixinfo.headers_list()
-        ))
+        self.p(
+            tab([mix_info], tablefmt="plain", headers=self.cols_mixinfo.headers_list()),
+            _log=None,
+        )
 
     def really_add_track(self, track_to_add, release_name, mix_id, pos):
         _answ = self.ask(

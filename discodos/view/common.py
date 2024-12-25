@@ -757,6 +757,8 @@ class ViewCommonCommandline(ViewCommon):
             log.debug(message)
         if _log == "info":
             log.info(message)
+        if _log is None:
+            pass
         if lead_nl and trail_nl:
             print('\n' + str(message) + '\n')
         elif lead_nl:
@@ -872,28 +874,37 @@ class ViewCommonCommandline(ViewCommon):
         # log.debug("")
 
         if _verbose:
-            self.p(tab(
-                mix_data_nl,
-                tablefmt='pipe' if not format else format,
-                headers=self.cols_mixtracks.headers_dict(short=True)
-            ))
+            self.p(
+                tab(
+                    mix_data_nl,
+                    tablefmt="pipe" if not format else format,
+                    headers=self.cols_mixtracks.headers_dict(short=True),
+                ),
+                _log=None,
+            )
         elif brainz:
             mix_data_brainz = self.replace_brainz(mix_data_key_bpm)
             mix_data_brainz_nl = self.trim_table_fields(
                 mix_data_brainz,
                 exclude=['methods']
             )
-            self.p(tab(
-                mix_data_brainz_nl,
-                tablefmt='grid' if not format else format,
-                headers=self.cols_mixtracks_brainz.headers_dict()
-            ))
+            self.p(
+                tab(
+                    mix_data_brainz_nl,
+                    tablefmt="grid" if not format else format,
+                    headers=self.cols_mixtracks_brainz.headers_dict(),
+                ),
+                _log=None
+            )
         else:
-            self.p(tab(
-                mix_data_nl,
-                tablefmt='pipe' if not format else format,
-                headers=self.cols_mixtracks_basic.headers_dict()
-            ))
+            self.p(
+                tab(
+                    mix_data_nl,
+                    tablefmt="pipe" if not format else format,
+                    headers=self.cols_mixtracks_basic.headers_dict(),
+                ),
+                _log=None
+            )
 
     # Rich based formatters
 
@@ -952,7 +963,6 @@ class ViewCommonCommandline(ViewCommon):
             # Format key bold and value normal font (or as we manipulated it above)
             table.add_row(f"[bold]{key}[/bold]", str(value))
         return table
-
 
     # Tutorial and welcome
 
