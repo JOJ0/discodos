@@ -996,6 +996,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             return
 
         prettified_results = self.cli.replace_key_value_search_releases(search_results)
+        prettified_results = self.cli.trim_table_fields(prettified_results)
         self.cli.p('Found releases:')
         self.cli.tab_ls_releases(prettified_results)
 

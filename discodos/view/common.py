@@ -566,13 +566,15 @@ class ViewCommon():
 
         return value_to_check
 
-    def trim_table_fields(self, tuple_table, cut_pos=16, exclude=[]):
-        """this method puts \n after a configured amount of characters
-        into _all_ fields of a sqlite row objects tuple list"""
-        log.info("VIEW: Trimming table field width "
-                 "to max {} chars".format(cut_pos))
-        # First convert list of tuples to list of dicts:
-        table_nl = [dict(row) for row in tuple_table]
+    def trim_table_fields(self, table, cut_pos=16, exclude=[]):  # pylint: disable=dangerous-default-value
+        """Puts \n after a configured amount of characters into _all_ fields of a
+
+        - list of "sqlite row object tuples"
+        - or a list of dicts
+        """
+        log.info("VIEW: Trimming table field width to max %s characters.", cut_pos)
+        # Convert list of tuples to list of dicts.
+        table_nl = [dict(row) for row in table]
         # Now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for key, field in row.items():
