@@ -100,7 +100,8 @@ class Database():
         distinct=False,
         join=None,
         as_dict=False,
-        union=None
+        union=None,
+        reverse_order=False,
     ):
         """Wrapper around the _select method. Puts together SELECT as string.
 
@@ -130,6 +131,7 @@ class Database():
                 join_clause += f" {join_type} JOIN {join_table} ON {join_cond}"
         where_clause = f"WHERE {condition}" if condition else ""
         orderby_clause = f"ORDER BY {orderby}" if orderby else ""
+        orderby_clause += " DESC" if reverse_order else ""
         select = "SELECT DISTINCT" if distinct else "SELECT"
         limit = f"LIMIT -1 OFFSET {offset}" if offset else ""
 

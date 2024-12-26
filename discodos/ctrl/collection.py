@@ -973,14 +973,19 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     # Sales, ls, ls TUI
 
-    def ls_releases(self, search_terms):
+    def ls_releases(self, search_terms, orderby=None, reverse_order=False):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = []
         self.cli.p('Searching database for: {}'.format(search_terms))
+        # Replace orderby with proper database key
+        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
+            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
         try:
             search_results = self.collection.key_value_search_releases(
                 search_key_value=search_terms,
+                orderby=orderby,
+                reverse_order=reverse_order,
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
             )
         except Exception as error:
@@ -1100,7 +1105,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         log.warning("Kept sales listing in DiscoBASE!")
         return
 
-    def tui_ls_releases(self, search_terms, orderby=None):
+    def tui_ls_releases(self, search_terms, orderby=None, reverse_order=False):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = None
@@ -1113,6 +1118,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             search_results = self.collection.key_value_search_releases(
                 search_key_value=search_terms if search_terms else {},
                 orderby=orderby,
+                reverse_order=reverse_order,
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
             )
         except Exception as error:
