@@ -380,7 +380,7 @@ class ViewCommon():
             ("collection", "in C.", "in_d_collection"),
             ("listing", "Listing", "d_sales_listing_id"),
             ("status", "Status", "d_sales_status"),
-            ("sold", "Sold", "sold"),
+            ("sold", "Sold", "collection.sold"),
             ("location", "Location", "d_sales_location"),
             ("price", "Price", "d_sales_price"),
             ("instance", "C.Instance", "d_coll_instance_id"),
