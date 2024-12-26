@@ -733,7 +733,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "table": "sales",
                 "condition": f"{where}",
                 "join": [
-                    ("LEFT OUTER", "collection", "sales.d_sales_release_id = collection.d_coll_release_id"),
+                    ("LEFT OUTER", "collection", "d_sales_release_id = d_coll_release_id"),  # pylint: disable=line-too-long
+                    ("LEFT OUTER", "release", "d_sales_release_id = discogs_id"),
                 ],
             }
         ]
