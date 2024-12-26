@@ -16,8 +16,13 @@ log = logging.getLogger('discodos')
 @click.argument("search_terms", metavar="SEARCH_TERMS", nargs=-1)
 @click.option("--order-by", "-o", type=str, help="order by DiscoBASE field")
 @click.option("--reverse", "-r", is_flag=True, help="reverse order")
+@click.option(
+    "--all", "-a", "include_not_in_coll", is_flag=True,
+    help="""Also include releases that are not in release table anymore (where removed
+    from collection).""",
+)
 @click.pass_obj
-def ls_cmd(helper, search_terms, order_by, reverse):
+def ls_cmd(helper, search_terms, order_by, reverse, include_not_in_coll):
     """Searches and lists collection items.
 
     Supports key=value search. Available keys can be either full DiscoBASE field names
@@ -44,6 +49,16 @@ def ls_cmd(helper, search_terms, order_by, reverse):
         coll_ctrl.cli.p(error)
 
     if user.conf.enable_tui:
-        coll_ctrl.tui_ls_releases(search_key_value, orderby=order_by, reverse_order=reverse)
+        coll_ctrl.tui_ls_releases(
+            search_key_value,
+            orderby=order_by,
+            reverse_order=reverse,
+            include_not_in_coll=include_not_in_coll,
+        )
     else:
-        coll_ctrl.ls_releases(search_key_value, orderby=order_by, reverse_order=reverse)
+        coll_ctrl.ls_releases(
+            search_key_value,
+            orderby=order_by,
+            reverse_order=reverse,
+            include_not_in_coll=include_not_in_coll,
+        )

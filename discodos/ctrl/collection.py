@@ -973,7 +973,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     # Sales, ls, ls TUI
 
-    def ls_releases(self, search_terms, orderby=None, reverse_order=False):
+    def ls_releases(
+        self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
+    ):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = []
@@ -986,7 +988,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 search_key_value=search_terms,
                 orderby=orderby,
                 reverse_order=reverse_order,
-                filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
+                include_not_in_coll=include_not_in_coll,
             )
         except Exception as error:
             self.cli.p(error)
@@ -1041,7 +1044,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                             "d_sales_weight": str(listing.weight),
                             "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
                         })
-                    #if not self.collection.get_release_by_id(listing.release.id):
+                    # if not self.collection.get_release_by_id(listing.release.id):
                     #    print("release entry missing. should fetch!")
                     #    print(listing.data)
                     if (
@@ -1106,7 +1109,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         log.warning("Kept sales listing in DiscoBASE!")
         return
 
-    def tui_ls_releases(self, search_terms, orderby=None, reverse_order=False):
+    def tui_ls_releases(
+        self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
+    ):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = None
@@ -1120,7 +1125,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 search_key_value=search_terms if search_terms else {},
                 orderby=orderby,
                 reverse_order=reverse_order,
-                filter_cols=self.cli.cols_key_value_search.shortcuts_dict()
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
+                include_not_in_coll=include_not_in_coll,
             )
         except Exception as error:
             self.cli.p(error)
