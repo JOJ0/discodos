@@ -566,75 +566,79 @@ class ViewCommon():
 
         return value_to_check
 
-    def trim_table_fields(self, table, cut_pos=16, exclude=[]):  # pylint: disable=dangerous-default-value
+    def trim_table_fields(self, table, cut_pos=16, exclude=None):
         """Puts \n after a configured amount of characters into _all_ fields of a
 
         - list of "sqlite row object tuples"
         - or a list of dicts
         """
+        if exclude is None:
+            exclude = []
+
         log.info("VIEW: Trimming table field width to max %s characters.", cut_pos)
-        # Convert list of tuples to list of dicts.
+        # Convert list of tuples to list of dicts
         table_nl = [dict(row) for row in table]
         # Now put newlines if longer than cut_pos chars
         for i, row in enumerate(table_nl):
             for key, field in row.items():
-                if (
-                    not is_number(field)
-                    and field is not None
-                    and key not in exclude
-                ):
+                if not is_number(field) and field is not None and key not in exclude:
                     field_length = len(field)
                     if field_length < cut_pos:  # Exit early on short fields
                         continue
-                    log.debug("String to be cut: {}".format(field))
+
+                    log.debug("String to be cut: %s", field)
                     possible_cuts = int(field_length / cut_pos)
-                    log.debug("possible_cuts: {}".format(possible_cuts))
-                    edited_field = ''
+                    log.debug("possible_cuts: %s", possible_cuts)
+
+                    edited_field = ""
                     prev_cut_pos_space = 0
                     loops = range(1, possible_cuts + 1)
-                    log.debug("We will loop {} time(s)".format(len(loops)))
+                    log.debug("We will loop %s time(s)", len(loops))
 
                     # Run as often as cut possibilities exist
                     for cycle in loops:
-                        log.debug("Cycle {}/{}".format(cycle, len(loops)))
+                        log.debug("Cycle %s/%s", cycle, len(loops))
                         # In each cycle we'll put \n _roughly_around_here_.
                         curr_cut_pos = cut_pos * cycle
                         log.debug("cur_cut_pos: %s", curr_cut_pos)
                         cut_pos_space = field.find(" ", curr_cut_pos)
-                        log.debug("Next space after curr_cut_pos is at %s",
-                                  cut_pos_space)
-                        # If no is space following (almost at end),
-                        # don't append newline, just append as-is!
+                        log.debug(
+                            "Next space after curr_cut_pos is at %s", cut_pos_space
+                        )
+
+                        # If no space follows (almost at end), append as-is
                         if cut_pos_space == -1:
-                            log.debug("No more space following. "
-                                      "Add part and break loop!")
+                            log.debug(
+                                "No more space following. Add part and break loop!"
+                            )
                             edited_field += field[prev_cut_pos_space:]
                             break
                         else:
-                            log.debug("Add part and continue loop "
-                                      "(if a cycle left)")
-                            edited_field += field[prev_cut_pos_space:cut_pos_space] + "\n"
-                        log.debug("From previous cut pos to current: {}".format(
-                            field[prev_cut_pos_space:cut_pos_space])
-                        )
-                        log.debug("")
-                        # Save pos for next cycle and skip the space itself,
-                        # we don't want following lines to start with a space!
-                        prev_cut_pos_space = cut_pos_space + 1
+                            log.debug("Add part and continue loop (if a cycle left)")
+                            edited_field += (
+                                field[prev_cut_pos_space:cut_pos_space] + "\n"
+                            )
+                            log.debug(
+                                "From previous cut pos to current: %s",
+                                field[prev_cut_pos_space:cut_pos_space],
+                            )
+                            # Save pos for next cycle and skip the space itself,
+                            # we don't want following lines to start with a space!
+                            prev_cut_pos_space = cut_pos_space + 1
 
                     if field_length > cut_pos_space and cut_pos_space != -1:
                         log.debug(
-                            "Loop done, appending remaining chars: "
-                            "{} to {}".format(cut_pos_space, field_length)
+                            "Loop done, appending remaining chars: %s to %s",
+                            cut_pos_space,
+                            field_length,
                         )
-                        # Add 1 to pos, we don't want a leading space.
-                        edited_field += field[cut_pos_space + 1:]
+                        # Add 1 to pos, we don't want a leading space
+                        edited_field += field[cut_pos_space + 1 :]
 
-                    log.debug("FINAL with newlines:")
-                    log.debug("{}".format(edited_field))
-                    log.debug("")
+                    log.debug("FINAL with newlines: %s", edited_field)
                     table_nl[i][key] = edited_field
-        log.debug("table_nl has {} lines".format(len(table_nl)))
+
+        log.debug("table_nl has %s lines", len(table_nl))
         return table_nl
 
     def replace_key_bpm(self, list_of_rows):
