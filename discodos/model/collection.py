@@ -693,28 +693,54 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             ]
         )
         join = [
-            ("LEFT OUTER", "sales", "(release.discogs_id = sales.d_sales_release_id)"),
-            ("LEFT OUTER", "collection", "release.discogs_id = collection.d_coll_release_id"),
+            ("LEFT OUTER", "sales", "discogs_id = sales.d_sales_release_id"),
+            ("LEFT OUTER", "collection", "discogs_id = collection.d_coll_release_id"),
         ]
         fields = [
-                "discogs_id",
-                "d_catno",
-                "d_artist",
-                "discogs_title",
-                "in_d_collection",
-                "d_sales_listing_id",
-                "d_sales_status",
-                "collection.sold",
-                "d_sales_location",
-                "d_sales_price",
-                "collection.d_coll_instance_id",
-                "collection.d_coll_folder_id",
-                "collection.d_coll_notes",
-            ] if not custom_fields else custom_fields
+            "release.discogs_id",
+            "release.d_catno",
+            "release.d_artist",
+            "release.discogs_title",
+            "release.in_d_collection",
+            "sales.d_sales_listing_id",
+            "sales.d_sales_status",
+            "collection.sold",
+            "sales.d_sales_location",
+            "sales.d_sales_price",
+            "collection.d_coll_instance_id",
+            "collection.d_coll_folder_id",
+            "collection.d_coll_notes",
+        ] if not custom_fields else custom_fields
+
+        fields_union = [
+            "sales.d_sales_release_id AS discogs_id",
+            "NULL AS d_catno",
+            "NULL AS d_artist",
+            "NULL AS discogs_title",
+            "NULL AS in_d_collection",
+            "sales.d_sales_listing_id",
+            "sales.d_sales_status",
+            "NULL AS sold",
+            "sales.d_sales_location",
+            "sales.d_sales_price",
+            "NULL AS d_coll_instance_id",
+            "NULL AS d_coll_folder_id",
+            "NULL AS d_coll_notes",
+        ]
+        union = [
+            {
+                "fields_list": fields_union,
+                "table": "sales",
+                "condition": f"{where}",
+                "join": [
+                    ("LEFT OUTER", "collection", "sales.d_sales_release_id = collection.d_coll_release_id"),
+                ],
+            }
+        ]
 
         rows = self._select_simple(
             fields, "release", fetchone=False, orderby=orderby, condition=where,
-            join=join,
+            join=join, union=union,
         )
         return rows
 

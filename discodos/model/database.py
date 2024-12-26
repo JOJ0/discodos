@@ -100,24 +100,69 @@ class Database():
         distinct=False,
         join=None,
         as_dict=False,
+        union=None
     ):
-        """This is a wrapper around the _select method.
-        It puts together SQL select statements as strings with support for JOIN.
+        """Wrapper around the _select method. Puts together SELECT as string.
+
+        Args:
+            fields_list (list): Rields to select.
+            table (str): Primary table.
+            condition (str, optional): WHERE clause condition.
+            offset (int, optional): Offset for pagination.
+            fetchone (bool, optional): Fetch only one row.
+            orderby (str, optional): ORDER BY clause.
+            distinct (bool, optional): Use SELECT DISTINCT.
+            join (list, optional): List of tuples specifying JOINs.
+                Format: [(join_type, table, condition), ...].
+            as_dict (bool, optional): Return results as a dictionary.
+            union (list, optional): List of dicts representing UNION statements.
+                Each dict has keys: fields_list, table, condition, join.
+
+        Returns:
+            Query results from _select.
         """
         log.debug("DB: _select_simple: fetchone = %s", fetchone)
         fields_str = ", ".join(fields_list)
         join_clause = ""
         if join:
             # Expecting join as a list of tuples: [(join_type, table, condition), ...]
-            for join_type, join_table, join_condition in join:
-                join_clause += f" {join_type.upper()} JOIN {join_table} ON {join_condition}"
-        where_or_not = f"WHERE {condition}" if condition else ""
-        orderby_or_not = f"ORDER BY {orderby}" if orderby else ""
+            for join_type, join_table, join_cond in join:
+                join_clause += f" {join_type} JOIN {join_table} ON {join_cond}"
+        where_clause = f"WHERE {condition}" if condition else ""
+        orderby_clause = f"ORDER BY {orderby}" if orderby else ""
         select = "SELECT DISTINCT" if distinct else "SELECT"
         limit = f"LIMIT -1 OFFSET {offset}" if offset else ""
+
+        # Build the main SELECT query
+        main_select = (
+            f"{select} {fields_str} FROM {table} {join_clause} {where_clause}"
+        )
+        # Build and combine UNION queries with the main SELECT
+        union_queries = []
+        if union:
+            for union_part in union:
+                union_fields = ", ".join(union_part["fields_list"])
+                union_join_clause = ""
+                if union_part.get("join"):
+                    for join_type, join_table, join_condition in union_part["join"]:
+                        union_join_clause += (
+                            f" {join_type} JOIN {join_table} " f" ON {join_condition}"
+                        )
+                union_where_clause = (
+                    f"WHERE {union_part['condition']}"
+                    if union_part.get("condition")
+                    else ""
+                )
+                union_queries.append(
+                    f"{select} {union_fields} FROM {union_part['table']} "
+                    f"{union_join_clause} {union_where_clause}"
+                )
+
         select_str = (
-            f"{select} {fields_str} FROM {table} {join_clause} {where_or_not} "
-            f"{orderby_or_not} {limit};"
+            f"{main_select} UNION {' UNION '.join(union_queries)} "
+            f"{orderby_clause} {limit}"
+            if union_queries
+            else f"{main_select} {orderby_clause} {limit}"
         )
         return self._select(select_str, fetchone, as_dict=as_dict)
 
