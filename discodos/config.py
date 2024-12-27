@@ -58,7 +58,6 @@ class Db_setup(Database):
                   discogs_title TEXT NOT NULL,
                   import_timestamp TEXT,
                   d_artist TEXT,
-                  in_d_collection INTEGER
                   ); """,
             'mix':
             """ CREATE TABLE mix (
@@ -129,8 +128,8 @@ class Db_setup(Database):
             'tasks': {
                 'New table sales':
                 """ CREATE TABLE sales (
-                      d_sales_release_id INTEGER NOT NULL,
                       d_sales_listing_id INTEGER NOT NULL,
+                      d_sales_release_id INTEGER NOT NULL,
                       d_sales_release_url TEXT,
                       d_sales_url TEXT,
                       d_sales_condition TEXT,
@@ -142,19 +141,23 @@ class Db_setup(Database):
                       d_sales_comments_private TEXT,
                       d_sales_counts_as INTEGER,
                       d_sales_location TEXT,
-                      d_sales_weight INTEGER,
+                      d_sales_weight REAL,
                       d_sales_posted TEXT,
-                      PRIMARY KEY (d_sales_release_id, d_sales_listing_id)
+                      sales_sold INTEGER NOT NULL DEFAULT 0,
+                      PRIMARY KEY (d_sales_listing_id)
                       ); """,
                 'New table collection':
                 """ CREATE TABLE collection (
-                      d_coll_instance_id INTEGER PRIMARY KEY,
+                      d_coll_instance_id INTEGER NOT NULL,
                       d_coll_release_id INTEGER NOT NULL,
                       d_coll_folder_id INTEGER NOT NULL,
                       d_coll_added TEXT NOT NULL,
                       d_coll_rating TEXT,
                       d_coll_notes TEXT,
-                      sold INTEGER NOT NULL DEFAULT 0
+                      coll_sold INTEGER NOT NULL DEFAULT 0,
+                      coll_d_sales_listing_id INTEGER,
+                      coll_orphaned INTEGER NOT NULL DEFAULT 0,
+                      PRIMARY KEY (d_coll_instance_id)
                       ); """,
                 }
         }]
