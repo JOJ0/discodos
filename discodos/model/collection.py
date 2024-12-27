@@ -277,6 +277,33 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "DELETE FROM release WHERE discogs_id == ?", (release_id, )
         )
 
+    def get_collection_items_by_release(self, release_id):
+        """Gets all collection item instances via a release_id from DiscoBASE"""
+        in_db = self._select_simple(
+            ["*"],
+            "collection",
+            condition=f"d_coll_release_id == {release_id}",
+            as_dict=True,
+        )
+        if not in_db:
+            log.warning("Collection item instance not in DiscoBASE.")
+            return None
+        return in_db
+
+    def delete_collection_item(self, instance_id):
+        """Deletes a release from DiscoBASE"""
+        in_db = self._select_simple(
+            ["d_coll_instance_id"],
+            "collection",
+            condition=f"d_coll_instance_id == {instance_id}",
+        )
+        if not in_db:
+            log.warning("Collection item instance not in DiscoBASE.")
+            return None
+        return self.execute_sql(
+            "DELETE FROM collection WHERE d_coll_instance_id == ?", (instance_id, )
+        )
+
     def create_collection_item(self, instance):
         """Creates a single entry to collection table and ensures up to date data.
 
@@ -286,9 +313,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         Returns a bool on errors, a lastrowid integer on success.
 
         """
-        # Just save a hint that collection item notes are present
-        if instance["d_coll_notes"] is not None:
-            instance["d_coll_notes"] = 1
         # join together a comma delim string for the SQL statement
         keys_str = ', '.join(instance.keys())
         # generate a tuple version of the values

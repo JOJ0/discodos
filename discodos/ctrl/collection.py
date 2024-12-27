@@ -235,9 +235,18 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             if folder.id == 1:
                 folder.add_release(extracted_id)
                 last_row_id = self.collection.create_release(
-                    result.id, result.title, artists, d_catno,
-                    d_coll=True
+                    result.id,
+                    result.title,
+                    artists,
+                    d_catno,
                 )
+                coll_items = self.collection.fetch_collection_item_instances(
+                    extracted_id
+                )
+                for instance in coll_items:
+                    self.create_collection_item(
+                        instance, sold_folder_id=self.user.conf.sold_folder_id
+                    )
         if not last_row_id:
             self.cli.error_not_the_release()
         log.debug("Discogs release was maybe added to Collection")
@@ -296,8 +305,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             folder = self.collection.me.collection_folders[0]
             folder.remove_release(instance['full_instance'])
 
-        delete_db = Confirm.ask("Remove from DiscoBASE?", default=False)
-        if delete_db:
+        if Confirm.ask("Show tracks in DiscoBASE to confirm removal?", default=False):
             tracks = self.collection.get_release_tracks_by_id(extracted_id)
             for track in tracks:
                 print(
@@ -306,11 +314,25 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                         title=f"Track {track['d_track_no']}",
                     )
                 )
-            sure = Confirm.ask("Sure?", default=False)
-            if sure:
-                self.collection.delete_release(extracted_id)
-                return
-        log.warning("Kept release in DiscoBASE!")
+            if len(tracks):
+                if Confirm.ask("Remove release and tracks?", default=False):
+                    self.collection.delete_release(extracted_id)
+            else:
+                print("No tracks. Moving on...")
+
+            coll_items = self.collection.get_collection_items_by_release(release_id)
+            for ci in coll_items:
+                print(
+                    Panel.fit(
+                        self.cli.two_column_view(ci, as_is=True, skip_empty=True),
+                        title=f"Collection item instance {ci['d_coll_instance_id']}",
+                    )
+                )
+                sure_coll = Confirm.ask("Remove collection item?", default=False)
+                if sure_coll:
+                    self.collection.delete_collection_item(ci["d_coll_instance_id"])
+                    return
+                log.warning("Kept collection item in DiscoBASE!")
         return
 
     # Import collection, import helpers
@@ -356,6 +378,17 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def create_collection_item(self, instance, sold_folder_id=None):
         """Creates a collection item by passing a dictionary to the DiscoBASE method."""
+        # Handle notes, we only allow field 3, which is called "Notes" in Discogs UI.
+        value_f3 = ""
+        if isinstance(instance.get("notes"), list):
+            value_f3 = next(
+                (
+                    item["value"]
+                    for item in instance["notes"]
+                    if item["field_id"] == 3
+                ),
+                None,
+            )
         self.collection.create_collection_item(
             {
                 "d_coll_instance_id": instance["instance_id"],
@@ -363,8 +396,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_folder_id": instance["folder_id"],
                 "d_coll_added": instance["date_added"],
                 "d_coll_rating": instance["rating"],
-                "d_coll_notes": instance.get("notes"),
-                "sold": instance["folder_id"] == sold_folder_id,
+                "d_coll_notes": value_f3,
+                "coll_sold": instance["folder_id"] == sold_folder_id,
             }
         )
 
