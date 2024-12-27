@@ -107,6 +107,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         return discogs_me
 
+    # Classic search
+
     def search_release(self, _searchterm):  # online or offline search is
         if self.collection.ONLINE:          # decided in this method
 
@@ -199,64 +201,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 raise SystemExit(1)
         return None
 
-    def view_links_list(self, query, orderby):
-        releases = None
-        # Replace orderby with proper database key
-        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
-            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
-        # Fetch from DiscoBASE
-        try:
-            releases = self.collection.key_value_search_releases(
-                search_key_value=query if query else {},
-                orderby=orderby,
-                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
-                custom_fields=[
-                    "d_catno",
-                    "d_artist",
-                    "discogs_title",
-                    "discogs_id",
-                    "m_rel_id",
-                    "m_rel_id_override",
-                    "d_sales_listing_id"
-                ],
-            )
-        except Exception as error:
-            self.cli.p(error)
-
-        # Nothing and exit
-        if not releases:
-            self.cli.p('Nothing found.')
-            return
-        # Display
-        self.cli.tab_all_releases(releases)
-
-    def track_report(self, track_searchterm):
-        release = self.search_release(track_searchterm)
-        if release:
-            if self.collection.ONLINE == True:
-                track_no = self.cli.ask_for_track(
-                    suggest=self.first_track_on_release)
-                rel_id = release['id']
-                rel_name = release['title']
-            else:
-                track_no = self.cli.ask_for_track()
-                rel_id = release[0]['discogs_id']
-                rel_name = release[0]['discogs_title']
-            track_occurences = self.collection.track_report_occurences(rel_id, track_no)
-            tr_sugg_msg = '\nTrack combo suggestions for {} on "{}".'.format(
-                track_no, rel_name)
-            tr_sugg_msg+= '\nThis is how you used this track in the past:'
-            self.cli.p(tr_sugg_msg)
-            if track_occurences:
-                for tr in track_occurences:
-                    self.cli.p('Snippet of Mix {} - "{}":'.format(
-                        tr['mix_id'], tr['name']))
-                    report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
-                    self.cli.tab_mix_table(report_snippet, _verbose = True)
-        else:
-            raise SystemExit(3)
-
-    # Import & remove single release to collection
+    # Import/remove single release/collection
 
     def add_release(self, release_id):
         start_time = time()
@@ -368,7 +313,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         log.warning("Kept release in DiscoBASE!")
         return
 
-    # Import collection and helpers for both single and collection import
+    # Import collection, import helpers
 
     def process_tracks(self, release_id, tracklist, d_artists):
         tracks_added = 0
@@ -515,7 +460,33 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         self.cli.duration_stats(start_time, "Discogs import")
 
-    # Misc
+    # Suggest
+
+    def track_report(self, track_searchterm):
+        release = self.search_release(track_searchterm)
+        if release:
+            if self.collection.ONLINE == True:
+                track_no = self.cli.ask_for_track(
+                    suggest=self.first_track_on_release)
+                rel_id = release['id']
+                rel_name = release['title']
+            else:
+                track_no = self.cli.ask_for_track()
+                rel_id = release[0]['discogs_id']
+                rel_name = release[0]['discogs_title']
+            track_occurences = self.collection.track_report_occurences(rel_id, track_no)
+            tr_sugg_msg = '\nTrack combo suggestions for {} on "{}".'.format(
+                track_no, rel_name)
+            tr_sugg_msg+= '\nThis is how you used this track in the past:'
+            self.cli.p(tr_sugg_msg)
+            if track_occurences:
+                for tr in track_occurences:
+                    self.cli.p('Snippet of Mix {} - "{}":'.format(
+                        tr['mix_id'], tr['name']))
+                    report_snippet = self.collection.track_report_snippet(tr['track_pos'], tr['mix_id'])
+                    self.cli.tab_mix_table(report_snippet, _verbose = True)
+        else:
+            raise SystemExit(3)
 
     def bpm_report(self, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
@@ -589,7 +560,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     )
                 )
 
-    # Brainz fetchers and helpers
+    # Tracks/Brainz
 
     def _err_cant_fetch(self, tr_no, rel_title):
         log.error(
@@ -971,37 +942,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.collection.stats_tracks_bpm_manual(),
         )
 
-    # Sales, ls, ls TUI
-
-    def ls_releases(
-        self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
-    ):
-        """search_terms is a key value dict: eg: d_artist: artistname"""
-
-        search_results = []
-        self.cli.p('Searching database for: {}'.format(search_terms))
-        # Replace orderby with proper database key
-        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
-            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
-        try:
-            search_results = self.collection.key_value_search_releases(
-                search_key_value=search_terms,
-                orderby=orderby,
-                reverse_order=reverse_order,
-                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
-                include_not_in_coll=include_not_in_coll,
-            )
-        except Exception as error:
-            self.cli.p(error)
-
-        if not search_results:
-            self.cli.p('Nothing found.')
-            return
-
-        prettified_results = self.cli.replace_key_value_search_releases(search_results)
-        prettified_results = self.cli.trim_table_fields(prettified_results)
-        self.cli.p('Found releases:')
-        self.cli.tab_ls_releases(prettified_results)
+    # Sales import
 
     def import_sales_inventory(self, light_import=False):
         """Import sales inventory"""
@@ -1109,6 +1050,15 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         log.warning("Kept sales listing in DiscoBASE!")
         return
 
+    # ls, ls TUI, links
+
+    def prepare_key_value_search(self, query):
+        """Returns a dictionary from space-delimited key=value pairs."""
+        return dict([
+                item.split("=") if "=" in item else ["title", item]
+                for item in query
+        ])
+
     def tui_ls_releases(
         self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
     ):
@@ -1146,6 +1096,69 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
         app.run(inline=False)
         return
+
+    def ls_releases(
+        self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
+    ):
+        """search_terms is a key value dict: eg: d_artist: artistname"""
+
+        search_results = []
+        self.cli.p('Searching database for: {}'.format(search_terms))
+        # Replace orderby with proper database key
+        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
+            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
+        try:
+            search_results = self.collection.key_value_search_releases(
+                search_key_value=search_terms,
+                orderby=orderby,
+                reverse_order=reverse_order,
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
+                include_not_in_coll=include_not_in_coll,
+            )
+        except Exception as error:
+            self.cli.p(error)
+
+        if not search_results:
+            self.cli.p('Nothing found.')
+            return
+
+        prettified_results = self.cli.replace_key_value_search_releases(search_results)
+        prettified_results = self.cli.trim_table_fields(prettified_results)
+        self.cli.p('Found releases:')
+        self.cli.tab_ls_releases(prettified_results)
+
+    def view_links_list(self, query, orderby):
+        releases = None
+        # Replace orderby with proper database key
+        if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
+            orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
+        # Fetch from DiscoBASE
+        try:
+            releases = self.collection.key_value_search_releases(
+                search_key_value=query if query else {},
+                orderby=orderby,
+                filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
+                custom_fields=[
+                    "d_catno",
+                    "d_artist",
+                    "discogs_title",
+                    "discogs_id",
+                    "m_rel_id",
+                    "m_rel_id_override",
+                    "d_sales_listing_id"
+                ],
+            )
+        except Exception as error:
+            self.cli.p(error)
+
+        # Nothing and exit
+        if not releases:
+            self.cli.p('Nothing found.')
+            return
+        # Display
+        self.cli.tab_all_releases(releases)
+
+    # Sell
 
     def sell_record_wizard(  # pylint: disable=too-many-locals
         self, query, release_id, condition, sleeve_condition, price, status, location,
@@ -1358,12 +1371,3 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         print(f"Orphaned entries found: {orphaned_entries}.")
         self.cli.duration_stats(start_time, 'Collection cleanup')
-
-    # Helpers
-
-    def prepare_key_value_search(self, query):
-        """Returns a dictionary from space-delimited key=value pairs."""
-        return dict([
-                item.split("=") if "=" in item else ["title", item]
-                for item in query
-        ])
