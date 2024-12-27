@@ -350,7 +350,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         rel_created = self.collection.create_release(
             item.release.id, item.release.title, artists, first_catno,
-            d_coll=True
         )
 
         return rel_created, d_artists, artists

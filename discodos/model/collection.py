@@ -221,36 +221,48 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 return False
 
     def create_release(
-        self, release_id, release_title, release_artists, d_catno, d_coll=False
+        self, release_id, release_title, release_artists, d_catno
     ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        """Creates a release entry, returns False on errors, last_row_id on success.
+
+        Success is either newly-created or existing-updated.
+        """
         try:
-            insert_sql = '''INSERT OR FAIL INTO
-                release(discogs_id, discogs_title, import_timestamp, d_artist,
-                in_d_collection, d_catno) VALUES(?, ?, ?, ?, ?, ?)'''
+            insert_sql = """
+                INSERT OR FAIL INTO release
+                    (discogs_id, discogs_title, import_timestamp, d_artist, d_catno)
+                    VALUES (?, ?, ?, ?, ?)
+            """
             in_tuple = (
-                release_id, release_title,
-                datetime.today().isoformat(' ', 'seconds'), release_artists,
-                d_coll, d_catno
+                release_id,
+                release_title,
+                datetime.today().isoformat(" ", "seconds"),
+                release_artists,
+                d_catno,
             )
             return self.execute_sql(insert_sql, in_tuple, raise_err=True)
         except sqlerr as e:
-            if "UNIQUE constraint failed" in e.args[0]:
-                log.debug("MODEL: Release already in DiscoBASE, updating ...")
-                try:
-                    upd_sql = '''UPDATE release SET (discogs_title,
-                        import_timestamp, d_artist, in_d_collection, d_catno)
-                        = (?, ?, ?, ?, ?) WHERE discogs_id == ?;'''
-                    upd_tuple = (
-                        release_title,
-                        datetime.today().isoformat(' ', 'seconds'),
-                        release_artists, d_coll, d_catno, release_id
-                    )
-                    return self.execute_sql(upd_sql, upd_tuple, raise_err=True)
-                except sqlerr as ee:
-                    log.error("MODEL: create_release: %s", ee.args[0])
-                    return False
-            else:
-                log.error("MODEL: %s", e.args[0])
+            if not "UNIQUE constraint failed" in e.args[0]:
+                log.error("MODEL: create_release (new) %s", e.args[0])
+                return False
+
+            log.debug("MODEL: Release already in DiscoBASE, updating ...")
+            try:
+                upd_sql = """
+                    UPDATE release SET
+                    (discogs_title, import_timestamp, d_artist, d_catno) = (?, ?, ?, ?)
+                    WHERE discogs_id == ?;
+                """
+                upd_tuple = (
+                    release_title,
+                    datetime.today().isoformat(" ", "seconds"),
+                    release_artists,
+                    d_catno,
+                    release_id,
+                )
+                return self.execute_sql(upd_sql, upd_tuple, raise_err=True)
+            except sqlerr as ee:
+                log.error("MODEL: create_release (update): %s", ee.args[0])
                 return False
 
     def delete_release(self, release_id):
