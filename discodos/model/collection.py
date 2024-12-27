@@ -701,13 +701,13 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         update_fields = ', '.join([
             f"{key} = excluded.{key}"
             for key in listing_object.keys()
-            if key not in {"d_sales_listing_id", "d_sales_release_id"}
+            if key not in {"d_sales_listing_id"}
         ])
 
         try:
             insert_sql = f"""
             INSERT INTO sales ({keys_str}) VALUES ({values_placeholders})
-            ON CONFLICT(d_sales_listing_id, d_sales_release_id) DO UPDATE SET
+            ON CONFLICT(d_sales_listing_id) DO UPDATE SET
                 {update_fields}
             """
             return self.execute_sql(insert_sql, values, raise_err=True)
@@ -833,9 +833,12 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return (
                 True,
                 self.execute_sql(
-                    "UPDATE collection SET (sold) = (?) WHERE d_coll_instance_id == ?;",
+                    """
+                    UPDATE collection SET (coll_sold) = (?)
+                    WHERE d_coll_instance_id == ?;
+                    """,
                     (sold, instance_id),
-                )
+                ),
             )
 
         instances = self._select_simple(
@@ -854,7 +857,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return False, details
 
         return True, self.execute_sql(
-            "UPDATE collection SET (sold) = (?) WHERE d_coll_release_id == ?;",
+            "UPDATE collection SET (coll_sold) = (?) WHERE d_coll_release_id == ?;",
             (sold, release_id),
         )
 
