@@ -741,7 +741,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             CASE
                 WHEN coll_orphaned = 0 AND d_coll_instance_id > 0 THEN 1
                 ELSE 0
-            END AS in_d_collection
+            END AS in_c
             """,
             "collection.coll_sold AS sold",
             "sales.d_sales_listing_id",
@@ -762,7 +762,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             CASE
                 WHEN d_coll_instance_id > 0 THEN 1
                 ELSE 0
-            END AS in_d_collection
+            END AS in_c
             """,
             "sales.sales_sold AS sold",
             "sales.d_sales_listing_id",

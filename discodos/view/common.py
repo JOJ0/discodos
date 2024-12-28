@@ -377,7 +377,7 @@ class ViewCommon():
             ("cat", "Catalog", "d_catno"),
             ("artist", "Artist", "d_artist"),
             ("title", "Title", "discogs_title"),
-            ("collection", "in C.", "in_d_collection"),
+            ("collection", "in C.", "in_c"),
             ("sold", "Sold", "sold"),
             ("listing", "Listing", "d_sales_listing_id"),
             ("status", "L.Status", "d_sales_status"),
@@ -740,8 +740,8 @@ class ViewCommon():
         human_readable_rows = [
             {
                 **row,
-                "in_d_collection": self.bool_to_yes_no(
-                    row["in_d_collection"]
+                "in_c": self.bool_to_yes_no(
+                    row["in_c"]
                 ),
                 "sold": self.bool_to_yes_no(
                     row["sold"]
