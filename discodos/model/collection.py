@@ -286,8 +286,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             as_dict=True,
         )
         if not in_db:
-            log.warning("Collection item instance not in DiscoBASE.")
-            return None
+            log.warning("No instance of release found in DiscoBASE collection.")
+            return []
         return in_db
 
     def delete_collection_item(self, instance_id):
