@@ -116,7 +116,7 @@ def sell_cmd(helper, query, listing_id, release_id, condition, sleeve_condition,
         return user
 
     user = update_user_interaction_helper(helper)
-    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    log.debug("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     coll_ctrl = CollectionControlCommandline(
         False, user, user.conf.discogs_token, user.conf.discogs_appid,
         user.conf.discobase, user.conf.musicbrainz_user,

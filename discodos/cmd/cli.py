@@ -409,7 +409,7 @@ def _main():
     # log.info("dir(args): %s", dir(args))
     # USER INTERACTION OBJECT ##################################################
     user = User_int(args)
-    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    log.debug("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
     # INIT COLLECTION CONTROLLER (DISCOGS API CONNECTION) ######################
     coll_ctrl = CollectionControlCommandline(
         False, user,

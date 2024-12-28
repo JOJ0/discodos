@@ -445,7 +445,7 @@ class DiscogsMixin:
                 artist_str = artist.name
             else:
                 artist_str += ' / {}'.format(artist.name)
-        log.info('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
+        log.debug('MODEL: combined artistlist to string \"{}\"'.format(artist_str))
         return artist_str
 
     def d_artists_parse(self, d_tracklist, track_number, d_artists):
@@ -455,27 +455,27 @@ class DiscogsMixin:
             # log.debug("d_artists_parse: this is the tr object: {}".format(dir(tr)))
             # log.debug("d_artists_parse: this is the tr object: {}".format(tr))
             if tr.position.upper() == track_number.upper():
-                # log.info("d_tracklist_parse: found by track number.")
+                # log.debug("d_tracklist_parse: found by track number.")
 
                 if len(tr.artists) == 1:
                     name = tr.artists[0].name
-                    log.info(
+                    log.debug(
                         f"MODEL: d_artists_parse: just one artist, returning it: {name}"
                     )
                     return name
 
                 if len(tr.artists) == 0:
-                    log.info(
+                    log.debug(
                         "MODEL: d_artists_parse: no artists in tracklist, "
                         "checking d_artists object..")
                     combined_name = self.d_artists_to_str(d_artists)
                     return combined_name
 
-                log.info("tr.artists len: {len(tr.artists)}")
+                log.debug("tr.artists len: {len(tr.artists)}")
                 for a in tr.artists:
                     log.debug(f"release.artists debug loop: {a.name}")
                 combined_name = self.d_artists_to_str(tr.artists)
-                log.info(
+                log.debug(
                     "MODEL: d_artists_parse: several artists, "
                     f"returning combined named {combined_name}")
                 return combined_name
@@ -523,7 +523,7 @@ class DiscogsMixin:
                         'MODEL: Found multiple CatNos, not adding "%s"',
                         label.data['catno']
                     )
-            log.info('MODEL: Found Discogs CatNo "%s"', catno_str)
+            log.debug('MODEL: Found Discogs CatNo "%s"', catno_str)
         return catno_str
 
     def d_get_all_catnos(self, d_labels):
@@ -539,5 +539,5 @@ class DiscogsMixin:
                     catno_str = label.data['catno']
                 else:
                     catno_str += '\n{}'.format(label.data['catno'])
-            log.info('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
+            log.debug('MODEL: Found Discogs CatNo(s) "{}"'.format(catno_str))
         return catno_str

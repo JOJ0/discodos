@@ -75,7 +75,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     musicbrainz_user, musicbrainz_pass, appIdentifier
                 )
         print()
-        log.info("CTRL: ONLINE=%s in %s", self.ONLINE, __class__.__name__)
+        log.debug("CTRL: ONLINE=%s in %s", self.ONLINE, __class__.__name__)
         self.first_track_on_release = ""
 
     @property
@@ -353,7 +353,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 ):
                     tracks_added += 1
                     # msg_tr_add = f'Track "{tr_artists}" - "{tr_title}"'
-                    # log.info(msg_tr_add)
+                    # log.debug(msg_tr_add)
                     # print(msg_tr_add)
                 else:
                     tracks_db_errors += 1
