@@ -91,9 +91,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     def action_edit_sales_listing(self):
         """Open the edit screen for a sales listing."""
         rlog = self.query_one(RichLog)
-        row_key, _ = self.table.coordinate_to_cell_key(
-            self.table.cursor_coordinate
-        )
+        row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
         listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
         if l_err:
@@ -123,18 +121,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
             # Update the table's cells
             r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
-            _, c_key_status = self.table.coordinate_to_cell_key(Coordinate(0, 6))
-            _, c_key_location = self.table.coordinate_to_cell_key(Coordinate(0, 8))
-            _, c_key_price = self.table.coordinate_to_cell_key(Coordinate(0, 9))
-            self.table.update_cell(
-                row_key=r_key, column_key=c_key_status, value=kwargs["status"]
-            )
-            self.table.update_cell(
-                row_key=r_key, column_key=c_key_location, value=kwargs["location"]
-            )
-            self.table.update_cell(
-                row_key=r_key, column_key=c_key_price, value=kwargs["price"]
-            )
+            self.table.update_cell(r_key, "d_sales_status", kwargs["status"])
+            self.table.update_cell(r_key, "d_sales_location", kwargs["location"])
+            self.table.update_cell(r_key, "d_sales_price", kwargs["price"])
             rlog.write(f"Updated columns in table row {r_key}.")
             self._sales_digits_update(listing)
             rlog.write("Updated sales price panel.")
