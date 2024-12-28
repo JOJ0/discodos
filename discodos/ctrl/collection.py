@@ -280,7 +280,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.update(task1, advance=1)
 
             if release:
-                self.create_release_entry(coll_items[0]["full_instance"])
+                self.create_release_entry(coll_items[0]["full_instance"].release)
                 for instance in coll_items:
                     self.create_collection_item(
                         instance, sold_folder_id=self.user.conf.sold_folder_id
@@ -364,14 +364,20 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
         return tracks_added, tracks_db_errors, tracks_discogs_errors
 
-    def create_release_entry(self, item):
-        d_artists = item.release.artists
+    def create_release_entry(self, release):
+        """Initiates adding a DiscoBASE release entry
+
+        Expects a Discogs API Release object.
+
+        Returns a tuple of (last_row_id, artists, catno) on success.
+        """
+        d_artists = release.artists
         artists = self.collection.d_artists_to_str(d_artists)
-        first_catno = self.collection.d_get_first_catno(item.release.labels)
-        self.print_release_info(item.release.id, artists, item.release.title)
+        first_catno = self.collection.d_get_first_catno(release.labels)
+        self.print_release_info(release.id, artists, release.title)
 
         rel_created = self.collection.create_release(
-            item.release.id, item.release.title, artists, first_catno,
+            release.id, release.title, artists, first_catno,
         )
 
         return rel_created, d_artists, artists
@@ -435,7 +441,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     releases_processed += 1
                     continue
 
-                rel_created, d_artists, _ = self.create_release_entry(item)
+                rel_created, d_artists, _ = self.create_release_entry(item.release)
                 self.create_collection_item(
                     item.data,
                     sold_folder_id=self.user.conf.sold_folder_id,
