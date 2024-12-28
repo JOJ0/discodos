@@ -737,7 +737,12 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release.d_catno",
             "release.d_artist",
             "release.discogs_title",
-            "release.in_d_collection",
+            """
+            CASE
+                WHEN coll_orphaned = 0 AND d_coll_instance_id > 0 THEN 1
+                ELSE 0
+            END AS in_d_collection
+            """,
             "collection.coll_sold AS sold",
             "sales.d_sales_listing_id",
             "sales.d_sales_status",
@@ -753,15 +758,20 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release.d_catno",
             "release.d_artist",
             "release.discogs_title",
-            "NULL AS in_d_collection",
+            """
+            CASE
+                WHEN d_coll_instance_id > 0 THEN 1
+                ELSE 0
+            END AS in_d_collection
+            """,
             "sales.sales_sold AS sold",
             "sales.d_sales_listing_id",
             "sales.d_sales_status",
             "sales.d_sales_location",
             "sales.d_sales_price",
-            "NULL AS d_coll_instance_id",
-            "NULL AS d_coll_folder_id",
-            "NULL AS d_coll_notes",
+            "d_coll_instance_id",
+            "d_coll_folder_id",
+            "d_coll_notes",
         ]
         union = [
             {
@@ -769,7 +779,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "table": "sales",
                 "condition": f"{where}",
                 "join": [
-                    ("LEFT OUTER", "collection", "d_sales_release_id = d_coll_release_id"),  # pylint: disable=line-too-long
+                    ("LEFT OUTER", "collection", "d_sales_listing_id = coll_d_sales_listing_id"),  # pylint: disable=line-too-long
                     ("LEFT OUTER", "release", "d_sales_release_id = discogs_id"),
                 ],
             }
