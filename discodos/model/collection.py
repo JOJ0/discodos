@@ -740,7 +740,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release.in_d_collection",
             "sales.d_sales_listing_id",
             "sales.d_sales_status",
-            "collection.sold",
+            "collection.coll_sold AS sold",
             "sales.d_sales_location",
             "sales.d_sales_price",
             "collection.d_coll_instance_id",
@@ -750,13 +750,13 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
         fields_union = [
             "sales.d_sales_release_id AS discogs_id",
-            "NULL AS d_catno",
-            "NULL AS d_artist",
-            "NULL AS discogs_title",
+            "release.d_catno",
+            "release.d_artist",
+            "release.discogs_title",
             "NULL AS in_d_collection",
             "sales.d_sales_listing_id",
             "sales.d_sales_status",
-            "NULL AS sold",
+            "sales.sales_sold AS sold",
             "sales.d_sales_location",
             "sales.d_sales_price",
             "NULL AS d_coll_instance_id",
@@ -818,8 +818,12 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         )
         return rows
 
-    def toggle_sold_state(self, release_id, sold, instance_id=None):
-        """Pass boolean to mark as sold (or not) in DiscoBASE.
+    def toggle_collection_sold_flag(
+        self, release_id, sold, instance_id=None, listing_id=None
+    ):
+        """Toggle sold flag on collection items.
+
+        Expects boolean sold.
 
         Returns (True, last_row_id) on success or (False, release_info) on "error"
 
@@ -827,8 +831,18 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         which one to set sold. User must solve manually!
 
         If an instance_id was passed, decision is obvious, update sold flag and return
-        early.
+        early. If a listing_id was passed, it is also saved in the collection item
+        record.
         """
+        if instance_id and listing_id:
+            return True, self.execute_sql(
+                """
+                UPDATE collection SET
+                    (coll_sold, coll_d_sales_listing_id) = (?, ?)
+                    WHERE d_coll_instance_id == ?;
+                """,
+                (sold, instance_id, listing_id),
+            )
         if instance_id:
             return (
                 True,
@@ -841,6 +855,8 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 ),
             )
 
+        # Solution is not entirely clear, fetch collection item instances and set only
+        # if a single collection item is existing.
         instances = self._select_simple(
             ["d_coll_release_id", "d_coll_instance_id", "d_catno"],
             "collection",
@@ -857,7 +873,11 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return False, details
 
         return True, self.execute_sql(
-            "UPDATE collection SET (coll_sold) = (?) WHERE d_coll_release_id == ?;",
+            """
+            UPDATE collection SET
+                (coll_sold) = (?)
+                WHERE d_coll_release_id == ?;
+            """,
             (sold, release_id),
         )
 

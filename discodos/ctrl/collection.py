@@ -982,12 +982,61 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     # Sales import
 
+    def print_import_sales_notes(self):
+        print(
+            "[cyan]"
+            "- Adds missing data for non-collection releases.\n"
+            "- Marks draft sales entries as sold when location comments match "
+            "configured pattern.\n"
+            "- Additionally tries to match collection items and marks them as sold.\n"
+            "- To manually set sold flag, use `dsc ls id=<id>` with 'Toggle sold' "
+            "command (s).\n"
+            "[/]"
+        )
+
+    def is_listing_sold(self, listing_status, listing_location):
+        if (
+            listing_status == "Sold"
+            or "verkauft" in listing_location.lower()
+            or "verschenkt" in listing_location.lower()
+            or "geschenkt" in listing_location.lower()
+        ):
+            return 1
+        return 0
+
+    def handle_listing_release_and_sold_flag(self, listing):
+        """Postprocess sales listing imports.
+
+        - Create missing release record
+        - Update collection sold flag
+
+        Expects a sales listing object.
+        """
+        # Check if release info is available; fetch details and create entry if not.
+        if not self.collection.get_release_by_id(listing.release.id):
+            log.info("Fetching release details for sales listing.")
+            self.create_release_entry(
+                self.collection.fetch_discogs_release(listing.release.id)
+            )
+
+        # Set sold flag on single collection items. Inform if decision not possible.
+        if self.is_listing_sold(listing.status, listing.location):
+            toggled, details = self.collection.toggle_collection_sold_flag(
+                listing.release.id, True
+            )
+            if not toggled:
+                custom_progress.console.print(
+                    "[yellow]Multiple instances in collection. "
+                    f"Mark sold manually: {details}[/]"
+                )
+
     def import_sales_inventory(self, light_import=False):
         """Import sales inventory"""
         start_time = time()
         decode_err = other_err =  0
         self.cli.exit_if_offline(self.collection.ONLINE)
         self.cli.p("Importing Discogs sales inventory into DiscoBASE...")
+        self.print_import_sales_notes()
         total_items = len(self.collection.me.inventory)
 
         with custom_progress:
@@ -1024,24 +1073,13 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                             "d_sales_location": listing.location,
                             "d_sales_weight": str(listing.weight),
                             "d_sales_posted": datetime.strftime(listing.posted, "%Y-%m-%d"),
+                            "sales_sold": self.is_listing_sold(
+                                listing.status,
+                                listing.location
+                            ),
                         })
-                    # if not self.collection.get_release_by_id(listing.release.id):
-                    #    print("release entry missing. should fetch!")
-                    #    print(listing.data)
-                    if (
-                        listing.status == "Sold"
-                        or "verkauft" in listing.location.lower()
-                        or "verschenkt" in listing.location.lower()
-                        or "geschenkt" in listing.location.lower()
-                    ):
-                        toggled, details = self.collection.toggle_sold_state(
-                            listing.release.id, True
-                        )
-                        if not toggled:
-                            custom_progress.console.print(
-                                "[yellow]Multiple instances in collection. "
-                                f"Mark sold manually: {details}[/]"
-                            )
+                    # Handle missing release info and toggle collection sold flag.
+                    self.handle_listing_release_and_sold_flag(listing)
                 except JSONDecodeError as e:
                     log.error("Sales import JSONDecodeError. Not retrying! %s", e)
                     decode_err += 1
@@ -1056,9 +1094,14 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def import_sales_listing(self, listing_id):
         """Import a single marketplace listing."""
-        listing, _, _ = self.collection.fetch_sales_listing_details(listing_id)
-        listing["d_sales_listing_id"] = listing_id
+        self.print_import_sales_notes()
+        listing, err, _ = self.collection.fetch_sales_listing_details(listing_id)
+        if err:
+            self.cli.p("Listing not existing.")
+            return
+        listing["d_sales_listing_id"] = listing_id  # take ID from arg, fetch doesn't have it.
         self.collection.create_sales_entry(listing)
+        self.cli.p("Sales listing import done.")
 
     def remove_and_delete_sales_listing(self, listing_id):
         """Remove all from collection and delete from DB."""
