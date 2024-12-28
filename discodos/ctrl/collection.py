@@ -220,7 +220,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             return False
 
         self.cli.p(f"Asking Discogs if release ID {extracted_id:d} is valid.")
-        result = self.collection.get_d_release(extracted_id)
+        result = self.collection.fetch_discogs_release(extracted_id)
         if not result:
             log.debug("No Discogs release. Returning False.")
             self.cli.duration_stats(start_time, 'Adding Release to Collection')
@@ -263,7 +263,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             extracted_id = extract_discogs_id_regex(release_id)
 
             progress.console.print(f"Looking up {extracted_id:d} on Discogs")
-            result = self.collection.get_d_release(extracted_id)
+            result = self.collection.fetch_discogs_release(extracted_id)
             progress.update(task1, advance=1)
             if not result:
                 raise SystemExit(3)
@@ -681,7 +681,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         if not track_no:
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
         if track_no == '*' or track_no == 'all':
-            full_release = self.collection.get_d_release(rel_id)
+            full_release = self.collection.fetch_discogs_release(rel_id)
             tr_list = []
             for tr in full_release.tracklist:
                 tr_list.append({
@@ -725,7 +725,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
             log.info('CTRL: Trying to match Discogs release %s "%s"...',
                      discogs_id, track['discogs_title'])
-            d_rel = self.collection.get_d_release(discogs_id) # 404 is handled here
+            d_rel = self.collection.fetch_discogs_release(discogs_id) # 404 is handled here
 
             def _warn_skipped(m):  # prints skipped-message and processed-count
                 log.warning(m)
@@ -912,7 +912,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             track_no = self.cli.ask_for_track(suggest = self.first_track_on_release)
 
         if track_no == '*' or track_no == 'all':
-            full_release = self.collection.get_d_release(rel_id)
+            full_release = self.collection.fetch_discogs_release(rel_id)
             tr_list = []
             for tr in full_release.tracklist:
                 db_track = self.collection.get_track_for_brainz_update(rel_id, tr.position.upper())

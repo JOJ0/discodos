@@ -128,7 +128,7 @@ class DiscogsMixin:
                 })
         return tl
 
-    def get_d_release(self, release_id, catch=True):
+    def fetch_discogs_release(self, release_id, catch=True):
         try:
             r = self.d.release(release_id)
             if catch is True:
