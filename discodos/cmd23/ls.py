@@ -18,8 +18,8 @@ log = logging.getLogger('discodos')
 @click.option("--reverse", "-r", is_flag=True, help="reverse order")
 @click.option(
     "--all", "-a", "include_not_in_coll", is_flag=True,
-    help="""Also include releases that are not in release table anymore (where removed
-    from collection).""",
+    help="""Also include releases that are not in collection and only present in sales
+    table.""",
 )
 @click.pass_obj
 def ls_cmd(helper, search_terms, order_by, reverse, include_not_in_coll):
