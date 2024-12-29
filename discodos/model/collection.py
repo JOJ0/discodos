@@ -797,7 +797,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         )
         return rows
 
-    def get_sales_listing_details(self, listing_id):
+    def get_sales_listing_details(self, listing_id, tui_view=False):
         """Get Marketplace listing details from DB if already imported.
 
         Always returns a dict, not Row.
@@ -806,23 +806,30 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             listing_id = "NULL"
         where = f"d_sales_listing_id == {listing_id}"
 
+        tui_first =["d_sales_listing_id"]
+        fields = [
+            "d_sales_release_id",
+            "d_sales_release_url",
+            "d_sales_url",
+            "d_sales_condition",
+            "d_sales_sleeve_condition",
+            "d_sales_comments",
+            "d_sales_location",
+            "d_sales_price",
+            "d_sales_status",
+            "d_sales_posted",
+            "d_sales_allow_offers",
+            "d_sales_comments_private",
+            "d_sales_counts_as",
+            "d_sales_weight",
+        ]
+        if tui_view:
+            fields = tui_first + fields
+            fields.remove("d_sales_release_id")
+            fields.remove("d_sales_release_url")
+
         rows =  self._select_simple(
-            [
-                "d_sales_release_id",
-                "d_sales_release_url",
-                "d_sales_url",
-                "d_sales_condition",
-                "d_sales_sleeve_condition",
-                "d_sales_price",
-                "d_sales_comments",
-                "d_sales_allow_offers",
-                "d_sales_status",
-                "d_sales_comments_private",
-                "d_sales_counts_as",
-                "d_sales_location",
-                "d_sales_weight",
-                "d_sales_posted",
-            ],
+            fields,
             "sales",
             fetchone=True, condition=where, as_dict=True
         )

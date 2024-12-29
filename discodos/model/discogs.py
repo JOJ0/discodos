@@ -216,7 +216,7 @@ class DiscogsMixin:
             log.error("%s (Exception)", Exc)
         return count
 
-    def fetch_sales_listing_details(self, listing_id, db_keys=True):
+    def fetch_sales_listing_details(self, listing_id, db_keys=True, tui_view=False):
         """Fetches details like price for a Discogs marketplace listing.
 
         Translates condition, status to short form, eg. VG+, forsale
@@ -228,6 +228,8 @@ class DiscogsMixin:
             if not listing_id:
                 raise NoListingIDError
             listing = self.d.listing(listing_id)
+
+            tui_first = {"d_sales_listing_id": listing_id}
             l = {
                 "d_sales_release_id": listing.release.id,
                 "d_sales_release_url": listing.release.url,
@@ -236,16 +238,21 @@ class DiscogsMixin:
                 "d_sales_sleeve_condition": SLEEVE_CHOICES_DISCOGS[
                     listing.sleeve_condition
                 ],
-                "d_sales_price": str(listing.price.value),
                 "d_sales_comments": listing.comments,
-                "d_sales_allow_offers": listing.allow_offers,
+                "d_sales_location": listing.location,
+                "d_sales_price": str(listing.price.value),
                 "d_sales_status": STATUS_CHOICES_DISCOGS[listing.status],
+                "d_sales_posted": listing.posted,
+                "d_sales_allow_offers": listing.allow_offers,
                 "d_sales_comments_private": listing.external_id,
                 "d_sales_counts_as": str(listing.format_quantity),
-                "d_sales_location": listing.location,
                 "d_sales_weight": str(listing.weight),
-                "d_sales_posted": listing.posted,
             }
+            if tui_view:
+                l = {**tui_first, **l}
+                del l["d_sales_release_id"]
+                del l["d_sales_release_url"]
+
             if not db_keys:
                 l = {
                     key.removeprefix("d_sales_"): value for key, value in l.items()

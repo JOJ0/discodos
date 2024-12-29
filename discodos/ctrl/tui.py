@@ -5,6 +5,7 @@ from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
 from textual.coordinate import Coordinate
+from rich.markdown import Markdown
 
 from discodos.model import DiscogsMixin
 from discodos.ctrl.tui_edit import EditScreen
@@ -94,7 +95,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """Open the edit screen for a sales listing."""
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
-        listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+        listing, l_err, _ = self.fetch_sales_listing_details(listing_id, tui_view=True)
         if l_err:
             self.rlog.write(f"Error fetching sales listing details: {l_err}")
             return
@@ -107,7 +108,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 return
             self.rlog.write("Updated Discogs Marketplace listing.")
 
-            listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+            listing, l_err, _ = self.fetch_sales_listing_details(listing_id, tui_view=True)
             if l_err:
                 self.rlog.write("Error fetching sales listing details:", l_err)
                 return
@@ -172,7 +173,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
-        listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
+        listing, l_err, _ = self.fetch_sales_listing_details(listing_id, tui_view=True)
         if l_err:
             self.rlog.write(f"Can't fetch listing details: {l_err}")
             return
@@ -203,6 +204,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_upper_content = Static("Currently for sale:")
         self.middle_column_content = Static("")
         self.middle_column_lower_content = Static("")
+        self.right_column_upper_content = Static("")
         self.right_column_content = Static("")
         self.sales_price = Digits("0", id="sales-price")
         # Layout
@@ -237,35 +239,46 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     def on_data_table_row_highlighted(self, event):
         """Get DB listing details and Marketplace stats for highlighted row."""
         row_key = event.row_key
-        # Listing
+        # Get ID's from table
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
         release_id = self.table.get_cell(row_key, "discogs_id")
-        listing = self.collection.get_sales_listing_details(listing_id)
+        listing = self.collection.get_sales_listing_details(listing_id, tui_view=True)
+        # Update column left
         self.left_column_content.update(
             self.cli.two_column_view(listing, translate_keys=self.key_translation)
         )
         self._sales_digits_update(listing)
-        # Stats
-        currently_for_sale = f"https://www.discogs.com/sell/release/{release_id}"
-        self.middle_column_upper_content.update(
-            f"Currently for sale: {currently_for_sale}\n"
-        )
-        # Reset when row changes
+
+        # Update column middle - Currently for sale link
+        for_sale_link = self.cli.link_to("discogs for sale", release_id, md=True)
+        md_link = Markdown(f"Currently for sale: {for_sale_link}")
+        self.middle_column_upper_content.update(md_link)
+        # Update column middle - Reset stats
         self.middle_column_content.update(
-            "Press enter to fetch Discogs sales stats and suggested prices!"
+           "\nPress enter to fetch Marketplace stats and suggested price!"
         )
         self.middle_column_lower_content.update("")
+        # Update column right
+        self.right_column_upper_content.update(
+            self.cli.two_column_view(
+                {
+                    "Release": release_id,
+                    "Release URL": self.cli.link_to("discogs release", release_id),
+                },
+                as_is=True,
+            )
+        )
 
     def on_data_table_row_selected(self, event):
         """Fetch Discogs listing details and Marketplace stats for selected row."""
         row_key = event.row_key
-        # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "discogs_id")
+        # Stats
         stats, s_err, _ = self.fetch_marketplace_stats(release_id)
         if s_err:
             self.rlog.write(f"Fetching Marketplace stats: {s_err}")
         self.middle_column_content.update(self.cli.two_column_view(stats))
-        # Price suggestion - we fetch always
+        # Price suggestion
         p = self.fetch_price_suggestion(release_id, "VG+")
         if not p:
             self.rlog.write("Fetching price suggestion failed.")

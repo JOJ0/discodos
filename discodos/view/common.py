@@ -394,8 +394,8 @@ class ViewCommon():
     def initialize_cols_sales_listing_details(self):
         self.cols_sales_listing_details = TableDefaults()
         for name, caption in [
-            ("d_sales_listing_id", "Listing ID"),
-            ("d_sales_release_id", "Release ID"),
+            ("d_sales_listing_id", "Listing"),
+            ("d_sales_release_id", "Release"),
             ("d_sales_release_url", "Release URL"),
             ("d_sales_url", "Listing URL"),
             ("d_sales_condition", "Condition"),
@@ -490,24 +490,31 @@ class ViewCommon():
 
     # Hyperlinks helpers
 
-    def link_to(self, service, id):
+    def link_to(self, service, _id, md=False):
         '''return link to either Discgos release, MusicBrainz Release/Recording
            or AcousticBrainz recording entries.
            Method currently does no sanity checking at all!
+
+        md flag enables return in Markddown syntax, which can be rendered by Rich and
+        Textual widgets.
         '''
         if service == 'discogs release':
-            return 'https://discogs.com/release/{}'.format(id)
+            link = f'https://discogs.com/release/{_id}'
         if service == 'discogs master release':
-            return 'https://discogs.com/master/{}'.format(id)
+            link = f'https://discogs.com/master/{_id}'
         if service == 'discogs listing':
-            return 'https://discogs.com/sell/item/{}'.format(id)
+            link = f'https://discogs.com/sell/item/{_id}'
+        if service == 'discogs for sale':
+            link = f'https://discogs.com/sell/release/{_id}'
         if service == 'musicbrainz release':
-            return 'https://musicbrainz.org/release/{}'.format(id)
+            link = f'https://musicbrainz.org/release/{_id}'
         if service == 'musicbrainz recording':
-            return 'https://musicbrainz.org/recording/{}'.format(id)
+            link = f'https://musicbrainz.org/recording/{_id}'
         if service == 'acousticbrainz recording':
-            return 'https://acousticbrainz.org/{}'.format(id)
-        return 'Unknown online service'
+            link = f'https://acousticbrainz.org/{_id}'
+        if md:
+            link = f"[View in browser]({link})"
+        return link if service else 'Unsupported online service'
 
     def join_links_to_str(self, row):
         links = []
@@ -930,8 +937,8 @@ class ViewCommonCommandline(ViewCommon):
         """
         # Create a rich Table with two columns.
         table = rich_table(box=None)
-        table.add_column("Field", style="cyan", justify="right")
-        table.add_column("Value", style="white")
+        table.add_column("", style="cyan", justify="right")
+        table.add_column("", style="white")
         # Display an empty table instead of nothing.
         if not details_dict:
             log.debug("two_column_view didn't receive data.")
@@ -940,7 +947,7 @@ class ViewCommonCommandline(ViewCommon):
         # Highlight/fix/replace some values first
         values_replaced = {}
         for key, value in details_dict.items():
-            if key in ["d_sales_release_url", "d_sales_url"]:
+            if key in ["d_sales_release_url", "d_sales_url", "Release URL"]:
                 value = Markdown(f"[View in browser]({value})")
             if key == "d_sales_allow_offers":
                 value =  "Yes" if value in [1, True] else "No"
