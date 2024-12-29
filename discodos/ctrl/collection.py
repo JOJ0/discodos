@@ -995,8 +995,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         )
 
     def is_listing_sold(self, listing_status, listing_location):
+        """Returns for database import already."""
         if (
-            listing_status == "Sold"
+            listing_status == "sold"
             or "verkauft" in listing_location.lower()
             or "verschenkt" in listing_location.lower()
             or "geschenkt" in listing_location.lower()
@@ -1004,7 +1005,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             return 1
         return 0
 
-    def handle_listing_release_and_sold_flag(self, listing):
+    def handle_listing_release_and_sold_flag(
+        self, release_id, listing_status, listing_location, listing_id=None
+    ):
         """Postprocess sales listing imports.
 
         - Create missing release record
@@ -1013,16 +1016,17 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         Expects a sales listing object.
         """
         # Check if release info is available; fetch details and create entry if not.
-        if not self.collection.get_release_by_id(listing.release.id):
+        if not self.collection.get_release_by_id(release_id):
             log.info("Fetching release details for sales listing.")
             self.create_release_entry(
-                self.collection.fetch_discogs_release(listing.release.id)
+                self.collection.fetch_discogs_release(release_id)
             )
 
         # Set sold flag on single collection items. Inform if decision not possible.
-        if self.is_listing_sold(listing.status, listing.location):
+        is_sold = self.is_listing_sold(listing_status, listing_location)
+        if is_sold == 1:
             toggled, details = self.collection.toggle_collection_sold_flag(
-                listing.release.id, True
+                release_id, True, listing_id=listing_id
             )
             if not toggled:
                 custom_progress.console.print(
@@ -1079,7 +1083,12 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                             ),
                         })
                     # Handle missing release info and toggle collection sold flag.
-                    self.handle_listing_release_and_sold_flag(listing)
+                    self.handle_listing_release_and_sold_flag(
+                        listing.release.id,
+                        listing.status,
+                        listing.location,
+                        listing_id=listing.id,
+                    )
                 except JSONDecodeError as e:
                     log.error("Sales import JSONDecodeError. Not retrying! %s", e)
                     decode_err += 1
@@ -1100,8 +1109,20 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         if err:
             self.cli.p("Listing not existing.")
             return
-        listing["d_sales_listing_id"] = listing_id  # take ID from arg, fetch doesn't have it.
+        listing["d_sales_listing_id"] = listing_id  # fetch doesn't have ID.
+        # Append sales_sold field
+        listing["sales_sold"] = self.is_listing_sold(
+            listing["d_sales_status"],
+            listing["d_sales_location"],
+        )
         self.collection.create_sales_entry(listing)
+        # Handle missing release info and toggle collection sold flag.
+        self.handle_listing_release_and_sold_flag(
+            listing["d_sales_release_id"],
+            listing["d_sales_status"],
+            listing["d_sales_location"],
+            listing_id=listing["d_sales_listing_id"],
+        )
         self.cli.p("Sales listing import done.")
 
     def remove_and_delete_sales_listing(self, listing_id):

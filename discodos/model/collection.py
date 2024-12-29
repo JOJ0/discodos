@@ -852,6 +852,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         record.
         """
         if instance_id and listing_id:
+            log.info(
+                f"MODEL: Set coll sold {sold}: instance {instance_id}, listing {listing_id}"
+            )
             return True, self.execute_sql(
                 """
                 UPDATE collection SET
@@ -861,6 +864,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 (sold, instance_id, listing_id),
             )
         if instance_id:
+            log.info(
+                f"MODEL: Set coll sold {sold}: instance {instance_id}"
+            )
             return (
                 True,
                 self.execute_sql(
@@ -883,12 +889,28 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         )
         if len(instances) > 1:
             details = f"{instances[0]['d_coll_release_id']} {instances[0]['d_catno']}"
-            log.debug(
+            log.info(
                 "Multiple in collection. Mark sold manually: %s",
                 details,
             )
             return False, details
 
+        if listing_id:
+            log.info(
+                f"MODEL: Set coll sold {sold}: release {release_id}, listing_id {listing_id}"
+            )
+            return True, self.execute_sql(
+                """
+                UPDATE collection SET
+                    (coll_sold, coll_d_sales_listing_id) = (?, ?)
+                    WHERE d_coll_release_id == ?;
+                """,
+                (sold, listing_id, release_id),
+            )
+        # Fallback
+        log.info(
+            f"MODEL: Set coll sold {sold}: only release {release_id}"
+        )
         return True, self.execute_sql(
             """
             UPDATE collection SET
