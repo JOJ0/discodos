@@ -306,4 +306,4 @@ def import_listing_cmd(helper, listing_id, delete):
     if delete:
         coll_ctrl.remove_and_delete_sales_listing(listing_id)
         return
-    coll_ctrl.import_sales_listing(listing_id)
+    coll_ctrl.import_sales_listing(listing_id, display_help=True)

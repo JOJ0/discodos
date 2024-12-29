@@ -1092,9 +1092,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         print(f"Other errors : {other_err}.")
         self.cli.duration_stats(start_time, 'Inventory import')
 
-    def import_sales_listing(self, listing_id):
+    def import_sales_listing(self, listing_id, display_help=False):
         """Import a single marketplace listing."""
-        self.print_import_sales_notes()
+        if display_help:
+            self.print_import_sales_notes()
         listing, err, _ = self.collection.fetch_sales_listing_details(listing_id)
         if err:
             self.cli.p("Listing not existing.")
