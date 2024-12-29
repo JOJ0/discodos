@@ -717,7 +717,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     def key_value_search_releases(
         self, search_key_value=None, orderby=None, filter_cols=None,
-        custom_fields=None, reverse_order=False, include_not_in_coll=False
+        custom_fields=None, reverse_order=False, sales_extra=False
     ):
         # filter_cols are defined in ViewCommon and passed via the controller call.
         replace_cols = filter_cols
@@ -744,10 +744,10 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             END AS in_c
             """,
             "collection.coll_sold AS sold",
-            "sales.d_sales_listing_id",
-            "sales.d_sales_status",
-            "sales.d_sales_location",
-            "sales.d_sales_price",
+            "NULL AS d_sales_listing_id" if sales_extra else "d_sales_listing_id",
+            "NULL AS d_sales_status" if sales_extra else "d_sales_status",
+            "NULL AS d_sales_location" if sales_extra else "d_sales_location",
+            "NULL AS d_sales_price" if sales_extra else "d_sales_price",
             "collection.d_coll_instance_id",
             "collection.d_coll_folder_id",
             "collection.d_coll_notes",
@@ -792,7 +792,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             orderby=orderby,
             condition=where,
             join=join,
-            union=union if include_not_in_coll else None,
+            union=union if sales_extra else None,
             reverse_order=reverse_order,
         )
         return rows

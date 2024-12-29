@@ -1144,7 +1144,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         ])
 
     def tui_ls_releases(
-        self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
+        self, search_terms, orderby=None, reverse_order=False, sales_extra=False
     ):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
@@ -1160,7 +1160,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 orderby=orderby,
                 reverse_order=reverse_order,
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
-                include_not_in_coll=include_not_in_coll,
+                sales_extra=sales_extra,
             )
         except Exception as error:
             self.cli.p(error)
@@ -1182,7 +1182,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         return
 
     def ls_releases(
-        self, search_terms, orderby=None, reverse_order=False, include_not_in_coll=False
+        self, search_terms, orderby=None, reverse_order=False, sales_extra=False
     ):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
@@ -1197,7 +1197,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 orderby=orderby,
                 reverse_order=reverse_order,
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
-                include_not_in_coll=include_not_in_coll,
+                sales_extra=sales_extra,
             )
         except Exception as error:
             self.cli.p(error)

@@ -17,12 +17,16 @@ log = logging.getLogger('discodos')
 @click.option("--order-by", "-o", type=str, help="order by DiscoBASE field")
 @click.option("--reverse", "-r", is_flag=True, help="reverse order")
 @click.option(
-    "--all", "-a", "include_not_in_coll", is_flag=True,
-    help="""Also include releases that are not in collection and only present in sales
-    table.""",
+    "--all", "--extra", "-a", "-e", "sales_extra", is_flag=True,
+    help="""By default sales and collection items are displayed in a 'combined' view.
+    That is, listing ID if applicable, is added to collection item's respective column)
+    with the caveat that non-collection items can't be viewed that way. Enabling this
+    option displays a separate entry for each sales listing/collection item, allowing to
+    include sold items that were removed from the collection.
+    """,
 )
 @click.pass_obj
-def ls_cmd(helper, search_terms, order_by, reverse, include_not_in_coll):
+def ls_cmd(helper, search_terms, order_by, reverse, sales_extra):
     """Searches and lists collection items.
 
     Supports key=value search. Available keys can be either full DiscoBASE field names
@@ -53,12 +57,12 @@ def ls_cmd(helper, search_terms, order_by, reverse, include_not_in_coll):
             search_key_value,
             orderby=order_by,
             reverse_order=reverse,
-            include_not_in_coll=include_not_in_coll,
+            sales_extra=sales_extra,
         )
     else:
         coll_ctrl.ls_releases(
             search_key_value,
             orderby=order_by,
             reverse_order=reverse,
-            include_not_in_coll=include_not_in_coll,
+            sales_extra=sales_extra,
         )
