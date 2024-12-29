@@ -53,6 +53,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_upper_content = None
         self.middle_column_content = None
         self.middle_column_lower_content = None
+        self.right_column_upper_content = None
         self.right_column_content = None
         # Content that can be fetched from DB as well as from Discogs
         self.sales_price = None
@@ -196,7 +197,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # Headline widgets
         self.left_column_headline = Label("[b]Listing Details[/b]")
         self.middle_column_headline = Label("[b]My Price & Marketplace Stats[/b]")
-        self.right_column_headline = Label("[b]YouTube Listen[/b]")
+        self.right_column_headline = Label("[b]Release Details & YouTube Listen[/b]")
         # Content widgets
         self.left_column_content = Static("")
         self.middle_column_upper_content = Static("Currently for sale:")
@@ -221,6 +222,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                     yield self.middle_column_lower_content
                 with VerticalScroll(id="lower-right-column"):
                     yield self.right_column_headline
+                    yield self.right_column_upper_content
                     yield self.right_column_content
             with Horizontal(id="log-area"):
                 with VerticalScroll():
