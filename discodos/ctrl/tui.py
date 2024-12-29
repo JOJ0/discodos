@@ -44,6 +44,8 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.table = None
         self.rows = rows
         self.headers = headers
+        self.rlog = RichLog()
+        # Columns content
         self.left_column_headline = None
         self.middle_column_headline = None
         self.right_column_headline = None
@@ -68,7 +70,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
     def action_toggle_sold(self):
         """When shortcut is pressed, toggle field "sold" in DB."""
-        rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         release_id = self.table.get_cell(row_key, "discogs_id")
         instance_id = self.table.get_cell(row_key, "d_coll_instance_id")
@@ -81,57 +82,56 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         )
         # Update the cell on success and log
         if toggled:
-            rlog.write(
+            self.rlog.write(
                 f"Set collection item instance {instance_id} sold state {wanted_state} "
             )
             self.table.update_cell(row_key, "sold", wanted_state)
             return
-        rlog.write(f"Error setting {release_id} sold state {wanted_state} ")
+        self.rlog.write(f"Error setting {release_id} sold state {wanted_state} ")
 
     def action_edit_sales_listing(self):
         """Open the edit screen for a sales listing."""
-        rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
         listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
         if l_err:
-            rlog.write(f"Error fetching sales listing details: {l_err}")
+            self.rlog.write(f"Error fetching sales listing details: {l_err}")
             return
 
         def save_changes(**kwargs):
             if not self.collection.update_sales_listing(
                 listing_id=listing_id, **kwargs
             ):
-                rlog.write("Updating Discogs Marketplace listing failed.")
+                self.rlog.write("Updating Discogs Marketplace listing failed.")
                 return
-            rlog.write("Updated Discogs Marketplace listing.")
+            self.rlog.write("Updated Discogs Marketplace listing.")
 
             listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
             if l_err:
-                rlog.write("Error fetching sales listing details:", l_err)
+                self.rlog.write("Error fetching sales listing details:", l_err)
                 return
 
             listing["d_sales_listing_id"] = listing_id
             created = self.collection.create_sales_entry(listing)
             if not created:
-                rlog.write("Updating sales entry in DiscoBASE failed")
+                self.rlog.write("Updating sales entry in DiscoBASE failed")
                 return
 
-            rlog.write("Updated sales entry in DiscoBASE")
+            self.rlog.write("Updated sales entry in DiscoBASE")
 
             # Update the table's cells and panels
             r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
             self.table.update_cell(r_key, "d_sales_status", kwargs["status"])
             self.table.update_cell(r_key, "d_sales_location", kwargs["location"])
             self.table.update_cell(r_key, "d_sales_price", kwargs["price"])
-            rlog.write(f"Updated columns in table row {r_key}.")
+            self.rlog.write(f"Updated columns in table row {r_key}.")
             self._sales_digits_update(listing)
-            rlog.write("Updated sales price panel.")
+            self.rlog.write("Updated sales price panel.")
             listing = self.collection.get_sales_listing_details(listing_id)
             self.left_column_content.update(
                 self.cli.two_column_view(listing, translate_keys=self.key_translation)
             )
-            rlog.write("Updated sales listing details panel.")
+            self.rlog.write("Updated sales listing details panel.")
 
             self.pop_screen()  # Return to the main screen
 
@@ -153,10 +153,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
     def action_fetch_videos(self):
         """Fetches videos from Discogs release and displays in Rich column view."""
-        rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         release_id = self.table.get_cell(row_key, "discogs_id")
-        rlog.write(f"release_id is {release_id}")
+        self.rlog.write(f"release_id is {release_id}")
         # Get videos ...
         videos, err_videos, _ = self.collection.fetch_release_videos(release_id)
         render_videos = (
@@ -170,19 +169,18 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         
         FIXME implement updating in DiscoBASE in here.
         """
-        rlog = self.query_one(RichLog)
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
         listing, l_err, _ = self.fetch_sales_listing_details(listing_id)
         if l_err:
-            rlog.write(f"Can't fetch listing details: {l_err}")
+            self.rlog.write(f"Can't fetch listing details: {l_err}")
             return
         if listing:
             self.left_column_content.update(
                 self.cli.two_column_view(listing, translate_keys=self.key_translation)
             )
             self._sales_digits_update(listing)
-        rlog.write(
+        self.rlog.write(
             f"Updated price and details of listing {listing_id} "
             "with Discogs data."
         )
@@ -226,7 +224,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                     yield self.right_column_content
             with Horizontal(id="log-area"):
                 with VerticalScroll():
-                    yield RichLog()
+                    yield self.rlog
             yield Footer()
 
     def on_mount(self):
@@ -258,24 +256,23 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
     def on_data_table_row_selected(self, event):
         """Fetch Discogs listing details and Marketplace stats for selected row."""
-        rlog = self.query_one(RichLog)
         row_key = event.row_key
         # Stats - we fetch always
         release_id = self.table.get_cell(row_key, "discogs_id")
         stats, s_err, _ = self.fetch_marketplace_stats(release_id)
         if s_err:
-            rlog.write(f"Fetching Marketplace stats: {s_err}")
+            self.rlog.write(f"Fetching Marketplace stats: {s_err}")
         self.middle_column_content.update(self.cli.two_column_view(stats))
         # Price suggestion - we fetch always
         p = self.fetch_price_suggestion(release_id, "VG+")
         if not p:
-            rlog.write("Fetching price suggestion failed.")
+            self.rlog.write("Fetching price suggestion failed.")
         self.middle_column_lower_content.update(
             f"Suggested VG+ price: {round(p.value, 1)}"
         )
         if s_err or not p:
             return
-        rlog.write(
+        self.rlog.write(
             f"Updated price, Marketplace stats and details of release {release_id} "
             "with Discogs data."
         )
