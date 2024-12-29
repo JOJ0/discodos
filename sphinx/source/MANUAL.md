@@ -506,37 +506,35 @@ The `ls` command as well as other parts of DiscoDOS support a minimalistic key-v
 
 
 
-## Some technicalities of the DiscoBASE database schema
+## Technicalities, DiscoBASE design, Workflow decisions
 
-### The _is in collection_ flag in the _release_ table
+### The _sold_ flag in the _collection table
 
-(used to keep track of whether or not an item is "orphaned", ie. not in the online collection anymore. This mechanism makes sure that releases/tracks used in "mixes" stay available even though a release was removed/sold)
+FIXME. What is it? Manual multi-item fixing purpose only?
 
-
-
-
-
-### The _sold_ flag in the _release_ table
-
-Sometimes it's desired to mark a release as sold "independent" of whether or not the release is listed for sale using the Discogs mechanisms. This flag is best manipulated using the `dsc ls` TUI and pressing the `s` command key.
-
-
-
+This flag is best manipulated using the `dsc ls` TUI and pressing the `s` command key.
 
 
 ### The _collection_ table vs. the _release_ table
 
-DiscoDOS prior to version 3.0 only used a single database table to store information about releases/collection items - the _release_ table. Currently also all information about each _collection item_ is saved separately to a _collection_ table. Information about folders, date added to collection, ratings and notes is saved but currently not everything is viewable/editable within DiscoDOS. This might change in future DiscoDOS releases.
+DiscoDOS prior to version 3.0 only used a single database table to store information
+about a user's records - the _release_ table. It was assumed that any record is only owned once. DiscoDOS 3.0 changes this behaviour and saves it separately to a _collection_ table, hence multiple instances of a record are allowed to be in a DiscoDOS collection.
+
+_**Note: This new collection data consists of Information about folders, date added to collection, ratings and notes. Not everything is already editable/viewable in DiscoDOS, but some....**_
 
 
+### There are several ways a record well be auto-marked as _sold_
+
+During a `dsc import sales` run, the `location` comment field of the listings is searched for a predefined set of strings: “sold,” “verkauft,” and “verschenkt,”. If found the _sold_ flag is set in the `sales` table. These strings are currently hardcoded.
+
+While importing items in a `dsc import basic` run, the Discogs collection folders the imported item is being filed in, is looked up. If it matches a predefined folder, the item will be marked as _sold_ in the `collection` table. The ID of this folder can be set via config variable `discogs_sold_folder_id`.
+
+To designate a folder for that purpose, create it via the Discogs Webinterface, click on it and find it the ID in the URL: `https://www.discogs.com/user/<username>/collection?folder=29707`
 
 
+_**Note: Both DiscoBASE tables `sales` and `collection`, have their own _sold_ field.**_
 
-### Several ways a _collection item_ can be marked as _sold_
 
-`dsc import sales` -> If "verkauft/sold/..." in listing `location` field, mark it as sold in the _collection_ table. But which one?
-
-`dsc import basic` -> If in collection folder as set in config value `sold_folder_id`, mark it as sold in the _collection_ table.
 
 
 
