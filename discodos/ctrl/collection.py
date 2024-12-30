@@ -429,7 +429,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_added": instance["date_added"],
                 "d_coll_rating": instance["rating"],
                 "d_coll_notes": value_f3,
-                "coll_sold": instance["folder_id"] == sold_folder_id,
+                "coll_sold": instance["folder_id"] == int(sold_folder_id),
                 "coll_orphaned": 0  # Temporary reset fix. FIXME
             }
         )
