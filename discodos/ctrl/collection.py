@@ -409,8 +409,6 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def create_collection_item(self, instance, sold_folder_id=None):
         """Creates a collection item by passing a dictionary to the DiscoBASE method.
-
-        Also checks for possible orphaned instances and marks them. FIXME
         """
         # Handle notes, we only allow field 3, which is called "Notes" in Discogs UI.
         value_f3 = ""
@@ -432,6 +430,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_rating": instance["rating"],
                 "d_coll_notes": value_f3,
                 "coll_sold": instance["folder_id"] == sold_folder_id,
+                "coll_orphaned": 0  # Temporary reset fix. FIXME
             }
         )
 
@@ -445,6 +444,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         releases_processed = releases_added = releases_db_errors = 0
         tracks_processed = tracks_added = tracks_db_errors = tracks_discogs_errors = 0
         real_releases_processed = 0  # In case we start at offset, we need two counts
+        imported_instance_ids = []  # After import we check for orphaned entries
+        instances_orphaned = 0
 
         if tracks:
             self.cli.p(
@@ -469,6 +470,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     releases_processed += 1
                     continue
 
+                imported_instance_ids.append(item.instance_id)
                 rel_created, d_artists, _ = self.create_release_entry(item.release)
                 self.create_collection_item(
                     item.data,
@@ -495,35 +497,52 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
                 msg_rel_add = f"Releases so far: {releases_added}"
                 log.info(msg_rel_add)
-                print(msg_rel_add)
+                # Just log, don't print, user sees progress bar
 
                 if tracks:
                     msg_trk_add = f"Tracks so far: {tracks_added}"
                     log.info(msg_trk_add)
                     print(msg_trk_add)
 
-                print()  # leave some space after a release and all its tracks
                 releases_processed += 1
                 real_releases_processed += 1
                 progress.update(task, advance=1)
 
-        print(
-            f"Processed releases: {releases_processed}. "
-            f"Really processed releases: {real_releases_processed}. "
-            f"Imported releases to DiscoBASE: {releases_added}."
-        )
-        print(f"Database errors (release import): {releases_db_errors}.")
+        # Final cleanup
+        print("Looking for orphaned collection items...")
+        for item in self.collection.get_all_collection_items():
+            if (
+                not item["d_coll_instance_id"] in imported_instance_ids
+                and not item["coll_orphaned"]
+            ):
+                instances_orphaned += 1
+                log.warning(
+                    "Marking orphaned: %s. Not in Discogs collection anymore.",
+                    item["d_coll_instance_id"],
+                )
+                self.collection.set_collection_item_orphaned(item["d_coll_instance_id"])
 
+        # Final report
+        report_notes = {
+            "Processed releases": releases_processed,
+            "Actually processed releases": real_releases_processed,
+            "Imported releases to DiscoBASE": releases_added,
+            "Marked orphaned collection items": instances_orphaned,
+            "Database errors (release import)": releases_db_errors,
+        }
         if tracks:
-            print(
-                f"Processed tracks: {tracks_processed}. "
-                f"Imported tracks to DiscoBASE: {tracks_added}."
+            report_notes.update({
+                    "Processed tracks": tracks_processed,
+                    "Imported tracks to DiscoBASE": tracks_added,
+                    "Database errors (track import)": tracks_db_errors,
+                    "Discogs errors (track import)": tracks_discogs_errors,
+                })
+        print(
+            Panel.fit(
+                self.cli.two_column_view(report_notes, as_is=True),
+                title="Final report",
             )
-            print(
-                f"Database errors (track import): {tracks_db_errors}. "
-                f"Discogs errors (track import): {tracks_discogs_errors}."
-            )
-
+        )
         self.cli.duration_stats(start_time, "Discogs import")
 
     # Suggest

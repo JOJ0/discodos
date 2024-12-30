@@ -222,6 +222,10 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     # Release & collection items
 
+    def get_all_collection_items(self):
+        """Returns all entries of DiscoBASE collection table."""
+        return self._select("SELECT * FROM collection", as_dict=True)
+
     def set_collection_item_orphaned(self, instance_id):
         """Sets orphaned flag on a DiscoBASE collection item."""
         return self.execute_sql(
