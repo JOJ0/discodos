@@ -220,6 +220,18 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 log.error("MODEL: %s", e.args[0])
                 return False
 
+    # Release & collection items
+
+    def set_collection_item_orphaned(self, instance_id):
+        """Sets orphaned flag on a DiscoBASE collection item."""
+        return self.execute_sql(
+            """
+            UPDATE collection SET coll_orphaned = 1
+                WHERE d_coll_instance_id == ?;
+            """,
+            (instance_id,),
+        )
+
     def create_release(
         self, release_id, release_title, release_artists, d_catno
     ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -291,7 +303,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         return in_db
 
     def delete_collection_item(self, instance_id):
-        """Deletes a release from DiscoBASE"""
+        """Deletes a collection item instance from DiscoBASE."""
         in_db = self._select_simple(
             ["d_coll_instance_id"],
             "collection",

@@ -203,6 +203,28 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     # Import/remove single release/collection
 
+    def orphane_collection_items(self, fetched_items, release_id):
+        """Marks DiscoBASE collection items orphaned if not on Discogs anymore.
+
+        fetched_items is a list of "Discogs collection item" dictionaries. Keys are as
+        named in the Discogs object!
+
+        release_id can be passed, so even if fetched_items is empty we can check for
+        orphaned entries in DB.
+        """
+        db_items = self.collection.get_collection_items_by_release(release_id)
+        d_instance_ids = [instance["instance_id"] for instance in fetched_items]
+        for item in db_items:
+            if (
+                not item["d_coll_instance_id"] in d_instance_ids
+                and not item["coll_orphaned"]
+            ):
+                log.warning(
+                    "Marking orphaned: %s. Not in Discogs collection anymore.",
+                    item["d_coll_instance_id"],
+                )
+                self.collection.set_collection_item_orphaned(item["d_coll_instance_id"])
+
     def add_release(self, release_id):
         start_time = time()
         self.cli.exit_if_offline(self.collection.ONLINE)
@@ -280,11 +302,14 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             progress.update(task1, advance=1)
 
             if release:
+                # Add release entry and collection entries
                 self.create_release_entry(coll_items[0]["full_instance"].release)
                 for instance in coll_items:
                     self.create_collection_item(
                         instance, sold_folder_id=self.user.conf.sold_folder_id
                     )
+                # Check existing DB entries and mark orphaned if required
+                self.orphane_collection_items(coll_items, release_id)
             else:
                 self.cli.error_not_the_release()
 
@@ -383,7 +408,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         return rel_created, d_artists, artists
 
     def create_collection_item(self, instance, sold_folder_id=None):
-        """Creates a collection item by passing a dictionary to the DiscoBASE method."""
+        """Creates a collection item by passing a dictionary to the DiscoBASE method.
+
+        Also checks for possible orphaned instances and marks them. FIXME
+        """
         # Handle notes, we only allow field 3, which is called "Notes" in Discogs UI.
         value_f3 = ""
         if isinstance(instance.get("notes"), list):
