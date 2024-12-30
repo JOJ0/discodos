@@ -421,6 +421,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 ),
                 None,
             )
+
         self.collection.create_collection_item(
             {
                 "d_coll_instance_id": instance["instance_id"],
@@ -1035,8 +1036,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             "- Adds missing data for non-collection releases.\n"
             "- Marks draft sales entries as sold when location comments match "
             "configured pattern.\n"
-            "- Additionally tries to match collection items and marks them as sold.\n"
-            "- To manually set sold flag, use `dsc ls id=<id>` with 'Toggle sold' "
+            # Disabled for now, patched out manual sold toggle
+            # "- Additionally tries to match collection items and marks them as sold.\n"
+            # "- To manually set sold flag, use `dsc ls id=<id>` with 'Toggle sold' "
             "command (s).\n"
             "[/]"
         )
@@ -1069,17 +1071,22 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 self.collection.fetch_discogs_release(release_id)
             )
 
-        # Set sold flag on single collection items. Inform if decision not possible.
-        is_sold = self.is_listing_sold(listing_status, listing_location)
-        if is_sold == 1:
-            toggled, details = self.collection.toggle_collection_sold_flag(
-                release_id, True, listing_id=listing_id
-            )
-            if not toggled:
-                custom_progress.console.print(
-                    "[yellow]Multiple instances in collection. "
-                    f"Mark sold manually: {details}[/]"
-                )
+        # Disabled for now:
+        # - Manual sales toggle patched out.
+        # - Unsure about auto-assiging first collection item
+        # - For now, manually moving to designated folder is most straight-forward
+        #
+        # # Set sold flag on single collection items. Inform if decision not possible.
+        # is_sold = self.is_listing_sold(listing_status, listing_location)
+        # if is_sold == 1:
+        #     toggled, details = self.collection.toggle_collection_sold_flag(
+        #         release_id, True, listing_id=listing_id
+        #     )
+        #     if not toggled:
+        #         custom_progress.console.print(
+        #             "[yellow]Multiple instances in collection. "
+        #             f"Mark sold manually: {details}[/]"
+        #         )
 
     def import_sales_inventory(self, light_import=False):
         """Import sales inventory"""

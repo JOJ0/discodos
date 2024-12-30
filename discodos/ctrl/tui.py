@@ -19,7 +19,6 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
     BINDINGS = [
         ("m", "toggle_dark", "Toggle dark mode"),
         ("q", "request_quit", "Quit"),
-        ("s", "toggle_sold", "Toggle sold (in DB)"),
         ("e", "edit_sales_listing", "Edit sales listing"),
         ("v", "fetch_videos", "Fetch videos"),
         ("l", "fetch_listing_details", "Fetch listing details"),

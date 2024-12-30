@@ -759,7 +759,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 ELSE 0
             END AS in_c
             """,
-            "collection.coll_sold AS sold",
+            "collection.coll_sold AS sold" if sales_extra else "sales_sold AS sold" ,
             "NULL AS d_sales_listing_id" if sales_extra else "d_sales_listing_id",
             "NULL AS d_sales_status" if sales_extra else "d_sales_status",
             "NULL AS d_sales_location" if sales_extra else "d_sales_location",
@@ -1008,11 +1008,3 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                     '''
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
-
-    def toggle_collection_flag(self, release_id, in_collection):
-        """Pass boolean to mark as sold (or not) in DiscoBASE."""
-        sql_upd = '''UPDATE release SET
-                      (in_d_collection) = (?)
-                       WHERE discogs_id == ?;'''
-        tuple_upd = (in_collection, release_id)
-        return self.execute_sql(sql_upd, tuple_upd)
