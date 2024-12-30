@@ -1044,7 +1044,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def is_listing_sold(self, listing_status, listing_location):
         """Returns for database import already."""
         if (
-            listing_status == "sold"
+            listing_status.lower() == "sold"
             or "verkauft" in listing_location.lower()
             or "verschenkt" in listing_location.lower()
             or "geschenkt" in listing_location.lower()
