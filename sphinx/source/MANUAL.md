@@ -517,7 +517,7 @@ about a user's records - the _release_ table. It was assumed that any record is 
 _**Note: This new collection data consists of Information about folders, date added to collection, ratings and notes. Not everything is already editable/viewable in DiscoDOS, but some....**_
 
 
-### There are several ways a record well be auto-marked as _sold_
+### There are several ways a record will be auto-marked as _sold_
 
 During a `dsc import sales` run, the `location` comment field of the listings is searched for a predefined set of strings: “sold,” “verkauft,” and “verschenkt,”. If found the _sold_ flag is set in the `sales` table. These strings are currently hardcoded.
 
@@ -526,7 +526,7 @@ While importing items in a `dsc import basic` run, the Discogs collection folder
 To designate a folder for that purpose, create it via the Discogs Webinterface, click on it and find it the ID in the URL: `https://www.discogs.com/user/<username>/collection?folder=29707`
 
 
-_**Note: Both DiscoBASE tables `sales` and `collection`, have their own _sold_ field.**_
+_**Note: Both DiscoBASE tables `sales` and `collection`, have their own _sold_ flag.**_
 
 
 
