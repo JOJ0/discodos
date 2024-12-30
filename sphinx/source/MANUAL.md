@@ -286,27 +286,61 @@ Read more on the performance of the *Brainz match process and what exactely it i
 
 ### The `ls` TUI command
 
-Lists releases in the DiscoBASE and allows manipulating them in a self-explanatory _text user interface_ built using the [Textual framework](https://textual.textualize.io). Its current main purpose is to edit sales listing details of already listed records for sale.
+Lists releases in the DiscoBASE and allows manipulating them in a self-explanatory _text user interface_ built using the [Textual framework](https://textual.textualize.io). Its current main purpose is to edit details of already listed records on the Discogs Marketplace.
 
 Supports [Key/Value Search](#keyvalue-search).
+
+![ls default full screen](_static/ls-default-full-screen.png)
 
 For example to display and allow editing of all Marketplace listings currently in `draft` status, use:
 
 `dsc ls status=draft`
 
-A list of _command keys_ will be available in the footer of the  _TUI_ interface!
+A list of _command keys_ will be available in the footer of the  _TUI_ interface! Some of the most useful one's are:
 
 - `e` -> Edit sales listing
 - `v` -> Display YouTube video hyperlinks
 - `return` -> Fetch Marketplace stats and "Discogs suggested prices"
-- `s` -> Mark an item as ["sold" in the DiscoBASE](#the-sold-flag-in-the-release-table).
 
-The `ls` command can fall back to a minimalistic classic CLI version using the `-x/--no-tui` flag. Manipulating entries using this view-mode is not possible:
+The `ls` command can fall back to a classic CLI version using the `-x/--no-tui` flag. Manipulating entries using this view-mode is not possible:
 
-`dsc ls -x artist="amon tobin"`
+`dsc -x ls status=forsale"`
 
+_**Note: `-x/--no-tui` is a global option, and must be stated right after the main command `dsc`. In future DiscoDOS releases _other_ parts of DiscoDOS might have a _TUI_ version as well.**_
 
+#### `ls --extra` - an alternative view-mode
 
+There are two view-modes. By default the `ls` command assumes records are in the collection and potentially could be listed for sale. A sort of "combined" view. The collection item is enriched with the listing ID, the status of the listing and the price:
+
+`dsc ls status=expired artist=duo`
+
+![ls default view](_static/ls-default-view.png)
+
+When launched with the `--extra` option, the sales listing is displayed in an "extra" line. Also it's now obvious that a sales listing does not have a collection item instance ID, collection folder and collection notes set. Whereas the bottom line clearly identifies as being the actual collection item since it has set all these values.
+
+`dsc ls --extra status=expired artist=duo`
+
+![ls extra view](_static/ls-extra-view.png)
+
+The inital design of `dsc ls` was based on the fact that Discogs user collection items and Discogs Marketplace listings, at least as discogs.com is designed, do not really have a connection. DiscoDOS assumes that a user wants to sell parts of their collection, thus the usual case is that one copy of a record is in the collection and that same one potentially is for sale.
+
+To get a view that respects how data is actually saved in DiscoDOS (and on Discogs) the alternative `dsc ls --extra` view was invented - a sales listing and a collection item are two different things.
+
+In case multiple copies of a record are in the collection, AND that release is for sale too, `--extra` would correctly view three entries:
+
+`dsc ls --extra title="mistical dub"`
+
+![ls extra two collection items](_static/ls-extra-two-in-collection.png)
+
+There is one caveat with this design: A default `ls` view displays listing ID, status and price on BOTH collection items - it does not know which of those two items is the one being listed for sale, because again, in reality there is no connection between them:
+
+`dsc ls title="mistical dub"`
+
+![ls default two collection items](_static/ls-default-two-in-collection.png)
+
+The `--extra` option can also be stated as `-e`, `--all` or `-a`.
+
+_A final note on collection folders being displayed as ID's. Showing folder names is in the queue for a future DiscoDOS release. Maybe even with the ability to move collection items between folders. This on the other hand requires an addition to the underlying library `python3-discogs-client`. Once that is implemented there, and the developers' time permits, work on `dsc ls` will be continued._
 
 
 ### The `sell` command
@@ -452,6 +486,30 @@ For example to display a list of releases listed for sale, including hyperlinks 
 
 `dsc links status=forsale`
 
+...You'll get a very long list....
+...
+
+A slightly shorter example including expected output: All Amon Tobin release with a catalog number including characters "zen" (the usual Ninja Tune label's catalog number prefix):
+
+```
+$ dsc links artist=amon cat=zen
+
++----------+----------------------------------------------------------------------+
+| CatNo    | Release: Artist - Title - Links                                      |
++==========+======================================================================+
+| zen 1253 | Amon Tobin - Chomp Samba                                             |
+|          | https://musicbrainz.org/release/c45e6bd6-de1c-48e5-a263-b89e063c0656 |
+|          | https://discogs.com/release/31010                                    |
++----------+----------------------------------------------------------------------+
+| ZEN 121  | Amon Tobin - Foley Room                                              |
+|          | https://musicbrainz.org/release/1ab1c536-1f09-4761-ba49-4a25bcbcbf59 |
+|          | https://discogs.com/release/919698                                   |
++----------+----------------------------------------------------------------------+
+| ZEN 70   | Amon Tobin - Out From Out Where                                      |
+|          | https://musicbrainz.org/release/599f40b6-65cf-4427-b77b-acc47f15e9a2 |
+|          | https://discogs.com/release/69092                                    |
++----------+----------------------------------------------------------------------+
+```
 
 
 
@@ -495,15 +553,15 @@ The `ls` command as well as other parts of DiscoDOS support a minimalistic key-v
 - `artist` release artist
 - `title` -> release title
 - `label` -> release label
-- `collection` -> the ["is in collection flag"](#the-is-in-collection-flag-in-the-release-table)
 - `listing` -> Marketplace listing ID
 - `stats` -> Marketplace listing status (forsale, draft, expired)
-- `sold` -> A [flag marking releases "as sold" in the DiscoBASE](#the-sold-flag-in-the-release-table) (independent from the status in the online Discogs Marketplace inventory).
+- `sold` -> A [flag marking releases "as sold" in the DiscoBASE](#there-are-several-ways-a-record-will-be-auto-marked-as-sold).
 - `location` -> Marketplace listing location comments field
 - `price` -> The price of a marketplace listing
 
+The syntax is basic, `fieldname=value`, will return any releases where fieldname _**contains**_ the string `value`
 
-
+Have a look at the [`dsc links` docs](#the-links-command) to find some example queries.
 
 
 ## Technicalities, DiscoBASE design, Workflow decisions
@@ -528,6 +586,7 @@ To designate a folder for that purpose, create it via the Discogs Webinterface, 
 
 _**Note: Both DiscoBASE tables `sales` and `collection`, have their own _sold_ flag.**_
 
+So to query this field, use `dsc ls sold=1`. The result will include items that are marked sold via either of above described sold flags. When the `--extra` option is active on the other hand, explicitely the "collection sold" flag and the "sales sold" flag will be queried.
 
 
 
