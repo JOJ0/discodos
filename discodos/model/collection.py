@@ -774,20 +774,21 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release.d_catno",
             "release.d_artist",
             "release.discogs_title",
-            """
-            CASE
-                WHEN d_coll_instance_id > 0 THEN 1
-                ELSE 0
-            END AS in_c
-            """,
+            # """
+            # CASE
+            #     WHEN coll_orphaned = 0 AND d_coll_instance_id > 0 THEN 1
+            #     ELSE 0
+            # END AS in_c
+            # """,
+            "NULL AS in_c",
             "sales.sales_sold AS sold",
             "sales.d_sales_listing_id",
             "sales.d_sales_status",
             "sales.d_sales_location",
             "sales.d_sales_price",
-            "d_coll_instance_id",
-            "d_coll_folder_id",
-            "d_coll_notes",
+            "NULL AS d_coll_instance_id",
+            "NULL AS d_coll_folder_id",
+            "NULL AS d_coll_notes",
         ]
         union = [
             {
@@ -795,7 +796,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 "table": "sales",
                 "condition": f"{where}",
                 "join": [
-                    ("LEFT OUTER", "collection", "d_sales_listing_id = coll_d_sales_listing_id"),  # pylint: disable=line-too-long
+                    # also for now, exlcude JOIN with collection
+                    # we potentially saved listing_id on sales import
+                    # ("LEFT OUTER", "collection", "d_sales_listing_id = coll_d_sales_listing_id"),  # pylint: disable=line-too-long
                     ("LEFT OUTER", "release", "d_sales_release_id = discogs_id"),
                 ],
             }
@@ -806,7 +809,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release",
             fetchone=False,
             orderby=orderby,
-            condition=where,
+            # exclude orphaned always, for now ...
+            # above CASE statements currently redundant.
+            condition=f"{where} AND coll_orphaned = 0",
             join=join,
             union=union if sales_extra else None,
             reverse_order=reverse_order,
