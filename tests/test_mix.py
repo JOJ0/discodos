@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import inspect
 import os
 import unittest
@@ -6,7 +5,7 @@ from pathlib import Path
 from shutil import copy2
 
 # from discodos.config import Config
-from discodos.model_mix import Mix  # , log
+from discodos.model import Mix  # , log
 
 
 class TestMix(unittest.TestCase):

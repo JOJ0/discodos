@@ -1,10 +1,45 @@
 import logging
+import os
+import re
 import yaml
+
+from discogs_client.utils import Condition, Status
 
 log = logging.getLogger('discodos')
 
 
-# util: checks for numbers
+RECORD_CHOICES = ["M", "NM", "VG+", "VG", "G+", "G", "F", "P"]
+SLEEVE_CHOICES = RECORD_CHOICES + ["generic", "notgraded", "nocover"]
+STATUS_CHOICES = ["draft", "forsale", "expired"]
+
+RECORD_CHOICES_RADIO = {
+    "M": Condition.MINT, "NM": Condition.NEAR_MINT,
+    "VG+": Condition.VERY_GOOD_PLUS, "VG": Condition.VERY_GOOD,
+    "+G": Condition.GOOD_PLUS, "G": Condition.GOOD,
+    "F": Condition.FAIR, "P": Condition.POOR,
+}
+SLEEVE_CHOICES_RADIO = RECORD_CHOICES_RADIO | {
+        "generic": Condition.GENERIC,
+        "notgraded": Condition.NOT_GRADED,
+        "nocover": Condition.NO_COVER,
+}
+STATUS_CHOICES_RADIO = {
+    "draft": Status.DRAFT,
+    "forsale": Status.FOR_SALE,
+    "expired": Status.EXPIRED,
+    "pending": "Pending",
+    "sold": "Sold",
+}
+YES_NO_CHOICES_RADIO = {
+    True: "Yes",
+    False: "No",
+}
+# Sometimes we need to translate the other way round
+RECORD_CHOICES_DISCOGS = {value: key for key, value in RECORD_CHOICES_RADIO.items()}
+SLEEVE_CHOICES_DISCOGS = {value: key for key, value in SLEEVE_CHOICES_RADIO.items()}
+STATUS_CHOICES_DISCOGS = {value: key for key, value in STATUS_CHOICES_RADIO.items()}
+
+
 def is_number(s):
     try:
         float(s)
@@ -15,12 +50,10 @@ def is_number(s):
         return False
 
 
-# util: print a UI message
 def print_help(message):
     print('' + str(message) + '\n')
 
 
-# util: ask user for some string
 def ask_user(text=""):
     return input(text)
 
@@ -56,3 +89,31 @@ def join_sep(iterator, seperator):
     for s in it:
         string += seperator + s
     return string
+
+
+def restore_terminal():
+    """Executes `reset` on CLI. Use to prevent terminal issues after Textual exit."""
+    os.system('reset')
+
+
+def extract_discogs_id_regex(release_id):
+    """Returns the Discogs_id or None."""
+    # Discogs-IDs are simple integers. In order to avoid confusion with
+    # other metadata plugins, we only look for very specific formats of the
+    # input string:
+    # - plain integer, optionally wrapped in brackets and prefixed by an
+    #   'r', as this is how discogs displays the release ID on its webpage.
+    # - legacy url format: discogs.com/<name of release>/release/<id>
+    # - legacy url short format: discogs.com/release/<id>
+    # - current url format: discogs.com/release/<id>-<name of release>
+
+    for pattern in [
+        r"^\[?r?(?P<id>\d+)\]?$",
+        r"discogs\.com/release/(?P<id>\d+)-?",
+        r"discogs\.com/[^/]+/release/(?P<id>\d+)",
+    ]:
+        match = re.search(pattern, release_id)
+        if match:
+            return int(match.group("id"))
+
+    return None

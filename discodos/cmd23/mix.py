@@ -1,8 +1,8 @@
-import click
-from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 import logging
+import click
+from click_option_group import MutuallyExclusiveOptionGroup, optgroup
 
-from discodos.ctrls import Mix_ctrl_cli, Coll_ctrl_cli
+from discodos.ctrl import CollectionControlCommandline, MixControlCommandline
 
 log = logging.getLogger('discodos')
 
@@ -214,8 +214,8 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
         return user
 
     user = update_user_interaction_helper(helper)
-    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    coll_ctrl = Coll_ctrl_cli(
+    log.debug("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = CollectionControlCommandline(
         False, user, user.conf.discogs_token, user.conf.discogs_appid,
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
@@ -223,7 +223,7 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
     # NO MIX ID GIVEN #########################################################
     # SHOW LIST OF MIXES ######################################################
     if user.WANTS_TO_SHOW_MIX_OVERVIEW:
-        mix_ctrl = Mix_ctrl_cli(False, mix_name, user, user.conf.discobase)
+        mix_ctrl = MixControlCommandline(False, mix_name, user, user.conf.discobase)
         if user.WANTS_TO_PULL_TRACK_INFO_IN_MIX_MODE:
             mix_ctrl.pull_track_info_from_discogs(
                 coll_ctrl,
@@ -241,11 +241,11 @@ def mix_cmd(helper, mix_name, verbose_tracklist, table_format, create_mix,
     # MIX ID GIVEN ############################################################
     # SHOW MIX DETAILS ########################################################
     elif user.WANTS_TO_SHOW_MIX_TRACKLIST:
-        log.info("A mix_name or ID was given. Instantiating Mix_ctrl_cli class.\n")
-        mix_ctrl = Mix_ctrl_cli(
+        log.info("A mix_name or ID was given. Instantiating MixControlCommandline class.\n")
+        mix_ctrl = MixControlCommandline(
             False, mix_name, user, user.conf.discobase
         )
-        # coll_ctrl = Coll_ctrl_cli(conn, user)
+        # coll_ctrl = CollectionControlCommandline(conn, user)
         # CREATE A NEW MIX ####################################################
         if user.WANTS_TO_CREATE_MIX:
             mix_ctrl.create()

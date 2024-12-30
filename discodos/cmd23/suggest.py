@@ -1,7 +1,7 @@
-import click
 import logging
+import click
 
-from discodos.ctrls import Coll_ctrl_cli
+from discodos.ctrl import CollectionControlCommandline
 
 log = logging.getLogger('discodos')
 
@@ -57,8 +57,8 @@ def suggest_cmd(helper, suggest_search, suggest_bpm, suggest_key):
         return user
 
     user = update_user_interaction_helper(helper)
-    log.info("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
-    coll_ctrl = Coll_ctrl_cli(
+    log.debug("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = CollectionControlCommandline(
         False, user, user.conf.discogs_token, user.conf.discogs_appid,
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)

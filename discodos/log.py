@@ -1,8 +1,9 @@
-from discodos.config import create_data_dir
 import logging
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
+
+from discodos.config import create_data_dir
 
 
 def logger_init():

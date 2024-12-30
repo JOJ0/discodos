@@ -2,7 +2,7 @@ import logging
 # import pprint
 import re
 
-from discodos.model_brainz import Brainz
+from discodos.model import Brainz
 
 log = logging.getLogger('discodos')
 

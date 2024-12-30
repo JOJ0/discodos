@@ -1,14 +1,16 @@
 # config.py is kind of a controller - it sets up db and creates config
-from discodos.model_database import Database, sqlerr
-from discodos.utils import read_yaml, print_help, ask_user
-import yaml
 import logging
-from pathlib import Path
 import os
-import sys
 import platform
-from subprocess import run
+import sys
+from pathlib import Path
 from shutil import copy2
+from subprocess import run
+
+import yaml
+
+from discodos.model.database import Database, sqlerr
+from discodos.utils import ask_user, print_help, read_yaml
 
 log = logging.getLogger('discodos')
 
@@ -47,6 +49,7 @@ def create_data_dir(discodos_root):
 
 
 class Db_setup(Database):
+    """Initializes and upgrades the DiscoBASE"""
     def __init__(self, _db_file):
         super().__init__(db_file=_db_file, setup=True)
         self.sql_initial = {
@@ -56,7 +59,6 @@ class Db_setup(Database):
                   discogs_title TEXT NOT NULL,
                   import_timestamp TEXT,
                   d_artist TEXT,
-                  in_d_collection INTEGER
                   ); """,
             'mix':
             """ CREATE TABLE mix (
@@ -105,9 +107,9 @@ class Db_setup(Database):
                   PRIMARY KEY (d_release_id, d_track_no)
                   ); """}
 
-        self.sql_upgrades = [      # list element 0 contains a dict
-            {'schema_version': 2,  # this dict contains 2 entries: schema and tasks
-             'tasks': {            # tasks entry contains another dict with a lot of entries
+        self.sql_upgrades = [{    # list element 0 contains a dict
+            'schema_version': 2,  # this dict contains 2 entries: schema and tasks
+             'tasks': {           # tasks entry contains another dict with a lot of entries
                  'Add field track.m_rec_id': 'ALTER TABLE track ADD m_rec_id TEXT;',
                  'Add field track.m_match_method': 'ALTER TABLE track ADD m_match_method TEXT;',
                  'Add field track.m_match_time': 'ALTER TABLE track ADD m_match_time TEXT;',
@@ -120,14 +122,46 @@ class Db_setup(Database):
                  'Add field release.m_match_method': 'ALTER TABLE release ADD m_match_method TEXT;',
                  'Add field release.m_match_time': 'ALTER TABLE release ADD m_match_time TEXT;',
                  'Add field release.d_catno': 'ALTER TABLE release ADD d_catno TEXT;'
-              }
-            }                        # list element 0 ends here
-            # {'schema_version': 3,  # list element 1 starts here
-            #  'tasks': {
-            #      'Add field track.test_upgrade': 'ALTER TABLE track ADD test_upgrade TEXT;',
-            #  }
-            # }                      # list element 1 ends here
-        ]                            # list closes here
+            }
+        },  # list element 0 ends here
+        {
+            'schema_version': 3,
+            'tasks': {
+                'New table sales':
+                """ CREATE TABLE sales (
+                      d_sales_listing_id INTEGER NOT NULL,
+                      d_sales_release_id INTEGER NOT NULL,
+                      d_sales_release_url TEXT,
+                      d_sales_url TEXT,
+                      d_sales_condition TEXT,
+                      d_sales_sleeve_condition TEXT,
+                      d_sales_price REAL,
+                      d_sales_comments TEXT,
+                      d_sales_allow_offers INTEGER,
+                      d_sales_status TEXT,
+                      d_sales_comments_private TEXT,
+                      d_sales_counts_as INTEGER,
+                      d_sales_location TEXT,
+                      d_sales_weight REAL,
+                      d_sales_posted TEXT,
+                      sales_sold INTEGER NOT NULL DEFAULT 0,
+                      PRIMARY KEY (d_sales_listing_id)
+                      ); """,
+                'New table collection':
+                """ CREATE TABLE collection (
+                      d_coll_instance_id INTEGER NOT NULL,
+                      d_coll_release_id INTEGER NOT NULL,
+                      d_coll_folder_id INTEGER NOT NULL,
+                      d_coll_added TEXT NOT NULL,
+                      d_coll_rating TEXT,
+                      d_coll_notes TEXT,
+                      coll_sold INTEGER NOT NULL DEFAULT 0,
+                      coll_d_sales_listing_id INTEGER,
+                      coll_orphaned INTEGER NOT NULL DEFAULT 0,
+                      PRIMARY KEY (d_coll_instance_id)
+                      ); """,
+                }
+        }]
 
     def create_tables(self):  # initial db setup
         for table, sql in self.sql_initial.items():
@@ -188,8 +222,9 @@ class Db_setup(Database):
                 return True
 
 
-class Config():
-    def __init__(self, no_create_conf=False):
+class Config():  # pylint: disable=too-many-instance-attributes
+    """Provides access to the DiscoDOS configuration file."""
+    def __init__(self, no_create_conf=False):  # pylint: disable=too-many-branches,too-many-statements
         # is set to true on initial run and config create
         self.config_created = False
         self.no_create_conf = no_create_conf
@@ -205,7 +240,7 @@ class Config():
             self.frozen = False
             # where is our library? how are we running?
             discodos_lib = Path(os.path.dirname(os.path.abspath(__file__)))
-            log.info('Config: discodos package is in: {}'.format(discodos_lib))
+            log.debug('Config: discodos package is in: {}'.format(discodos_lib))
             # discodos_root is where our wrappers should be placed in
             # but we only want them when running frozen
             self.discodos_root = discodos_lib
@@ -214,11 +249,11 @@ class Config():
             self.discodos_data = create_data_dir(self.discodos_root)
             # currently no difference if in venv or not - leave this for now
             if self.venv is None:
-                log.info('Config: We are _not_ in a venv.')
+                log.debug('Config: We are _not_ in a venv.')
             else:
-                log.info('Config: We are running in a venv: {}'.format(self.venv))
-        log.info("Config.discodos_root: {}".format(self.discodos_root))
-        log.info("Config.discodos_data: {}".format(self.discodos_data))
+                log.debug('Config: We are running in a venv: {}'.format(self.venv))
+        log.debug("Config.discodos_root: {}".format(self.discodos_root))
+        log.debug("Config.discodos_data: {}".format(self.discodos_data))
 
         # config.yaml path
         self.file = self.discodos_data / "config.yaml"
@@ -229,7 +264,7 @@ class Config():
             # on windows when user clicks Startmenu "Edit Conf...",
             # we show a popup and ask for rerun
             if self.no_create_conf and os.name == "nt":
-                log.info("Config: We are running Windows and no_create_conf is set. Not creating a config file!")
+                log.debug("Config: We are running Windows and no_create_conf is set. Not creating a config file!")
                 import ctypes  # An included library with Python install.
                 ctypes.windll.user32.MessageBoxW(
                     0,
@@ -240,7 +275,7 @@ class Config():
             # SystemExit on macOS is evil - We don't create a config, just log
             # this is invoked from open_shell_mac.py
             elif self.no_create_conf and platform.system() == "Darwin":
-                log.info("Config: We are running macOS and no_create_conf is set. Not creating a config file!")
+                log.debug("Config: We are running macOS and no_create_conf is set. Not creating a config file!")
             # on a shell we just create config and show steps,
             else:
                 self.create_conf()
@@ -249,14 +284,16 @@ class Config():
         # The only setting we _always_ try to fetch is log_level!!!
         try:  # optional setting log_level
             self.log_level = self.conf["log_level"]
-            log.info("config.yaml entry log_level is {}.".format(
-                self.log_level))
+            log.debug("log_level set via config.yaml %s", self.log_level)
         except KeyError:
             self.log_level = "WARNING"
-            log.warn("config.yaml entry log_level not set, taking log_level from CLI option or default (WARNING).")
-        except:  # any other error: set INFO
+            log.warning(
+                "log_level setting missing in config.yaml, fallback to default "
+                "or CLI-passed setting "
+            )
+        except Exception:  # any other error: set WARNING
             self.log_level = "WARNING"
-            log.warn("config.yaml not existing or other error, setting log_level to WARNING.")
+            log.warning("config.yaml missing or other error, fallback to WARNING.")
 
         # Don't fetch settings when no_create_conf is set
         # (Config init from open_shell_mac.py)
@@ -268,7 +305,7 @@ class Config():
             if not db_file:  # if not set, use default value
                 db_file = 'discobase.db'
             self.discobase = self.discodos_data / db_file
-            log.info("Config.discobase: {}".format(self.discobase))
+            log.debug("Config.discobase: {}".format(self.discobase))
 
             # then other settings
             self.discogs_appid = 'DiscoDOS/1.0 +https://github.com/JOJ0/discodos'
@@ -279,6 +316,8 @@ class Config():
             self.webdav_user = self._get_config_entry('webdav_user')
             self.webdav_password = self._get_config_entry('webdav_password')
             self.webdav_url = self._get_config_entry('webdav_url')
+            self.enable_tui = self._get_config_entry('enable_tui')
+            self.sold_folder_id = self._get_config_entry('discogs_sold_folder_id')
 
             # discogs_token is essential, bother user until we have one
             # but not when no_ask_token is set (macOS)
@@ -290,24 +329,23 @@ class Config():
                 self.conf['discogs_token'] = token
                 written = self._write_yaml(self.conf, self.file)
                 if written:
-                    log.info('Config: config.yaml written successfully.')
+                    log.debug('Config: config.yaml written successfully.')
                     self.discogs_token = self._get_config_entry('discogs_token', False)
                 else:
                     log.error('writing config.yaml.')
-
 
     def _get_config_entry(self, yaml_key, optional=True):
         if optional:
             try:
                 if self.conf[yaml_key] == '':
                     value = ''
-                    log.info("config.yaml entry {} is empty.".format(yaml_key))
+                    log.debug("config.yaml entry {} is empty.".format(yaml_key))
                 else:
                     value = self.conf[yaml_key]
-                    log.info("config.yaml entry {} is set.".format(yaml_key))
+                    log.debug("config.yaml entry {} is set.".format(yaml_key))
             except KeyError:
                 value = ''
-                log.info("config.yaml entry {} is missing.".format(yaml_key))
+                log.debug("config.yaml entry {} is missing.".format(yaml_key))
             return value
         else:
             try:  # essential settings entries should error and exit
@@ -317,12 +355,11 @@ class Config():
                 raise SystemExit(3)
             return value
 
-
     def install_cli(self):
         # when to_path is set, we install wrappers to ~/bin
         # and extend $PATH if necessary (posix only)
-        log.info('Config.install_cli: Entering CLI setup.')
-        log.info('Config.install_cli: We are on a "{}" OS'.format(os.name))
+        log.debug('Config.install_cli: Entering CLI setup.')
+        log.debug('Config.install_cli: We are on a "{}" OS'.format(os.name))
         if os.name == 'posix':
             self._install_posix_wrappers()
         elif os.name == 'nt':
@@ -331,14 +368,12 @@ class Config():
             log.warn("Config.cli: Unknown OS - not creating CLI wrappers.")
         return True  # could return something more useful
 
-
     def _install_posix_wrappers(self):
         if self.frozen:  # packaged (py2app, pyinstaller)
             venv_act = False
             disco_py = self.discodos_root / 'cli'
             sync_py = self.discodos_root / 'sync'
-        else:  # not packaged and in a venv (checked in config.py main())
-               # better be installed with setuptools
+        else:  # in a venv (is checked in config.py main()): install with setuptools
             venv_act = Path(self.venv) / 'bin' / 'activate'
             disco_py = self.discodos_root / 'cmd' / 'cli.py'
             sync_py = self.discodos_root / 'cmd' / 'sync.py'
@@ -450,7 +485,6 @@ class Config():
             m_exc = 'Config.install_cli: Exception on copy: {}'.format(exc)
             log.info(m_exc); print(m_exc)
 
-
     def _install_windows_wrappers(self):
         if self.frozen:  # packaged
             venv_act = False
@@ -527,7 +561,6 @@ class Config():
             hlpshmsg+= '\ndiscosync -h\n'
             print_help(hlpshmsg)
 
-
     def _posix_wrapper(self, filename, venv_activate, comment):
         '''return some lines forming a basic posix venv (or not) wrapper'''
         contents = '#!/bin/bash\n'
@@ -536,7 +569,6 @@ class Config():
             contents+= 'source "{}"\n'.format(venv_activate)
         contents+= '"{}" "$@"\n'.format(filename)
         return contents
-
 
     def _win_wrapper(self, filename, comment, frozen):
         '''return some lines forming a basic windows batch wrapper'''
@@ -549,7 +581,6 @@ class Config():
             contents+= 'python "{}" %*\n'.format(filename)
         contents+= 'endlocal\n'
         return contents
-
 
     def _write_textfile(self, contents, file):
         """contents expects string, file expects path/file"""
@@ -565,7 +596,6 @@ class Config():
             log.error(" trying to write %s \n\n", file)
             raise err
 
-
     def create_conf(self):
         '''creates config.yaml'''
         config = {
@@ -577,7 +607,9 @@ class Config():
             'webdav_user': '',
             'webdav_password': '',
             'webdav_url': '',
-            'discobase_file': 'discobase.db'
+            'discobase_file': 'discobase.db',
+            'enable_tui': 'true',
+            'discogs_sold_folder_id': '',
         }
         create_msg = '\nSeems like you are running DiscoDOS for the first time, '
         create_msg+= 'a config file will be created...\n'
@@ -598,7 +630,6 @@ class Config():
             log.info(m)
             print_help(m)
 
-
     def _write_yaml(self, data, yamlfile):
         """data expects dict, yamlfile expects path/file"""
         try:
@@ -613,7 +644,6 @@ class Config():
             log.error(" trying to write %s \n\n", yamlfile)
             raise err
             raise SystemExit(3)
-
 
     def _debug_environ(self):
         for k, v in sorted(os.environ.items()):

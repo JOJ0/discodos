@@ -1,4 +1,3 @@
-.. autoprogram:: discodos.cmd.cli:ArgParse.parser
-    :prog: dsc
-    :maxdepth: 0
-    :groups:
+.. click:: discodos.cmd23:main_cmd
+   :prog: dsc
+   :nested: full

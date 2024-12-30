@@ -1,42 +1,23 @@
 <!-- omit in toc -->
-# Quickstart Guide
-
-- [Installation](#installation)
-- [Importing your Discogs collection](#importing-your-discogs-collection)
-- [Commands Chart](#commands-chart)
-- [Basic Usage Tutorial](#basic-usage-tutorial)
-- [Common Tasks](#common-tasks)
-  - [What's the quickest way to document a mix?](#whats-the-quickest-way-to-document-a-mix)
-  - [I'm stuck in a mix](#im-stuck-in-a-mix)
-  - [I'd like to quickly rate my transitions](#id-like-to-quickly-rate-my-transitions)
-  - [I got a new record and want to quickly use it in DiscoDOS without re-importing everything](#i-got-a-new-record-and-want-to-quickly-use-it-in-discodos-without-re-importing-everything)
-  - [I'd like to get as much information about my music as possible - in one go!](#id-like-to-get-as-much-information-about-my-music-as-possible---in-one-go)
-  - [I'd like to use my DiscoBASE on multiple computers](#id-like-to-use-my-discobase-on-multiple-computers)
-- [User's Manual](#users-manual)
-
-
-
+# Quickstart
 
 ## Installation
 
 Please head over to the [INSTALLATION](INSTALLATION.md) document for step by step instructions on how to get DiscoDOS running on your machine.
 
 
-## Importing your Discogs collection
+
+## Importing your Discogs collection and Marketplace inventory
 
 To let DiscoDOS know about our Discogs record collection we have to import a subset of the available information to the local database (the so-called DiscoBASE).
 
-`dsc import`
+`dsc import basic`
 
-## Commands Chart
-
-Before you move on with the [Basic Usage Tutorial](#basic-usage-tutorial) have a look at the following picture. It shows how `dsc` - The DiscoDOS' main command - is working. Usually a `dsc` command is built from multiple words and options (-x, --something). The top half of the chart describes how the put those components together to create a working command. The bottom half shows some common usage examples.
-
-![Commands Chart](../../assets/discodos_cmds_v0.3_transp.png)
+`dsc import sales`
 
 
 
-## Basic Usage Tutorial
+## Basic Usage Tutorial - Mixes
 
 When importing is through, create a new mix:
 
@@ -82,13 +63,33 @@ Get additional data about your mix's tracks from MusicBrainz and AcousticBrainz 
 
 `dsc mix my_mix -zz`
 
-Read more about the *Brainz update process here: [The import command](MANUAL.md#the-import-command)
+Read more about the *Brainz update process here: [The import command](MANUAL.md#the-import-command-group)
 
 
 
 ## Common Tasks
 
 This section guides you through typical DiscoDOS workflows. If you would rather like to read an in-detail explanation of what each command does, go to the [DiscoDOS User's Manual](MANUAL.md).
+
+### I'd like to sell records
+
+Make sure your local sales inventory is up to date:
+
+`dsc import sales`
+
+List a record for sale with the "sell wizard". Don't pass the `-p/--price` option! You'll receive price suggestions and will be prompted to accept or adjust the recommendations interactively.
+
+`dsc sell -a forsale -c NM`
+
+_**Note: The sell command has some built-in defaults, most importantly `VG+` for `-c/--condition` and `draft` for the `-a/--status` option. Defaults are documented in [the command's online help](dsc.rst).**_
+
+To edit existing sales listings, use the DiscoDOS TUI command `dsc ls`:
+
+`dsc ls artist=squarepusher`
+
+_**Note: `dsc ls` lists records in a fancy graphical but still text-based user interface. Use shortcut `e` to edit a sales listing. Further helpful shortcuts are `v` display video links and `return` to fetch marketplace stats and price suggestions.**_
+
+
 
 ### What's the quickest way to document a mix?
 
@@ -152,9 +153,13 @@ _**Note: Currently DiscoDOS rating analysis system is not finished. This will be
 
 ### I got a new record and want to quickly use it in DiscoDOS without re-importing everything
 
-Search for the record on discogs.com. Get the ID from the release pages URL (eg. https://discogs.com/release/123456) and import it:
+Search for the record on discogs.com. Copy the release ID or the whole URL (eg. https://discogs.com/release/123456) and import it:
 
-`dsc import 123456`
+`dsc import release 123456`
+
+or
+
+`dsc import release https://discogs.com/release/123456`
 
 Get artist/title for each track
 
@@ -182,7 +187,7 @@ As you've probably learned already, DiscoDOS doesn't import all information abou
 
 To make a full import of your whole record collection from Discogs (all releases INCLUDING all tracks on them) execute:
 
-`dsc import --tracks`
+`dsc import tracks`
 
 _**Note: This command can also be used for an initial import (you just started using DiscoDOS - DiscoBASE is still empty).**_
 
@@ -190,23 +195,23 @@ _**1000 records including a total of 3000 tracks complete in about 20 minutes**_
 
 To get additional data from MusicBrainz and AcousticBrainz (key, BPM, weblinks to release- and recordingpages), execute:
 
-`dsc import --zz`
+`dsc import brainz`
 
 _**Note: This command requires the import-tracks command above, being completed already.**_
 
 _**This process will take hours and hours, depending on the size of your collection**_
 
-Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](MANUAL.md#the-import-command). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
+Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](MANUAL.md#the-import-command-group). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
 
 Here's a trick to execute both commands one after the other. We use the "command concatination" features of our shell:
 
 On Windows, do:
 
-`dsc import --tracks  &  dsc import -zz`
+`dsc import tracks  &  dsc import brainz`
 
 on macOS or Linux it's:
 
-`dsc import --tracks  &&  dsc import -zz`
+`dsc import tracks  &&  dsc import brainz`
 
 Leave this running "overnight" - You will see a final summary after each of the commands completes, telling you the exact time it was running and how much information was processed and imported. If you'd like to help improve this manual, copy/paste your stats into a [Github issue](https://github.com/JOJ0/discodos/issues), it would help me a lot to state more accurate estimates here.
 

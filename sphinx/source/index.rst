@@ -2,13 +2,13 @@ DiscoDOS documentation
 **********************
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
 
     QUICKSTART
     INSTALLATION
     MANUAL
     CONTRIBUTION
-    VIDEO_TUTORIALS
     index_commands_reference
+    VIDEO_TUTORIALS
 

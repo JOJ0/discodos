@@ -1,10 +1,10 @@
 import logging
 # import pprint
+import json
+import requests
 import requests.exceptions
 import musicbrainzngs as m
 from musicbrainzngs import WebServiceError
-import requests
-import json
 
 log = logging.getLogger('discodos')
 
@@ -18,7 +18,7 @@ class Brainz (object):
         self.musicbrainz_appid = musicbrainz_appid
         if self.musicbrainz_connect(musicbrainz_user, musicbrainz_pass, musicbrainz_appid):
             self.ONLINE = True
-            log.info("MODEL: Brainz class is ONLINE.")
+            log.debug("MODEL: Brainz class is ONLINE.")
 
     # musicbrainz connect try,except wrapper
     def musicbrainz_connect(self, mb_user, mb_pass, mb_appid):

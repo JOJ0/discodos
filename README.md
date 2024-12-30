@@ -5,47 +5,45 @@
               /  ___   /  ___  /  _____/
              /  /  /  /  /  /  \____  \
             /  /__/  /  /__/  _____/  /
-D i s c o  /                /        /  - The geekiest DJ tool on the planet
+D i s c o  /                /        /  - The record collector's toolbox
           /_______/\_______/________/
 ```
-DiscoDOS helps a DJ remember and analyze what they played in their sets, or what they could possibly play in the future. It's based on data pulled from a users [Discogs](https://www.discogs.com) record [collection](https://support.discogs.com/hc/en-us/articles/360007331534-How-Does-The-Collection-Feature-Work-). Tracks can be organized into playlists and mix-transitions rated. Additionally the collection can be linked to the online music information services [MusicBrainz](https://musicbrainz.org) ~~and [AcousticBrainz](https://acousticbrainz.org), thus further information (like musical key and BPM) is made available to the user~~.
+DiscoDOS is a set of command line tools for DJ's and record collectors.
 
-DiscoDOS currently is available as a command line tool only, though prototypes of a mobile and a desktop app exist already. Despite of what the name implies, it's just the look that is reminiscent of the 80s/90s operating system, its usability follows most standards of a typical [shell](https://en.wikipedia.org/wiki/Shell_(computing)#Unix-like_systems) utility you would find on a [UNIX-like operating system](https://en.wikipedia.org/wiki/Unix-like).
+- It's based on data pulled from a user's [Discogs](https://www.discogs.com) record [collection](https://support.discogs.com/hc/en-us/articles/360007331534-How-Does-The-Collection-Feature-Work-).
+- [List records for sale](https://discodos.readthedocs.io/en/latest/MANUAL.html#the-sell-command) on the Discogs Marketplace.
+- [Edit existing Marketplace listings](https://discodos.readthedocs.io/en/latest/MANUAL.html#the-ls-tui-command) using a self-explanatory _TUI_ interface.
+- Metadata of DJ sets can be recorded and analyzed to feed a simple ["suggestion" mechanism](https://discodos.readthedocs.io/en/latest/MANUAL.html#the-suggest-command).
+- [Organize tracks into playlists](https://discodos.readthedocs.io/en/latest/MANUAL.html#the-mix-command) and rate mix-transitions.
+- Link the collection to [MusicBrainz](https://musicbrainz.org) and [AcousticBrainz](https://acousticbrainz.org), to provide key and BPM data of tracks. These features are deprecated but still work partly - [read more about it here](https://discodos.readthedocs.io/en/latest/MANUAL.html#acousticbrainz-support-is-deprecated).
 
-DiscoDOS runs on current Linux, macOS and Windows systems.
+DiscoDOS is a command line tool, though [parts of it provide a TUI - a _text user interface_](https://discodos.readthedocs.io/en/latest/MANUAL.html#the-ls-tui-command). DiscoDOS is written in Python and runs on Linux, macOS and Windows.
 
-DiscoDOS primarily aims at the Vinyl DJ but feature ideas for DJ's playing both, digital media and vinyl, are existing. Also thoughts around GUI programming and alternative approaches to finding out key and BPM are present. Have a look on the DiscoDOS website's [roadmap](https://discodos.jojotodos.net#roadmap) chapter.
+### Viewing Marketplace stats, editing listings, fetching videos
+![dsc ls full screen](sphinx/source/_static/ls-default-full-screen.png)
 
-The following animated GIFs should give you an idea on how DiscoDOS looks and feels:
+### Selling a record
+![dsc sell](sphinx/source/_static/sell.gif)
 
-
-_**Note: As of February 2022 unfortunately [the AcousticBrainz project was shut down](https://blog.metabrainz.org/2022/02/16/acousticbrainz-making-a-hard-decision-to-end-the-project/), as a consequence DiscoDOS can't fetch key and BPM anymore. Below videos are outdated and show some of those features.**_
-
-_**Note: Find some ideas on how DiscoDOS could solve this problem [in the website's roadmap chapter](https://discodos.jojotodos.net/#roadmap).**_
-
-
-<!-- omit in toc -->
-##### Viewing mix details, searching and adding track:
+### Viewing mix details, searching and adding track:
 ![demo gif 1](assets/intro_gif_v0.4_1-580_16col_960x581.gif)
-<!-- omit in toc -->
-##### Updating track information from Discogs and MusicBrainz/AcousticBrainz:
+
+### Updating track information from Discogs and MusicBrainz/AcousticBrainz:
 ![demo gif 2](assets/intro_gif_v0.4_580-end_16col_960x581.gif)
 
-
-Head over to the documentation pages and learn how to install and
-use DiscoDOS:
-
-- [Quickstart Guide](https://discodos.readthedocs.io/en/latest/QUICKSTART.html)
-- [Installaton Guide](https://discodos.readthedocs.io/en/latest/INSTALLATION.html)
-- [User's Manual](https://discodos.readthedocs.io/en/latest/MANUAL.html)
-
-Watch some video tutorials on Youtube:
+_The latter two videos are slightly outdated. DiscoDOS' main command now is called `dsc` and AcousticBrainz as an actual website not existing anymore (API-only, which DiscoDOS makes use of)._
+### Video Tutorials
 
 - [How to use DiscoDOS #1 - Mixes, Suggestions, Collection, AcousticBrainz](https://www.youtube.com/watch?v=c9lqKuGSCVk&list=PLcHqk0rpp8bprmYlaXdrs6pbOpPoJwW-T)
 - [How to use DiscoDOS #2 - Finding key & BPM compatible tracks](https://www.youtube.com/watch?v=agp9OrYC66I&list=PLcHqk0rpp8bprmYlaXdrs6pbOpPoJwW-T&index=3)
 - [How to use DiscoDOS #3 - Fetch key & BPM from AcousticBrainz](https://www.youtube.com/watch?v=4lungDgdJ2w&list=PLcHqk0rpp8bprmYlaXdrs6pbOpPoJwW-T&index=4)
 
+### Docs
 
-View the DiscoDOS website:
+- [Quickstart Guide](https://discodos.readthedocs.io/en/latest/QUICKSTART.html)
+- [Setup Guide](https://discodos.readthedocs.io/en/latest/INSTALLATION.html)
+- [User's Manual](https://discodos.readthedocs.io/en/latest/MANUAL.html)
+
+### Website
 
 - [discodos.jojotodos.net](https://discodos.jojotodos.net)
