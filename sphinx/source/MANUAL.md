@@ -508,12 +508,6 @@ The `ls` command as well as other parts of DiscoDOS support a minimalistic key-v
 
 ## Technicalities, DiscoBASE design, Workflow decisions
 
-### The _sold_ flag in the _collection table
-
-FIXME. What is it? Manual multi-item fixing purpose only?
-
-This flag is best manipulated using the `dsc ls` TUI and pressing the `s` command key.
-
 
 ### The _collection_ table vs. the _release_ table
 
