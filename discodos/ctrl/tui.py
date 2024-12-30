@@ -156,13 +156,13 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """Fetches videos from Discogs release and displays in Rich column view."""
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         release_id = self.table.get_cell(row_key, "discogs_id")
-        self.rlog.write(f"release_id is {release_id}")
         # Get videos ...
         videos, err_videos, _ = self.collection.fetch_release_videos(release_id)
         render_videos = (
             err_videos if err_videos else self.cli.two_column_view(videos, as_is=True)
         )
-        # ... and display
+        # ... log and display
+        self.rlog.write(f"Fetched release {release_id} YouTube video links.")
         self.right_column_content.update(render_videos)
 
     def action_fetch_listing_details(self):
