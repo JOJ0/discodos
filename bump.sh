@@ -22,11 +22,11 @@ if [ -z $1 ]; then
 fi
 
 if [[ "$2" == "doit" ]]; then
-    bumpversion $PART --verbose
+    bumpversion $PART --verbose --tag --commit
     echo ""
     echo "All good? Then push commits and tags:"
     echo "git push --follow-tags"
 else
     echo -e "\nTHIS IS A DRY-RUN\n"
-    bumpversion $PART --verbose --dry-run
+    bumpversion $PART --verbose --tag --commit --dry-run
 fi
