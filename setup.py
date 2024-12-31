@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="discodos",
-    version="3.0.1",
+    version="3.0.2",
     description="DJ and record collector's toolbox for Discogs",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",

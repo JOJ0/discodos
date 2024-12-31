@@ -29,7 +29,7 @@ author = 'J0J0 Todos'
 # version = '1.0'
 
 # The full version, including alpha/beta/rc tags
-release = '3.0.1'
+release = '3.0.2'
 
 
 # -- General configuration ---------------------------------------------------
