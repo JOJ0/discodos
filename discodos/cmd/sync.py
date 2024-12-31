@@ -155,10 +155,10 @@ class Sync(object):
         return '{}_{}'.format(fileobj.name, local_mtime)
 
     def _get_times_tuple(self, filestr): # get epoch from string someth_YYYY-MM-DD_HHMMMSS
-        time = re.split('[^\d]', filestr)[-1]
-        day = re.split('[^\d]', filestr)[-2]
-        month = re.split('[^\d]', filestr)[-3]
-        year = re.split('[^\d]', filestr)[-4]
+        time = re.split(r'[^\d]', filestr)[-1]
+        day = re.split(r'[^\d]', filestr)[-2]
+        month = re.split(r'[^\d]', filestr)[-3]
+        year = re.split(r'[^\d]', filestr)[-4]
         filestr_date_digits = "{}{}{}{}".format(year, month, day, time)
         log.debug('Sync._get_times_tuple: filestr_date_digits: {}'.format(filestr_date_digits))
         if not filestr_date_digits:
@@ -358,7 +358,7 @@ class Dropbox_sync(Sync):
         relevant_files = []
 
         for resource in all_files.entries:
-            if re.search('_(\d+)-(\d+)-(\d+)_(\d+)$', resource.name):
+            if re.search(r'_(\d+)-(\d+)-(\d+)_(\d+)$', resource.name):
                 relevant_files.append(resource)
             else:
                 log.debug('Sync: Skipping resource: {}'.format(resource.name))
@@ -466,7 +466,7 @@ class Webdav_sync(Sync):
         all_files.sort() # sorts by name
         relevant_files = []
         for i, resource in enumerate(all_files):
-            if re.search('_(\d+)-(\d+)-(\d+)_(\d+)$', resource):
+            if re.search(r'_(\d+)-(\d+)-(\d+)_(\d+)$', resource):
                 relevant_files.append(resource)
             else:
                 log.debug('Sync: Skipping resource: {}'.format(all_files[i]))
