@@ -7,7 +7,7 @@ echo
 rm -rf dist/*
 echo
 python -m build
-python -m twine upload --repository testpypi dist/*
+python -m twine upload --verbose --repository testpypi dist/*
 echo
 echo "Test install:"
 echo "python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps discodos"
