@@ -13,7 +13,7 @@ setup(
         "Documentation": "https://discodos.readthedocs.io",
         "Source Code": "https://github.com/joj0/discodos/",
     },
-    packages=find_packages(where=".", include=["discodos"]),
+    packages=find_packages(),
     test_suite="tests",
     license="GPLv3+",
     classifiers=[
