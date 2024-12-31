@@ -21,7 +21,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "DiscoDOS - the DJ and record collector's toolbox"
+project = "DiscoDOS - DJ and record collector's toolbox for Discogs"
 copyright = '2018-2024, J0J0 Todos'
 author = 'J0J0 Todos'
 
