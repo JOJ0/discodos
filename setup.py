@@ -38,6 +38,8 @@ setup(
         "python3-discogs-client",
         "webdavclient3",
     ],
+    package_data={"discodos.ctrl": ["*.tcss"]},
+    include_package_data=True,
     entry_points={
         "console_scripts": [
             "discosync = discodos.cmd.sync:main",
@@ -56,4 +58,3 @@ setup(
         "discodos_logo.py",
     ],
 )
-
