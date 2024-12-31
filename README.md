@@ -1,12 +1,12 @@
 # README
 ```
-            _______  _______ ________
- D i s c o /       \        /       /
-          /  ___   /  ___  /  _____/
-         /  /  /  /  /  /  \____  \
-        /  /__/  /  /__/  _____/  /
-       /                /        / > record collector's toolbox <
-      /_______/\_______/________/
+        _______  _______ ________
+ D i s c o     \        /       /
+      /  ___   /  ___  /  _____/
+     /  /  /  /  /  /  \____  \
+    /  /__/  /  /__/  _____/  /
+   /                /      record collector's toolbox
+  /_______/\_______/________/
 ```
 DiscoDOS is a set of command line tools for DJ's and record collectors.
 
