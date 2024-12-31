@@ -208,10 +208,18 @@ class DiscogsMixin:
 
         return all_instances
 
-    def stats_releases_d_collection_online(self):
+    def stats_collection_items_discogs(self):
         count = 0
         try:
             count = len(self.me.collection_folders[0].releases)
+        except Exception as Exc:
+            log.error("%s (Exception)", Exc)
+        return count
+
+    def stats_sales_listings_discogs(self):
+        count = 0
+        try:
+            count = len(self.me.inventory)
         except Exception as Exc:
             log.error("%s (Exception)", Exc)
         return count

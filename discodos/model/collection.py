@@ -567,9 +567,18 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
-    def stats_releases_d_collection_flag(self):
+    def stats_collection_items_discobase(self):
         sql_stats = '''
-                    SELECT COUNT(*) FROM release WHERE in_d_collection == 1;
+                    SELECT COUNT(*) FROM release LEFT OUTER JOIN collection
+                    ON discogs_id = d_coll_release_id
+                    WHERE coll_orphaned = 0;
+                    '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_sales_listings_discobase(self):
+        sql_stats = '''
+                    SELECT COUNT(*) FROM sales;
                     '''
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0

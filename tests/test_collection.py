@@ -382,7 +382,7 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_releases_d_collection_flag()
+        db_return = self.collection.stats_collection_items_discobase()
         self.assertEqual(db_return, 4)
         print("{} - {} - END".format(self.clname, name))
 

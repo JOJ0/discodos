@@ -129,15 +129,18 @@ class CollectionViewCommandline(
     def tab_stats(
         self, releases_total, releases_matched,
         tracks_total, tracks_matched,
-        releases_collection_flag, releases_collection_online,
+        collection_items_discobase, collection_items_discogs,
+        sales_listings_discobase, sales_listings_discogs,
         mixtracks_total, mixtracks_unique,
         tracks_key_brainz, tracks_key_manual,
         tracks_bpm_brainz, tracks_bpm_manual
     ):
         stats = [
             ['Releases in DiscoBASE', releases_total],
-            ['Releases in Collection (DB flag)', releases_collection_flag],
-            ['Releases in Collection (Discogs)', releases_collection_online],
+            ['Collection items (DiscoBASE)', collection_items_discobase],
+            ['Collection items (Discogs)', collection_items_discogs],
+            ['Sales listings (DiscoBASE)', sales_listings_discobase],
+            ['Sales listings (Discogs)', sales_listings_discogs],
             ['Releases matched with *Brainz', releases_matched],
             ['Tracks in DiscoBASE', tracks_total],
             ['Tracks matched with *Brainz', tracks_matched],
