@@ -26,6 +26,18 @@ setup(
         "Topic :: Multimedia :: Sound/Audio",
         "Environment :: Console",
     ],
+    install_requires=[
+        "Click",
+        "tabulate",
+        "PyYaml",
+        "click-option-group",
+        "dropbox",
+        "musicbrainzngs",
+        "rich",
+        "textual",
+        "python3-discogs-client",
+        "webdavclient3",
+    ],
     entry_points={
         "console_scripts": [
             "discosync = discodos.cmd.sync:main",
