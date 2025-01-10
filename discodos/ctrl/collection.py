@@ -309,7 +309,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                         instance, sold_folder_id=self.user.conf.sold_folder_id
                     )
                 # Check existing DB entries and mark orphaned if required
-                self.orphane_collection_items(coll_items, release_id)
+                self.orphane_collection_items(coll_items, extracted_id)
             else:
                 self.cli.error_not_the_release()
 
