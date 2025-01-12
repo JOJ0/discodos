@@ -58,7 +58,7 @@ class Db_setup(Database):
                   discogs_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                   discogs_title TEXT NOT NULL,
                   import_timestamp TEXT,
-                  d_artist TEXT,
+                  d_artist TEXT
                   ); """,
             'mix':
             """ CREATE TABLE mix (
