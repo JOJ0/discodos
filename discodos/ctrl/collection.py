@@ -345,7 +345,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             else:
                 print("No tracks. Moving on...")
 
-            coll_items = self.collection.get_collection_items_by_release(release_id)
+            coll_items = self.collection.get_collection_items_by_release(extracted_id)
             for ci in coll_items:
                 print(
                     Panel.fit(
