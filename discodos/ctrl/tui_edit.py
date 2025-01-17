@@ -17,6 +17,7 @@ class EditScreen(Screen):
         self,
         on_save,
         listing_id,
+        release_id,
         price,
         condition,
         sleeve_condition,
@@ -28,8 +29,9 @@ class EditScreen(Screen):
     ):
         super().__init__()
         self.caption = listing_id
+        self.release_id = release_id  # required for saving
         # Initialize text based fields with existing or default values
-        self.price = Input(value=price or "", placeholder="Price")
+        self.price = Input(str(price))
         self.location = Input(value=location or "", placeholder="Location")
         self.comments = Input(value=comments or "", placeholder="Public comments")
         self.comments_private = Input(value=comments_private or "",
@@ -94,6 +96,7 @@ class EditScreen(Screen):
             status = self.query_one("#status")
             allow_offers = self.query_one("#allow_offers")
             self.on_save(
+                release_id=self.release_id,
                 price=self.price.value,
                 condition=condition.pressed_button.name,
                 sleeve_condition=sleeve_condition.pressed_button.name,

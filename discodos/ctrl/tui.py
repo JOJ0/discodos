@@ -94,10 +94,10 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """Open the edit screen for a sales listing."""
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
-        listing, l_err, _ = self.fetch_sales_listing_details(listing_id, tui_view=True)
-        if l_err:
-            self.rlog.write(f"Error fetching sales listing details: {l_err}")
-            return
+        release_id = self.table.get_cell(row_key, "discogs_id")
+        listing = self.collection.get_sales_listing_details(listing_id)
+        if not listing:
+            self.rlog.write("Error getting sales listing from DiscoBASE.")
 
         def save_changes(**kwargs):
             if not self.collection.update_sales_listing(
@@ -113,6 +113,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 return
 
             listing["d_sales_listing_id"] = listing_id
+            listing["d_sales_release_id"] = release_id
             created = self.collection.create_sales_entry(listing)
             if not created:
                 self.rlog.write("Updating sales entry in DiscoBASE failed")
@@ -141,6 +142,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             EditScreen(
                 save_changes,
                 listing_id=listing_id,
+                release_id=listing["d_sales_release_id"],
                 price=listing["d_sales_price"],
                 condition=listing["d_sales_condition"],
                 sleeve_condition=listing["d_sales_sleeve_condition"],

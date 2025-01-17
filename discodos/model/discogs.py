@@ -398,6 +398,7 @@ class DiscogsMixin:
     def update_sales_listing(  # pylint: disable=too-many-positional-arguments,too-many-arguments
         self,
         listing_id=None,
+        release_id=None,
         condition=None,
         sleeve_condition=None,
         price=None,
@@ -422,7 +423,11 @@ class DiscogsMixin:
             listing.save()
             return True
         except Exception as Exc:
-            log.error("Exception while trying to update Marketplace listing: %s", Exc)
+            log.error(
+                "Exception while trying to update Marketplace listing for release %s: %s",
+                release_id,
+                Exc,
+            )
             return False
 
     def remove_sales_listing(self, listing_id):
