@@ -131,6 +131,8 @@ class CollectionViewCommandline(
         tracks_total, tracks_matched,
         collection_items_discobase, collection_items_discogs,
         sales_listings_discobase, sales_listings_discogs,
+        sales_listings_forsale,
+        sales_listings_sold,
         mixtracks_total, mixtracks_unique,
         tracks_key_brainz, tracks_key_manual,
         tracks_bpm_brainz, tracks_bpm_manual
@@ -141,6 +143,8 @@ class CollectionViewCommandline(
             ['Collection items (Discogs)', collection_items_discogs],
             ['Sales listings (DiscoBASE)', sales_listings_discobase],
             ['Sales listings (Discogs)', sales_listings_discogs],
+            ['Sales listings (For Sale/Expired)', sales_listings_forsale],
+            ['Sales listings (Sold)', sales_listings_sold],
             ['Releases matched with *Brainz', releases_matched],
             ['Tracks in DiscoBASE', tracks_total],
             ['Tracks matched with *Brainz', tracks_matched],

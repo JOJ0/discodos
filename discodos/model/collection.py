@@ -583,6 +583,20 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_sales_listings_forsale(self):
+        sql_stats = """ SELECT COUNT(*) FROM sales
+            WHERE d_sales_status = "forsale" OR d_sales_status = "expired";
+            """
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
+    def stats_sales_listings_sold(self):
+        sql_stats = '''
+            SELECT COUNT(*) FROM sales WHERE d_sales_status = "sold";
+            '''
+        stats = self._select(sql_stats, fetchone=True)
+        return stats[0] if stats else 0
+
     def stats_mixtracks_total(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM mix_track;
