@@ -1217,10 +1217,25 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def prepare_key_value_search(self, query):
         """Returns a dictionary from space-delimited key=value pairs."""
-        return dict([
-                item.split("=") if "=" in item else ["title", item]
-                for item in query
-        ])
+        kv = {}
+        non_kv = []
+        for item in query:
+            if "=" in item:
+                key, value = item.split("=")
+                kv[key] = value
+            else:
+                non_kv.append(item)
+
+        if non_kv:
+            if not kv:
+                kv = {"title": "%".join(non_kv)}
+            elif "title" in kv:
+                kv_title = kv["title"].replace(" ", "%")
+                non_kv_terms = "%".join(non_kv)
+                kv["title"] = f"{kv_title}%{non_kv_terms}"
+            else:
+                kv["title"] = "%".join(non_kv)
+        return kv
 
     def tui_ls_releases(
         self, search_terms, orderby=None, reverse_order=False, sales_extra=False
