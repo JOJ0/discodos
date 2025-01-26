@@ -37,27 +37,21 @@ def clean_sales_cmd(helper, offset):
     coll_ctrl.cleanup_sales_inventory(offset=offset)
 
 
-@clean_group.command(name='collection')
+@clean_group.command(name='releases')
 @click.option(
     "--resume", "-r", "offset", metavar='OFFSET',
     type=int, default=0,
     help='''Resumes at the given offset position (expects a number).''')
 @click.pass_obj
-def clean_collection_cmd(helper, offset):
+def clean_releases_cmd(helper, offset):
     """
-    Clean up the DiscoBASE collection.
+    Clean up the DiscoBASE release table.
 
-    Marks items orphaned in the release table if non-existent in the online Discogs
-    collection anymore.
-
-    TLDR, it uses the the in_d_collection flag in the release table to keep track of the
-    online collection state. It does not delete rows in the releases table ever (use the
-    "import release -d" flag to fix such issues). The reason for that is that release
-    data might still be required for DiscoDOS' sales inventory or mixes related
-    features.
+    Deletes entries in the release table if not used by any `mix`, `sales listing` or
+    `collection item` anymore.
     """
     def update_user_interaction_helper(user):
-        log.debug("Entered clean up DiscoBASE collection inventory mode.")
+        log.debug("Entered clean up DiscoBASE releases mode.")
         return user
 
     user = update_user_interaction_helper(helper)
@@ -67,4 +61,4 @@ def clean_collection_cmd(helper, offset):
         user.conf.discobase, user.conf.musicbrainz_user,
         user.conf.musicbrainz_password)
 
-    coll_ctrl.cleanup_collection(offset=offset)
+    coll_ctrl.cleanup_releases(offset=offset)

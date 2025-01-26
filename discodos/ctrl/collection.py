@@ -1508,44 +1508,48 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         print(f"Orphaned entries deleted: {orphaned_entries}.")
         self.cli.duration_stats(start_time, 'Sales inventory cleanup')
 
-    def cleanup_collection(self, offset=0):
-        """Cleanup the release table. Mark orphaned if non-existent online."""
+    def cleanup_releases(self, offset=0):
+        """Cleanup the release table. Remove orphaned entries.
+
+        Orphaned means: Not used by `sales`, `mixes` or `collection` features
+        anymore.
+        """
         start_time = time()
         orphaned_entries =  0
         self.cli.exit_if_offline(self.collection.ONLINE)
-        self.cli.p("Cleaning up DiscoBASE release and collection tables...")
-        total_items = self.collection.stats_releases_total()
+        self.cli.p("Cleaning up the DiscoBASE release table...")
+        # total_items = self.collection.stats_releases_total()
         collection = self.collection.get_all_db_releases(offset, as_dict=True)
 
-        console = Console()
-        adapted_progress = Progress(
-            MofNCompleteColumn(),
-            BarColumn(),
-            TaskProgressColumn(),
+        print(
+            "The following releases are not used in any [yellow]sales listing, mix or "
+            "collection item[/] and can be safely deleted:\n"
         )
-        with adapted_progress:
-            task = adapted_progress.add_task(
-                "[cyan] Status: ",
-                completed=offset,
-                total=total_items,
+        for row in collection:
+            coll_existing = self.collection.get_collection_items_by_release(
+                row["discogs_id"],
+                quiet=True,
             )
-            for row in collection:
-                existing = self.collection.fetch_collection_item_ok(
-                    row["discogs_id"]
-                )
-                if not existing:
-                    orphaned_entries += 1
-                    entry = " - ".join([str(value) for value in row.values()])
-                    console.print(
-                        "[yellow]Not in Discogs collection, "
-                        f"mark orphaned: {entry}[/]"
-                    )
-                    self.collection.toggle_collection_flag(
-                        row["discogs_id"], in_collection=False
-                    )
-                    # We keep data as-is in the collection table.
-                    # FIXME should we mark anything there as well?
-                adapted_progress.update(task, advance=1)
+            listing_existing = self.collection.get_sales_listings_by_release(
+                row["discogs_id"],
+                quiet=True,
+            )
+            mix_tracks_existing = self.collection.get_mix_tracks_by_release(
+                row["discogs_id"],
+                quiet=True,
+            )
+            if (
+                not coll_existing
+                and not listing_existing
+                and not mix_tracks_existing
+            ):
+                orphaned_entries += 1
+                entry = " - ".join([str(value) for value in row.values()])
+                print(f"\n{entry}")
+                print(self.cli.link_to("discogs release", row["discogs_id"]))
+                confirm = Confirm.ask("Delete?", default=False)
+                if confirm:
+                    self.collection.delete_release(row["discogs_id"])
 
         print(f"Orphaned entries found: {orphaned_entries}.")
-        self.cli.duration_stats(start_time, 'Collection cleanup')
+        self.cli.duration_stats(start_time, 'Release table cleanup')

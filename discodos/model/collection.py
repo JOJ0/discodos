@@ -293,7 +293,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "DELETE FROM release WHERE discogs_id == ?", (release_id, )
         )
 
-    def get_collection_items_by_release(self, release_id):
+    # Get by release. Cleanup helpers.
+
+    def get_collection_items_by_release(self, release_id, quiet=False):
         """Gets all collection item instances via a release_id from DiscoBASE"""
         in_db = self._select_simple(
             ["*"],
@@ -301,8 +303,40 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             condition=f"d_coll_release_id == {release_id}",
             as_dict=True,
         )
-        if not in_db:
-            log.warning("No instance of release found in DiscoBASE collection.")
+        if not in_db and not quiet:
+            log.warning(
+                f"No instance of release {release_id} found in DiscoBASE collection."
+            )
+            return []
+        return in_db
+
+    def get_sales_listings_by_release(self, release_id, quiet=False):
+        """Gets all sales listing via a release_id from DiscoBASE"""
+        in_db = self._select_simple(
+            ["*"],
+            "sales",
+            condition=f"d_sales_release_id == {release_id}",
+            as_dict=True,
+        )
+        if not in_db and not quiet:
+            log.warning(
+                f"No sales listing of release {release_id} found in DiscoBASE."
+            )
+            return []
+        return in_db
+
+    def get_mix_tracks_by_release(self, release_id, quiet=False):
+        """Gets all mix_tracks via a release_id from DiscoBASE"""
+        in_db = self._select_simple(
+            ["*"],
+            "mix_track",
+            condition=f"d_release_id == {release_id}",
+            as_dict=True,
+        )
+        if not in_db and not quiet:
+            log.warning(
+                f"No mixed track on release {release_id} found in DiscoBASE."
+            )
             return []
         return in_db
 
