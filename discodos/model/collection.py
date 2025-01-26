@@ -300,7 +300,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         in_db = self._select_simple(
             ["*"],
             "collection",
-            condition=f"d_coll_release_id == {release_id}",
+            condition=f"d_coll_release_id == {release_id} and NOT coll_orphaned",
             as_dict=True,
         )
         if not in_db and not quiet:
