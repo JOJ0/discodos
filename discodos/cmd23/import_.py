@@ -39,21 +39,25 @@ def import_group():
 @import_group.command(name='basic')
 @click.pass_obj
 def import_basic_cmd(helper ):
-    """Initially imports a Discogs collection.
+    """Initially imports Discogs release and user collection data.
 
-    A very basic subset of the Discogs collection data is imported to the
-    DiscoBASE. Currently this includes artist, release title, catalog number, a
-    timestamp of the import time, and the flags is_in_d_collection and sold.
+    A basic subset of the details of all releases in the user's Discogs collection is
+    imported into the DiscoBASE. Currently this includes artist, release title, catalog
+    number, and the time of import. Information about collection items is also stored.
+    This includes folders, notes, added date and rating (not all is made use of in
+    DiscoDOS yet).
 
-    The basic import can be re-run any time. It
-    overwrites any existing data in the release table of the DiscoBASE, though
-    additional information like the sales date is not overwritten when present
-    already.
+    The basic import can be re-run any time. Existing releases data is updated. Note
+    that releases are not deleted on re-runs because they might still be used by the
+    `sales` or `mixes` features of DiscoDOS. If "orphaned" collection item's are found,
+    they are marked as such and won't show up in views anymore (e.g `dsc ls`). Orphaned
+    in that context means: Not in the user's (online) collection anymore (e.g removed
+    via the Discogs webinterface).
 
-    The purpose of the is_in_d_collection flag marks releases that are not in
-    the online Discogs collection anymore with a 0 (false). This helps to get
-    the releases table in sync when releases have been removed using the Discogs
-    web interface.
+    To manually remove releases from the DiscoBASE anyway, use
+    `dsc import release -d <release_id>`. This is able to remove them from the offline
+    collection, the (online) Discogs collection and purge any release data from the
+    DiscoBASE.
     """
     def update_user_interaction_helper(user):
         log.debug("Entered collection and details import mode.")
