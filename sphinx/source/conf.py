@@ -139,4 +139,5 @@ html_title = "DiscoDOS"
 myst_heading_anchors = 7
 myst_enable_extensions = [
     "strikethrough",
+    "colon_fence",
 ]

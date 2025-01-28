@@ -122,19 +122,28 @@ To import all releases including all tracks in your collection use the tracks su
 
 `dsc import tracks`
 
+:::{attention}
+Importing track details is a requirement for using the [suggest](#the-suggest-command) and the [mix](#the-mix-command) command.
+:::
+
+
+### Importing further track details from MusicBrainz
+
 To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the brain subcommand. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
 
 _**Note: This process will take hours. Best you let it run "overnight"**_
 
 `dsc import brainz`
 
-A slightly quicker but less effective method is using the --quick option:
+:::{note}
+The [suggest](#the-suggest-command), [mix](#the-mix-command) and [links](#the-links-command) commands make use of this type of imported data.
+:::
+
+A slightly quicker but less effective method is using the `--quick` option:
 
 `dsc import brainz -q`
 
-Also remember that it's unlikely that MusicBrainz even *has* an entry for each of your records. Discogs still *is* the most complete music database on earth compared to others. Most definitely when it comes to Vinyl records.
-
-Also note that often it happens that a MusicBrainz track _can_ be "matched" but AcousticBrainz does not have an entry for it yet.
+It's unlikely that MusicBrainz has entries for all of your records (it has its many strengths but when it comes to Vinyl, Discogs still is the most complete database on earth). Also often it happens that even though "matching" to a MusicBrainz track _is_ successful, AcousticBrainz does not have an entry for it anyway. Unfortunately adding to data to AcousticBrainz is not possible anymore - [Read why here!](#acousticbrainz-support-is-deprecated).
 
 If for some reason you can't complete the run (connection problems, having to switch off your computer, ...) you can resume the process at a later time. DiscoDOS spits out regularly how many tracks have been matched already and how many are to be done. This will resume the matching at track number 2500 in your collection:
 
@@ -593,7 +602,7 @@ So to query this field, use `dsc ls sold=1`. The result will include items that 
 
 ## AcousticBrainz support is deprecated
 
-Since its initial 1.0 release, for one of its main features - muscial key/BPM finding - DiscoDOS relies heavily on MusicBrainz and AcousticBrainz (which provided key/BPM data) As of February 2022 unfortunately [the AcousticBrainz project was shut down](https://blog.metabrainz.org/2022/02/16/acousticbrainz-making-a-hard-decision-to-end-the-project/), as a consequence DiscoDOS theoretically can't fetch key and BPM anymore. It appears though that the MetaBrainz foundation let the service run but only does not allow submitting new data to it. This might change anytime soon. Currently it is still possible to at least find "some" of your tracks' key and BPM data, thus these features were not removed from DiscoDOS yet.
+Since its initial 1.0 release, for one of its main features - musical key and BPM finding - DiscoDOS relied heavily on MusicBrainz and AcousticBrainz (which provided key/BPM data). As of February 2022 unfortunately [the AcousticBrainz project was shut down](https://blog.metabrainz.org/2022/02/16/acousticbrainz-making-a-hard-decision-to-end-the-project/) and as a consequence, DiscoDOS _theoretically_ can't fetch key and BPM anymore. It appears though that the MetaBrainz foundation let the service run, but forbids submitting _new_ data to it. This might change anytime soon but at the time of writing this, it is still possible for DiscoDOS to use the service.
 
 Ideas on how DiscoDOS could solve this problem [in the website's roadmap chapter](https://discodos.jojotodos.net/#roadmap).
 
