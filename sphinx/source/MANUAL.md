@@ -129,7 +129,7 @@ Importing track details is a requirement for using the [suggest](#the-suggest-co
 
 ### Importing further track details from MusicBrainz
 
-To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the brain subcommand. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
+To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the `brainz` subcommand. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
 
 _**Note: This process will take hours. Best you let it run "overnight"**_
 
