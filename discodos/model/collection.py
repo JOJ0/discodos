@@ -801,6 +801,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         join = [
             ("LEFT OUTER", "sales", "discogs_id = sales.d_sales_release_id"),
             ("LEFT OUTER", "collection", "discogs_id = collection.d_coll_release_id"),
+            ("LEFT OUTER", "collfolder", "d_coll_folder_id = d_collfolder_id"),
         ]
         fields = [
             "release.discogs_id",
@@ -819,7 +820,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "NULL AS d_sales_location" if sales_extra else "d_sales_location",
             "NULL AS d_sales_price" if sales_extra else "d_sales_price",
             "collection.d_coll_instance_id",
-            "collection.d_coll_folder_id",
+            "d_collfolder_name",
             "collection.d_coll_notes",
         ] if not custom_fields else custom_fields
 
