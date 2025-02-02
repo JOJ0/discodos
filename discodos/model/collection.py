@@ -783,36 +783,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         tuple_upd = (mbid, match_method, release_id)
         return self.execute_sql(sql_upd, tuple_upd)
 
-    # Newer fetchers, inserts and helpers
-
-    def create_sales_entry(self, listing_object):
-        """Creates a single entry to sales table and ensures up to date data.
-
-        Saves conditions and status as-is - in plain short key form (eg. VG+, forsale)
-        """
-        # join together a comma delim string for the SQL statement
-        keys_str = ', '.join(listing_object.keys())
-        # generate a tuple version of the values
-        values = tuple(listing_object.values())
-        values_placeholders = ', '.join(['?'] * len(listing_object))
-        # Prepare update fields (we want to update all columns except the
-        # primary keys on conflict)
-        update_fields = ', '.join([
-            f"{key} = excluded.{key}"
-            for key in listing_object.keys()
-            if key not in {"d_sales_listing_id"}
-        ])
-
-        try:
-            insert_sql = f"""
-            INSERT INTO sales ({keys_str}) VALUES ({values_placeholders})
-            ON CONFLICT(d_sales_listing_id) DO UPDATE SET
-                {update_fields}
-            """
-            return self.execute_sql(insert_sql, values, raise_err=True)
-        except sqlerr as e:
-            log.error("MODEL: create_sales_entry: %s", e.args[0])
-            return False
+    # Key/value search
 
     def key_value_search_releases(
         self, search_key_value=None, orderby=None, filter_cols=None,
@@ -900,6 +871,62 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             reverse_order=reverse_order,
         )
         return rows
+
+    def get_one_release_for_list_app(
+        self, release_id, orderby="d_artist, discogs_title"
+    ):
+        """Get one release with fields required for DiscodosListApp.
+
+        Returns the same fields as key_value_search_release!
+        """
+        where = f"d_sales_release_id == {release_id}"
+        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
+
+        rows = self._select_simple(
+            [
+                "discogs_id",
+                "d_catno",
+                "d_artist",
+                "discogs_title",
+                "in_d_collection",
+                "d_sales_listing_id",
+                "d_sales_status",
+                "sold",
+            ],
+            "release", fetchone=False, orderby=orderby, condition=where, join=join,
+        )
+        return rows
+
+    # Sales
+
+    def create_sales_entry(self, listing_object):
+        """Creates a single entry to sales table and ensures up to date data.
+
+        Saves conditions and status as-is - in plain short key form (eg. VG+, forsale)
+        """
+        # join together a comma delim string for the SQL statement
+        keys_str = ', '.join(listing_object.keys())
+        # generate a tuple version of the values
+        values = tuple(listing_object.values())
+        values_placeholders = ', '.join(['?'] * len(listing_object))
+        # Prepare update fields (we want to update all columns except the
+        # primary keys on conflict)
+        update_fields = ', '.join([
+            f"{key} = excluded.{key}"
+            for key in listing_object.keys()
+            if key not in {"d_sales_listing_id"}
+        ])
+
+        try:
+            insert_sql = f"""
+            INSERT INTO sales ({keys_str}) VALUES ({values_placeholders})
+            ON CONFLICT(d_sales_listing_id) DO UPDATE SET
+                {update_fields}
+            """
+            return self.execute_sql(insert_sql, values, raise_err=True)
+        except sqlerr as e:
+            log.error("MODEL: create_sales_entry: %s", e.args[0])
+            return False
 
     def get_sales_listing_details(self, listing_id, tui_view=False):
         """Get Marketplace listing details from DB if already imported.
@@ -1023,31 +1050,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             """,
             (sold, release_id),
         )
-
-    def get_one_release_for_list_app(
-        self, release_id, orderby="d_artist, discogs_title"
-    ):
-        """Get one release with fields required for DiscodosListApp.
-
-        Returns the same fields as key_value_search_release!
-        """
-        where = f"d_sales_release_id == {release_id}"
-        join = [("LEFT", "sales", "discogs_id = d_sales_release_id")]
-
-        rows = self._select_simple(
-            [
-                "discogs_id",
-                "d_catno",
-                "d_artist",
-                "discogs_title",
-                "in_d_collection",
-                "d_sales_listing_id",
-                "d_sales_status",
-                "sold",
-            ],
-            "release", fetchone=False, orderby=orderby, condition=where, join=join,
-        )
-        return rows
 
     def get_sales_inventory(self, offset=0):
         """Get all Marketplace listing details from DB if already imported.
