@@ -160,8 +160,20 @@ class Db_setup(Database):
                       coll_orphaned INTEGER NOT NULL DEFAULT 0,
                       PRIMARY KEY (d_coll_instance_id)
                       ); """,
-                }
-        }]
+            }
+        },
+        {
+            'schema_version': 4,
+            'tasks': {
+                'New table collfolder':
+                """ CREATE TABLE collfolder (
+                      d_collfolder_id INTEGER NOT NULL,
+                      d_collfolder_name TEXT,
+                      PRIMARY KEY (d_collfolder_id)
+                      ); """,
+            }
+        }
+    ]
 
     def create_tables(self):  # initial db setup
         for table, sql in self.sql_initial.items():

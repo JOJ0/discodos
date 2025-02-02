@@ -293,6 +293,32 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "DELETE FROM release WHERE discogs_id == ?", (release_id, )
         )
 
+    def create_collfolders(self, folders):
+        """Creates/updates collection folders in DiscoBASE collfolder table.
+
+        Expects a list of dicts with DiscoBASE field names already.
+        Returns a bool on errors, a lastrowid integer on success.
+        """
+        fields = ", ".join(folders[0].keys())  # Use first folder for field names
+        placeholders = ", ".join("?" for _ in folders[0])
+        update_fields = ", ".join(
+            f"{key} = excluded.{key}" for key in folders[0] if key != "d_collfolder_id"
+        )
+
+        try:
+            for folder in folders:
+                values = tuple(folder.values())  # Single row insert
+                self.execute_sql(
+                    f"""INSERT INTO collfolder ({fields}) VALUES ({placeholders})
+                    ON CONFLICT(d_collfolder_id) DO UPDATE SET {update_fields}""",
+                    values,
+                    raise_err=True,
+                )
+            return True
+        except sqlerr as e:
+            log.error("MODEL: create_collfolder: %s", e.args[0])
+            return False
+
     # Get by release. Cleanup helpers.
 
     def get_collection_items_by_release(self, release_id, quiet=False):

@@ -448,16 +448,29 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         imported_instance_ids = []  # After import we check for orphaned entries
         instances_orphaned = 0
 
+        # Start tracks or basic import
         if tracks:
             self.cli.p(
                 "Importing Discogs collection into DiscoBASE "
-                "(extended import - releases and tracks)"
+                "(extended import - releases and tracks)", trail_nl=False
             )
         else:
             self.cli.p(
                 "Importing Discogs collection into DiscoBASE "
-                "(regular import - just releases)"
+                "(regular import - just releases)", trail_nl=False
             )
+
+        # Create/update collection folders
+        folders = self.collection.me.collection_folders
+        print("[i]Updating collection folder names...[/]", end=" ")
+        folders = [
+            {"d_collfolder_id": folder.id, "d_collfolder_name": folder.name}
+            for folder in folders
+        ]
+        if not self.collection.create_collfolders(folders):
+            log.error("Import failed.")
+            return
+        print("[i]Done.[/]")
 
         releases = self.collection.me.collection_folders[0].releases
         total_releases = len(releases)
