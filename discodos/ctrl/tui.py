@@ -94,10 +94,14 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         """Open the edit screen for a sales listing."""
         row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
+        if not listing_id:
+            self.rlog.write("Not listed for sale.")
+            return
         release_id = self.table.get_cell(row_key, "discogs_id")
         listing = self.collection.get_sales_listing_details(listing_id)
         if not listing:
             self.rlog.write("Error getting sales listing from DiscoBASE.")
+            return
 
         def save_changes(**kwargs):
             if not self.collection.update_sales_listing(
