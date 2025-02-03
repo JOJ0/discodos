@@ -319,6 +319,15 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             log.error("MODEL: create_collfolder: %s", e.args[0])
             return False
 
+    def get_folder_name_by_id(self, folder_id):
+        folder_row = self._select_simple(
+            ["d_collfolder_name"],
+            "collfolder",
+            condition=f"d_collfolder_id == {folder_id}",
+            fetchone=True
+        )
+        return folder_row["d_collfolder_name"]
+
     # Get by release. Cleanup helpers.
 
     def get_collection_items_by_release(self, release_id, quiet=False):

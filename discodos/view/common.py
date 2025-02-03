@@ -758,6 +758,16 @@ class ViewCommon():
         ]
         return human_readable_rows
 
+    def extract_collection_item_notes(self, instance):
+        """Extracts the value of field 3 ("Notes") from the given instance."""
+        if isinstance(instance.get("notes"), list):
+            return next(
+                (item["value"] for item in instance["notes"] if item["field_id"] == 3),
+                ""
+            )
+        return ""
+
+
 class ViewCommonCommandline(ViewCommon):
     """ Common view utils, usable in CLI only.
     """

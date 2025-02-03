@@ -22,6 +22,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("e", "edit_sales_listing", "Edit sales listing"),
         ("v", "fetch_videos", "Fetch videos"),
         ("l", "fetch_listing_details", "Fetch listing details"),
+        ("r", "reimport_collection_item", "Reimport collection item"),
     ]
 
     def __init__(
@@ -32,6 +33,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         discogs,
         collection,
         cli,
+        user,
     ):
         super().__init__()
         super().discogs_connect(
@@ -41,6 +43,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         )
         self.collection = collection
         self.cli = cli
+        self.user = user
         self.table = None
         self.rows = rows
         self.headers = headers
@@ -191,6 +194,34 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             f"Updated price and details of listing {listing_id} "
             "with Discogs data."
         )
+
+    def action_reimport_collection_item(self):
+        row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+        release_id = self.table.get_cell(row_key, "discogs_id")
+        instance_id = self.table.get_cell(row_key, "d_coll_instance_id")
+        instances = self.collection.fetch_collection_item_instances(release_id)
+        for instance in instances:
+            if instance_id == instance["instance_id"]:
+                folder = self.collection.get_folder_name_by_id(instance["folder_id"])
+                notes = self.cli.extract_collection_item_notes(instance)
+                self.table.update_cell(row_key, "d_collfolder_name", folder)
+                self.table.update_cell(row_key, "d_coll_notes", notes)
+                self.collection.create_collection_item(
+                    {
+                        "d_coll_instance_id": instance["instance_id"],
+                        "d_coll_release_id": instance["id"],
+                        "d_coll_folder_id": instance["folder_id"],
+                        "d_coll_added": instance["date_added"],
+                        "d_coll_rating": instance["rating"],
+                        "d_coll_notes": notes,
+                        "coll_sold": instance["folder_id"] == int(self.user.conf.sold_folder_id),
+                        "coll_orphaned": 0  # Temporary reset fix. FIXME
+                    }
+                )
+                self.rlog.write(f"Reimport collection item {instance_id} done.")
+                return
+        self.rlog.write(f"Error fetching {instance_id} for reimport.")
+        return
 
     def compose(self):
         # The main data widget

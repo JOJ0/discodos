@@ -408,19 +408,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         return rel_created, d_artists, artists
 
     def create_collection_item(self, instance, sold_folder_id=None):
-        """Creates a collection item by passing a dictionary to the DiscoBASE method.
-        """
-        # Handle notes, we only allow field 3, which is called "Notes" in Discogs UI.
-        value_f3 = ""
-        if isinstance(instance.get("notes"), list):
-            value_f3 = next(
-                (
-                    item["value"]
-                    for item in instance["notes"]
-                    if item["field_id"] == 3
-                ),
-                None,
-            )
+        """Creates a collection item by passing a dictionary to the DiscoBASE method."""
+        value_f3 = self.cli.extract_collection_item_notes(instance)
 
         self.collection.create_collection_item(
             {
@@ -434,6 +423,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "coll_orphaned": 0  # Temporary reset fix. FIXME
             }
         )
+
 
     def print_release_info(self, release_id, artists, title):
         print(f'Release {release_id} - "{artists}" - "{title}"')
@@ -1284,6 +1274,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             discogs=self.d,
             collection=self.collection,
             cli=self.cli,
+            user=self.user,
         )
         app.run(inline=False)
         return
