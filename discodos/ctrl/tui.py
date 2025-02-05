@@ -9,6 +9,7 @@ from rich.markdown import Markdown
 
 from discodos.model import DiscogsMixin
 from discodos.ctrl.tui_edit import EditScreen
+from discodos.utils import timestamp_now
 
 log = logging.getLogger('discodos')
 
@@ -215,7 +216,8 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                         "d_coll_rating": instance["rating"],
                         "d_coll_notes": notes,
                         "coll_sold": instance["folder_id"] == int(self.user.conf.sold_folder_id),
-                        "coll_orphaned": 0  # Temporary reset fix. FIXME
+                        "coll_orphaned": 0,  # Temporary reset fix. FIXME
+                        "coll_mtime": timestamp_now(),  # Temporary reset fix. FIXME
                     }
                 )
                 self.rlog.write(f"Reimport collection item {instance_id} done.")

@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import yaml
+from datetime import datetime
 
 from discogs_client.utils import Condition, Status
 
@@ -117,3 +118,6 @@ def extract_discogs_id_regex(release_id):
             return int(match.group("id"))
 
     return None
+
+def timestamp_now():
+    return datetime.today().isoformat(" ", "seconds")

@@ -1,12 +1,10 @@
 import logging
-# import pprint
-from datetime import datetime
 from sqlite3 import Error as sqlerr
 
 from discodos.model.discogs import DiscogsMixin
 from discodos.model.database import Database
 from discodos.utils import (
-    is_number, RECORD_CHOICES_RADIO, SLEEVE_CHOICES_RADIO, STATUS_CHOICES_RADIO
+    is_number, timestamp_now
 )
 
 log = logging.getLogger('discodos')
@@ -252,7 +250,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             in_tuple = (
                 release_id,
                 release_title,
-                datetime.today().isoformat(" ", "seconds"),
+                timestamp_now(),
                 release_artists,
                 d_catno,
             )
@@ -271,7 +269,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 """
                 upd_tuple = (
                     release_title,
-                    datetime.today().isoformat(" ", "seconds"),
+                    timestamp_now(),
                     release_artists,
                     d_catno,
                     release_id,

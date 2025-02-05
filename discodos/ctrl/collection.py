@@ -27,6 +27,7 @@ from discodos.utils import (
     RECORD_CHOICES_DISCOGS,
     SLEEVE_CHOICES_DISCOGS,
     STATUS_CHOICES_DISCOGS,
+    timestamp_now,
 )
 
 log = logging.getLogger('discodos')
@@ -420,10 +421,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_rating": instance["rating"],
                 "d_coll_notes": value_f3,
                 "coll_sold": instance["folder_id"] == int(sold_folder_id),
-                "coll_orphaned": 0  # Temporary reset fix. FIXME
+                "coll_orphaned": 0,  # Temporary reset fix. FIXME
+                "coll_mtime": timestamp_now(),
             }
         )
-
 
     def print_release_info(self, release_id, artists, title):
         print(f'Release {release_id} - "{artists}" - "{title}"')
