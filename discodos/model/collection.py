@@ -320,13 +320,16 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             return False
 
     def get_folder_name_by_id(self, folder_id):
+        """Currently unused."""
         folder_row = self._select_simple(
             ["d_collfolder_name"],
             "collfolder",
             condition=f"d_collfolder_id == {folder_id}",
             fetchone=True
         )
-        return folder_row["d_collfolder_name"]
+        if folder_row:
+            return folder_row["d_collfolder_name"]
+        return folder_id
 
     # Get by release. Cleanup helpers.
 
@@ -829,7 +832,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "NULL AS d_sales_location" if sales_extra else "d_sales_location",
             "NULL AS d_sales_price" if sales_extra else "d_sales_price",
             "collection.d_coll_instance_id",
-            "d_collfolder_name",
+            "COALESCE(collfolder.d_collfolder_name, collection.d_coll_folder_id)",
             "collection.d_coll_notes",
         ] if not custom_fields else custom_fields
 
