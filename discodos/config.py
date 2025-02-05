@@ -169,8 +169,11 @@ class Db_setup(Database):
                 """ CREATE TABLE collfolder (
                       d_collfolder_id INTEGER NOT NULL,
                       d_collfolder_name TEXT,
+                      d_collfolder_mtime TEXT
                       PRIMARY KEY (d_collfolder_id)
                       ); """,
+                 'Add field collection.coll_mtime': 'ALTER TABLE collection ADD coll_mtime TEXT;',
+                 'Add field sales.sales_mtime': 'ALTER TABLE sales ADD sales_mtime TEXT;',
             }
         }
     ]
