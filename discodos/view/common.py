@@ -377,15 +377,16 @@ class ViewCommon():
             ("cat", "Catalog", "d_catno"),
             ("artist", "Artist", "d_artist"),
             ("title", "Title", "discogs_title"),
-            ("collection", "in C.", "in_c"),
+            ("collection", "C.", "in_c"),
             ("sold", "Sold", "sold"),
             ("listing", "Listing", "d_sales_listing_id"),
-            ("status", "L.Status", "d_sales_status"),
+            ("status", "L.Stat.", "d_sales_status"),
             ("location", "Location", "d_sales_location"),
             ("price", "Price", "d_sales_price"),
             ("instance", "C.Instance", "d_coll_instance_id"),
             ("folder", "C.Folder", "d_collfolder_name"),
             ("notes", "C.Notes", "d_coll_notes"),
+            ("mtime", "C.mtime", "d_coll_mtime"),
         ]:
             self.cols_key_value_search.addcol(
                 shortcut=shortcut, caption=caption, name=name

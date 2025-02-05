@@ -832,6 +832,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "collection.d_coll_instance_id",
             "COALESCE(collfolder.d_collfolder_name, collection.d_coll_folder_id)",
             "collection.d_coll_notes",
+            "collection.coll_mtime",
         ] if not custom_fields else custom_fields
 
         fields_union = [
@@ -854,6 +855,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "NULL AS d_coll_instance_id",
             "NULL AS d_coll_folder_id",
             "NULL AS d_coll_notes",
+            "NULL AS coll_mtime",
         ]
         union = [
             {
