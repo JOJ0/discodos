@@ -180,15 +180,18 @@ class Db_setup(Database):
                 BEFORE UPDATE ON collection
                 FOR EACH ROW
                 WHEN OLD.d_coll_release_id = NEW.d_coll_release_id
-                AND OLD.d_coll_folder_id = NEW.d_coll_folder_id
-                AND OLD.d_coll_added = NEW.d_coll_added
-                AND OLD.d_coll_rating IS NEW.d_coll_rating
-                AND OLD.d_coll_notes IS NEW.d_coll_notes
+                -- bool fields
                 AND OLD.coll_sold IS NEW.coll_sold
                 AND OLD.coll_orphaned IS NEW.coll_orphaned
-                AND OLD.coll_mtime IS NOT NEW.coll_mtime  -- Only coll_mtime changed
+                -- might change externally
+                AND OLD.d_coll_added IS NEW.d_coll_added
+                AND OLD.d_coll_rating = NEW.d_coll_rating
+                -- typical user changes
+                AND OLD.d_coll_folder_id = NEW.d_coll_folder_id
+                AND OLD.d_coll_notes == NEW.d_coll_notes
+                AND OLD.coll_mtime IS NOT NEW.coll_mtime  -- Ignore coll_mtime changes
                 BEGIN
-                    SELECT RAISE(IGNORE);  -- Prevent update
+                    SELECT RAISE(FAIL, 'Update ignored: Only coll_mtime changed.');
                 END;
                 """
             }
