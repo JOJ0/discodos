@@ -174,6 +174,23 @@ class Db_setup(Database):
                       ); """,
                  'Add field collection.coll_mtime': 'ALTER TABLE collection ADD coll_mtime TEXT;',
                  'Add field sales.sales_mtime': 'ALTER TABLE sales ADD sales_mtime TEXT;',
+                'Prevent collection mtime update trigger':
+                """
+                CREATE TRIGGER prevent_unnecessary_collection_updates
+                BEFORE UPDATE ON collection
+                FOR EACH ROW
+                WHEN OLD.d_coll_release_id = NEW.d_coll_release_id
+                AND OLD.d_coll_folder_id = NEW.d_coll_folder_id
+                AND OLD.d_coll_added = NEW.d_coll_added
+                AND OLD.d_coll_rating IS NEW.d_coll_rating
+                AND OLD.d_coll_notes IS NEW.d_coll_notes
+                AND OLD.coll_sold IS NEW.coll_sold
+                AND OLD.coll_orphaned IS NEW.coll_orphaned
+                AND OLD.coll_mtime IS NOT NEW.coll_mtime  -- Only coll_mtime changed
+                BEGIN
+                    SELECT RAISE(IGNORE);  -- Prevent update
+                END;
+                """
             }
         }
     ]
