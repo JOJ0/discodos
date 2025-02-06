@@ -201,13 +201,12 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         release_id = self.table.get_cell(row_key, "discogs_id")
         instance_id = self.table.get_cell(row_key, "d_coll_instance_id")
         instances = self.collection.fetch_collection_item_instances(release_id)
+        timestamp = timestamp_now()
         for instance in instances:
             if instance_id == instance["instance_id"]:
                 folder = self.collection.get_folder_name_by_id(instance["folder_id"])
                 notes = self.cli.extract_collection_item_notes(instance)
-                self.table.update_cell(row_key, "d_collfolder_name", folder)
-                self.table.update_cell(row_key, "d_coll_notes", notes)
-                self.collection.create_collection_item(
+                if not self.collection.create_collection_item(
                     {
                         "d_coll_instance_id": instance["instance_id"],
                         "d_coll_release_id": instance["id"],
@@ -216,10 +215,15 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                         "d_coll_rating": instance["rating"],
                         "d_coll_notes": notes,
                         "coll_sold": instance["folder_id"] == int(self.user.conf.sold_folder_id),
-                        "coll_orphaned": 0,  # Temporary reset fix. FIXME
-                        "coll_mtime": timestamp_now(),  # Temporary reset fix. FIXME
+                        "coll_orphaned": 0,
+                        "coll_mtime": timestamp,
                     }
-                )
+                ):
+                    self.rlog.write(f"Nothing to reimport for {instance_id}.")
+                    return
+                self.table.update_cell(row_key, "d_collfolder_name", folder)
+                self.table.update_cell(row_key, "d_coll_notes", notes)
+                self.table.update_cell(row_key, "coll_mtime", timestamp)
                 self.rlog.write(f"Reimport collection item {instance_id} done.")
                 return
         self.rlog.write(f"Error fetching {instance_id} for reimport.")
