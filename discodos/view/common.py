@@ -447,7 +447,7 @@ class ViewCommon():
         """format an iso date string to eg. 2020-01-01 00:00"""
         try:
             formatted = datetime.fromisoformat(self.none_replace(_date)).strftime(
-                "%Y-%m-%d %H:%M"
+                "%Y-%m-%d %H:%M:%S"
             )
         except ValueError:
             formatted = "-"
