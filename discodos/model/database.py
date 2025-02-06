@@ -102,6 +102,7 @@ class Database():
         as_dict=False,
         union=None,
         reverse_order=False,
+        limit=None
     ):
         """Wrapper around the _select method. Puts together SELECT as string.
 
@@ -118,6 +119,7 @@ class Database():
             as_dict (bool, optional): Return results as a dictionary.
             union (list, optional): List of dicts representing UNION statements.
                 Each dict has keys: fields_list, table, condition, join.
+            limit (int, optional): limit results.
 
         Returns:
             Query results from _select.
@@ -125,6 +127,7 @@ class Database():
         log.debug("DB: _select_simple: fetchone = %s", fetchone)
         fields_str = ", ".join(fields_list)
         join_clause = ""
+        limit_clause = ""
         if join:
             # Expecting join as a list of tuples: [(join_type, table, condition), ...]
             for join_type, join_table, join_cond in join:
@@ -133,7 +136,12 @@ class Database():
         orderby_clause = f"ORDER BY {orderby}" if orderby else ""
         orderby_clause += " DESC" if reverse_order else ""
         select = "SELECT DISTINCT" if distinct else "SELECT"
-        limit = f"LIMIT -1 OFFSET {offset}" if offset else ""
+        if offset and limit:
+            limit_clause = f"LIMIT {limit} OFFSET {offset}"
+        elif offset:
+            limit_clause = f"LIMIT -1 OFFSET {offset}"
+        elif limit:
+            limit_clause = f"LIMIT {limit}"
 
         # Build the main SELECT query
         main_select = (
@@ -162,9 +170,9 @@ class Database():
 
         select_str = (
             f"{main_select} UNION {' UNION '.join(union_queries)} "
-            f"{orderby_clause} {limit}"
+            f"{orderby_clause} {limit_clause}"
             if union_queries
-            else f"{main_select} {orderby_clause} {limit}"
+            else f"{main_select} {orderby_clause} {limit_clause}"
         )
         return self._select(select_str, fetchone, as_dict=as_dict)
 

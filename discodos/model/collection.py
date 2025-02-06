@@ -797,7 +797,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
 
     def key_value_search_releases(
         self, search_key_value=None, orderby=None, filter_cols=None,
-        custom_fields=None, reverse_order=False, sales_extra=False
+        custom_fields=None, reverse_order=False, sales_extra=False, limit=None,
     ):
         # filter_cols are defined in ViewCommon and passed via the controller call.
         replace_cols = filter_cols
@@ -882,6 +882,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             join=join,
             union=union if sales_extra else None,
             reverse_order=reverse_order,
+            limit=limit,
         )
         return rows
 

@@ -16,6 +16,7 @@ log = logging.getLogger('discodos')
 @click.argument("search_terms", metavar="SEARCH_TERMS", nargs=-1)
 @click.option("--order-by", "-o", type=str, help="order by DiscoBASE field")
 @click.option("--reverse", "-r", is_flag=True, help="reverse order")
+@click.option("--limit", "-l", type=int, help="limit results")
 @click.option(
     "--all", "--extra", "-a", "-e", "sales_extra", is_flag=True,
     help="""By default sales and collection items are displayed in a 'combined' view.
@@ -26,7 +27,7 @@ log = logging.getLogger('discodos')
     """,
 )
 @click.pass_obj
-def ls_cmd(helper, search_terms, order_by, reverse, sales_extra):
+def ls_cmd(helper, search_terms, order_by, reverse, sales_extra, limit):
     """Searches and lists collection items.
 
     Supports key=value search. Available keys can be either full DiscoBASE field names
@@ -58,6 +59,7 @@ def ls_cmd(helper, search_terms, order_by, reverse, sales_extra):
             orderby=order_by,
             reverse_order=reverse,
             sales_extra=sales_extra,
+            limit=limit,
         )
     else:
         coll_ctrl.ls_releases(
@@ -65,4 +67,5 @@ def ls_cmd(helper, search_terms, order_by, reverse, sales_extra):
             orderby=order_by,
             reverse_order=reverse,
             sales_extra=sales_extra,
+            limit=limit,
         )
