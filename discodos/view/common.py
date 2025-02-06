@@ -443,6 +443,16 @@ class ViewCommon():
             return str(date_year_month)
         return date_year_month
 
+    def fmt_iso_datetime_minutes(self, _date):
+        """format an iso date string to eg. 2020-01-01 00:00"""
+        try:
+            formatted = datetime.fromisoformat(self.none_replace(_date)).strftime(
+                "%Y-%m-%d %H:%M"
+            )
+        except ValueError:
+            formatted = "-"
+        return str(formatted)
+
     def strfdelta(self, tdelta, fmt):
         d = {"days": tdelta.days}
         d["hours"], rem = divmod(tdelta.seconds, 3600)
@@ -744,16 +754,12 @@ class ViewCommon():
 
         Used eg. for ls (tui) command.
         """
-
         human_readable_rows = [
             {
                 **row,
-                "in_c": self.bool_to_yes_no(
-                    row["in_c"]
-                ),
-                "sold": self.bool_to_yes_no(
-                    row["sold"]
-                )
+                "in_c": self.bool_to_yes_no(row["in_c"]),
+                "sold": self.bool_to_yes_no(row["sold"]),
+                "coll_mtime": self.fmt_iso_datetime_minutes(row["coll_mtime"]),
             }
             for row in rows
         ]
