@@ -386,7 +386,7 @@ class ViewCommon():
             ("instance", "C.Instance", "d_coll_instance_id"),
             ("folder", "C.Folder", "d_collfolder_name"),
             ("notes", "C.Notes", "d_coll_notes"),
-            ("mtime", "C.mtime", "d_coll_mtime"),
+            ("mtime", "C.mtime", "coll_mtime"),
         ]:
             self.cols_key_value_search.addcol(
                 shortcut=shortcut, caption=caption, name=name
