@@ -830,7 +830,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "NULL AS d_sales_location" if sales_extra else "d_sales_location",
             "NULL AS d_sales_price" if sales_extra else "d_sales_price",
             "collection.d_coll_instance_id",
-            "COALESCE(d_collfolder_name, d_coll_folder_id)",
+            "COALESCE(d_collfolder_name, d_coll_folder_id) AS d_collfolder_name",
             "collection.d_coll_notes",
             "collection.coll_mtime",
         ] if not custom_fields else custom_fields
@@ -853,7 +853,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "sales.d_sales_location",
             "sales.d_sales_price",
             "NULL AS d_coll_instance_id",
-            "NULL AS d_coll_folder_id",
+            "NULL AS d_coll_folder_name",
             "NULL AS d_coll_notes",
             "NULL AS coll_mtime",
         ]

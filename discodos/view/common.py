@@ -384,7 +384,7 @@ class ViewCommon():
             ("location", "Location", "d_sales_location"),
             ("price", "Price", "d_sales_price"),
             ("instance", "C.Instance", "d_coll_instance_id"),
-            ("folder", "C.Folder", "COALESCE(d_collfolder_name, d_coll_folder_id)"),
+            ("folder", "C.Folder", "d_collfolder_name"),
             ("notes", "C.Notes", "d_coll_notes"),
             ("mtime", "C.mtime", "coll_mtime"),
         ]:
