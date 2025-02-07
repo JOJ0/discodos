@@ -420,6 +420,9 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             """
             return self.execute_sql(insert_sql, values, raise_err=True)
         except sqlerr as e:
+            if e.sqlite_errorname == "SQLITE_CONSTRAINT_TRIGGER":
+                log.info("MODEL: create_collection_item: %s", e.args[0])
+                return False
             log.error("MODEL: create_collection_item: %s", e.args[0])
             return False
 
