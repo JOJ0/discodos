@@ -234,6 +234,16 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             (instance_id,),
         )
 
+    def set_collection_item_folder(self, instance_id, folder_id):
+        """Updates folder_id on a DiscoBASE collection item."""
+        return self.execute_sql(
+            """
+            UPDATE collection SET d_coll_folder_id = ?
+                WHERE d_coll_instance_id == ?;
+            """,
+            (folder_id, instance_id),
+        )
+
     def create_release(
         self, release_id, release_title, release_artists, d_catno
     ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -328,6 +338,31 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         if folder_row:
             return folder_row["d_collfolder_name"]
         return folder_id
+
+    def get_folder_id_by_name(self, folder_name):
+        """Get collection item's folder id by its name.
+
+        Returns None if not found.
+        """
+        folder_row = self._select_simple(
+            ["d_collfolder_id"],
+            "collfolder",
+            condition=f'd_collfolder_name == "{folder_name}"',
+            fetchone=True
+        )
+        if folder_row:
+            return folder_row["d_collfolder_id"]
+        return None
+
+    def get_collection_folders(self):
+        """Get a list of dicts for all collection folders."""
+        folder_rows = self._select_simple(
+            ["*"],
+            "collfolder",
+            orderby="d_collfolder_name ASC",
+            as_dict=True,
+        )
+        return folder_rows
 
     # Get by release. Cleanup helpers.
 

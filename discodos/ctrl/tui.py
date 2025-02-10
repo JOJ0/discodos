@@ -3,12 +3,14 @@ from sqlite3 import Row
 from datetime import datetime
 from textual.app import App
 from textual.containers import Horizontal, Vertical, VerticalScroll
-from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog
+from textual.widgets import DataTable, Digits, Footer, Label, Static, RichLog, Button
 from textual.coordinate import Coordinate
+from textual.binding import Binding
 from rich.markdown import Markdown
 
 from discodos.model import DiscogsMixin
 from discodos.ctrl.tui_edit import EditScreen
+from discodos.ctrl.tui_folder import EditFolderScreen
 from discodos.utils import timestamp_now
 
 log = logging.getLogger('discodos')
@@ -24,6 +26,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("v", "fetch_videos", "Fetch videos"),
         ("l", "fetch_listing_details", "Fetch listing details"),
         ("r", "reimport_collection_item", "Reimport collection item"),
+        ("f", "edit_folder", "Edit collection item folder"),
+        Binding("escape", "back", "Back", tooltip="Cancel edits", show=True),
+        Binding("s", "save_edit_folder", "Save", tooltip="Save edits", show=True),
     ]
 
     def __init__(
@@ -161,6 +166,48 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 comments_private=listing["d_sales_comments_private"],
             )
         )
+
+    def action_edit_folder(self):
+        """Open the edit item folder screen."""
+        row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+        instance_id = self.table.get_cell(row_key, "d_coll_instance_id")
+        release_id = self.table.get_cell(row_key, "discogs_id")
+        folder_name = self.table.get_cell(row_key, "d_collfolder_name")
+        folder_id = self.collection.get_folder_id_by_name(folder_name)
+        folders = self.collection.get_collection_folders()
+        if not instance_id:
+            self.rlog.write("Not a collection item.")
+            return
+
+        def save_changes(instance_id, release_id, folder_id):
+            if not self.collection.update_collection_item_folder(
+                instance_id, release_id, folder_id
+            ):
+                self.rlog.write("Updating Discogs collection item folder failed.")
+                self.pop_screen()
+            if not self.collection.set_collection_item_folder(
+                instance_id, folder_id
+            ):
+                self.rlog.write("Updating DiscoBASE collection item folder failed.")
+                self.pop_screen()
+            r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
+            folder_name = self.collection.get_folder_name_by_id(folder_id)
+            self.table.update_cell(r_key, "d_collfolder_name", folder_name)
+            self.rlog.write("Updated collection item folder.")
+            self.pop_screen()
+
+        self.push_screen(
+            EditFolderScreen(
+                save_changes,
+                instance_id=instance_id,
+                release_id=release_id,
+                folder_id=folder_id,
+                folders=folders
+            )
+        )
+
+    def action_save_edit_folder(self):
+        self.query_one("#save_edit_folder").action_press()
 
     def action_fetch_videos(self):
         """Fetches videos from Discogs release and displays in Rich column view."""

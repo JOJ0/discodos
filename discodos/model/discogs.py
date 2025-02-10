@@ -208,6 +208,47 @@ class DiscogsMixin:
 
         return all_instances
 
+    def fetch_collection_item_instance_by_id(self, instance_id, release_id):
+        """Fetch an instance object via its instance and release ID's.
+        """
+        try:
+            coll_items = self.me.collection_items(release_id)
+            for instance in coll_items:
+                if instance.instance_id == instance_id:
+                    return instance, None, None
+            return None, "Not found", f"Instance ID {instance_id} not found for release {release_id}"
+        except Exception as e:
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching collection item: %s: %s", errtype, errmsg)
+            return None, errtype, errmsg
+
+    def update_collection_item_folder(self, instance_id, release_id, target_folder_id):
+        """Move a Discogs collection item to a different folder."""
+        try:
+            instance, errt, errd = self.fetch_collection_item_instance_by_id(
+                instance_id, release_id
+            )
+            if errt:
+                log.debug("Error fetching collection item instance: %s", errd)
+                return False
+            folders = self.me.collection_folders
+
+            for folder in folders:
+                if folder.id == instance.folder_id:
+                    folder.move_release(instance, target_folder_id)
+                    return True
+            log.debug(
+                f"Error updating collection item {instance_id} to {target_folder_id}"
+            )
+            return False
+        except Exception as Exc:
+            log.debug(
+                "Exception while updating collection item folder %s: %s",
+                instance,
+                Exc,
+            )
+            return False
+
     def stats_collection_items_discogs(self):
         count = 0
         try:
