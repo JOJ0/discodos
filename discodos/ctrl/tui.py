@@ -210,7 +210,10 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         )
 
     def action_save_edit_folder(self):
-        self.query_one("#save_edit_folder").action_press()
+        try:
+            self.query_one("#save_edit_folder").action_press()
+        except Exception:
+            pass
 
     def action_fetch_videos(self):
         """Fetches videos from Discogs release and displays in Rich column view."""
