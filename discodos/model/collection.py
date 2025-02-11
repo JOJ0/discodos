@@ -238,10 +238,10 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         """Updates folder_id on a DiscoBASE collection item."""
         return self.execute_sql(
             """
-            UPDATE collection SET d_coll_folder_id = ?
+            UPDATE collection SET d_coll_folder_id = ?, coll_mtime = ?
                 WHERE d_coll_instance_id == ?;
             """,
-            (folder_id, instance_id),
+            (folder_id, timestamp_now(), instance_id),
         )
 
     def create_release(

@@ -185,16 +185,19 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             ):
                 self.rlog.write("Updating Discogs collection item folder failed.")
                 self.pop_screen()
+                return
             if not self.collection.set_collection_item_folder(
                 instance_id, folder_id
             ):
                 self.rlog.write("Updating DiscoBASE collection item folder failed.")
                 self.pop_screen()
+                return
             r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
             folder_name = self.collection.get_folder_name_by_id(folder_id)
             self.table.update_cell(r_key, "d_collfolder_name", folder_name)
             self.rlog.write("Updated collection item folder.")
             self.pop_screen()
+            return
 
         self.push_screen(
             EditFolderScreen(
