@@ -25,6 +25,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         ("e", "edit_sales_listing", "Edit sales listing"),
         ("v", "fetch_videos", "Fetch videos"),
         ("l", "fetch_listing_details", "Fetch listing details"),
+        ("p", "fetch_marketplace", "Fetch Marketplace stats"),
         ("r", "reimport_collection_item", "Reimport collection item"),
         ("f", "edit_folder", "Edit collection item folder"),
         Binding("escape", "back", "Back", tooltip="Cancel edits", show=True),
@@ -369,9 +370,9 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             )
         )
 
-    def on_data_table_row_selected(self, event):
+    def action_fetch_marketplace(self):
         """Fetch Discogs listing details and Marketplace stats for selected row."""
-        row_key = event.row_key
+        row_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
         release_id = self.table.get_cell(row_key, "discogs_id")
         # Stats
         stats, s_err, _ = self.fetch_marketplace_stats(release_id)
