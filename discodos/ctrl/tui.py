@@ -224,8 +224,13 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         render_videos = (
             err_videos if err_videos else self.cli.two_column_view(videos, as_is=True)
         )
+        if err_videos:
+            self.rlog.write(
+                f"Fetching video links for {release_id} failed: {err_videos}."
+            )
+            return
         # ... log and display
-        self.rlog.write(f"Fetched release {release_id} YouTube video links.")
+        self.rlog.write(f"Fetched release {release_id} video links.")
         self.right_column_content.update(render_videos)
 
     def action_fetch_listing_details(self):
