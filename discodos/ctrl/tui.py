@@ -53,25 +53,36 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.user = user
         self.table = None
         self.rows = rows
-        self.headers = headers
         self.rlog = RichLog()
-        # Columns content
-        self.left_column_headline = None
-        self.middle_column_headline = None
-        self.right_column_headline = None
-        self.left_column_content = None
-        self.middle_column_upper_content = None
-        self.middle_column_content = None
-        self.middle_column_lower_content = None
-        self.right_column_upper_content = None
-        self.right_column_content = None
+        # Global table headers and those for sales listing details (left column)
+        # are passed on initialization
+        self.headers = headers
+        self.key_translation = sales_listing_headers
+
+        # Keeping track of content
+        self.right_column_current = None
+        self.left_column_current = None
+        self.middle_column_current = None
         # Content that can be fetched from DB as well as from Discogs
         self.sales_price = None
         self.sales_listing_details = None
         # Content only available from Discogs
         self.marketplace_stats = None
-        # Hardcoded column translations
-        self.key_translation = sales_listing_headers
+
+        # Headlines
+        self.left_column_headline = None
+        self.middle_column_headline = None
+        self.right_column_headline = None
+
+        # Content left
+        self.left_column_content = None
+        # Content middle
+        self.middle_column_upper_content = None
+        self.middle_column_content = None
+        self.middle_column_lower_content = None
+        # Content right
+        self.right_column_upper_content = None
+        self.right_column_content = None
 
     def action_toggle_dark(self):
         self.dark = not self.dark
@@ -222,9 +233,13 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         release_id = self.table.get_cell(row_key, "discogs_id")
         # Get videos ...
         videos, err_videos, _ = self.collection.fetch_release_videos(release_id)
-        render_videos = (
-            err_videos if err_videos else self.cli.two_column_view(videos, as_is=True)
-        )
+        if err_videos:
+            render_videos = err_videos
+        else:
+            self.right_column_current = videos
+            title = "YouTube"
+            render_videos = self.cli.two_column_view(videos, as_is=True, title=title)
+
         if err_videos:
             self.rlog.write(
                 f"Fetching video links for {release_id} failed: {err_videos}."
@@ -306,7 +321,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_content = Static("")
         self.middle_column_lower_content = Static("")
         self.right_column_upper_content = Static("")
-        self.right_column_content = Static("")
+        self.right_column_content = Static("", classes="top-spacer")
         self.sales_price = Digits("0", id="sales-price")
         # Layout
         with Vertical():
@@ -343,6 +358,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         # Get ID's from table
         listing_id = self.table.get_cell(row_key, "d_sales_listing_id")
         release_id = self.table.get_cell(row_key, "discogs_id")
+        instance_id = self.table.get_cell(row_key, "d_coll_instance_id")
         listing = self.collection.get_sales_listing_details(listing_id, tui_view=True)
         # Update column left
         self.left_column_content.update(
@@ -356,7 +372,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         self.middle_column_upper_content.update(md_link)
         # Update column middle - Reset stats
         self.middle_column_content.update(
-           "\nPress enter to fetch Marketplace stats and suggested price!"
+           "\nPress p to fetch Marketplace stats and suggested price!"
         )
         self.middle_column_lower_content.update("")
         # Update column right
@@ -364,11 +380,21 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             self.cli.two_column_view(
                 {
                     "Release": release_id,
+                    "Collection Instance": instance_id,
                     "Release URL": self.cli.link_to("discogs release", release_id),
                 },
                 as_is=True,
             )
         )
+        if self.right_column_current:
+            #self.right_column_content.styles.text_style = "none"
+            title = "YouTube (outdated, press v!)"
+            render_videos = self.cli.two_column_view(
+                self.right_column_current, as_is=True, title=title
+            )
+            self.right_column_content.update(render_videos)
+            return
+        self.right_column_content.update("Press v to fetch video links!")
 
     def action_fetch_marketplace(self):
         """Fetch Discogs listing details and Marketplace stats for selected row."""

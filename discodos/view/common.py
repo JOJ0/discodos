@@ -942,7 +942,7 @@ class ViewCommonCommandline(ViewCommon):
     # Rich based formatters
 
     def two_column_view(
-        self, details_dict, translate_keys=None, as_is=False, skip_empty=False
+        self, details_dict, translate_keys=None, as_is=False, skip_empty=False, title=""
     ):
         """A Rich-formatted view of keys and values.
 
@@ -953,7 +953,9 @@ class ViewCommonCommandline(ViewCommon):
         We use it for Marketplace stats and Marketplace listing details.
         """
         # Create a rich Table with two columns.
-        table = rich_table(box=None)
+        table = rich_table(box=None, title=title)
+        table.title_justify = "left"
+        table.title_style = "none"
         table.add_column("", style="cyan", justify="right")
         table.add_column("", style="white")
         # Display an empty table instead of nothing.
