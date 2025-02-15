@@ -415,8 +415,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         if s_err or not p:
             return
         self.rlog.write(
-            f"Updated price, Marketplace stats and details of release {release_id} "
-            "with Discogs data."
+            f"Fetched release {release_id} Marketplace stats & suggested price."
         )
 
     # Helpers
