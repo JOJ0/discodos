@@ -192,6 +192,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             return
 
         def save_changes(instance_id, release_id, folder_id):
+            timestamp = timestamp_now()
             if not self.collection.update_collection_item_folder(
                 instance_id, release_id, folder_id
             ):
@@ -199,14 +200,19 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 self.pop_screen()
                 return
             if not self.collection.set_collection_item_folder(
-                instance_id, folder_id
+                instance_id, folder_id, self.user.conf.sold_folder_id, timestamp
             ):
                 self.rlog.write("Updating DiscoBASE collection item folder failed.")
                 self.pop_screen()
                 return
             r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
             folder_name = self.collection.get_folder_name_by_id(folder_id)
+            is_sold = self.cli.bool_to_yes_no(
+                int(self.user.conf.sold_folder_id) == folder_id
+            )
             self.table.update_cell(r_key, "d_collfolder_name", folder_name)
+            self.table.update_cell(r_key, "coll_mtime", timestamp)
+            self.table.update_cell(r_key, "sold", is_sold)
             self.rlog.write("Updated collection item folder.")
             self.pop_screen()
             return

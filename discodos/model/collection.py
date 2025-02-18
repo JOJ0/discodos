@@ -234,14 +234,18 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             (instance_id,),
         )
 
-    def set_collection_item_folder(self, instance_id, folder_id):
+    def set_collection_item_folder(
+        self, instance_id, folder_id, sold_folder_id, timestamp
+    ):
         """Updates folder_id on a DiscoBASE collection item."""
+        sold = folder_id == int(sold_folder_id)
         return self.execute_sql(
             """
-            UPDATE collection SET d_coll_folder_id = ?, coll_mtime = ?
+            UPDATE collection
+            SET d_coll_folder_id = ?, coll_sold = ?, coll_orphaned = 0, coll_mtime = ?
                 WHERE d_coll_instance_id == ?;
             """,
-            (folder_id, timestamp_now(), instance_id),
+            (folder_id, sold, timestamp, instance_id)
         )
 
     def create_release(
@@ -851,6 +855,15 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             ("LEFT OUTER", "collection", "discogs_id = collection.d_coll_release_id"),
             ("LEFT OUTER", "collfolder", "d_coll_folder_id = d_collfolder_id"),
         ]
+        if sales_extra:
+            sold_field = "coll_sold as sold"
+        else:
+            sold_field = """
+            CASE
+                WHEN coll_sold = 1 OR sales_sold = 1 THEN 1
+                ELSE 0
+            END AS sold
+            """
         fields = [
             "release.discogs_id",
             "release.d_catno",
@@ -862,7 +875,7 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
                 ELSE 0
             END AS in_c
             """,
-            "collection.coll_sold AS sold" if sales_extra else "sales_sold AS sold" ,
+            sold_field,
             "NULL AS d_sales_listing_id" if sales_extra else "d_sales_listing_id",
             "NULL AS d_sales_status" if sales_extra else "d_sales_status",
             "NULL AS d_sales_location" if sales_extra else "d_sales_location",
@@ -878,12 +891,6 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
             "release.d_catno",
             "release.d_artist",
             "release.discogs_title",
-            # """
-            # CASE
-            #     WHEN coll_orphaned = 0 AND d_coll_instance_id > 0 THEN 1
-            #     ELSE 0
-            # END AS in_c
-            # """,
             "NULL AS in_c",
             "sales.sales_sold AS sold",
             "sales.d_sales_listing_id",
