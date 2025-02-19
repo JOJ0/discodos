@@ -25,7 +25,7 @@ Also the order of "optional arguments" is freely choosable most of the time:
 
 is the same as
 
-`dsc search "search terms" -t A2 -m new_mix `
+`dsc search "search terms" -t A2 -m new_mix`
 
 
 
@@ -43,7 +43,7 @@ To execute a subcommand you would eg type:
 
 Each subcommand has its own built-in help output:
 
-``` bash
+```sh
 dsc mix -h
 dsc suggest -h
 dsc import -h
@@ -80,7 +80,6 @@ DiscoDOS checks if it's online automatically but can be forced to stay in offlin
 
 
 
-
 ## The *dsc* subcommands
 
 Each subcommand has its typical purpose but some actions can be executed from within other subcommands as well.
@@ -94,27 +93,28 @@ Each subcommand has its typical purpose but some actions can be executed from wi
 #### Importing releases / collection items
 
 You can update your DiscoBASE from your Discogs collection at any time, if data is already existing, it will be updated.
-Due to the Discogs API being not the fastest, it takes some time though. There are other ways for adding single releases to Discogs AND to your DiscoBASE simultaneously.
-
-_**Note: This imports all your releases, but not the tracks on them**_
 
 `dsc import basic`
 
-A quicker alternative, if you are about to import just a couple of new releases is to use the -a option. The release will be added to your Discogs collection _and_ also imported to DiscoBASE. Pass the release ID or the URL of the release (eg https://www.discogs.com/release/123456) .
+:::{info}
+This imports all the releases in your collection, but not the tracks on them.
+:::
 
-_**Note: You don't have to click "Add to Collection" on discogs.com, DiscoDOS does this for you**_
-
-`dsc import release -a 123456`
-
-To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface), just use the import command with a release ID or URL attached: 
+To add a release to DiscoBASE **only** (because it's been already added to your collection via the Discogs web interface), just use the import command with a release ID or URL attached:
 
 `dsc import release 123456`
 
-To remove a release:
+You don't _have_ to click "Add to Collection" on discogs.com, DiscoDOS does this for you when the `-a` option is passed:
+
+`dsc import release -a 123456`
+
+To remove a release from the discogs.com collection, the (local) DiscoBASE and all tracks on it, use:
 
 `dsc import release -d 123456`
 
-
+:::{note}
+More details in [the `import` command group's built-in help](https://discodos.readthedocs.io/en/latest/dsc.html#dsc-import)
+:::
 
 #### Importing track details
 
@@ -131,9 +131,11 @@ Importing track details is a requirement for using the [suggest](#the-suggest-co
 
 To add additional data to your tracks from MusicBrainz/AcousticBrainz (key, BPM, links) use the `brainz` subcommand. Your releases will then be "matched" one-by-one with MusicBrainz - this is not the easiest task for DiscoDOS, several things have to be "tried" to get it right. Differences in spelling/wording of catalog number, artists, title, track numbers, track names in MusicBrainz compared to Discogs are the main reason why it takes that long:
 
-_**Note: This process will take hours. Best you let it run "overnight"**_
-
 `dsc import brainz`
+
+:::{attention}
+This process will take hours. Best you let it run "overnight".
+:::
 
 :::{note}
 The [suggest](#the-suggest-command), [mix](#the-mix-command) and [links](#the-links-command) commands make use of this type of imported data.
@@ -174,6 +176,9 @@ Single sales listings:
 
 `dsc import listing <listing_id>`
 
+:::{note}
+[The ls command](#the-ls-tui-command) can display and edit sales listings in a _Text User Interface_.
+:::
 
 
 
@@ -282,7 +287,7 @@ or as usual with track name already in the command:
 
 If you've already imported all your *track's names* to the DiscoBASE, you could even try to update **all** tracks with MusicBrainz information (takes a couple of hours):
 
-```
+```sh
 dsc search all -z
 dsc search all -zz
 ```
@@ -500,7 +505,7 @@ For example to display a list of releases listed for sale, including hyperlinks 
 
 A slightly shorter example including expected output: All Amon Tobin release with a catalog number including characters "zen" (the usual Ninja Tune label's catalog number prefix):
 
-```
+```sh
 $ dsc links artist=amon cat=zen
 
 +----------+----------------------------------------------------------------------+
@@ -618,22 +623,22 @@ More information on AcousticBrainz, the technology behind it and alternatives:
 
 `discosync` is used to save the DiscoBASE to the cloud and restore it if something went wrong. It also can be used to share it between multiple computers. There are currently two options, for storing the backups:
 
-* Dropbbox
-* A folder on a webserver
+- Dropbbox
+- A folder on a webserver
 
 A little configuration hast to be done. Follow the steps in the [Dropbox configuration chapter](INSTALLATION.md#configure-dropbox-access-for-discosync) or the [Webserver configuration chapter](INSTALLATION.md#configure-a-webserver-folder-for-discosync)
 
 
 Depending of your chosen way of saving backups you have to launch `discosync` differently; Option -t selects which type of storage should be accessed:
 
-```
+```sh
 discosync -t dropbox ...
 discosync -t webdav ...
 ```
 
 The "types" can be abbreviated:
 
-```
+```sh
 discosync -t d ...
 discosync -t w ...
 ```

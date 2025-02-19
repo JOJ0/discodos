@@ -43,9 +43,12 @@ def import_basic_cmd(helper ):
 
     A basic subset of the details of all releases in the user's Discogs collection is
     imported into the DiscoBASE. Currently this includes artist, release title, catalog
-    number, and the time of import. Information about collection items is also stored.
-    This includes folders, notes, added date and rating (not all is made use of in
-    DiscoDOS yet).
+    number, and the time of import.
+
+    Information about collection items is also stored. This includes folders, notes,
+    added date and rating (not all is made use of in DiscoDOS yet).
+
+    Collection folder names are imported as a first step during an import run.
 
     The basic import can be re-run any time. Existing releases data is updated. Note
     that releases are not deleted on re-runs because they might still be used by the
