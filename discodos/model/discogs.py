@@ -188,7 +188,15 @@ class DiscogsMixin:
         Returns a list of dictionaries with the original collection_item keys (redefined
         in list "keys")
         """
-        instances = self.me.collection_items(release_id)
+        try:
+            instances = self.me.collection_items(release_id)
+        except Exception as e:
+            errtype, errmsg = type(e).__name__, e
+            log.debug(
+                "Error fetching collection item instances: %s: %s", errtype, errmsg
+            )
+            return []
+
         if not instances:
             log.warning("No instance of release in Discogs collection.")
 
