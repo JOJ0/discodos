@@ -42,15 +42,15 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         cli,
         user,
     ):
-        super().__init__()
-        super().discogs_connect(
-            user_token=None,
-            app_identifier=None,
-            discogs=discogs,
-        )
+        # DiscoDOS base functionalies received as args
         self.collection = collection
         self.cli = cli
         self.user = user
+        super().discogs_connect(None, None, discogs=discogs)
+        log.debug("TUI: ONLINE=%s in %s", self.ONLINE, __class__.__name__)
+
+        # Textual initializations
+        super().__init__()
         self.table = None
         self.rows = rows
         self.rlog = RichLog()
@@ -393,7 +393,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
             )
         )
         if self.right_column_current:
-            #self.right_column_content.styles.text_style = "none"
+            # self.right_column_content.styles.text_style = "none"
             title = "YouTube (outdated, press v!)"
             render_videos = self.cli.two_column_view(
                 self.right_column_current, as_is=True, title=title

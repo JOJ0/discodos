@@ -32,6 +32,9 @@ class DiscogsMixin:
                         discogs=None):
         """Discogs connect try,except wrapper sets attributes d, me and ONLINE.
         """
+        self.d = None
+        self.me = None
+        self.ONLINE = False
         try:
             if discogs:
                 self.d = discogs

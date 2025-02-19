@@ -57,6 +57,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         musicbrainz_user=False,
         musicbrainz_pass=False,
     ):
+        self.app_id = appIdentifier
+        self.user_token = userToken
         self.user = user_int  # set instance of User_int class as attribute
         self.cli = (
             CollectionViewCommandline()
