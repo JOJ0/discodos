@@ -1049,7 +1049,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             # Disabled for now, patched out manual sold toggle
             # "- Additionally tries to match collection items and marks them as sold.\n"
             # "- To manually set sold flag, use `dsc ls id=<id>` with 'Toggle sold' "
-            "command (s).\n"
+            # "command (s).\n"
             "[/]"
         )
 
