@@ -350,21 +350,26 @@ class DiscogsMixin:
             return None, errtype, errmsg
 
     def fetch_price_suggestion(self, release_id, condition):
-        if isinstance(release_id, Release):
-            r = release_id
-        else:
-            r = self.d.release(release_id)
+        try:
+            if isinstance(release_id, Release):
+                r = release_id
+            else:
+                r = self.d.release(release_id)
 
-        c = {
-            "M": r.price_suggestions.mint,
-            "NM": r.price_suggestions.near_mint,
-            "VG+": r.price_suggestions.very_good_plus,
-            "VG": r.price_suggestions.very_good,
-            "G+": r.price_suggestions.good_plus,
-            "G": r.price_suggestions.good,
-            "F": r.price_suggestions.fair,
-        }
-        return c[condition.upper()] if r else None
+            c = {
+                "M": r.price_suggestions.mint,
+                "NM": r.price_suggestions.near_mint,
+                "VG+": r.price_suggestions.very_good_plus,
+                "VG": r.price_suggestions.very_good,
+                "G+": r.price_suggestions.good_plus,
+                "G": r.price_suggestions.good,
+                "F": r.price_suggestions.fair,
+            }
+            return c[condition.upper()] if r else None
+        except Exception as e:
+            errtype, errmsg = type(e).__name__, e
+            log.debug("Fetching Markedplace stats: %s: %s", errtype, errmsg)
+            return None
 
     def fetch_relevant_price_suggestions(self, release_id, wanted_condition=""):
         """Fetches most relevant prices suggestions for a Discogs release.

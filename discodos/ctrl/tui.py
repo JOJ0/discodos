@@ -415,6 +415,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
         p = self.fetch_price_suggestion(release_id, "VG+")
         if not p:
             self.rlog.write("Fetching price suggestion failed.")
+            return
         self.middle_column_lower_content.update(
             f"Suggested VG+ price: {round(p.value, 1)}"
         )
