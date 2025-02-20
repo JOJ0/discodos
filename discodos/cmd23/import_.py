@@ -213,15 +213,11 @@ def import_brainz_cmd(helper, quick, import_offset, import_brainz_force,
 def import_release_cmd(helper, import_id, import_add_coll, import_tracks, delete):
     """Imports a single release.
 
-    Note that currently this is a rather time consuming process: Technical
-    limitations that are out of our hands require running through all of the
-    releases in the collection via the Discogs API. Unfortunately Discogs does
-    not allow us to search for release IDs in the user collection directly.
+    Optionally imports tracks on the release or deletes a release entry entirely
 
-    The recommended way of adding newly gained releases is using the -a option
-    (import release -a RELEASE_ID) which is much faster. Using this flag, the
-    release is added to Discogs collection and additionally added to the local
-    DiscoBASE.
+    Usually the release must be in the Discogs collection already but an alternative way
+    for adding newly gained releases is using the `-a` option. The flag enables releases
+    being added to the Discogs collection and additionally added to the local DiscoBASE.
     """
 
     def update_user_interaction_helper(user):
