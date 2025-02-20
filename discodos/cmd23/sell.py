@@ -21,10 +21,11 @@ log = logging.getLogger('discodos')
 )
 @click.option(
     "--id",
+    "--url",
     "-i",
     "release_id",
-    type=int,
-    help="Omit search by passing a release ID with this option.",
+    type=str,
+    help="Omit search by passing a release ID or release URL with this option.",
 )
 @click.option(
     "-a",
@@ -89,13 +90,13 @@ log = logging.getLogger('discodos')
 )
 def sell_cmd(helper, query, listing_id, release_id, condition, sleeve_condition, price,
              status, location, allow_offers, comments, private_comments):
-    """
-    List a record for sale on Discogs.
+    """List a record for sale on Discogs.
 
     Lists the specified record for sale with details such as condition, price, status,
     and so on. Leave price empty to fetch a suggestion for the given record condition.
 
-    To specify a record, there are two ways: 1. Pass search terms, eg ``dsc sell my search terms`` or 2. pass a release id, eg. ``dsc sell -i 123456``
+    To specify a record, there are two ways: 1. Pass search terms, eg ``dsc sell my
+    search terms`` or 2. pass a release id, eg. ``dsc sell -i 123456``
 
     Some options have built-in defaults that apply when not given! To override them 
     pass them explicitely. For example, use this to override the defaults

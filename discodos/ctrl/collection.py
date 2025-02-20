@@ -1355,10 +1355,14 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             log.warning("Online mode is required to list a record for sale.")
             return
 
-        if not release_id:
+        extracted_id = None
+        if release_id:
+            extracted_id = extract_discogs_id_regex(release_id)
+
+        if not extracted_id:
             found_release = self.search_release(" ".join(query))
             # search_release exits program, not required to handle here.
-            release_id = found_release["id"]
+            extracted_id = found_release["id"]
         if not condition:
             condition = Prompt.ask(
                 "Condition", choices=RECORD_CHOICES, default="VG+"
@@ -1369,24 +1373,24 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             )
 
         prices, err_prices, _ = self.collection.fetch_relevant_price_suggestions(
-            release_id, wanted_condition=condition
+            extracted_id, wanted_condition=condition
         )
         render_prices = (
             err_prices if err_prices else self.cli.two_column_view(prices, as_is=True)
         )
         print(Panel.fit(render_prices, title="Suggested prices"))
 
-        stats, err_stats, _ = self.collection.fetch_marketplace_stats(release_id)
+        stats, err_stats, _ = self.collection.fetch_marketplace_stats(extracted_id)
         render_stats = (
             err_stats if err_stats else self.cli.two_column_view(stats, as_is=True)
         )
         print(Panel.fit(render_stats, title="Marketplace stats"))
 
         print("Currently for sale:")
-        print(f"https://www.discogs.com/sell/release/{release_id}")
+        print(f"https://www.discogs.com/sell/release/{extracted_id}")
         print()
 
-        videos, err_videos, _ = self.collection.fetch_release_videos(release_id)
+        videos, err_videos, _ = self.collection.fetch_release_videos(extracted_id)
         render_videos = (
             err_videos if err_videos else self.cli.two_column_view(videos, as_is=True)
         )
@@ -1407,9 +1411,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 print("No suggested price available; please enter a price manually.")
                 price = FloatPrompt.ask("Price")
 
-        log.info(f"Attempting to list record {release_id} for sale.")
+        log.info(f"Attempting to list record {extracted_id} for sale.")
         listing_successful = self.collection.list_for_sale(
-            release_id=release_id,
+            release_id=extracted_id,
             condition=condition,
             sleeve_condition=sleeve_condition,
             price=price,
