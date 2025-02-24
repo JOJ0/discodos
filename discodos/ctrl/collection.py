@@ -359,8 +359,9 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 sure_coll = Confirm.ask("Remove collection item?", default=False)
                 if sure_coll:
                     self.collection.delete_collection_item(ci["d_coll_instance_id"])
-                    return
-                log.warning("Kept collection item in DiscoBASE!")
+                    continue
+                else:
+                    log.warning("Kept collection item in DiscoBASE!")
         return
 
     # Import collection, import helpers
