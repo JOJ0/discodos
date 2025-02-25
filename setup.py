@@ -35,7 +35,7 @@ setup(
         "musicbrainzngs",
         "rich",
         "textual",
-        "python3-discogs-client",
+        "python3-discogs-client>=2.8",
         "webdavclient3",
     ],
     package_data={"discodos.ctrl": ["*.tcss"]},
