@@ -3,8 +3,11 @@
 
 ## Installation
 
-Please head over to the [INSTALLATION](INSTALLATION.md) document for step by step instructions on how to get DiscoDOS running on your machine.
+DiscoDOS is available via PyPI and can be installed like this:
 
+`pipx install discodos`
+
+In case you are not familiar with installing python packages, please head over to [SETUP](INSTALLATION.md) for step by step instructions.
 
 
 ## Importing your Discogs collection and Marketplace inventory
@@ -15,11 +18,37 @@ To let DiscoDOS know about our Discogs record collection we have to import a sub
 
 `dsc import sales`
 
+:::{tip}
+There are more things that can be imported. Read on in chapter [The `import` command group](MANUAL.md#the-import-command-group)
+:::
+
+
+## Basic Usage Tutorial - Selling Records
+
+Make sure your local sales inventory is up to date and re-run:
+
+`dsc import sales`
+
+List a record for sale with the "sell wizard". Don't pass the `-p/--price` option! You'll receive price suggestions and will be prompted to accept or adjust the recommendations interactively.
+
+`dsc sell -a forsale -c NM`
+
+The sell command has some built-in defaults, most importantly `VG+` for `-c/--condition` and `draft` for the `-a/--status` option. Defaults are documented in [the command's online help](dsc.rst)
+
+To edit existing sales listings, use the DiscoDOS TUI command `dsc ls`:
+
+`dsc ls artist=squarepusher`
+
+:::{tip}
+`dsc ls` lists records in a fancy graphical but still text-based user interface. Press `e` to edit a sales listing. Further helpful key commands are `v` display video links and `p` to find out Discogs suggested prices. [Learn more key commands here](MANUAL.md#the-ls-tui-command).
+:::
+
+
 
 
 ## Basic Usage Tutorial - Mixes
 
-When importing is through, create a new mix:
+This is a slightly more detailed tutorial about documenting a new DJ mix. Recommended if unfamiliar with UNIX-style CLI tools. [Also consider reading the commandline tools primer chapter first](MANUAL.md#command-line-tools-primer)
 
 `dsc mix my_mix -c`
 
@@ -67,27 +96,9 @@ Read more about the *Brainz update process here: [The import command](MANUAL.md#
 
 
 
-## Common Tasks
+## Common Tasks / FAQ
 
 This section guides you through typical DiscoDOS workflows. If you would rather like to read an in-detail explanation of what each command does, go to the [DiscoDOS User's Manual](MANUAL.md).
-
-### I'd like to sell records
-
-Make sure your local sales inventory is up to date:
-
-`dsc import sales`
-
-List a record for sale with the "sell wizard". Don't pass the `-p/--price` option! You'll receive price suggestions and will be prompted to accept or adjust the recommendations interactively.
-
-`dsc sell -a forsale -c NM`
-
-_**Note: The sell command has some built-in defaults, most importantly `VG+` for `-c/--condition` and `draft` for the `-a/--status` option. Defaults are documented in [the command's online help](dsc.rst).**_
-
-To edit existing sales listings, use the DiscoDOS TUI command `dsc ls`:
-
-`dsc ls artist=squarepusher`
-
-_**Note: `dsc ls` lists records in a fancy graphical but still text-based user interface. Use shortcut `e` to edit a sales listing. Further helpful shortcuts are `v` display video links and `return` to fetch marketplace stats and price suggestions.**_
 
 
 
@@ -105,7 +116,9 @@ If you hold the record in your hand and know exactly what track it is you played
 
 `dsc search "artist title album" -m my_mix -t A2`
 
-_**Note: Your search terms don't have to include artist, title and album. Also label names and catalog numbers are valid.**_
+:::{tip}
+Your search terms don't have to include artist, title and album. Also label names and catalog numbers are valid.
+:::
 
 While listening through an older recording it happens that you don't remember what it was exactly you played. Just skip over an unknown track and move on with writing down the rest of the mix. When you've later figured out what it was you played, squeeze in tracks at the right position in the mix with:
 
@@ -115,7 +128,9 @@ The -p option works in combination with the mix subcommands well:
 
 `dsc mix my_mix -a "artist title album" -p 12`
 
-_**Note if you are new to command line tools: Make use of your shells command history and re-use and edit your commands. Usually this is done using cursor keys up and down.**_
+:::{tip}
+If you are new to command line tools: Make use of your shells command history and re-use and edit your commands. Usually this is done using cursor keys up and down.
+:::
 
 More about the subcommands used in this guide is found here: [mix command](MANUAL.md#the-mix-command), [search command](MANUAL.md#the-search-command).
 
@@ -133,7 +148,9 @@ Another option would be to let it show you a pool of tracks sharing similiar key
 
 `dsc suggest -k Am -b 123`
 
-_**Note: If your tune(s) do not have key and BPM data yet, let them "match" with MusicBrainz first, by using the [update from *Brainz](MANUAL.md#search-action-update-from-brainz) search action**_
+:::{tip}
+If your tune(s) do not have key and BPM data yet, let them "match" with MusicBrainz first, by using the [update from *Brainz](MANUAL.md#search-action-update-from-brainz) search action.
+:::
 
 
 
@@ -147,7 +164,9 @@ Use the bulk-edit function to change specific fields of your mix's tracks:
 
 Learn more about this function in the [mix command section](MANUAL.md#the-mix-command).
 
-_**Note: Currently DiscoDOS rating analysis system is not finished. This will be coming in future version. As a preparations for this feature, you only are allowed to put these character combinations into the trans_rating field: ++, +, ~, -, --**_
+:::{note}
+Currently DiscoDOS rating analysis system is not finished. This might be coming in future version. As a preparations for this feature, you only are allowed to put these character combinations into the trans_rating field: ++, +, ~, -, --.
+:::
 
 
 
