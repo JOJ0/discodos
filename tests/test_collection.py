@@ -11,6 +11,7 @@ from discodos.model import Collection
 
 
 class TestCollection(unittest.TestCase):
+    """Tests collection DiscoBASE model methods."""
     @classmethod
     def setUpClass(cls):
         name = inspect.currentframe().f_code.co_name
@@ -51,8 +52,8 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         # instantiate the Collection model class
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.get_all_db_releases()
+        collection = Collection(False, self.db_path)
+        db_return = collection.get_all_db_releases()
         # self.debug_db(db_return)
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 4)
@@ -72,8 +73,8 @@ class TestCollection(unittest.TestCase):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
         # instantiate the Collection model class
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.get_release_by_id('123456')
+        collection = Collection(False, self.db_path)
+        db_return = collection.get_release_by_id('123456')
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 10)  # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)
@@ -84,8 +85,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_offline_number(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('123456')
+        collection = Collection(False, self.db_path)
+        db_return = collection.search_release_offline('123456')
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 10)  # should be 10 columns
         self.assertEqual(db_return['discogs_id'], 123456)
@@ -96,16 +97,16 @@ class TestCollection(unittest.TestCase):
     def test_search_release_offline_number_error(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('999999')
+        collection = Collection(False, self.db_path)
+        db_return = collection.search_release_offline('999999')
         self.assertIsNone(db_return)
         print("{} - {} - END".format(self.clname, name))
 
     def test_search_release_offline_text(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('Märtini')  # artist or title
+        collection = Collection(False, self.db_path)
+        db_return = collection.search_release_offline('Märtini')  # artist or title
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 1)  # should be a list with 1 Row
         self.assertEqual(db_return[0]['discogs_id'], 123456)
@@ -115,8 +116,8 @@ class TestCollection(unittest.TestCase):
 
     def test_search_release_offline_text_multiple(self):
         print("\nTestMix.search_release_offline_text_multiple: BEGIN")
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('Amon')  # artist or title
+        collection = Collection(False, self.db_path)
+        db_return = collection.search_release_offline('Amon')  # artist or title
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 2)  # should be a list with 2 Rows
         self.assertEqual(db_return[0]['discogs_id'], 69092)
@@ -130,8 +131,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_offline_text_error(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.search_release_offline('XXX')  # artist or title
+        collection = Collection(False, self.db_path)
+        db_return = collection.search_release_offline('XXX')  # artist or title
         self.assertIsNone(db_return)  # returns None if nothing found
         # self.assertEqual(db_return, [])  # FIXME should this better be empty list?
         print("{} - {} - END".format(self.clname, name))
@@ -139,8 +140,8 @@ class TestCollection(unittest.TestCase):
     def test_get_tracks_by_bpm(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.get_tracks_by_bpm(125, 6)
+        collection = Collection(False, self.db_path)
+        db_return = collection.get_tracks_by_bpm(125, 6)
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 3)  # should be a list with 3 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
@@ -157,8 +158,8 @@ class TestCollection(unittest.TestCase):
     def test_get_tracks_by_key(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.get_tracks_by_key("Am")
+        collection = Collection(False, self.db_path)
+        db_return = collection.get_tracks_by_key("Am")
         self.assertIsNotNone(db_return)
         self.assertEqual(len(db_return), 2)  # should be a list with 2 Rows
         self.assertEqual(db_return[0]['d_artist'], 'Source Direct')
@@ -172,8 +173,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_track_offline_artist(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        dbr = self.collection.search_release_track_offline(
+        collection = Collection(False, self.db_path)
+        dbr = collection.search_release_track_offline(
             artist='Märtini', release='', track='')
         # self.debug_db(dbr)
         self.assertIsNotNone(dbr)
@@ -186,8 +187,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_track_offline_nothing(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        dbr = self.collection.search_release_track_offline(
+        collection = Collection(False, self.db_path)
+        dbr = collection.search_release_track_offline(
             artist='', release='', track='')
         # self.debug_db(dbr)
         self.assertIsNotNone(dbr)
@@ -201,8 +202,8 @@ class TestCollection(unittest.TestCase):
     #def test_search_release_track_offline_artist_without_tracks(self):
     #    name = inspect.currentframe().f_code.co_name
     #    print("\n{} - {} - BEGIN".format(self.clname, name))
-    #    self.collection = Collection(False, self.db_path)
-    #    dbr = self.collection.search_release_track_offline(
+    #    collection = Collection(False, self.db_path)
+    #    dbr = collection.search_release_track_offline(
     #        artist='Amon', release='', track='')
     #    #self.debug_db(dbr)
     #    self.assertIsNotNone(dbr)
@@ -216,8 +217,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_track_offline_track(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        dbr = self.collection.search_release_track_offline(
+        collection = Collection(False, self.db_path)
+        dbr = collection.search_release_track_offline(
             artist='', release='', track='Hedup!')
         # self.debug_db(dbr)
         self.assertIsNotNone(dbr)
@@ -230,8 +231,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_track_offline_release(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        dbr = self.collection.search_release_track_offline(
+        collection = Collection(False, self.db_path)
+        dbr = collection.search_release_track_offline(
             artist='', release='material', track='')
         # self.debug_db(dbr)
         self.assertIsNotNone(dbr)
@@ -244,8 +245,8 @@ class TestCollection(unittest.TestCase):
     def test_search_release_track_offline_artist_release_track(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        dbr = self.collection.search_release_track_offline(
+        collection = Collection(False, self.db_path)
+        dbr = collection.search_release_track_offline(
             artist='Märtini', release='material', track='cab')
         # self.debug_db(dbr)
         self.assertIsNotNone(dbr)
@@ -258,8 +259,8 @@ class TestCollection(unittest.TestCase):
     def test_track_report_snippet(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.track_report_snippet(4, 133)
+        collection = Collection(False, self.db_path)
+        db_return = collection.track_report_snippet(4, 133)
         self.assertEqual(len(db_return), 3)  # a snippet is always 3 tracks
         # track 3
         self.assertEqual(db_return[0]["track_pos"], 3)
@@ -286,8 +287,8 @@ class TestCollection(unittest.TestCase):
     def test_track_report_occurences(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.track_report_occurences(123456, 'B2')
+        collection = Collection(False, self.db_path)
+        db_return = collection.track_report_occurences(123456, 'B2')
         self.assertEqual(len(db_return), 11)  # track was used 11 times
         # check some occurences
         self.assertEqual(db_return[0]["mix_id"], 125)  # first occurence
@@ -304,8 +305,8 @@ class TestCollection(unittest.TestCase):
     def test_stats_match_method_release(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_match_method_release()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_match_method_release()
         # self.debug_db(db_return)
         self.assertEqual(len(db_return), 3)  # should be a list with 4 Rows
         self.assertEqual(db_return[0]['m_match_method'], None)
@@ -316,11 +317,11 @@ class TestCollection(unittest.TestCase):
     def test_d_get_first_catno(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
+        collection = Collection(False, self.db_path)
         label_item = Mock()  # Mock a label object.
         label_item.data = {'catno': 'ZEN 70'}
         mock_d_labels = [label_item]  # Mock list of label objects.
-        catno = self.collection.d_get_first_catno(  # And finally test.
+        catno = collection.d_get_first_catno(  # And finally test.
             mock_d_labels
         )
         self.assertEqual(catno, 'ZEN 70')
@@ -329,8 +330,8 @@ class TestCollection(unittest.TestCase):
     def test_stats_releases_total(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_releases_total()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_releases_total()
         # self.debug_db(db_return)
         self.assertEqual(db_return, 4)  # should be 4 releases in coll.
         print("{} - {} - END".format(self.clname, name))
@@ -338,8 +339,8 @@ class TestCollection(unittest.TestCase):
     def test_stats_tracks_total(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_total()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_total()
         # self.debug_db(db_return)
         self.assertEqual(db_return, 5)  # should be 5 tracks in coll.
         print("{} - {} - END".format(self.clname, name))
@@ -347,8 +348,8 @@ class TestCollection(unittest.TestCase):
     def test_stats_tracks_total_ext(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_total_ext()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_total_ext()
         # self.debug_db(db_return)
         self.assertEqual(db_return, 5)  # should be 5 tracks in track_ext t.
         print("{} - {} - END".format(self.clname, name))
@@ -356,8 +357,8 @@ class TestCollection(unittest.TestCase):
     def test_stats_track_ext_orphaned(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_track_ext_orphaned()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_track_ext_orphaned()
         # self.debug_db(db_return)
         self.assertEqual(db_return, 0)
         print("{} - {} - END".format(self.clname, name))
@@ -365,32 +366,32 @@ class TestCollection(unittest.TestCase):
     def test_stats_releases_matched(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_releases_matched()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_releases_matched()
         self.assertEqual(db_return, 2)  # should be 2 matched releases
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_matched(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_matched()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_matched()
         self.assertEqual(db_return, 1)  # should be 1 matched tracks
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_releases_d_collection_flag(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_collection_items_discobase()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_collection_items_discobase()
         self.assertEqual(db_return, 4)
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_mixtracks_total(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_mixtracks_total()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_mixtracks_total()
         # self.debug_db(db_return)
         self.assertEqual(db_return, 49)
         print("{} - {} - END".format(self.clname, name))
@@ -398,8 +399,8 @@ class TestCollection(unittest.TestCase):
     def test_stats_mixtracks_unique(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_mixtracks_unique()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_mixtracks_unique()
         # self.debug_db(db_return)
         self.assertEqual(db_return, 7)  # 7 unique tracks
         print("{} - {} - END".format(self.clname, name))
@@ -407,32 +408,32 @@ class TestCollection(unittest.TestCase):
     def test_stats_tracks_key_brainz(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_key_brainz()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_key_brainz()
         self.assertEqual(db_return, 1)  # should be 1 track with ab_key
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_key_manual(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_key_manual()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_key_manual()
         self.assertEqual(db_return, 4)  # should be 4 tracks with manual key
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_bpm_brainz(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_bpm_brainz()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_bpm_brainz()
         self.assertEqual(db_return, 1)  # should be 1 track with ab_bpm
         print("{} - {} - END".format(self.clname, name))
 
     def test_stats_tracks_bpm_manual(self):
         name = inspect.currentframe().f_code.co_name
         print("\n{} - {} - BEGIN".format(self.clname, name))
-        self.collection = Collection(False, self.db_path)
-        db_return = self.collection.stats_tracks_bpm_manual()
+        collection = Collection(False, self.db_path)
+        db_return = collection.stats_tracks_bpm_manual()
         self.assertEqual(db_return, 5)  # should be 5 tracks with manual bpm
         print("{} - {} - END".format(self.clname, name))
 
