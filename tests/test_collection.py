@@ -1,3 +1,4 @@
+from datetime import datetime
 import inspect
 import os
 import unittest
@@ -45,7 +46,8 @@ class TestCollection(unittest.TestCase):
             print(stringed)
             print()
         else:
-            print('unknown datatype, cannot debug')
+            print("Neither list nor Row, just print:")
+            print(db_return)
         return True
 
     def test_get_all_db_releases(self):
@@ -199,7 +201,7 @@ class TestCollection(unittest.TestCase):
     # broken, not sure if we ever go back to old behaviour we had in guiv1draft
     # (a discobase without fully imported tracks should even show a release that
     # when no corresponding tracks are found in the tracks table.)
-    #def test_search_release_track_offline_artist_without_tracks(self):
+    # def test_search_release_track_offline_artist_without_tracks(self):
     #    name = inspect.currentframe().f_code.co_name
     #    print("\n{} - {} - BEGIN".format(self.clname, name))
     #    collection = Collection(False, self.db_path)
@@ -435,6 +437,45 @@ class TestCollection(unittest.TestCase):
         collection = Collection(False, self.db_path)
         db_return = collection.stats_tracks_bpm_manual()
         self.assertEqual(db_return, 5)  # should be 5 tracks with manual bpm
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_set_collection_item_folder(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        collection = Collection(False, self.db_path)
+        db_return = collection.set_collection_item_folder(
+            instance_id=26575804,
+            folder_id=123,
+            sold_folder_id=456,
+            timestamp="2025-02-28 07:29:56",
+        )
+        self.assertEqual(db_return, 1)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_set_collection_item_folder_misconfigured_str(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        collection = Collection(False, self.db_path)
+        db_return = collection.set_collection_item_folder(
+            instance_id=26575804,
+            folder_id=1,
+            sold_folder_id="abc",
+            timestamp="2025-02-28 07:29:56",
+        )
+        self.assertEqual(db_return, 1)
+        print("{} - {} - END".format(self.clname, name))
+
+    def test_set_collection_item_folder_misconfigured_emtpy_str(self):
+        name = inspect.currentframe().f_code.co_name
+        print("\n{} - {} - BEGIN".format(self.clname, name))
+        collection = Collection(False, self.db_path)
+        db_return = collection.set_collection_item_folder(
+            instance_id=26575804,
+            folder_id=1,
+            sold_folder_id="",
+            timestamp="2025-02-28 07:29:56",
+        )
+        self.assertEqual(db_return, 1)
         print("{} - {} - END".format(self.clname, name))
 
     @classmethod

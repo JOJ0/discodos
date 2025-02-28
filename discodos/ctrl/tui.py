@@ -11,7 +11,7 @@ from rich.markdown import Markdown
 from discodos.model import DiscogsMixin
 from discodos.ctrl.tui_edit import EditScreen
 from discodos.ctrl.tui_folder import EditFolderScreen
-from discodos.utils import timestamp_now
+from discodos.utils import timestamp_now, is_number
 
 log = logging.getLogger('discodos')
 
@@ -193,6 +193,7 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
 
         def save_changes(instance_id, release_id, folder_id):
             timestamp = timestamp_now()
+            is_sold = "No"
             if not self.collection.update_collection_item_folder(
                 instance_id, release_id, folder_id
             ):
@@ -207,9 +208,10 @@ class DiscodosListApp(App, DiscogsMixin):  # pylint: disable=too-many-instance-a
                 return
             r_key, _ = self.table.coordinate_to_cell_key(self.table.cursor_coordinate)
             folder_name = self.collection.get_folder_name_by_id(folder_id)
-            is_sold = self.cli.bool_to_yes_no(
-                int(self.user.conf.sold_folder_id) == folder_id
-            )
+            if is_number(self.user.conf.sold_folder_id):
+                is_sold = self.cli.bool_to_yes_no(
+                    int(self.user.conf.sold_folder_id) == folder_id
+                )
             self.table.update_cell(r_key, "d_collfolder_name", folder_name)
             self.table.update_cell(r_key, "coll_mtime", timestamp)
             self.table.update_cell(r_key, "sold", is_sold)

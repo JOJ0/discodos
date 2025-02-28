@@ -237,8 +237,13 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
     def set_collection_item_folder(
         self, instance_id, folder_id, sold_folder_id, timestamp
     ):
-        """Updates folder_id on a DiscoBASE collection item."""
-        sold = folder_id == int(sold_folder_id)
+        """Updates folder_id on a DiscoBASE collection item.
+
+        If a valid sold_folder_id is passed the item will be marked as sold.
+        """
+        sold = 0
+        if is_number(sold_folder_id):
+            sold = folder_id == int(sold_folder_id)
         return self.execute_sql(
             """
             UPDATE collection
