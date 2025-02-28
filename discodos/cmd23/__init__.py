@@ -40,11 +40,16 @@ log = logging.getLogger('discodos')
     help="""Use a TUI (Textual framework) version if available. Currently only affects
     "dsc ls" command. Overrides "enable_tui" config option.
     """)
+@click.option(
+    "--db", "db_file", type=str, default=None,
+    help="""Override configured DiscoBASE file.""")
 @click.pass_context
-def main_cmd(context, verbose_count, offline_mode, tui):
+def main_cmd(context, verbose_count, offline_mode, tui, db_file):
     conf = Config()
     if tui is not None:
         conf.enable_tui = tui
+    if db_file is not None:
+        conf.discobase = db_file
     log.handlers[0].setLevel(conf.log_level)  # set configured console log lvl
     context.obj = helper.User(conf, verbose_count, offline_mode)
 
