@@ -3,25 +3,20 @@
 
 ## Prerequisites
 
-You need to have these software packages installed
-* git
-* Python version 3.9 or higher
+DiscoDOS requires Python version 3.9 or higher, getting it differs according to your OS:
 
-Getting them differs according to your OS
+* Most Linux distributions have Python available within their package repositories.
+* On Windows [download from here](https://www.python.org/downloads).
+* On MacOS I suggest [getting Python via homebrew](https://brew.sh/) (or install it manually using the Windows link above).
 
-* Most Linux distributions have git and Python available within their package repositories.
-* On Windows download from here: https://git-scm.com/download, https://www.python.org/downloads
-* On MacOS I suggest getting both packages via homebrew: https://brew.sh/
-  (If homebrew seems overkill to you, just use the Windows links above)
+Make sure `python` can be executed from everywhere (adjust your _path environment variable_ accordingly, usually `$PATH or %PATH%`).
 
-Make sure git and python can be executed from everywhere (adjust your PATH environment variable accordingly).
+During the Python setup on Windows choose _Customize installation_ and select the following options:
 
-During the Python setup on Windows choose "Customize installation" and select the following options:
-
-- pip
-- py launcher
-- Associate files with Python (requires the py launcher)
-- Add Python to environment variables
+* pip
+* py launcher
+* Associate files with Python (requires the py launcher)
+* Add Python to environment variables
 
 
 ## Windows
@@ -30,7 +25,7 @@ Please use the regular command prompt window (cmd.exe) and not the "git bash", o
 
 Create and activate a virtual Python environment!
 
-```
+```sh
 python -m venv "%HOMEPATH%/python-envs/discodos"
 "%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"
 ```
@@ -47,87 +42,36 @@ Launch DiscoDOS' main command and follow the steps shown:
 
 `dsc`
 
-_**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
+:::{tip}
+Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS.
+:::
 
 `"%HOMEPATH%/python-envs/discodos/Scripts/activate.bat"`
 
 
 ## macOS or Linux
 
-### Create a virtual environment
-
-Create and activate a virtual Python environment! The environment will be saved inside a hidden subfolder of your homedirectory called .venvs/
-
-```
-python3 -m venv ~/.venvs/discodos
-source ~/.venvs/discodos/bin/activate
-```
-
-Double check if your environment is active and you are using the pip binary installed _inside_ your ~/.venvs/discodos/ directory.
-
-`pip --version`
-
-### Install a released package from PyPI
-
-Install DiscoDOS and its dependencies into your environment:
-
-`pip install discodos`
-
-### Install latest development version from Git
-
-Jump to your homedirectory, clone the repo and change into the cloned repo directory.
-
-```
-cd
-git clone https://github.com/JOJ0/discodos.git
-cd discodos
-```
-
-Install DiscoDOS and its dependencies into your environment:
-
-`pip install -e .`
-
-### Verify installation
-
-Some command wrappers should have been installed too. Verify if they exist inside your `~/.venvs/discodos/bin` directory:
-
-```
-which dsc
-which discosync
-```
-
-Launch DiscoDOS' main command and follow the steps shown:
-
-`dsc`
-
-_**Note: Make sure you always first activate your virtual environment when coming back to developing or using DiscoDOS:**_
-
-`source ~/.venvs/discodos/bin/activate`
-
-
-## macOS or Linux - Install to user environment
+### Install to user environment with pipx
 
 This chapter describes how to install the DiscoDOS package into your user's Python environment which is better suitable for just _using_ it, rather than _contributing/developing_.
 
-**_Installing like this is not recommended and might mess up your system's Python installation**_
-
 Install Python 3. On Debian based distros (Ubuntu, Linux Mint, ...), do something like this:
 
-`apt install python3`
+`apt install python3 pipx`
 
 on RedHat based (Fedora, CentOS, ...):
 
-`yum install python3`
+`yum install python3 pipx`
 
 Install DiscoDOS into your user's Python environment:
 
-`pip install discodos`
+`pipx install discodos`
 
 ### Verify installation
 
 Some command wrappers should have been installed. Verify if they exist:
 
-```
+```sh
 which dsc
 which discosync
 ```
@@ -140,53 +84,52 @@ Launch DiscoDOS' main command:
 
 `dsc`
 
-
 ## Initial configuration and additional notes
 
-On first launch, `dsc` will create a configuration file for you. To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](INSTALLATION.md#configure-discogs-api-access), then come back here!
+:::{attention}
+On first launch, `dsc` will create a configuration file for you.
+:::
 
-Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
+* To access your Discogs collection, an access token has to be generated and put into the file. Follow the steps in chapter [Configure Discogs API access](INSTALLATION.md#configure-discogs-api-access), then come back here!
+* Now that you've put the token into the configuration file, DiscoDOS completes setup by creating a local database (the DiscoBASE).
+* Read the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection-and-marketplace-inventory) on how to **import** your Discogs collection and Marketplace inventory.
 
-**Note: In case you are updating from a previous DiscoDOS version, your data will be kept and your database's schema might be upgraded automatically**
+### Files generated by _setup_
 
-Your starting point for further documentation is the [Quickstart Guide](QUICKSTART.md#importing-your-discogs-collection-and-marketplace-inventory). Your next logical step is importing your Discogs collection.
+DiscoDOS generates the following files which are kept in `~/.discodos/`:
 
-**Note: DiscoDOS generates the following files which are kept in `~/.discodos/`:**
+* The DiscoDOS configuration file (`config.yaml`)
+* The DiscoBASE (`discobase.db`)
+* A log file (`debug.log`)
 
- - The DiscoDOS configuration file (`config.yaml`)
- - The DiscoBASE (`discobase.db`)
- - A logfile (`debug.log`)
-
-
-
-
-## Configure Discogs API access
+### Configure Discogs API access
 
 To access your Discogs collection you need to generate an API login token and put it into the configuration file.
 
-- Login to discogs.com
-- Click your avatar (top right)
-- Select _Settings_
-- Switch to section _Developers_
-- Click _Generate new token_
-- Run `dsc` - you'll be prompted to put in the token.
+* Login to discogs.com
+* Click your avatar (top right)
+* Select _Settings_
+* Switch to section _Developers_
+* Click _Generate new token_
+* Run `dsc` - you'll be prompted to put in the token.
 
-**Note: If you are updating from a previous DiscoDOS version, your config.yaml is existing and has a token set up already, thus you won't be bothered!**
+:::{attention}
+When upgrading from a previous DiscoDOS version no token prompt occurs (it's set already in the config file) but you might see automatic DiscoBASE schema upgrades happening.
+:::
 
+### Configuration via a text editor
 
-### Edit configuration file manually
+Not only the token but many other settings are found in `config.yaml`:
 
-Alternatively you can open the configuration file with a texteditor and copy/paste the generated Discogs token into it by hand:
-- _Windows_: Edit `MyDocuments/discodos/config.yaml`
-  (use Start Menu entry "DiscoDOS/Edit Configuration File")
-- _macOS_: Edit `/Users/your_name/Documents/config.yaml` (secondary click (two fingers) - "Open With" - "TextEdit.app").
-- _Linux_: Edit `$HOME/.discodos/config.yaml`
+* _Windows_: Use eg. _notepad_ to open the file in your home folder (usually `\Users\yourname\.discodos` - be aware of the leading dot in the directory's name!)
+* _macOS_: The `.discodos` directory in your home folder is hidden, Use Finder's "Go to folder..." command in the "Go" menu. Put in `/Users/yourname/.discodos`.
+* _Linux_: Edit `$HOME/.discodos/config.yaml` with any text editor.
 
-The line in `config.yaml` should look something like this then:
+For example the Discogs API token's line in `config.yaml` looks something like this:
 
- ```
- discogs_token: XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH
- ```
+```sh
+discogs_token: XDsktuOMNkOPxvNjerzCbvJIFhaWYwmdGPwnaySH
+```
 
 
 ## Configure _discosync_ - The DiscoDOS backup & sync tool

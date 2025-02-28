@@ -96,7 +96,7 @@ You can update your DiscoBASE from your Discogs collection at any time, if data 
 
 `dsc import basic`
 
-:::{info}
+:::{note}
 This imports all the releases in your collection, but not the tracks on them.
 :::
 
