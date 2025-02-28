@@ -632,38 +632,41 @@ class Config():  # pylint: disable=too-many-instance-attributes
             raise err
 
     def create_conf(self):
-        '''creates config.yaml'''
+        """Creates config.yaml. Greets the user on first-run."""
         config = {
-            'discogs_token': '',
-            'log_level': "WARNING",
-            'dropbox_token': '',
-            'musicbrainz_user': '',
-            'musicbrainz_password': '',
-            'webdav_user': '',
-            'webdav_password': '',
-            'webdav_url': '',
-            'discobase_file': 'discobase.db',
-            'enable_tui': 'true',
-            'discogs_sold_folder_id': '',
+            "discogs_token": "",
+            "log_level": "WARNING",
+            "dropbox_token": "",
+            "musicbrainz_user": "",
+            "musicbrainz_password": "",
+            "webdav_user": "",
+            "webdav_password": "",
+            "webdav_url": "",
+            "discobase_file": "discobase.db",
+            "enable_tui": "true",
+            "discogs_sold_folder_id": "",
         }
-        create_msg = '\nSeems like you are running DiscoDOS for the first time, '
-        create_msg+= 'a config file will be created...\n'
-        log.info(create_msg)
-        print(create_msg)
+
+        create_msg = (
+            "\nSeems like you are running DiscoDOS for the first time, "
+            "a config file will be created...\n"
+        )
+        print_help(create_msg, _log=True)
+
         written = self._write_yaml(config, self.file)
         if written:
-            m = 'Now:\n'
-            m+= '* Get a Discogs API access token as described here:\n'
-            m+= '  https://discodos.readthedocs.io/en/latest/INSTALLATION.html#configure-discogs-api-access\n'
-            m+= '* Run DiscoDOS again (type disco) and input the token, '
-            m+= 'setup will be completed and connection to Discogs verified.\n'
-            m+= '* Then learn how to import your collection and use DiscoDOS:\n'
-            m+= '  https://discodos.readthedocs.io/en/latest/QUICKSTART.html#importing-your-discogs-collection\n'
-            m+= '* If you want to change your Discogs token later, open {} using a '.format(self.file)
-            m+= 'texteditor and change the line starting with discogs_token: .\n'
+            m = f"""
+            Now it's essential you read the initial setup documentation
+            to learn how to:
+              - Get a Discogs API access token
+              - Configure a "Sold Folder ID"
+              - Read on here: https://discodos.readthedocs.io/en/latest/INSTALLATION.html#initial-configuration-and-additional-notes
+
+            Your configuration file is at {self.file} and can be edited anytime
+            using a text editor.
+            """
             self.config_created = True
-            log.info(m)
-            print_help(m)
+            print_help(m, _log=True)
 
     def _write_yaml(self, data, yamlfile):
         """data expects dict, yamlfile expects path/file"""

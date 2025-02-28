@@ -51,8 +51,10 @@ def is_number(s):
         return False
 
 
-def print_help(message):
+def print_help(message, _log=False):
     print('' + str(message) + '\n')
+    if _log:
+        log.debug(message)
 
 
 def ask_user(text=""):
