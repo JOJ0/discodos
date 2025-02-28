@@ -265,7 +265,9 @@ To make **all** *track names* on **all** releases in your collection available o
 
 `dsc search all -u`
 
-_**Note: This is exactly the same as using `dsc import --tracks` or in short: `dsc import -u`.**_
+:::{note}
+This is exactly the same as using `dsc import --tracks` or in short: `dsc import -u`.
+:::
 
 Read more on importing release and track information in the [import command section](#the-import-command-group)
 
@@ -313,14 +315,20 @@ For example to display and allow editing of all Marketplace listings currently i
 A list of _command keys_ will be available in the footer of the  _TUI_ interface! Some of the most useful one's are:
 
 - `e` -> Edit sales listing
-- `v` -> Display YouTube video hyperlinks
-- `return` -> Fetch Marketplace stats and "Discogs suggested prices"
+- `v` -> Fetch YouTube video hyperlinks
+- `p` -> Fetch prices and stats for t
+- `r` -> Reimport a collection itemhe release from Discogs Marketplace
+- `f` -> Edit collection item folder
+- `s` -> Save in dialogs (eg. Folder edit)
+- `Esc` -> Cancel in dialogs
 
 The `ls` command can fall back to a classic CLI version using the `-x/--no-tui` flag. Manipulating entries using this view-mode is not possible:
 
 `dsc -x ls status=forsale"`
 
-_**Note: `-x/--no-tui` is a global option, and must be stated right after the main command `dsc`. In future DiscoDOS releases _other_ parts of DiscoDOS might have a _TUI_ version as well.**_
+:::{note}
+`-x/--no-tui` is a global option, and must be stated right after the main command `dsc`. The reason it _global_ is that in future DiscoDOS releases _other_ parts of DiscoDOS might have a _TUI_ version as well.
+:::
 
 #### `ls --extra` - an alternative view-mode
 
@@ -367,7 +375,9 @@ For example to list an Amon Tobin record for sale with a condition of `VG+` (the
 
 `dsc sell -a forsale -s NM amon tobin foley room`
 
-_**Note: The `sell` command uses the same search mechanisms as the [search](#online-search) command.**_
+:::{note}
+The `sell` command uses the same search mechanisms as the [search](#online-search) command.
+:::
 
 
 
@@ -486,7 +496,9 @@ key and BPM search can be combined:
 `dsc suggest -k Dm -b 120`
 
 
-**Note: The key and BPM suggest commands require sufficient information in the DiscoBASE. Either in the user-editable key and BPM fields or in the AcousticBrainz fields**
+:::{note}
+The key and BPM suggest commands require sufficient information in the DiscoBASE. Either in the user-editable key and BPM fields or in the AcousticBrainz fields.
+:::
 
 Read how to automatically fill these fields with data from AcousticBrainz in the section about the [`import brainz` command](#the-import-command-group).
 
@@ -546,13 +558,17 @@ Compares collection items in the DiscoBASE with the actual Discogs collection an
 
 `dsc clean collection`
 
-**Note: Technically this affects the DiscoBASE 'release' and 'collection' tables.**
+:::{note}
+Technically this affects the DiscoBASE 'release' and 'collection' tables.
+:::
 
 Compares collection items in the DiscoBASE with the actual Discogs Marketplace inventory and **deletes them locally** if they were removed via the web interface:
 
 `dsc clean sales`
 
-**Note: Technically this affects the DiscoBASE 'sales' table.**
+:::{note}
+Technically this affects the DiscoBASE 'sales' table.
+:::
 
 
 
@@ -586,7 +602,9 @@ Have a look at the [`dsc links` docs](#the-links-command) to find some example q
 DiscoDOS prior to version 3.0 only used a single database table to store information
 about a user's records - the _release_ table. It was assumed that any record is only owned once. DiscoDOS 3.0 changes this behaviour and saves it separately to a _collection_ table, hence multiple instances of a record are allowed to be in a DiscoDOS collection.
 
-_**Note: This new collection data consists of Information about folders, date added to collection, ratings and notes. Not everything is already editable/viewable in DiscoDOS, but some....**_
+:::{note}
+This new collection data consists of Information about folders, date added to collection, ratings and notes. Not everything is already editable/viewable in DiscoDOS, but some....
+:::
 
 
 ### There are several ways a record will be auto-marked as _sold_
@@ -598,7 +616,9 @@ While importing items in a `dsc import basic` run, the Discogs collection folder
 To designate a folder for that purpose, create it via the Discogs Webinterface, click on it and find it the ID in the URL: `https://www.discogs.com/user/<username>/collection?folder=29707`
 
 
-_**Note: Both DiscoBASE tables `sales` and `collection`, have their own _sold_ flag.**_
+:::{note}
+Both DiscoBASE tables `sales` and `collection`, have their own _sold_ flag.**_
+:::
 
 So to query this field, use `dsc ls sold=1`. The result will include items that are marked sold via either of above described sold flags. When the `--extra` option is active on the other hand, explicitely the "collection sold" flag and the "sales sold" flag will be queried.
 
@@ -657,8 +677,6 @@ or use its short form: `discosync -t d -b`
 Dropbox currently is the hardcoded **default** "storage type", so actually it's sufficient to run:
 
 `discosync -b`
-
-_**Note: The default backup storage type might be configurable in future DiscoDOS releases**_
 
 To backup to a **WebDAV folder**:
 
