@@ -7,7 +7,9 @@ DiscoDOS is available via PyPI and can be installed like this:
 
 `pipx install discodos`
 
-In case you are not familiar with installing python packages, please head over to [SETUP](INSTALLATION.md) for step by step instructions.
+:::{tip}
+In case you are not familiar with installing Python packages, please head over to [Setup](INSTALLATION.md) for step by step instructions.
+:::
 
 
 ## Importing your Discogs collection and Marketplace inventory

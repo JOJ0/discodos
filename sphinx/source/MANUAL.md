@@ -213,17 +213,17 @@ Since DiscoDOS 3.0 quoting of search terms is not required anymore. This works t
 If you currently are not connected to the internet or you enable "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in the first DiscoDOS prototype versions.
 
 :::{attention}
-The offline search is _not_ first match, it shows a list of matching items.
+The offline search is _not_ "first match", it shows a list of matching items.
 :::
 
 #### `search` command actions
 
 To "do" something with a track on an album you need to append an "optional argument" to the command. The following actions can be applied to the found track:
 
-- "edit track" (option -e)
-- "add track to mix" (option -m)
-- "update from Discogs" (option -u)
-- "update from *Brainz" (option -z)
+- "edit track" (option `-e`)
+- "add track to mix" (option `-m`)
+- "update from Discogs" (option `-u`)
+- "update from *Brainz" (option `-z`)
 
 #### `search` action "edit track"
 
@@ -233,7 +233,7 @@ To edit the track's details in the DiscoBASE you use:
 
 You will see the album's contents and be asked to put in a track number (eg A1, C2, ...). Then you will be walked through all the "editable" fields. It's pretty self-explanatory, but read the hints on the screen.
 
-If you know which track number you'd like to edit already, provide it on the command line directly. You won't be asked for the track number then:
+If you know which track number you'd like to edit already, provide it on the command line already to skip the prompt.
 
 `dsc search "Amon Tobin Foley Room" -e -t B2`
 
