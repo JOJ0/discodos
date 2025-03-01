@@ -188,7 +188,9 @@ Get key and BPM from MusicBrainz/AcousticBrainz:
 
 `dsc search 123456 -zz`
 
-_**Note: Certainly you can always find a tune in your collection by using search terms. You don't have to use the release ID. We use it here because we have it at hand already**_
+:::{tip}
+Certainly you can always find a tune in your collection by using search terms. You don't have to use the release ID. We use it here because we have it at hand already.,
+:::
 
 A regular search command and starting *Brainz matching:
 
@@ -200,7 +202,7 @@ There is another convenient way when you are in the process of writing down a mi
 
 
 
-### I'd like to get as much information about my music as possible - in one go!
+### I'd like to get as much information about my music as possible - in one go
 
 As you've probably learned already, DiscoDOS doesn't import all information about a record collection at once but rather "on user request". Eg. single tracks or whole mixes can be asked to be filled in with additional data from Discogs or AcousticBrainz. When dealing with record collections containing hundreds or even thousands of records, obviously working through all of them via the APIs of online information services takes a lot of time, but certainly DiscoDOS can be asked to do it:
 
@@ -208,19 +210,29 @@ To make a full import of your whole record collection from Discogs (all releases
 
 `dsc import tracks`
 
-_**Note: This command can also be used for an initial import (you just started using DiscoDOS - DiscoBASE is still empty).**_
+:::{tip}
+This command can also be used for an initial import (you just started using DiscoDOS and your DiscoBASE is still empty).
+:::
 
-_**1000 records including a total of 3000 tracks complete in about 20 minutes**_
+:::{note}
+1000 records including a total of 3000 tracks complete in about 20 minutes.
+:::
 
 To get additional data from MusicBrainz and AcousticBrainz (key, BPM, weblinks to release- and recordingpages), execute:
 
 `dsc import brainz`
 
-_**Note: This command requires the import-tracks command above, being completed already.**_
+:::{attention}
+This command requires a successfully completed `import tracks` command (see above) already.
+:::
 
-_**This process will take hours and hours, depending on the size of your collection**_
+:::{note}
+Depending on the size of your collection, this process might take _**many**_ hours.
+:::
 
-Read more on "*Brainz matching and importing" and it's performance in the [the import command chapter](MANUAL.md#the-import-command-group). You will also learn how the process could be resumed if for some reason the computer had to be switched off or the connection broke away.
+:::{tip}
+Read more on _*Brainz matching_  and _import performance_ in the [the import command group chapter](MANUAL.md#the-import-command-group). You will also learn how to _**resume**_ the process if for some reason the computer had to be switched off or the connection broke down.
+:::
 
 Here's a trick to execute both commands one after the other. We use the "command concatination" features of our shell:
 
@@ -228,7 +240,7 @@ On Windows, do:
 
 `dsc import tracks  &  dsc import brainz`
 
-on macOS or Linux it's:
+on macOS or Linux:
 
 `dsc import tracks  &&  dsc import brainz`
 
@@ -241,8 +253,9 @@ Leave this running "overnight" - You will see a final summary after each of the 
 DiscoDOS includes a built-in backup and restore feature that can also be used to sync a DiscoBASE between multiple computers.
 
 We need a place to store our discobase.db file online. Currently there are two options:
-- Dropbox
-- A folder on a webserver
+
+* Dropbox
+* A folder on a webserver
 
 This section will describe how to use Dropbox only, find the webserver option documented here: FIXME
 
@@ -256,7 +269,9 @@ To restore it on another computer, execute:
 
 `discosync --restore` or in short `discosync -r`
 
-_**Note: Certainly you can use this feature to backup and restore your DiscoBASE on one computer only. The commands are the same**_
+:::{tip}
+Certainly you can use this feature to backup and restore your DiscoBASE on _one_ computer only. The commands are the same.
+:::
 
 
 

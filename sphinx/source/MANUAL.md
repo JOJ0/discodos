@@ -192,7 +192,9 @@ Let's try a search:
 
 `dsc search "Amon Tobin"`
 
-_**Note: The online search is designed "first match"**_
+:::{attention}
+The online search is designed "first match"
+:::
 
 So this gives you the first found "Amon Tobin" album in your collection only. You have to be more specific to find a particular album:
 
@@ -210,7 +212,9 @@ Since DiscoDOS 3.0 quoting of search terms is not required anymore. This works t
 
 If you currently are not connected to the internet or you enable "offline mode" the *search* command behaves differently: Your search terms are only applied against the *release title* and the *release artist(s)*, but not the *track name*. There is a reason for this: DiscoDOS by default does not import *track name*. Even though certainly you have the option to import *track names*, the search does not rely on this. Maybe this behaviour changes in future releases. It was a design decision in the first DiscoDOS prototype versions.
 
-_**Note: The offline search shows a "list of matching items"**_
+:::{attention}
+The offline search is _not_ first match, it shows a list of matching items.
+:::
 
 #### `search` command actions
 
@@ -275,9 +279,11 @@ Read more on importing release and track information in the [import command sect
 
 To extend a tracks information with data from MusicBrainz and AcousticBrainz:
 
-_**Note: To make this work, the track must have been updated from Discogs with track names already. See [update from Discogs](#search-action-update-from-discogs) action above.**_
-
 `dsc search "Amon Tobin Foley Room" -z`
+
+:::{attention}
+`-z` requires downloaded track names already! See the [update from Discogs](#search-action-update-from-discogs) action above.
+:::
 
 If the track couldn't be matched with the regular match command, try the "detailed match" command (takes more time, but chances on finding a match are higher):
 
@@ -304,7 +310,7 @@ Read more on the performance of the *Brainz match process and what exactely it i
 
 Lists releases in the DiscoBASE and allows manipulating them in a self-explanatory _text user interface_ built using the [Textual framework](https://textual.textualize.io). Its current main purpose is to edit details of already listed records on the Discogs Marketplace.
 
-Supports [Key/Value Search](#keyvalue-search).
+Supports [Key/Value Search - read about the syntax here](#keyvalue-search).
 
 ![ls default full screen](_static/ls-default-full-screen.png)
 
@@ -316,8 +322,8 @@ A list of _command keys_ will be available in the footer of the  _TUI_ interface
 
 - `e` -> Edit sales listing
 - `v` -> Fetch YouTube video hyperlinks
-- `p` -> Fetch prices and stats for t
-- `r` -> Reimport a collection itemhe release from Discogs Marketplace
+- `p` -> Fetch prices and stats from Discogs Marketplace
+- `r` -> Reimport a collection item
 - `f` -> Edit collection item folder
 - `s` -> Save in dialogs (eg. Folder edit)
 - `Esc` -> Cancel in dialogs
@@ -327,7 +333,11 @@ The `ls` command can fall back to a classic CLI version using the `-x/--no-tui` 
 `dsc -x ls status=forsale"`
 
 :::{note}
-`-x/--no-tui` is a global option, and must be stated right after the main command `dsc`. The reason it _global_ is that in future DiscoDOS releases _other_ parts of DiscoDOS might have a _TUI_ version as well.
+`-x/--no-tui` is a global option, and must be stated right after the main command `dsc`. The reason it is _global_ is that in future DiscoDOS releases _other_ parts of DiscoDOS might have a _TUI_ version as well.
+:::
+
+:::{tip}
+To constantly disable the TUI mode, set `enable_tui: false` in `config.yaml`
 :::
 
 #### `ls --extra` - an alternative view-mode
@@ -395,17 +405,26 @@ Delete a mix (yes, it's a capital D):
 
 `dsc mix my_mix -D`
 
-Copy a mix. You will be asked for the name of the copy. (Note: --copy doesn't have a short form option):
+Copy a mix. You will be asked for the name of the copy.
 
 `dsc mix my_mix --copy`
+
+:::{attention}
+`--copy` doesn't have a short form option.
+:::
 
 Edit general mix info (venue, played date):
 
 `dsc mix my_mix -E`
 
-Add a track to a mix. You will be asked for the track number on the found release. Note: Tracks can be added using the [search command](#search-action-add-track-to-mix) as well:
+Add a track to a mix. You will be asked for the track number on the found release.
 
 `dsc mix my_mix -a "search terms"`
+
+
+:::{tip}
+Tracks can be added using the [search command](#search-action-add-track-to-mix) as well.
+:::
 
 To add the track at a specific position in the mix, rather than at the end:
 
@@ -582,7 +601,6 @@ The `ls` command as well as other parts of DiscoDOS support a minimalistic key-v
 - `id` -> release ID
 - `artist` release artist
 - `title` -> release title
-- `label` -> release label
 - `listing` -> Marketplace listing ID
 - `stats` -> Marketplace listing status (forsale, draft, expired)
 - `sold` -> A [flag marking releases "as sold" in the DiscoBASE](#there-are-several-ways-a-record-will-be-auto-marked-as-sold).
@@ -591,7 +609,9 @@ The `ls` command as well as other parts of DiscoDOS support a minimalistic key-v
 
 The syntax is basic, `fieldname=value`, will return any releases where fieldname _**contains**_ the string `value`
 
-Have a look at the [`dsc links` docs](#the-links-command) to find some example queries.
+If `fieldname=` is omitted search terms are automatically assigned to the `title` field. For instance query `artist=amon album name` is interpreted as `artist="%amon%" title="%album%name%"`.
+
+Have a look at the [`dsc links` docs](#the-links-command) for some example queries, it uses this _type of search_ too!
 
 
 ## Technicalities, DiscoBASE design, Workflow decisions
@@ -617,7 +637,7 @@ To designate a folder for that purpose, create it via the Discogs Webinterface, 
 
 
 :::{note}
-Both DiscoBASE tables `sales` and `collection`, have their own _sold_ flag.**_
+Both DiscoBASE tables `sales` and `collection`, have their own _sold_ flag.
 :::
 
 So to query this field, use `dsc ls sold=1`. The result will include items that are marked sold via either of above described sold flags. When the `--extra` option is active on the other hand, explicitely the "collection sold" flag and the "sales sold" flag will be queried.
