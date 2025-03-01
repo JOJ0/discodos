@@ -1092,14 +1092,14 @@ class ViewCommonCommandline(ViewCommon):
 
     def welcome_to_discodos(self):
         print(r'''
-                            _______  _______ ________
-                           /       \        /       /
-                          /  ___   /  ___  /  _____/
-                         /  /  /  /  /  /  \____  \
-                        /  /__/  /  /__/  _____/  /
-Welcome to  D i s c o  /                /        /
-                      /_______/\_______/________/
-              ''')
+        _______  _______ ________
+ D i s c o     \        /       /
+      /  ___   /  ___  /  _____/
+     /  /  /  /  /  /  \____  \
+    /  /__/  /  /__/  _____/  /
+   /                /      record collector's toolbox
+  /_______/\_______/________/
+        ''')
 
 
 class TableDefaults():
