@@ -96,11 +96,9 @@ Read more about the *Brainz update process here: [The import command](MANUAL.md#
 
 
 
-## Common Tasks / FAQ
+## FAQ
 
-This section guides you through typical DiscoDOS workflows. If you would rather like to read an in-detail explanation of what each command does, go to the [DiscoDOS User's Manual](MANUAL.md).
-
-
+This section answers common questions and guides you through typical DiscoDOS workflows. If you would rather like to read in-detail explanations of what each command is capable of, go to the [DiscoDOS User's Manual](MANUAL.md) and the [Commands Reference](index_commands_reference.rst).
 
 ### What's the quickest way to document a mix?
 
