@@ -81,11 +81,7 @@ class EditScreen(Screen):
                 yield self.comments
                 yield Label("Private comments")
                 yield self.comments_private
-        with Horizontal():  # Another row containing a log panel
-            with VerticalScroll():
-                yield self.log_panel
-
-        with Horizontal():  # Another row containing a log panel
+        with Horizontal():
             yield Button("Save", id="save")  # is in top vertical widget
             yield Button("Back", id="back")  # Add Back button at the top
 
