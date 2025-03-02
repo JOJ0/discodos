@@ -312,13 +312,26 @@ Lists releases in the DiscoBASE and allows manipulating them in a self-explanato
 
 Supports [Key/Value Search - read about the syntax here](#keyvalue-search).
 
-![ls default full screen](_static/ls-default-full-screen.png)
+For example to display (and allow editing) any Marketplace listings currently in `draft` status use `dsc ls status=draft`
 
-For example to display and allow editing of all Marketplace listings currently in `draft` status, use:
+Another example: `dsc ls title=lost` shows any releases containing "lost" in their title:
 
-`dsc ls status=draft`
+```{image} _static/ls-default-full-screen-31.png
+:width: 100%
+:alt: "dsc ls title=lost"
+```
 
-A list of _command keys_ will be available in the footer of the  _TUI_ interface! Some of the most useful one's are:
+&nbsp;
+
+Pressing `e` on a Marketplace listing allows changing details.
+
+```{image} _static/ls-edit-listing-31.png
+:width: 66%
+:alt: dsc ls edit dialog
+:align: right
+```
+
+A list of all _command keys_ will be available in the footer of the  _TUI_ interface! Some of the most useful one's are:
 
 - `e` -> Edit sales listing
 - `v` -> Fetch YouTube video hyperlinks
@@ -327,6 +340,9 @@ A list of _command keys_ will be available in the footer of the  _TUI_ interface
 - `f` -> Edit collection item folder
 - `s` -> Save in dialogs (eg. Folder edit)
 - `Esc` -> Cancel in dialogs
+
+
+#### Classic mode
 
 The `ls` command can fall back to a classic CLI version using the `-x/--no-tui` flag. Manipulating entries using this view-mode is not possible:
 
@@ -370,7 +386,9 @@ There is one caveat with this design: A default `ls` view displays listing ID, s
 
 ![ls default two collection items](_static/ls-default-two-in-collection.png)
 
+:::{tip}
 The `--extra` option can also be stated as `-e`, `--all` or `-a`.
+:::
 
 _A final note on collection folders being displayed as ID's. Showing folder names is in the queue for a future DiscoDOS release. Maybe even with the ability to move collection items between folders. This on the other hand requires an addition to the underlying library `python3-discogs-client`. Once that is implemented there, and the developers' time permits, work on `dsc ls` will be continued._
 

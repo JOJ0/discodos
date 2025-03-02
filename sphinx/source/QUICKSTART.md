@@ -33,17 +33,32 @@ Make sure your local sales inventory is up to date and re-run:
 
 List a record for sale with the "sell wizard". Don't pass the `-p/--price` option! You'll receive price suggestions and will be prompted to accept or adjust the recommendations interactively.
 
-`dsc sell -a forsale -c NM`
+`dsc sell big bad bass`
 
+You'll be prompted for the sleeve condition:
+
+```sh
+Sleeve Condition [M/NM/VG+/VG/G+/G/F/P/generic/notgraded/nocover] (generic):
+```
+
+:::{note}
 The sell command has some built-in defaults, most importantly `VG+` for `-c/--condition` and `draft` for the `-a/--status` option. Defaults are documented in [the command's online help](dsc.rst)
+:::
 
-To edit existing sales listings, use the DiscoDOS TUI command `dsc ls`:
+To edit existing sales listings, use the DiscoDOS `ls` TUI command:
 
-`dsc ls artist=squarepusher`
+`dsc ls artist=dillinja`
+
+```{image} _static/ls-default-slim-dillinja-31.png
+:alt: dsc ls artist=dillinja
+:align: left
+:width: 100%
+```
 
 :::{tip}
 `dsc ls` lists records in a fancy graphical but still text-based user interface. Press `e` to edit a sales listing. Further helpful key commands are `v` display video links and `p` to find out Discogs suggested prices. [Learn more key commands here](MANUAL.md#the-ls-tui-command).
 :::
+
 
 
 

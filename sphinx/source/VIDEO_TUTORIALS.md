@@ -4,13 +4,40 @@ Picture and video gallery - This is how DiscoDOS looks like.
 
 ## Screenshots and animated Gifs
 
-![dsc ls full screen](_static/ls-default-full-screen.png)
+```{image} _static/ls-default-full-screen-31.png
+:width: 100%
+:align: center
+```
 
-![dsc sell Gif](_static/sell.gif)
+```{image} _static/sell.gif
+:width: 100%
+:align: center
+```
 
-![dsc outdated intro Gif 1](_static/intro_gif_v0.4_1-580_16col_960x581.gif)
+```{image} _static/ls-edit-listing-31.png
+:width: 66%
+:align: right
+```
 
-![dsc outdated intro Gif 2](_static/intro_gif_v0.4_580-end_16col_960x581.gif)
+```{image} _static/ls-default-slim-dillinja-31.png
+:width: 100%
+:align: center
+```
+
+```{image} _static/ls-default-slim-squarep-31.png
+:width: 100%
+:align: center
+```
+
+```{image} _static/intro_gif_v0.4_1-580_16col_960x581.gif
+:width: 100%
+:align: center
+```
+
+```{image} _static/intro_gif_v0.4_580-end_16col_960x581.gif
+:width: 100%
+:align: center
+```
 
 :::{tip}
 Replace `disco` with `dsc` in the latter two animated Gifs. In DiscoDOS 2.0 the command's name changed.
