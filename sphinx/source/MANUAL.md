@@ -390,8 +390,6 @@ There is one caveat with this design: A default `ls` view displays listing ID, s
 The `--extra` option can also be stated as `-e`, `--all` or `-a`.
 :::
 
-_A final note on collection folders being displayed as ID's. Showing folder names is in the queue for a future DiscoDOS release. Maybe even with the ability to move collection items between folders. This on the other hand requires an addition to the underlying library `python3-discogs-client`. Once that is implemented there, and the developers' time permits, work on `dsc ls` will be continued._
-
 
 ### The `sell` command
 
