@@ -1,11 +1,10 @@
-name: Deploy to test.pypi.org
+name: Deploy to PyPI
 
 on:
   release:
     types:
       # - published
       - released
-    workflow_dispatch:  # Allows manual triggering
 
 jobs:
   deploy:
