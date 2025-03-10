@@ -25,9 +25,13 @@ DiscoDOS is a command line tool, though [parts of it provide a TUI - a _text use
 
 ![dsc ls full screen](sphinx/source/_static/ls-default-full-screen.png)
 
+### Importing
+
+![dsc import basic](sphinx/source/_static/import-basic.gif)
+
 ### Selling records
 
-![dsc sell](sphinx/source/_static/sell.gif)
+![dsc sell](sphinx/source/_static/sell-super-system.gif)
 
 ### More Screenshots & Videos
 
