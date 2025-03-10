@@ -21,28 +21,18 @@ DiscoDOS is a set of command line tools for DJ's and record collectors.
 
 DiscoDOS is a command line tool, though [parts of it provide a TUI - a _text user interface_](https://discodos.readthedocs.io/en/latest/MANUAL.html#the-ls-tui-command). DiscoDOS is written in Python and runs on Linux, macOS and Windows.
 
-### Viewing Marketplace stats, editing listings, fetching videos
+### Viewing and editing sales & collection items in `dsc ls`
 
 ![dsc ls full screen](sphinx/source/_static/ls-default-full-screen.png)
 
-### Selling a record
+### Selling records
 
 ![dsc sell](sphinx/source/_static/sell.gif)
-
-### Viewing mix details, searching and adding track
-
-![mix gif](sphinx/source/_static/intro_gif_v0.4_1-580_16col_960x581.gif)
-
-### Updating track information from Discogs and MusicBrainz/AcousticBrainz
-
-![brainz gif](sphinx/source/_static/intro_gif_v0.4_580-end_16col_960x581.gif)
-
-_The latter two videos are slightly outdated. DiscoDOS' main command now is called `dsc` and AcousticBrainz as an actual website not existing anymore (API-only, which DiscoDOS makes use of)._
 
 ### More Screenshots & Videos
 
 - [Media gallery on discodos.readthedocs.io](https://discodos.readthedocs.io/en/latest/VIDEO_TUTORIALS.html)
-- [Blog post featuring many animated Gifs](https://blog.jojotodos.net/discodos3)
+- [Blog post featuring many animated GIFs](https://blog.jojotodos.net/discodos3)
 
 ### Docs
 
