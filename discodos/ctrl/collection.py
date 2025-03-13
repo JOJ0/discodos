@@ -1226,22 +1226,30 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         """Returns a dictionary from space-delimited key=value pairs."""
         kv = {}
         non_kv = []
+        auto_search_fields = ("title", "artist", "cat")
+
         for item in query:
             if "=" in item:
-                key, value = item.split("=")
+                key, value = item.split("=", 1)
                 kv[key] = value
             else:
                 non_kv.append(item)
 
-        if non_kv:
-            if not kv:
-                kv = {"title": "%".join(non_kv)}
-            elif "title" in kv:
-                kv_title = kv["title"].replace(" ", "%")
-                non_kv_terms = "%".join(non_kv)
-                kv["title"] = f"{kv_title}%{non_kv_terms}"
-            else:
-                kv["title"] = "%".join(non_kv)
+        if not non_kv:  # No standalone terms, we are done.
+            return kv
+
+        if not kv:  # No key=value pairs, all standalone terms
+            for field in auto_search_fields:
+                kv[field] = "%".join(non_kv)
+        else:
+            non_kv_terms = "%".join(non_kv)
+            for field in auto_search_fields:
+                if field in kv:
+                    # Append standalone terms to existing key-value field
+                    kv[field] = f"{kv[field].replace(' ', '%')}%{non_kv_terms}"
+                else:
+                    # If the field does not exist in kv, create it with standalone terms
+                    kv[field] = non_kv_terms
         return kv
 
     def tui_ls_releases(
