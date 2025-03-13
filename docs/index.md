@@ -10,7 +10,7 @@ The DiscoDOS documentation has a dedicated section featuring [screenshots, anima
 
 ## History
 
-At first, back in 2018, I wrote DiscoDOS to replace my pencil and paper notes on mixes I played. In 2020 version [1.0](https://github.com/JOJ0/discodos/releases/tag/v1.0_rc2) was finished and I use it ever since. In mid 2024 I re-wrote the command line interface to use [Click](https://click.palletsprojects.com/en/stable/why/) instead of Python's built-in `argparser` (version [2.0](https://github.com/JOJ0/discodos/releases/tag/v2.0)). In late 2024 I implemented features around selling records on the Discogs Marketplace and better handling collection items including support for the _custom folder features_ Discogs provides (versions [3.0](https://github.com/JOJ0/discodos/releases/tag/v3.0) and [3.1](https://github.com/JOJ0/discodos/releases/tag/v3.1)).
+At first, back in 2018, I wrote DiscoDOS to replace my pencil and paper notes on mixes I played. In 2020 version [1.0](https://github.com/JOJ0/discodos/releases/tag/v1.0_rc2) was finished and I use it ever since. In early 2023 I re-wrote the command line interface to use [Click](https://click.palletsprojects.com/en/stable/why/) instead of Python's built-in `argparser` (version [2.0](https://github.com/JOJ0/discodos/releases/tag/v2.0)). In late 2024 I implemented features around selling records on the Discogs Marketplace and better handling collection items including support for the _custom folder features_ Discogs provides (versions [3.0](https://github.com/JOJ0/discodos/releases/tag/v3.0) and [3.1](https://github.com/JOJ0/discodos/releases/tag/v3.1)).
 
 ## Roadmap-ish
 
