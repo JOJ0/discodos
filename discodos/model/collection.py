@@ -843,18 +843,19 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
     # Key/value search
 
     def key_value_search_releases(
-        self, search_key_value=None, orderby=None, filter_cols=None,
-        custom_fields=None, reverse_order=False, sales_extra=False, limit=None,
+        self, search_key_value=None, orderby=None, filter_cols=None, custom_fields=None,
+        reverse_order=False, sales_extra=False, limit=None, standalone_only=False
     ):
         # filter_cols are defined in ViewCommon and passed via the controller call.
         replace_cols = filter_cols
 
-        where = " AND ".join(
-            [
-                f'{replace_cols.get(k, k)} LIKE "%{v}%"'
-                for k, v in search_key_value.items()
-            ]
-        )
+        conditions = []
+        for k, v in search_key_value.items():
+            column_name = replace_cols.get(k, k)
+            conditions.append(f'{column_name} LIKE "%{v}%"')
+
+        where = " OR ".join(conditions) if standalone_only else " AND ".join(conditions)
+
         join = [
             ("LEFT OUTER", "sales", "discogs_id = sales.d_sales_release_id"),
             ("LEFT OUTER", "collection", "discogs_id = collection.d_coll_release_id"),

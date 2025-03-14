@@ -1221,12 +1221,28 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         return
 
     # ls, ls TUI, links
+    def print_key_value_search_details(self, search_terms, standalone_only):
+        if standalone_only:
+            self.cli.p(
+                f"[b]Keyword[/] search - any matching {search_terms}"
+            )
+        else:
+            self.cli.p(
+                f"[b]Key-value[/] search - all matching {search_terms}"
+            )
 
     def prepare_key_value_search(self, query):
-        """Returns a dictionary from space-delimited key=value pairs."""
+        """Returns a dictionary from space-delimited key=value pairs and a flag.
+
+        A tuple pair of:
+            - key-value dictionary
+            - boolean flag standalone_only, which is True if no key=value pairs are
+              passed at all but only standalone keywords.
+        """
         kv = {}
         non_kv = []
         auto_search_fields = ("title", "artist", "cat")
+        standalone_only = False  # Enables if only standalone terms (non_kv) are passed
 
         for item in query:
             if "=" in item:
@@ -1236,29 +1252,30 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 non_kv.append(item)
 
         if not non_kv:  # No standalone terms, we are done.
-            return kv
+            return kv, standalone_only
 
-        if not kv:  # No key=value pairs, all standalone terms
-            for field in auto_search_fields:
-                kv[field] = "%".join(non_kv)
-        else:
-            non_kv_terms = "%".join(non_kv)
+        if kv:
             for field in auto_search_fields:
                 if field in kv:
-                    # Append standalone terms to existing key-value field
-                    kv[field] = f"{kv[field].replace(' ', '%')}%{non_kv_terms}"
-                else:
-                    # If the field does not exist in kv, create it with standalone terms
-                    kv[field] = non_kv_terms
-        return kv
+                    log.warning(
+                        "Combining standalone keywords with key=value pairs is not "
+                        "supported yet - standalone keywords ignored!"
+                    )
+        else:  # No key=value pairs, all standalone terms
+            for field in auto_search_fields:
+                kv[field] = "%".join(non_kv)
+                standalone_only = True
+
+        return kv, standalone_only
 
     def tui_ls_releases(
-        self, search_terms, orderby=None, reverse_order=False, sales_extra=False, limit=None
+        self, search_terms, orderby=None, reverse_order=False, sales_extra=False,
+        limit=None, standalone_only=False
     ):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = None
-        self.cli.p('Searching database for: {}'.format(search_terms))
+        self.print_key_value_search_details(search_terms, standalone_only)
         # Replace orderby with proper database key
         if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
             orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
@@ -1271,6 +1288,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
                 sales_extra=sales_extra,
                 limit=limit,
+                standalone_only=standalone_only,
             )
         except Exception as error:
             self.cli.p(error)
@@ -1293,12 +1311,13 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         return
 
     def ls_releases(
-        self, search_terms, orderby=None, reverse_order=False, sales_extra=False, limit=None
+        self, search_terms, orderby=None, reverse_order=False, sales_extra=False,
+        limit=None, standalone_only=False
     ):
         """search_terms is a key value dict: eg: d_artist: artistname"""
 
         search_results = []
-        self.cli.p('Searching database for: {}'.format(search_terms))
+        self.print_key_value_search_details(search_terms, standalone_only)
         # Replace orderby with proper database key
         if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
             orderby = self.cli.cols_key_value_search.shortcuts_dict()[orderby]
@@ -1310,6 +1329,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 filter_cols=self.cli.cols_key_value_search.shortcuts_dict(),
                 sales_extra=sales_extra,
                 limit=limit,
+                standalone_only=standalone_only,
             )
         except Exception as error:
             self.cli.p(error)

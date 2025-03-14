@@ -49,7 +49,9 @@ def ls_cmd(helper, search_terms, order_by, reverse, sales_extra, limit):
         user.conf.musicbrainz_password)
 
     try:  # Catch when `=` character is missing and assume title column
-        search_key_value = coll_ctrl.prepare_key_value_search(query=search_terms)
+        search_key_value, standalone_only = coll_ctrl.prepare_key_value_search(
+            query=search_terms
+        )
     except ValueError as error:
         coll_ctrl.cli.p(error)
 
@@ -60,6 +62,7 @@ def ls_cmd(helper, search_terms, order_by, reverse, sales_extra, limit):
             reverse_order=reverse,
             sales_extra=sales_extra,
             limit=limit,
+            standalone_only=standalone_only,
         )
     else:
         coll_ctrl.ls_releases(
@@ -68,4 +71,5 @@ def ls_cmd(helper, search_terms, order_by, reverse, sales_extra, limit):
             reverse_order=reverse,
             sales_extra=sales_extra,
             limit=limit,
+            standalone_only=standalone_only,
         )
