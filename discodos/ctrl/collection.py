@@ -1352,7 +1352,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
         self.cli.p('Found releases:')
         self.cli.tab_ls_releases(prettified_results)
 
-    def view_links_list(self, query, orderby):
+    def view_links_list(self, query, orderby, standalone_only=False):
         releases = None
         # Replace orderby with proper database key
         if self.cli.cols_key_value_search.shortcuts_dict().get(orderby):
@@ -1372,6 +1372,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                     "m_rel_id_override",
                     "d_sales_listing_id"
                 ],
+                standalone_only=standalone_only
             )
         except Exception as error:
             self.cli.p(error)

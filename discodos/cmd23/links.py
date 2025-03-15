@@ -36,8 +36,14 @@ def links_cmd(helper, search_terms, order_by):
         user.conf.musicbrainz_password)
 
     try:  # Catch when `=` character is missing and assume title column
-        search_key_value = coll_ctrl.prepare_key_value_search(query=search_terms)
+        search_key_value, standalone_only = coll_ctrl.prepare_key_value_search(
+            query=search_terms
+        )
     except ValueError as error:
         coll_ctrl.cli.p(error)
 
-    coll_ctrl.view_links_list(query=search_key_value, orderby=order_by)
+    coll_ctrl.view_links_list(
+        query=search_key_value,
+        orderby=order_by,
+        standalone_only=standalone_only,
+    )
