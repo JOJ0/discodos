@@ -12,7 +12,8 @@ log = logging.getLogger('discodos')
 def import_group():
     """Imports a Discogs collection or adds further data to it.
 
-    A typical workflow involves running import commands in this order:
+    All import commands can be re-run any time; the data will be updated. A typical
+    workflow involves running them in this order:
 
     \b
     * basic
@@ -268,7 +269,7 @@ def import_release_cmd(helper, import_id, import_add_coll, import_tracks, delete
 )
 @click.pass_obj
 def import_sales_cmd(helper, light):
-    """Imports the marketplace inventory.
+    """Imports the Marketplace inventory.
     """
 
     def update_user_interaction_helper(user):
@@ -292,7 +293,7 @@ def import_sales_cmd(helper, light):
     help='''Removes listing from Discogs Marketplace and deletes from DiscoBASE.''')
 @click.pass_obj
 def import_listing_cmd(helper, listing_id, delete):
-    """Imports a single marketplace listing or removes and deletes it.
+    """Imports a single Marketplace listing or removes and deletes it.
     """
 
     def update_user_interaction_helper(user):
@@ -315,7 +316,11 @@ def import_listing_cmd(helper, listing_id, delete):
 @import_group.command(name='folders')
 @click.pass_obj
 def import_folders_cmd(helper):
-    """Imports collection folder names.  """
+    """Imports collection folder names.
+
+    Note that folders names are updated implicitely during `import basic` and `import
+    tracks` runs.
+    """
     def update_user_interaction_helper(user):
         return user
 
