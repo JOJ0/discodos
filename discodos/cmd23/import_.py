@@ -310,3 +310,20 @@ def import_listing_cmd(helper, listing_id, delete):
         coll_ctrl.remove_and_delete_sales_listing(listing_id)
         return
     coll_ctrl.import_sales_listing(listing_id, display_help=True)
+
+
+@import_group.command(name='folders')
+@click.pass_obj
+def import_folders_cmd(helper):
+    """Imports collection folder names.  """
+    def update_user_interaction_helper(user):
+        return user
+
+    user = update_user_interaction_helper(helper)
+    log.debug("user.WANTS_ONLINE: %s", user.WANTS_ONLINE)
+    coll_ctrl = CollectionControlCommandline(
+        False, user, user.conf.discogs_token, user.conf.discogs_appid,
+        user.conf.discobase, user.conf.musicbrainz_user,
+        user.conf.musicbrainz_password)
+
+    coll_ctrl.import_collection_folders()

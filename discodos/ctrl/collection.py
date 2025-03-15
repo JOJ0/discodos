@@ -366,6 +366,23 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     # Import collection, import helpers
 
+    def import_collection_folders(self):
+        """Update DiscoBASE collection folder information."""
+        print("[i]Updating collection folder names...[/]", end=" ")
+
+        folders = self.collection.me.collection_folders
+        folder_data = [
+            {"d_collfolder_id": folder.id, "d_collfolder_name": folder.name}
+            for folder in folders
+        ]
+
+        if not self.collection.create_collfolders(folder_data):
+            log.error("Import failed.")
+            return False
+
+        print("[i]Done.[/]")
+        return True
+
     def process_tracks(self, release_id, tracklist, d_artists):
         tracks_added = 0
         tracks_db_errors = 0
@@ -455,16 +472,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             )
 
         # Create/update collection folders
-        folders = self.collection.me.collection_folders
-        print("[i]Updating collection folder names...[/]", end=" ")
-        folders = [
-            {"d_collfolder_id": folder.id, "d_collfolder_name": folder.name}
-            for folder in folders
-        ]
-        if not self.collection.create_collfolders(folders):
-            log.error("Import failed.")
+        if not self.import_collection_folders():
             return
-        print("[i]Done.[/]")
 
         releases = self.collection.me.collection_folders[0].releases
         total_releases = len(releases)
