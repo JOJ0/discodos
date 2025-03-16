@@ -31,8 +31,11 @@ def ls_cmd(helper, search_terms, order_by, reverse, sales_extra, limit):
     """Searches and lists collection items.
 
     Supports key=value search. Available keys can be either full DiscoBASE field names
-    or abbreviations of those: id, listing, artist, title, collection, cat, price,
-    status, sold.
+    or abbreviations of those: id, cat, artist, title, collection, sold, listing,
+    status, location, price, instance, folder, notes, mtime;
+
+    Standalone keywords are applied to fields artist, title and cat. A combination of
+    key=value and standalone keywords is not supported."
     """
     def update_user_interaction_helper(user):
         user.WANTS_ONLINE = True

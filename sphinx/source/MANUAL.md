@@ -613,21 +613,41 @@ Technically this affects the DiscoBASE 'sales' table.
 
 The `ls` command as well as other parts of DiscoDOS support a minimalistic key-value search mechanism. Any available DiscoBASE field in the releases and sales tables can be used with the caveat that one must know how they are literally called in the database. Therefore, the most common ones have easy to remember abbreviations:
 
-- `cat` -> catalog number
 - `id` -> release ID
+- `cat` -> catalog number
 - `artist` release artist
 - `title` -> release title
+- `collection` -> A flag telling wheter it's a collection item
+- `sold` -> A [flag identifying releases "as sold" in the DiscoBASE](#there-are-several-ways-a-record-will-be-auto-marked-as-sold)
 - `listing` -> Marketplace listing ID
-- `stats` -> Marketplace listing status (forsale, draft, expired)
-- `sold` -> A [flag marking releases "as sold" in the DiscoBASE](#there-are-several-ways-a-record-will-be-auto-marked-as-sold).
+- `status` -> Marketplace listing status (forsale, draft, expired)
 - `location` -> Marketplace listing location comments field
 - `price` -> The price of a marketplace listing
+- `instance` -> Collection item instance ID
+- `folder` -> Collection folder name
+- `notes` -> Collection item notes
+- `mtime` -> Collection item modifification time (last imported time)
 
-The syntax is basic, `fieldname=value`, will return any releases where fieldname _**contains**_ the string `value`
+The syntax is basic: `fieldname=value` will return any releases where fieldname _**contains**_ the string `value`
 
-If `fieldname=` is omitted search terms are automatically assigned to the `title` field. For instance query `artist=amon album name` is interpreted as `artist="%amon%" title="%album%name%"`.
+A query string like `artist=squarepusher cat=wap` lists all Squarepusher records that were release with a catalog number prefix of `wap`.
 
-Have a look at the [`dsc links` docs](#the-links-command) for some example queries, it uses this _type of search_ too!
+:::{tip}
+When filtering Yes/No fields (`collection`, `sold`) use value `1` for Yes and `0` for No.
+:::
+
+:::{tip}
+The [`dsc links`](#the-links-command) command uses this _type of search_ too. Find a couple more query examples in its docs chapter.
+:::
+
+### Standalone Keyword Search
+
+If `fieldname=` is omitted, search terms are automatically assigned to the `title`, `artist` and `cat` fields. For instance query `album name` is interpreted as `artist="%album%name%" OR title="%album%name%" cat="%album%name%"`.
+
+
+:::{attention}
+A combination of `fieldname=value` and standalone keywords is not supported. Any standalone keyword will be ignored in this case.
+:::
 
 
 ## Technicalities, DiscoBASE design, Workflow decisions
