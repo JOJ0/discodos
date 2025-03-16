@@ -1040,6 +1040,8 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
             self.collection.stats_sales_listings_discogs(),
             self.collection.stats_sales_listings_forsale(),
             self.collection.stats_sales_listings_sold(),
+            self.collection.stats_sales_price_average(),
+            self.collection.stats_sales_price_average_lower(),
             self.collection.stats_mixtracks_total(),
             self.collection.stats_mixtracks_unique(),
             self.collection.stats_tracks_key_brainz(),

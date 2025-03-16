@@ -714,6 +714,27 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         stats = self._select(sql_stats, fetchone=True)
         return stats[0] if stats else 0
 
+    def stats_sales_price_average(self):
+        sql_stats = '''
+            SELECT AVG(d_sales_price) FROM sales
+            WHERE
+                d_sales_status = "forsale" OR
+                d_sales_status = "expired";
+            '''
+        stats = self._select(sql_stats, fetchone=True)
+        return f"{round(stats[0], 2)} €" if stats else "0.00 €"
+
+    def stats_sales_price_average_lower(self):
+        sql_stats = '''
+            SELECT AVG(d_sales_price) FROM sales
+            WHERE
+                (d_sales_status = "forsale" OR
+                 d_sales_status = "expired") AND
+                 d_sales_price < 15;
+            '''
+        stats = self._select(sql_stats, fetchone=True)
+        return f"{round(stats[0], 2)} €" if stats else "0.00 €"
+
     def stats_mixtracks_total(self):
         sql_stats = '''
                     SELECT COUNT(*) FROM mix_track;
