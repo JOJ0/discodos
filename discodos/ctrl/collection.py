@@ -431,6 +431,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
     def create_collection_item(self, instance, sold_folder_id=None):
         """Creates a collection item by passing a dictionary to the DiscoBASE method."""
         value_f3 = self.cli.extract_collection_item_notes(instance)
+        # Handle discogs_sold_folder_id config setting
+        coll_sold = 0
+        if sold_folder_id != 0 and is_number(sold_folder_id):
+            coll_sold = instance["folder_id"] == int(sold_folder_id)
 
         self.collection.create_collection_item(
             {
@@ -440,7 +444,7 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 "d_coll_added": instance["date_added"],
                 "d_coll_rating": instance["rating"],
                 "d_coll_notes": value_f3,
-                "coll_sold": instance["folder_id"] == int(sold_folder_id),
+                "coll_sold": coll_sold,
                 "coll_orphaned": 0,  # Temporary reset fix. FIXME
                 "coll_mtime": timestamp_now(),
             }
