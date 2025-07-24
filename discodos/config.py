@@ -343,8 +343,8 @@ class Config():  # pylint: disable=too-many-instance-attributes
             log.debug("Config.discobase: {}".format(self.discobase))
 
             # then other settings
-            self.discogs_appid = 'DiscoDOS/3.2.0 +https://github.com/JOJ0/discodos'
-            self.musicbrainz_appid = ['3.2.0', 'DiscoDOS https://github.com/JOJ0/discodos']
+            self.discogs_appid = 'DiscoDOS/3.2.1 +https://github.com/JOJ0/discodos'
+            self.musicbrainz_appid = ['3.2.1', 'DiscoDOS https://github.com/JOJ0/discodos']
             self.dropbox_token = self._get_config_entry('dropbox_token')
             self.musicbrainz_user = self._get_config_entry('musicbrainz_user')
             self.musicbrainz_password = self._get_config_entry('musicbrainz_password')
