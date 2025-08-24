@@ -518,35 +518,31 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
     def get_tracks_by_bpm(self, bpm, pitch_range):
         min_bpm = bpm - (bpm / 100 * pitch_range)
         max_bpm = bpm + (bpm / 100 * pitch_range)
-        sql_bpm = '''
+        sql_bpm = f'''
           SELECT discogs_title, d_catno, track.d_artist, d_track_name,
               track.d_track_no, key_notes, notes,
-            CASE
-                WHEN track_ext.bpm IS NOT NULL
-                    THEN round(track_ext.bpm, 1)
-                WHEN track.a_bpm IS NOT NULL
-                    THEN round(track.a_bpm, 1)
-            END AS chosen_bpm,
-            CASE
-                WHEN track_ext.key IS NOT NULL
-                    THEN track_ext.key
-                WHEN track.a_key IS NOT NULL
-                    THEN track.a_key
-            END AS chosen_key,
+            COALESCE(
+                CASE WHEN track_ext.bpm IS NOT NULL THEN round(track_ext.bpm, 1) END,
+                CASE WHEN track.a_bpm IS NOT NULL THEN round(track.a_bpm, 1) END
+            ) AS chosen_bpm,
+            COALESCE(track_ext.key, track.a_key) AS chosen_key,
             CASE
                 WHEN track.a_chords_key IS NOT NULL
                     THEN round(track.a_chords_key, 1)
             END AS chosen_chords_key
             FROM release LEFT OUTER JOIN track
                 ON release.discogs_id = track.d_release_id
-                    INNER JOIN track_ext
+                    LEFT OUTER JOIN track_ext
                     ON track.d_release_id = track_ext.d_release_id
                     AND track.d_track_no = track_ext.d_track_no
             WHERE
-                (chosen_bpm >= {} AND chosen_bpm <= {})
-                OR (chosen_bpm >= "{}" AND chosen_bpm <= "{}")
-            ORDER BY chosen_key, chosen_bpm'''.format(
-            min_bpm, max_bpm, min_bpm, max_bpm)
+                (
+                    (track_ext.bpm IS NOT NULL AND round(track_ext.bpm, 1) >= {min_bpm} AND round(track_ext.bpm, 1) <= {max_bpm})
+                    OR
+                    (track_ext.bpm IS NULL AND track.a_bpm IS NOT NULL AND round(track.a_bpm, 1) >= {min_bpm} AND round(track.a_bpm, 1) <= {max_bpm})
+                )
+            ORDER BY chosen_key, chosen_bpm
+        '''
         # THEN trim(track_ext.bpm, '.0')
         # THEN trim(round(track.a_bpm, 0), '.0')
         return self._select(sql_bpm, fetchone=False)
