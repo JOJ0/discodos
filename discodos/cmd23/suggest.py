@@ -15,13 +15,23 @@ log = logging.getLogger('discodos')
 @click.option(
     "-k", "--key", 'suggest_key', type=str, metavar="KEY",
     help='suggests tracks based on musical key.')
+@click.option(
+    "-p", "--pitch-range", 'suggest_pitch_range', type=int,
+    metavar="PITCH_RANGE", default=6,
+    help='Pitch range in percent for BPM suggestions (default: 6).')
 @click.pass_obj
-def suggest_cmd(helper, suggest_search, suggest_bpm, suggest_key):
+def suggest_cmd(helper, suggest_search, suggest_bpm, suggest_key, suggest_pitch_range):
     """Suggests tracks based on what you've played before,
 
     fitting within a BPM range or sharing a musical key.
     """
     def update_user_interaction_helper(user):
+        if suggest_key and suggest_pitch_range != 6 and not suggest_bpm:
+            log.error(
+                "You can't use --key and --pitch-range together unless --bpm "
+                "is also set."
+            )
+            raise SystemExit(1)
         user.WANTS_TO_SUGGEST_SEARCH = True
         log.debug("Entered suggestion mode.")
         if (
@@ -66,8 +76,8 @@ def suggest_cmd(helper, suggest_search, suggest_bpm, suggest_key):
     if user.WANTS_SUGGEST_TRACK_REPORT:
         coll_ctrl.track_report(suggest_search)
     if user.WANTS_SUGGEST_BPM_REPORT:
-        coll_ctrl.bpm_report(suggest_bpm, 6)
+        coll_ctrl.bpm_report(suggest_bpm, suggest_pitch_range)
     if user.WANTS_SUGGEST_KEY_REPORT:
         coll_ctrl.key_report(suggest_key)
     if user.WANTS_SUGGEST_KEY_AND_BPM_REPORT:
-        coll_ctrl.key_and_bpm_report(suggest_key, suggest_bpm, 6)
+        coll_ctrl.key_and_bpm_report(suggest_key, suggest_bpm, suggest_pitch_range)
