@@ -26,31 +26,27 @@ def suggest_cmd(helper, suggest_search, suggest_bpm, suggest_key, suggest_pitch_
     fitting within a BPM range or sharing a musical key.
     """
     def update_user_interaction_helper(user):
-        if suggest_key and suggest_pitch_range != 6 and not suggest_bpm:
+        if (
+            (suggest_key and suggest_pitch_range != 6 and not suggest_bpm)
+            or (suggest_bpm and suggest_search != "0" and suggest_key)
+            or (suggest_bpm and suggest_search != "0" and not suggest_key)
+            or (suggest_key and suggest_search != "0")
+        ):
             log.error(
-                "You can't use --key and --pitch-range together unless --bpm "
-                "is also set."
+                "Invalid combination of options for suggest command.\n"
+                "Allowed combinations are:\n"
+                "  1. No options (track-combination report)\n"
+                "  2. --bpm [-p] (BPM suggestion report)\n"
+                "  3. --key (key suggestion report)\n"
+                "  4. --bpm --key [-p] (key and BPM suggestion report)\n"
+                "  5. SEARCH_TERMS only (track-combination report for searchterm)"
             )
             raise SystemExit(1)
         user.WANTS_TO_SUGGEST_SEARCH = True
         log.debug("Entered suggestion mode.")
-        if (
-            suggest_bpm
-            and suggest_search == "0"
-            and suggest_key
-        ):
+        if suggest_bpm and suggest_search == "0" and suggest_key:
             log.debug("Entered key and BPM suggestion report.")
             user.WANTS_SUGGEST_KEY_AND_BPM_REPORT = True
-        elif (suggest_bpm and suggest_search != "0"
-              and suggest_key):
-            log.error("You can't combine BPM and key with Track-combination report.")
-            raise SystemExit(1)
-        elif suggest_bpm and suggest_search != "0":
-            log.error("You can't combine BPM with Track-combination report.")
-            raise SystemExit(1)
-        elif suggest_key and suggest_search != "0":
-            log.error("You can't combine key with Track-combination report.")
-            raise SystemExit(1)
         elif suggest_bpm and suggest_search == "0":
             log.debug("Entered BPM suggestion report.")
             user.WANTS_SUGGEST_BPM_REPORT = True
@@ -62,8 +58,6 @@ def suggest_cmd(helper, suggest_search, suggest_bpm, suggest_key, suggest_pitch_
         else:
             log.debug("Entered Track-combination report.")
             user.WANTS_SUGGEST_TRACK_REPORT = True
-        # log.error("track search not implemented yet.")
-        # raise SystemExit(1)
         return user
 
     user = update_user_interaction_helper(helper)
