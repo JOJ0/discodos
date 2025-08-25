@@ -519,29 +519,29 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         min_bpm = bpm - (bpm / 100 * pitch_range)
         max_bpm = bpm + (bpm / 100 * pitch_range)
         sql_bpm = f'''
-          SELECT discogs_title, d_catno, track.d_artist, d_track_name,
-              track.d_track_no, key_notes, notes,
-            COALESCE(
-                CASE WHEN track_ext.bpm IS NOT NULL THEN round(track_ext.bpm, 1) END,
-                CASE WHEN track.a_bpm IS NOT NULL THEN round(track.a_bpm, 1) END
-            ) AS chosen_bpm,
-            COALESCE(track_ext.key, track.a_key) AS chosen_key,
-            CASE
-                WHEN track.a_chords_key IS NOT NULL
-                    THEN round(track.a_chords_key, 1)
-            END AS chosen_chords_key
-            FROM release LEFT OUTER JOIN track
-                ON release.discogs_id = track.d_release_id
-                    LEFT OUTER JOIN track_ext
-                    ON track.d_release_id = track_ext.d_release_id
-                    AND track.d_track_no = track_ext.d_track_no
-            WHERE
-                (
-                    (track_ext.bpm IS NOT NULL AND round(track_ext.bpm, 1) >= {min_bpm} AND round(track_ext.bpm, 1) <= {max_bpm})
-                    OR
-                    (track_ext.bpm IS NULL AND track.a_bpm IS NOT NULL AND round(track.a_bpm, 1) >= {min_bpm} AND round(track.a_bpm, 1) <= {max_bpm})
-                )
-            ORDER BY chosen_key, chosen_bpm
+        SELECT
+            discogs_title,
+            d_catno,
+            release.d_artist,
+            d_track_name,
+            track.d_track_no,
+            key_notes,
+            notes,
+            ROUND(COALESCE(track_ext.bpm, track.a_bpm), 1) AS chosen_bpm,
+            COALESCE(track_ext.key, track.a_key) AS chosen_key
+        FROM release
+        INNER JOIN track
+            ON release.discogs_id = track.d_release_id
+        LEFT JOIN track_ext
+            ON track.d_release_id = track_ext.d_release_id
+            AND track.d_track_no = track_ext.d_track_no
+        WHERE
+            ROUND(COALESCE(track_ext.bpm, track.a_bpm), 1) >= {min_bpm}
+            AND
+            ROUND(COALESCE(track_ext.bpm, track.a_bpm), 1) <= {max_bpm}
+        ORDER BY
+        ''' + SQL_ORDER_MUSICAL + '''
+            chosen_bpm;
         '''
         # THEN trim(track_ext.bpm, '.0')
         # THEN trim(round(track.a_bpm, 0), '.0')
