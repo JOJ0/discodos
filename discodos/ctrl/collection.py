@@ -596,8 +596,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
 
     def bpm_report(self, bpm, pitch_range):
         possible_tracks = self.collection.get_tracks_by_bpm(bpm, pitch_range)
-        tr_sugg_msg = '\nShowing tracks with a BPM around {}. Pitch range is +/- {}%.'.format(bpm, pitch_range)
-        self.cli.p(tr_sugg_msg)
+        self.cli.p(
+            f"\nShowing tracks with a BPM around {bpm}. "
+            f"Pitch range is +/- {pitch_range}%."
+        )
         if possible_tracks:
             max_width = self.cli.get_max_width(
                 possible_tracks, ['chosen_key', 'chosen_bpm'], 3
@@ -606,22 +608,15 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 key_bpm_and_space = self.cli.combine_fields_to_width(
                     tr, ['chosen_key', 'chosen_bpm'], max_width
                 )
-                catno = tr['d_catno'].replace(' ', '')
+                catno = tr['d_catno'].replace(' ', '') if tr['d_catno'] else '<MISSING>'
                 self.cli.p(
-                    '{}{} - {} [{} ({}) {}]'.format(
-                        key_bpm_and_space,
-                        tr['d_artist'],
-                        tr['d_track_name'],
-                        catno,
-                        tr['d_track_no'],
-                        tr['discogs_title']
-                    )
+                    f'{key_bpm_and_space}{tr["d_artist"]} - {tr["d_track_name"]} '
+                    f'[{catno} ({tr["d_track_no"]}) {tr["discogs_title"]}]'
                 )
 
     def key_report(self, key):
         possible_tracks = self.collection.get_tracks_by_key(key)
-        tr_sugg_msg = '\nShowing tracks with key {}'.format(key)
-        self.cli.p(tr_sugg_msg)
+        self.cli.p(f'\nShowing tracks with key {key}')
         if possible_tracks:
             max_width = self.cli.get_max_width(
                 possible_tracks, ['chosen_key', 'chosen_bpm'], 3
@@ -632,21 +627,20 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 key_bpm_and_space = self.cli.combine_fields_to_width(
                     tr, ['chosen_key', 'chosen_bpm'], max_width
                 )
+                catno = tr['d_catno'].replace(' ', '') if tr['d_catno'] else '<MISSING>'
                 self.cli.p(
-                    '{}{} - {} [{} ({}) {}]:'.format(
-                        key_bpm_and_space,
-                        tr['d_artist'],
-                        tr['d_track_name'],
-                        tr['d_catno'],
-                        tr['d_track_no'],
-                        tr['discogs_title']
-                    )
+                    f'{key_bpm_and_space}{tr["d_artist"]} - {tr["d_track_name"]} '
+                    f'[{catno} ({tr["d_track_no"]}) {tr["discogs_title"]}]'
                 )
 
     def key_and_bpm_report(self, key, bpm, pitch_range):
-        possible_tracks = self.collection.get_tracks_by_key_and_bpm(key, bpm, pitch_range)
-        tr_sugg_msg = '\nShowing tracks with key "{}" and a BPM around {}. Pitch range is +/- {}%.'.format(key, bpm, pitch_range)
-        self.cli.p(tr_sugg_msg)
+        possible_tracks = self.collection.get_tracks_by_key_and_bpm(
+            key, bpm, pitch_range
+        )
+        self.cli.p(
+            f'\nShowing tracks with key "{key}" and a BPM around {bpm}. '
+            f'Pitch range is +/- {pitch_range}%.'
+        )
         if possible_tracks:
             max_width = self.cli.get_max_width(
                 possible_tracks, ['chosen_key', 'chosen_bpm'], 3
@@ -655,15 +649,10 @@ class CollectionControlCommandline (ControlCommon, CollectionControlCommon):
                 key_bpm_and_space = self.cli.combine_fields_to_width(
                     tr, ['chosen_key', 'chosen_bpm'], max_width
                 )
+                catno = tr['d_catno'].replace(' ', '') if tr['d_catno'] else '<MISSING>'
                 self.cli.p(
-                    '{}{} - {} [{} ({}) {}]:'.format(
-                        key_bpm_and_space,
-                        tr['d_artist'],
-                        tr['d_track_name'],
-                        tr['d_catno'],
-                        tr['d_track_no'],
-                        tr['discogs_title']
-                    )
+                    f'{key_bpm_and_space}{tr["d_artist"]} - {tr["d_track_name"]} '
+                    f'[{catno} ({tr["d_track_no"]}) {tr["discogs_title"]}]'
                 )
 
     # Tracks/Brainz
