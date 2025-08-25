@@ -4,7 +4,7 @@ from sqlite3 import Error as sqlerr
 from discodos.model.discogs import DiscogsMixin
 from discodos.model.database import Database
 from discodos.utils import (
-    is_number, timestamp_now
+    is_number, timestamp_now, SQL_ORDER_MUSICAL
 )
 
 log = logging.getLogger('discodos')
@@ -551,31 +551,26 @@ class Collection (Database, DiscogsMixin):  # pylint: disable=too-many-public-me
         # prev_key = "" # future music ;-) when we have key-translation-table
         # next_key = ""
         sql_key = f'''
-          SELECT discogs_title, d_catno, track.d_artist, d_track_name,
-            track.d_track_no, key_notes, notes,
-            CASE
-                WHEN track_ext.bpm IS NOT NULL
-                    THEN round(track_ext.bpm, 1)
-                WHEN track.a_bpm IS NOT NULL
-                    THEN round(track.a_bpm, 1)
-            END AS chosen_bpm,
-            COALESCE(track_ext.key, track.a_key) AS chosen_key,
-            CASE
-                WHEN track.a_chords_key IS NOT NULL
-                    THEN round(track.a_chords_key, 1)
-            END AS chosen_chords_key
-                FROM release LEFT OUTER JOIN track
-                    ON release.discogs_id = track.d_release_id
-                        LEFT OUTER JOIN track_ext
-                        ON track.d_release_id = track_ext.d_release_id
-                        AND track.d_track_no = track_ext.d_track_no
-            WHERE
-                (
-                    (track_ext.key IS NOT NULL AND track_ext.key LIKE "%{key}%")
-                    OR
-                    (track_ext.key IS NULL AND track.a_key LIKE "%{key}%")
-                )
-            ORDER BY chosen_key, chosen_bpm
+        SELECT
+            discogs_title,
+            d_catno,
+            release.d_artist,
+            d_track_name,
+            track.d_track_no,
+            key_notes,
+            notes,
+            ROUND(COALESCE(track_ext.bpm, track.a_bpm), 1) AS chosen_bpm,
+            COALESCE(track_ext.key, track.a_key) AS chosen_key
+        FROM release
+        INNER JOIN track
+            ON release.discogs_id = track.d_release_id
+        LEFT JOIN track_ext
+            ON track.d_release_id = track_ext.d_release_id
+            AND track.d_track_no = track_ext.d_track_no
+        WHERE COALESCE(track_ext.key, track.a_key) LIKE "%{key}%"
+        ORDER BY
+        ''' + SQL_ORDER_MUSICAL + '''
+            chosen_bpm;
         '''
         # THEN trim(round(track.a_bpm, 0), '.0')
         # THEN round(track_ext.bpm, 0)

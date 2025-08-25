@@ -40,6 +40,35 @@ RECORD_CHOICES_DISCOGS = {value: key for key, value in RECORD_CHOICES_RADIO.item
 SLEEVE_CHOICES_DISCOGS = {value: key for key, value in SLEEVE_CHOICES_RADIO.items()}
 STATUS_CHOICES_DISCOGS = {value: key for key, value in STATUS_CHOICES_RADIO.items()}
 
+SQL_ORDER_MUSICAL = """
+            CASE COALESCE(track_ext.key, track.a_key)
+                WHEN 'C'  THEN 0
+                WHEN 'Am' THEN 1
+                WHEN 'G'  THEN 2
+                WHEN 'Em' THEN 3
+                WHEN 'D'  THEN 4
+                WHEN 'Bm' THEN 5
+                WHEN 'A'  THEN 6
+                WHEN 'F#m' THEN 7
+                WHEN 'E'  THEN 8
+                WHEN 'C#m' THEN 9
+                WHEN 'B'  THEN 10
+                WHEN 'G#m' THEN 11
+                WHEN 'F#' THEN 12
+                WHEN 'D#m' THEN 13
+                WHEN 'C#' THEN 14
+                WHEN 'A#m' THEN 15
+                WHEN 'Ab' THEN 16
+                WHEN 'Fm' THEN 17
+                WHEN 'Eb' THEN 18
+                WHEN 'Cm' THEN 19
+                WHEN 'Bb' THEN 20
+                WHEN 'Gm' THEN 21
+                WHEN 'F'  THEN 22
+                WHEN 'Dm' THEN 23
+            END,
+"""
+
 
 def is_number(s):
     try:
